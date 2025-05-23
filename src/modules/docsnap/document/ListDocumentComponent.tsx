@@ -1,0 +1,40 @@
+import { useNavigate, useParams } from 'react-router-dom';
+import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
+import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
+import { useDocumentState } from './hooks/documentContext';
+
+export const ListDocumentComponent: React.FC = () => {
+  const { id } = useParams();
+  const { state, setState } = useDocumentState();
+  const navigate = useNavigate();
+  const actionButtons = [
+    {
+      label: 'Create Document',
+      action: () => {
+        setState(prev => ({ ...prev, showCreatePage: true }));
+      },
+    },
+  ];
+  const customFunctions = {
+    editClickHandler: (row: any) => {
+      setState(prev => ({ ...prev, showCreatePage: true, id: row._id }));
+    },
+    deleteClickHandler: (row: any) => {
+      alert(`${row.name} Deleted`);
+    },
+  };
+  const customUI = {
+    status: StatusCustomUI,
+  };
+  if (!id) return <div className=""></div>;
+  return (
+    <UseTablebuilder
+      name="List Document Table"
+      fluidHeight
+      externalFilters={{ projectId: id }}
+      customFunctions={customFunctions}
+      customUI={customUI}
+      actionButtons={actionButtons}
+    />
+  );
+};

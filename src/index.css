@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+@import './utils/animation.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: black;
+  --color-primary-dark: #2563eb;
+  --color-primary-light: #2563eb;
+  --color-secondary: white;
+
+  --color-success: #16a34a;
+  --color-warning: #ffcd29;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+}
+
+/* For default border color (--color-gray-200) */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+/* Scrollbar CSS */
+::-webkit-scrollbar {
+  width: 2px;
+  border: 1px solid #d5d5d5;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 0;
+  background: #eeeeee;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 0;
+  background: rgb(137, 137, 137);
+}
+
+::-webkit-scrollbar:horizontal {
+  height: 2px;
+}
+
+* {
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 50px white inset; /* Change the color to your own background color */
+    -webkit-text-fill-color: #333;
+  }
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 50px white inset; /*your box-shadow*/
+    -webkit-text-fill-color: #333;
+  }
+}

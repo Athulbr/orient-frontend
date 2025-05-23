@@ -1,0 +1,340 @@
+import { Search, X } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
+import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
+import { SingleSelect } from '../components/SingleSelect';
+import { DatePicker } from '../components/DatePicker';
+import { SearchField } from '../components/SearchField';
+import { debounce, throttle } from '../utils/SerachLimit';
+import { ActiveFilter } from '../utils/interface';
+import { getFiltersObject } from '../utils/getFiltersObject';
+import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
+
+export function TableToolbar() {
+  const { injectedData } = useTablebuilderState();
+
+  return (
+    <div className="mb-3 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4">
+      {injectedData.actionButtons?.map((button, index) => (
+        <button
+          key={index}
+          className="flex cursor-pointer items-center gap-1 rounded border px-3 py-2 text-sm transition-colors hover:bg-gray-100"
+          onClick={button.action}
+        >
+          {button.label}
+        </button>
+      ))}
+      <SearchInput />
+      <ClearFilterButton />
+      <ExportButton />
+      <PageSizeSelector />
+      <DateRangePicker />
+      <Filters />
+    </div>
+  );
+}
+
+// ============================================================================================================================================
+
+// Filters Component
+function Filters() {
+  const { settings, state, setState } = useTablebuilderState();
+  const { getDataFromApi } = useFetchDataFromApi();
+  const { activeFilters } = state;
+
+  // Update active filters
+  const updateActiveFilter = useCallback(
+    (newActiveFilters: ActiveFilter[]) => {
+      setState(prevState => ({
+        ...prevState,
+        activeFilters: newActiveFilters,
+        page: 1, // Reset to page 1
+      }));
+
+      // Convert filters array to object
+      const filtersObject = getFiltersObject(newActiveFilters);
+
+      console.log('filtersObject==========', filtersObject);
+
+      // Get data with new filters
+      getDataFromApi({
+        page: 1,
+        filters: filtersObject,
+        skipActiveFilters: true,
+      });
+    },
+    [getDataFromApi, setState]
+  );
+
+  return (
+    <>
+      {settings.filters.map((filter, index) => (
+        <SingleSelect
+          key={filter.key}
+          options={[
+            {
+              label: `All ${filter.key.charAt(0).toUpperCase() + filter.key.slice(1)}`,
+              value: '',
+            },
+            ...filter.options.map(option => ({ label: option, value: option })),
+          ]}
+          value={activeFilters[index]?.value || ''}
+          onValueChange={value => {
+            const newFilters = [...activeFilters];
+            newFilters[index] = value ? { key: filter.key, value } : { key: '', value: '' };
+            updateActiveFilter(newFilters);
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+// ============================================================================================================================================
+
+// PageSize Selector Component
+function PageSizeSelector() {
+  const { settings, state, setState } = useTablebuilderState();
+  const { getDataFromApi } = useFetchDataFromApi();
+
+  const onChangePageSize = useCallback(
+    (value: string) => {
+      setState(prev => ({ ...prev, pageRows: parseInt(value) }));
+      getDataFromApi({ page: 1, pageSize: parseInt(value) });
+    },
+    [setState, getDataFromApi]
+  );
+
+  if (!settings?.pageSize.showPageSizeSelect) return null;
+
+  return (
+    <SingleSelect
+      options={settings.pageSize?.options.map(size => ({
+        label: `${size} Rows`,
+        value: size.toString(),
+      }))}
+      value={state.pageRows.toString()}
+      onValueChange={onChangePageSize}
+    />
+  );
+}
+
+// ============================================================================================================================================
+
+// DateRange Picker Component
+function DateRangePicker() {
+  const { settings, state, setState } = useTablebuilderState();
+  const { startDate, endDate } = state;
+  const { getDataFromApi } = useFetchDataFromApi();
+
+  // Update date range
+  const onChangeDateRange = useCallback(
+    (newStartDate: Date | null, newEndDate: Date | null) => {
+      setState(prev => ({
+        ...prev,
+        startDate: newStartDate,
+        endDate: newEndDate,
+        page: 1, // Reset to page 1 when date range changes
+      }));
+
+      getDataFromApi({ startDate: newStartDate, endDate: newEndDate });
+    },
+    [setState, getDataFromApi]
+  );
+
+  if (!settings.dateRange.showDateRangeInput) return null;
+  return <DatePicker from={startDate} to={endDate} onChange={onChangeDateRange} />;
+}
+// ============================================================================================================================================
+
+// Search Input Component
+function SearchInput() {
+  const { settings, state, setState } = useTablebuilderState();
+  const { getDataFromApi } = useFetchDataFromApi();
+
+  const { searchValue } = state;
+  const { search } = settings;
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query: string, searchableColumns: string[]) => {
+        getDataFromApi({
+          page: 1,
+          search: query,
+          searchableColumns,
+        });
+      }, 1000),
+    [getDataFromApi]
+  );
+
+  const throttleSearch = useMemo(
+    () =>
+      throttle((query: string, searchableColumns: string[]) => {
+        getDataFromApi({
+          page: 1,
+          search: query,
+          searchableColumns,
+        });
+      }, 2000),
+    [getDataFromApi]
+  );
+
+  // Update search value
+  const onChangeSearchValue = useCallback(
+    (newSearchValue: string, clear: boolean) => {
+      setState(prev => ({
+        ...prev,
+        searchValue: newSearchValue,
+        page: 1,
+      }));
+      if (clear)
+        getDataFromApi({
+          page: 1,
+          search: newSearchValue,
+        });
+    },
+    [setState, getDataFromApi]
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      onChangeSearchValue(value, false);
+      if (search.searchRateControl === 'debouncing') {
+        debouncedSearch(value, search.searchableColumns);
+      } else if (search.searchRateControl === 'throttling') {
+        throttleSearch(value, search.searchableColumns);
+      }
+    },
+    [onChangeSearchValue, search, debouncedSearch, throttleSearch]
+  );
+
+  if (!search.showSearchInput) return null;
+
+  return (
+    <SearchField
+      className="w-full max-w-150 flex-1"
+      placeholder={search.placeholder}
+      value={searchValue}
+      onChange={e => handleSearchChange(e.target.value)}
+      leftIcon={<Search className="h-4 w-4" />}
+      rightIcon={searchValue ? <X className="h-4 w-4" onClick={() => onChangeSearchValue('', true)} /> : undefined}
+    />
+  );
+}
+// ============================================================================================================================================
+
+// Export Button Component
+const ExportButton = () => {
+  const { settings, state } = useTablebuilderState();
+
+  const { selectedIds, data } = state;
+  const { columns, exportTableData } = settings;
+
+  // Get visible column keys to filter export data
+  const filterDataByColumns = useCallback(
+    (data: Record<string, any>[]) => {
+      const visibleColumnKeys = columns.filter(col => !col.hidden).map(col => col.key as string);
+
+      return data.map(row => {
+        const filteredRow: Record<string, any> = {};
+        visibleColumnKeys.forEach(key => {
+          if (row.hasOwnProperty(key)) {
+            filteredRow[key] = row[key];
+          }
+        });
+        return filteredRow;
+      });
+    },
+    [columns]
+  );
+
+  const handleExport = useCallback(
+    (value: string) => {
+      let dataToExport: Record<string, any>[] = [];
+
+      console.log(value);
+
+      if (value === 'selected') {
+        // Filter data to only include selected rows
+        const filtered = data.filter(row => selectedIds.includes(row._id));
+        dataToExport = filterDataByColumns(filtered);
+      } else if (value === 'all') {
+        dataToExport = filterDataByColumns(data);
+      }
+
+      if (dataToExport.length === 0) {
+        return;
+      }
+
+      console.log(dataToExport);
+
+      // Convert data to CSV string
+      const headers = Object.keys(dataToExport[0]).join(',');
+      const rows = dataToExport.map(row => Object.values(row).join(','));
+      const csv = [headers, ...rows].join('\n');
+
+      // Create blob and download
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `table-export-${new Date().getTime()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    },
+    [data, selectedIds, filterDataByColumns]
+  );
+
+  if (!exportTableData.showExportButton) return null;
+
+  return (
+    <SingleSelect
+      placeholder="Export"
+      options={[
+        {
+          label: 'All',
+          value: 'all',
+        },
+        {
+          label: 'Selected',
+          value: 'selected',
+        },
+      ]}
+      value={''}
+      onValueChange={value => handleExport(value)}
+    />
+  );
+};
+
+// ============================================================================================================================================
+
+const ClearFilterButton = () => {
+  const { settings, state, setState } = useTablebuilderState();
+  const { getDataFromApi } = useFetchDataFromApi();
+
+  const clearActiveFilters = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      activeFilters: [],
+      searchValue: '',
+      startDate: null,
+      endDate: null,
+      sorts: [],
+      page: 1, // Reset to page 1
+    }));
+    getDataFromApi({}, true);
+  }, [setState, getDataFromApi]);
+
+  if (!settings.clearFilters.showClearFiltersButton) return null;
+
+  return (
+    <button
+      className="flex cursor-pointer items-center gap-1 rounded border px-3 py-2 text-sm transition-colors hover:bg-gray-100"
+      onClick={clearActiveFilters}
+    >
+      <X className="h-3.5 w-3.5" />
+      Clear
+    </button>
+  );
+};

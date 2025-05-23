@@ -1,0 +1,253 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Calendar, X } from 'lucide-react';
+import { format, isSameDay, isAfter, isBefore, startOfDay } from 'date-fns';
+
+interface DatePickerProps {
+  from: Date | null;
+  to: Date | null;
+  onChange: (from: Date | null, to: Date | null) => void;
+  className?: string;
+  disabled?: boolean;
+}
+
+export const DatePicker: React.FC<DatePickerProps> = ({
+  from,
+  to,
+  onChange,
+  className = '',
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [hoverDate, setHoverDate] = useState<Date | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        pickerRef.current &&
+        !pickerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleDayClick = (date: Date) => {
+    const normalizedDate = startOfDay(date);
+
+    if (!from) {
+      onChange(normalizedDate, null);
+    } else if (!to && isAfter(normalizedDate, from)) {
+      onChange(from, normalizedDate);
+      setIsOpen(false);
+    } else {
+      onChange(normalizedDate, null);
+    }
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(null, null);
+    setIsOpen(false);
+  };
+
+  const getMonthDays = (year: number, month: number) => {
+    // Month is 0-indexed in JavaScript Date
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+
+    // Get day of week of first day (0 = Sunday, 6 = Saturday)
+    const firstDayOfWeek = firstDay.getDay();
+
+    const days: Date[] = [];
+
+    // Add previous month days to fill the first week
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      const day = new Date(year, month, -firstDayOfWeek + i + 1);
+      days.push(day);
+    }
+
+    // Add current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      const day = new Date(year, month, i);
+      days.push(day);
+    }
+
+    // Add next month days to fill the last week
+    const remainingDays = 7 - (days.length % 7 || 7);
+    for (let i = 1; i <= remainingDays; i++) {
+      const day = new Date(year, month + 1, i);
+      days.push(day);
+    }
+
+    return days;
+  };
+
+  const days = getMonthDays(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth()
+  );
+  const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const isDaySelected = (day: Date) =>
+    (from && isSameDay(from, day)) || (to && isSameDay(to, day));
+
+  const isDayInRange = (day: Date) => {
+    if (!from) return false;
+    if (to) return isAfter(day, from) && isBefore(day, to);
+    if (hoverDate && isAfter(hoverDate, from))
+      return isAfter(day, from) && isBefore(day, hoverDate);
+    return false;
+  };
+
+  const isCurrentMonth = (day: Date) =>
+    day.getMonth() === currentMonth.getMonth();
+
+  const previousMonth = () => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1));
+  };
+
+  return (
+    <div ref={pickerRef} className={`relative inline-block ${className}`}>
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`flex h-10 items-center gap-2 rounded-md border bg-white px-3 py-2 text-sm ${isOpen ? 'border-primary ring-primary/20 ring-2' : 'border-input'} ${from || to ? 'bg-primary/5' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'} min-w-[140px] transition-all duration-200`}
+      >
+        <Calendar className="h-3.5 w-3.5" />
+        <span>
+          {from && to
+            ? `${format(from, 'MMM d')} - ${format(to, 'MMM d')}`
+            : from
+              ? `From ${format(from, 'MMM d')}`
+              : 'Date Range'}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="border-input absolute z-50 mt-1 w-[300px] overflow-hidden rounded-md border bg-white shadow-lg">
+          <div className="border-b p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-medium">Date Range</h3>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-muted-foreground cursor-pointer border px-2 py-1 text-xs hover:text-gray-500"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="text-muted-foreground text-xs">
+              {!from && !to
+                ? 'Select start date first'
+                : !to
+                  ? 'Now select end date'
+                  : `${format(`${from}`, 'PPP')} - ${format(to, 'PPP')}`}
+            </div>
+          </div>
+
+          <div className="p-3">
+            <div className="mb-4 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={previousMonth}
+                className="rounded-full p-1 hover:bg-gray-200"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M10 12L6 8L10 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <div className="font-medium">
+                {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </div>
+              <button
+                type="button"
+                onClick={nextMonth}
+                className="hover:bg-primary rounded-full p-1"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6 12L10 8L6 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-1 grid grid-cols-7 gap-1">
+              {weekdays.map(day => (
+                <div
+                  key={day}
+                  className="text-muted-foreground py-1 text-center text-xs font-medium"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((day, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => handleDayClick(day)}
+                  onMouseEnter={() => from && !to && setHoverDate(day)}
+                  onMouseLeave={() => setHoverDate(null)}
+                  // disabled={isAfter(day, new Date())}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${isCurrentMonth(day) ? 'text-gray-600' : 'text-muted-foreground opacity-50'} ${isDaySelected(day) ? 'bg-primary hover:bg-primary/90 text-white' : ''} ${isDayInRange(day) ? 'bg-primary/20 hover:bg-primary/30' : 'hover:bg-gray-2'} 'cursor-pointer' transition-colors`}
+                >
+                  {day.getDate()}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

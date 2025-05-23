@@ -1,0 +1,154 @@
+import React, { FC, JSX, ReactNode, useCallback, useEffect } from 'react';
+import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
+import { dataMapper } from '../utils/DataMapper';
+import { Edit, Trash } from 'lucide-react';
+import { formatDate } from '../utils/formatDate';
+import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
+import FullScreenLoader from '../../../../components/FullScreenLoader';
+import { useAlertStore } from '../../../../components/alert/AlertStore';
+
+export const TableBody: FC = () => {
+  const { injectedData, settings, state, setState } = useTablebuilderState();
+
+  const { customFunctions, customUI } = injectedData;
+
+  const { columns, rowSelection, api } = settings;
+  const { data, selectedIds, loading } = state;
+
+  useEffect(() => {
+    if (api.refresh === 1) return;
+    // clearActiveFilters(); todo
+  }, [api.refresh]);
+
+  const selectable = rowSelection.showRowSelection;
+
+  const getCustomUI = useCallback(
+    (customUiKey: string, data: any): ReactNode => {
+      const Test = customUI[customUiKey];
+      return Test ? <Test data={data} /> : null;
+    },
+    [customUI]
+  );
+
+  if (data.length === 0) {
+    return (
+      <tbody className="divide-y divide-gray-200">
+        <tr>
+          <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
+            No data available
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+
+  const rowClickHandler = (e: React.MouseEvent<HTMLTableRowElement>, row: Record<string, string>) => {
+    e.stopPropagation();
+    if (customFunctions['rowClickHandler']) {
+      customFunctions['rowClickHandler'](row);
+    }
+  };
+  const rowCheckHandler = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    e.stopPropagation();
+    setState({ ...state, selectedIds: e.target.checked ? [...selectedIds, id] : selectedIds.filter(selectedId => selectedId !== id) });
+  };
+
+  return (
+    <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
+      {data.map((row: any) => (
+        <tr
+          onClick={e => rowClickHandler(e, row)}
+          key={row._id}
+          className={selectedIds.includes(row._id) && rowSelection.enableRowHighlight ? 'bg-blue-50' : ''}
+        >
+          {selectable && (
+            <td onClick={e => e.stopPropagation()} className="px-6 py-4 whitespace-nowrap">
+              <input
+                type="checkbox"
+                className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
+                checked={selectedIds.includes(row._id)}
+                onChange={e => rowCheckHandler(e, row._id)} // handleSelectRow(row._id, e.target.checked); todo
+              />
+            </td>
+          )}
+          {columns.map((column, index) => {
+            if (column.hidden) return null;
+            return (
+              <td key={column.key as string} className="px-1 py-4 whitespace-nowrap">
+                <div
+                  className={`text-xs text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${loading ? "relative after:absolute after:top-0 after:left-0 after:w-full after:rounded-xs after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
+                >
+                  {columns[index].dateUI ? (
+                    <div>{formatDate(row.updatedAt)}</div>
+                  ) : columns[index].editButton || columns[index].deleteButton ? (
+                    <ActionButtons settings={columns[index]} row={row} />
+                  ) : columns[index].customUI ? (
+                    getCustomUI(column.customUiKey, row)
+                  ) : (
+                    (dataMapper(row, column.key.split(',')) as React.ReactNode)
+                  )}
+                </div>
+              </td>
+            );
+          })}
+        </tr>
+      ))}
+    </tbody>
+  );
+};
+
+interface ActionButtonsIF {
+  settings: {
+    key: string;
+    header: string;
+    sortable: boolean;
+    customUI: boolean;
+    customUiKey: string;
+    capitalize: boolean;
+    hidden: boolean;
+    editButton: boolean;
+    deleteButton: boolean;
+    editUrl: string;
+    deleteUrl: string;
+  };
+  row: any;
+}
+
+const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
+  const { injectedData, setState, state } = useTablebuilderState();
+  const { customFunctions } = injectedData;
+  const alert = useAlertStore();
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setState({ ...state, selectedIds: [row._id] });
+
+    if (customFunctions['editClickHandler']) {
+      customFunctions['editClickHandler'](row);
+    }
+  };
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setState({ ...state, selectedIds: [row._id] });
+
+    alert.showAlert({
+      alertText: 'Are you sure you want to delete this?',
+      primaryButtonText: 'Delete',
+      onPrimaryAction: () => {
+        if (customFunctions['deleteClickHandler']) {
+          customFunctions['deleteClickHandler'](row);
+        }
+        alert.closeAlert();
+      },
+    });
+  };
+
+  return (
+    <div className="ml-2 flex gap-4">
+      {settings.editButton && <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />}
+      {settings.deleteButton && <Trash onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={16} />}
+    </div>
+  );
+};
+
+export default ActionButtons;

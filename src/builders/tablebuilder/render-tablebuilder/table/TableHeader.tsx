@@ -1,0 +1,58 @@
+import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
+import { useEffect } from 'react';
+import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
+import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
+
+export function TableHeader() {
+  const { settings, state, setState } = useTablebuilderState();
+  const { rowSelection, columns } = settings;
+  const { selectedIds, data, sorts } = state;
+  const { getDataFromApi } = useFetchDataFromApi();
+
+  const selectable = rowSelection.showRowSelection;
+
+  useEffect(() => {
+    getDataFromApi({});
+  }, []);
+
+  const getSortIcon = (columnKey: string) => {
+    const sort = sorts.find(s => s.column === columnKey);
+    if (!sort) return <ChevronsUpDown className="h-4 w-4" />;
+    return sort.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
+  };
+
+  return (
+    <thead>
+      <tr>
+        {selectable && (
+          <th scope="col" className="sticky top-0 w-12 bg-gray-50 px-6 py-3">
+            <input
+              type="checkbox"
+              className="cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              checked={Boolean(selectedIds.length && selectedIds.length === data.length)}
+              onChange={e => setState({ ...state, selectedIds: e.target.checked ? data.map(d => d._id) : [] })}
+            />
+          </th>
+        )}
+        {columns.map(column => {
+          if (column.hidden) return null;
+          return (
+            <th
+              key={column.key as string}
+              scope="col"
+              className={`sticky top-0 h-14 bg-gray-50 px-1 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase ${
+                column.sortable ? 'cursor-pointer select-none' : ''
+              }`}
+              // onClick={column.sortable ? e => handleSort(column.key, e.shiftKey) : undefined} todo
+            >
+              <div className="flex items-center gap-2 md:text-xs lg:text-sm">
+                {column.header}
+                {column.sortable && getSortIcon(column.key as string)}
+              </div>
+            </th>
+          );
+        })}
+      </tr>
+    </thead>
+  );
+}

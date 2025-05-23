@@ -1,0 +1,33 @@
+import { useState } from 'react';
+import PageContainer from '../../../components/PageContainer';
+import PageNameComponent from '../../../components/PageName';
+import CreateUserComponent from './CreateUserComponent';
+import { UserStateProvider } from './hooks/userContext';
+import { ListUserComponent } from './ListUserComponent';
+
+export interface UserStateIF {
+  showCreateDialog: boolean;
+  loading: boolean;
+  id: string;
+}
+const initialState = {
+  showCreateDialog: false,
+  loading: false,
+  id: '',
+};
+
+const ListUserPage: React.FC = () => {
+  const [state, setState] = useState<UserStateIF>(initialState);
+
+  return (
+    <UserStateProvider value={{ state, setState }}>
+      <PageContainer className="gap-4">
+        <PageNameComponent name="User List" showBackButton />
+        <ListUserComponent />
+        <CreateUserComponent />
+      </PageContainer>
+    </UserStateProvider>
+  );
+};
+
+export default ListUserPage;

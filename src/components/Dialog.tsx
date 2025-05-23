@@ -1,0 +1,123 @@
+import React, { useRef, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { useEscapeKey } from '../hooks/useEscapeKey';
+import { ButtonBox } from './ButtonBox';
+import { Button } from './button/Button';
+
+interface DialogPropsIF {
+  name?: string;
+  primaryButtonText?: string;
+  secondaryButtonText?: string;
+  children?: React.ReactNode;
+  isOpen?: boolean;
+  closeDialog?: () => void;
+  onPrimaryAction?: () => void;
+  onSecondaryAction?: () => void;
+  fullScreen?: boolean;
+  className?: string;
+}
+
+export const DialogComponent: React.FC<DialogPropsIF> = ({
+  name = 'Dialog Title',
+  primaryButtonText,
+  secondaryButtonText,
+  children = <></>,
+  isOpen,
+  closeDialog = () => {},
+  onPrimaryAction,
+  onSecondaryAction,
+  className,
+}) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Handle escape key press to close the dialog
+  useEscapeKey(closeDialog);
+
+  // Handle click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
+        closeDialog();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, closeDialog]);
+
+  const handlePrimaryAction = () => {
+    if (onPrimaryAction) {
+      onPrimaryAction();
+    } else {
+      closeDialog();
+    }
+  };
+
+  const handleSecondaryAction = () => {
+    if (onSecondaryAction) {
+      onSecondaryAction();
+    } else {
+      closeDialog();
+    }
+  };
+
+  // Prevent body scrolling when dialog is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="absolute top-0 left-0 z-1 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
+      <div
+        ref={dialogRef}
+        className={`flex max-h-9/10 flex-col rounded-lg bg-[linear-gradient(180deg,_rgba(255,255,255,1)_0%,_rgb(246,250,252)_35%,_rgb(251,247,244)_100%)] shadow-xl ${className}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+      >
+        <div className="flex items-center justify-between border-b border-gray-200 p-4">
+          <h2 id="dialog-title" className="text-2xl font-bold text-gray-900">
+            {name}
+          </h2>
+          <button
+            type="button"
+            onClick={closeDialog}
+            className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:text-gray-500 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+            aria-label="Close dialog"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto">{children}</div>
+
+        {secondaryButtonText ||
+          (primaryButtonText && (
+            <ButtonBox className="p-4">
+              {secondaryButtonText && (
+                <Button onClick={handleSecondaryAction} outlined>
+                  {secondaryButtonText}
+                </Button>
+              )}
+              {primaryButtonText && <Button onClick={handlePrimaryAction}>{primaryButtonText}</Button>}
+            </ButtonBox>
+          ))}
+      </div>
+    </div>
+  );
+};
