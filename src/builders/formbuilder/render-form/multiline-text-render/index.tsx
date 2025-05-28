@@ -45,7 +45,7 @@ export const MultilineTextRender: React.FC<InputFieldRenderPropsIF> = ({ index, 
   };
 
   return (
-    <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={errorMessage || ''}>
+    <InputWrapper style={{ marginBottom: 5 }} className={inputWrapperClassName} focus={focus} field={field} error={errorMessage || ''}>
       <textarea
         className={style.inputField}
         placeholder={config.placeholder}

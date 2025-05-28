@@ -36,7 +36,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         )}
         <div className="relative h-full border bg-red-200">
           <img className="h-full w-full object-contain" src={pdfLocation} alt="PDF" />
-          {bbox && (
+          {bbox && state.tabIndex === 0 && (
             <div
               // @ts-ignore
               ref={el => (bboxRef.current[1234] = el)}

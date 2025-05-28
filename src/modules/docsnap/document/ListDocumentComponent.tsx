@@ -2,11 +2,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { useDocumentState } from './hooks/documentContext';
+import { useDocumentsApi } from './hooks/useDocumentApi';
 
 export const ListDocumentComponent: React.FC = () => {
   const { id } = useParams();
-  const { state, setState } = useDocumentState();
-  const navigate = useNavigate();
+  const { setState } = useDocumentState();
+  const { getDocumentByIdApi } = useDocumentsApi();
   const actionButtons = [
     {
       label: 'Create Document',
@@ -18,6 +19,7 @@ export const ListDocumentComponent: React.FC = () => {
   const customFunctions = {
     editClickHandler: (row: any) => {
       setState(prev => ({ ...prev, showCreatePage: true, id: row._id }));
+      getDocumentByIdApi(row._id);
     },
     deleteClickHandler: (row: any) => {
       alert(`${row.name} Deleted`);

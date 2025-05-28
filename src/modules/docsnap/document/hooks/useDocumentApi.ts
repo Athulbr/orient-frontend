@@ -2,15 +2,16 @@ import { useParams } from 'react-router-dom';
 import { useDocumentState } from './documentContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
+import httpRequest from '../../../../utils/httpRequest';
 
-export const useFetchCreateTB = () => {
+export const useDocumentsApi = () => {
   const { setState } = useDocumentState();
   const { id } = useParams();
   const toast = useToastStore();
 
   useEffect(() => {
     if (!id) return;
-    setState(prev => ({ ...prev, id: id }));
+    setState(prev => ({ ...prev, projectId: id }));
   }, [id]);
 
   // ============================= CREATE ==================================
@@ -26,6 +27,15 @@ export const useFetchCreateTB = () => {
       toast.error('Failed to Create Document');
     }
   };
+  const getDocumentByIdApi = async (id: string) => {
+    try {
+      const res = await httpRequest('GET', `http://localhost:4000/api/idp/document/${id}`);
+      setState(prev => ({ ...prev, fields: res.data.fields }));
+    } catch (error) {
+      console.log('error:===========', error);
+      toast.error('Failed to Create Document');
+    }
+  };
 
-  return { createDocumentApi };
+  return { createDocumentApi, getDocumentByIdApi };
 };

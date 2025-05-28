@@ -7,14 +7,15 @@ import { FieldIF } from '../interface';
 interface UseFormbuilderIF {
   isOpen?: boolean;
   className?: string;
+  existingData: Record<string, any> | null;
   name: string;
   title?: string;
   closeDialog: () => void;
   onSubmit: (fields: FieldIF[]) => void;
 }
 
-export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, className, title }) => {
-  const [fields, setFields] = useState([]);
+export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData, className, title }) => {
+  const [fields, setFields] = useState<FieldIF[]>([]);
   const [settings, setSettings] = useState({
     columns: 2,
   });
@@ -28,6 +29,20 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
   useEffect(() => {
     if (name) getFormbuilder();
   }, [name]);
+
+  useEffect(() => {
+    if (!existingData) return;
+    const fieldsCopy = [...fields];
+    const updatedFields: FieldIF[] = fieldsCopy.map((field: FieldIF) => {
+      if (field.type === 'checkbox') {
+        field.value = existingData[field.key];
+        return field;
+      }
+      field.value = existingData[field.key] || '';
+      return field;
+    });
+    setFields(updatedFields);
+  }, [existingData]);
   return (
     <DialogComponent closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
       <RenderForm fields={fields} submitClickHandler={onSubmit} cancelClickHandler={closeDialog} columns={settings.columns} />

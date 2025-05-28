@@ -18,7 +18,7 @@ export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, c
   const tabs = [
     { id: 'data', title: 'Extracted Data' },
     { id: 'chat', title: 'Chat with Document' },
-    { id: 'comment', title: 'Comments' },
+    // { id: 'comment', title: 'Comments' },
   ];
 
   // Refs for DOM elements
@@ -76,7 +76,15 @@ export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, c
           </button>
         ))}
       </div>
-      <ExportButton showExportButton={showExportButton} />
+      <div className="flex flex-1 justify-end gap-2">
+        <Button small outlined>
+          Request New Field
+        </Button>
+        <ExportButton showExportButton={showExportButton} />
+        <Button small outlined>
+          Submit
+        </Button>
+      </div>
     </nav>
   );
 };
@@ -108,14 +116,10 @@ const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton }) => {
   };
   if (!showExportButton) return;
   return (
-    <div className="flex flex-1 justify-end">
-      <span className="cursor-pointer" onClick={() => {}}>
-        <DropdownMenu onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
-          <Button small outlined>
-            Export
-          </Button>
-        </DropdownMenu>
-      </span>
-    </div>
+    <DropdownMenu onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
+      <Button small outlined>
+        Export
+      </Button>
+    </DropdownMenu>
   );
 };

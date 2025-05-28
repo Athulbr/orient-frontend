@@ -5,17 +5,25 @@ import pdfLocation from '../../../assets/temp/PO_Private_00114126882.pdf';
 import { Button } from '../../../components/button/Button';
 import { Copy, Edit, Plus, Save, Trash } from 'lucide-react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
+import { promptFieldIF } from '.';
 
 const array = ['1', '2', '3', '4', '1', '2', '3', '4', '1', '2', '3', '4'];
 
 const CreateDocumentComponent: React.FC = ({}) => {
   const { state, setState } = useDocumentState();
+  const onSubmitHandler = (field: any) => {
+    if (state.editFieldIndex === null) return setState(prev => ({ ...prev, showAddFieldDialog: false, fields: [...prev.fields, field] }));
+    setState(prev => {
+      prev.fields[state.editFieldIndex as number] = field;
+      return { ...prev, showAddFieldDialog: false, fields: [...prev.fields] };
+    });
+  };
   return (
     <PageContainer className="gap-2">
       <PageNameComponent
         name={state.id ? 'Update Document' : 'Create Document'}
         showBackButton
-        customGoBackFunction={() => setState(prev => ({ ...prev, showCreatePage: false, id: '' }))}
+        customGoBackFunction={() => setState(prev => ({ ...prev, showCreatePage: false, id: '', fields: [] }))}
       />
       <div className="flex h-full flex-1 gap-2 overflow-auto">
         <DocumentPreviewComponent />
@@ -27,9 +35,10 @@ const CreateDocumentComponent: React.FC = ({}) => {
       <UseFormbuilder
         className="w-200"
         isOpen={state.showAddFieldDialog}
-        name="Create Document Field Form"
-        closeDialog={() => setState(prev => ({ ...prev, showAddFieldDialog: false }))}
-        onSubmit={field => setState(prev => ({ ...prev, prompt: [...prev.prompt, field], showAddFieldDialog: false }))}
+        name={state.editFieldData ? 'Update Document Field Form' : 'Create Document Field Form'}
+        closeDialog={() => setState(prev => ({ ...prev, showAddFieldDialog: false, editFieldData: null, editFieldIndex: null }))}
+        onSubmit={onSubmitHandler}
+        existingData={state.editFieldData || null}
       />
     </PageContainer>
   );
@@ -66,29 +75,35 @@ const FieldListComponent = () => {
 
   return (
     <div className="flex w-full flex-1 flex-col gap-4 overflow-y-auto px-2">
-      {state.prompt.map((item, index) => (
+      {state.fields.map((item, index) => (
         <div className="flex w-full flex-col justify-between gap-5 rounded-lg border bg-gray-50 p-4 shadow-sm">
           <div className="flex w-full justify-between">
             <div className="text-sm">
-              <span className="pr-2 font-semibold">Name:</span>Purchase Order
+              <span className="pr-2 font-semibold">Name:</span>
+              {item.name}
             </div>
             <div className="text-sm">
-              <span className="pr-2 font-semibold">Json Key:</span>purchase_order
+              <span className="pr-2 font-semibold">Json Key:</span>
+              {item.jsonKey}
             </div>
             <div className="text-sm">
-              <span className="pr-2 font-semibold">Type:</span>String
+              <span className="pr-2 font-semibold">Type:</span>
+              {item.dataType}
             </div>
-            <div className="flex gap-2">
-              <Copy className={iconClassName} size={18} /> <Edit className={iconClassName} size={18} /> <Trash className={iconClassName} size={18} />
+            <div className="flex cursor-pointer gap-2">
+              <Copy className={iconClassName} size={18} />{' '}
+              <Edit
+                onClick={() => setState(prev => ({ ...prev, showAddFieldDialog: true, editFieldData: item, editFieldIndex: index }))}
+                className={iconClassName}
+                size={18}
+              />
+              <Trash className={iconClassName} size={18} />
             </div>
           </div>
           <div className="text-sm">
             <span className="pr-2 font-semibold">Instruction:</span>
 
-            <span className="leading-7">
-              Look for labels such as 'PO Number', 'PO #', 'Purchase Order #','Service Authorization Number' or similar. Extract the full alphanumeric
-              identifier without any prefixes.
-            </span>
+            <span className="leading-7">{item.instruction}</span>
           </div>
         </div>
       ))}
