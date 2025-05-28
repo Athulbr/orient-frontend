@@ -25,10 +25,12 @@ export const useViewRecordApi = () => {
       const topLevelFields: Record<string, any> = {};
       const objectFields: Record<string, any> = {};
       const arrayFields: Record<string, any>[] = [];
+      const tableNames: string[] = [];
       Object.entries(extractedData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           // its array
           arrayFields.push(value);
+          tableNames.push(key);
         } else if (typeof value === 'object' && value.value === undefined) {
           // its object
           objectFields[key] = value;
@@ -38,9 +40,9 @@ export const useViewRecordApi = () => {
         }
       });
       setTimeout(() => {
-        setState(prev => ({ ...prev, topLevelFields, objectFields, arrayFields, loading: false }));
+        setState(prev => ({ ...prev, topLevelFields, objectFields, arrayFields, tableNames, loading: false }));
         toast.success('Record fetched successfully');
-      }, 5000);
+      }, 2000);
     } catch (error) {
       console.log('error:===========', error);
       toast.error('Failed to get Record');

@@ -3,6 +3,7 @@ import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useAuthStore } from '../auth/AuthStore';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
+import DropdownMenu from '../../components/DropDownMenu';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;
@@ -20,6 +21,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
       window?.location?.replace('/auth/login');
     }, 1000);
   };
+  const onChangeDropDown = (e: string) => {
+    if (e === 'Logout') logOut();
+  };
   return (
     <div className="flex min-h-16 justify-between bg-[#001529]">
       {!showSidebar && (
@@ -34,11 +38,13 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         <div className="hidden items-center gap-6 px-6 md:flex">
           <CircleHelp size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          <span className="flex items-center gap-2 text-sm text-gray-300">
-            <CircleUser onClick={logOut} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-            {firstName}
-          </span>
-          <Settings size={20} className="cursor-pointer text-gray-300 hover:text-white" />
+          <DropdownMenu onChange={onChangeDropDown} options={['Account', 'Logout']}>
+            <span className="flex items-center gap-2 text-sm text-gray-300">
+              <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
+              {firstName}
+            </span>
+          </DropdownMenu>
+          <Settings onClick={() => navigate('/config')} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
         </div>
       </div>
     </div>

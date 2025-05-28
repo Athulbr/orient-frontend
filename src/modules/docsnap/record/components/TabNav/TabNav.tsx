@@ -1,16 +1,17 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, FC } from 'react';
 import styles from './TabNav.module.css';
 import { Button } from '../../../../../components/button/Button';
+import DropdownMenu from '../../../../../components/DropDownMenu';
+import { useViewRecordState } from '../../view-record/hooks/viewRecordContext';
 
 export interface TabNavProps {
   defaultActiveTab?: number;
   className?: string;
   onChange?: (index: number) => void;
-  exportData?: (index: number) => void;
   showExportButton?: boolean;
 }
 
-export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange, exportData, showExportButton }) => {
+export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange, showExportButton }) => {
   // State for tracking active tab
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
 
@@ -75,15 +76,46 @@ export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, c
           </button>
         ))}
       </div>
-      {showExportButton && (
-        <div className="flex flex-1 justify-end">
-          <span className="cursor-pointer" onClick={() => exportData?.(activeTab)}>
-            <Button small outlined>
-              Export
-            </Button>
-          </span>
-        </div>
-      )}
+      <ExportButton showExportButton={showExportButton} />
     </nav>
+  );
+};
+
+interface ExportButtonPropsIF {
+  showExportButton?: boolean;
+}
+
+const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton }) => {
+  const { state } = useViewRecordState();
+  const arrays: any = {};
+  state.tableNames.forEach((item, index) => {
+    arrays[item] = state.arrayFields[index];
+  });
+  const extractedData = {
+    ...state.topLevelFields,
+    ...state.objectFields,
+    ...arrays,
+  };
+  const downloadJSONFile = () => {
+    const jsonString = JSON.stringify(extractedData);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `test.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  if (!showExportButton) return;
+  return (
+    <div className="flex flex-1 justify-end">
+      <span className="cursor-pointer" onClick={() => {}}>
+        <DropdownMenu onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
+          <Button small outlined>
+            Export
+          </Button>
+        </DropdownMenu>
+      </span>
+    </div>
   );
 };

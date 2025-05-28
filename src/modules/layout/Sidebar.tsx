@@ -36,13 +36,14 @@ const navItems = [
     path: '/promate/list',
     key: 'promate',
   },
-  {
-    name: 'Config',
-    icon: <Settings strokeWidth={1.5} size={32} color="#f3f4f6" />,
-    path: '/config',
-    key: 'config',
-  },
 ];
+
+const configMenuItem = {
+  name: 'Config',
+  icon: <Settings strokeWidth={1.5} size={32} color="#f3f4f6" />,
+  path: '/config',
+  key: 'config',
+};
 
 // Mock Logo component
 
@@ -79,7 +80,9 @@ const DesktopSidebar = () => {
         {navItems.map(item => (
           <DesktopNavItem key={item.key} item={item} onClick={() => handleNavigation(item.path)} />
         ))}
-        <div className="flex flex-1 flex-col justify-end pb-2 text-[10px] text-gray-400">V 1.0.0</div>
+        <div className="flex flex-1 flex-col items-center justify-end gap-4 pb-2 text-[10px] text-gray-400">
+          <DesktopNavItem key={configMenuItem.key} item={configMenuItem} onClick={() => handleNavigation(configMenuItem.path)} />V 1.0.0
+        </div>
       </section>
     </div>
   );

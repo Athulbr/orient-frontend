@@ -93,7 +93,7 @@ const LoginPage: React.FC<LoginPageIF> = () => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      const errorMessage = error?.response?.data?.message || 'Invalid email or password. Please try again.';
+      const errorMessage = error?.response?.data?.message || 'Something went wrong';
       setAuthError(errorMessage);
     } finally {
       setIsLoading(false);
