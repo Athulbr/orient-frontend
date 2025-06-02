@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { ButtonBox } from '../ButtonBox';
-import { Button } from '../button/Button';
+import { Button } from '../Button';
 import { useAlertStore } from './AlertStore';
 
 export const AlertDialog: React.FC = () => {

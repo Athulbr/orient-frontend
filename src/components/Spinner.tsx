@@ -6,7 +6,7 @@ interface SpinnerIF {
 }
 
 const Spinner: React.FC<SpinnerIF> = ({ className, size }) => {
-  return <Loader size={size} className={`animate-spin ${className}`} />;
+  return <Loader role="img" size={size} className={`animate-spin ${className}`} />;
 };
 
 export default Spinner;

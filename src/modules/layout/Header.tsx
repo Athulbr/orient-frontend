@@ -3,8 +3,8 @@ import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useAuthStore } from '../auth/AuthStore';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
-import DropdownMenu from '../../components/DropDownMenu';
 import httpRequest from '../../utils/httpRequest';
+import { DropdownMenu } from '../../components/DropDownMenu';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;

@@ -3,7 +3,7 @@ import { FieldIF, FormSettingsIF } from '../interface';
 import { RenderForm } from '../render-form/RenderForm';
 import style from './form-preview.module.css';
 import { useRef, useEffect } from 'react';
-import { DialogComponent } from '../../../components/Dialog';
+import { DialogComponent } from '../../../components/DialogComponent';
 
 interface FormPreviewIF {
   fields: FieldIF[];

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DialogComponent } from '../../../components/Dialog';
+import { DialogComponent } from '../../../components/DialogComponent';
 import httpRequest from '../../../utils/httpRequest';
 import { RenderForm } from '../render-form/RenderForm';
 import { FieldIF } from '../interface';

@@ -1,4 +1,4 @@
-import { DialogComponent } from '../../../../../components/Dialog';
+import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpUploadRequest from '../../../../../utils/httpUploadRequest';
 import DragAndDropFileInput from '../DragAndDropFileInput';

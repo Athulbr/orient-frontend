@@ -3,11 +3,11 @@ import { llmModels, llmProviders } from './StaticData';
 import { UpdatedFieldsIF } from './interface';
 import { Loader } from 'lucide-react';
 import httpRequest from '../../../utils/httpRequest';
-import { Button } from '../../../components/Button';
 import { ButtonBox } from '../../../components/ButtonBox';
 import { SingleSelect } from '../../../components/SingleSelect';
-import { TextAreaComponent } from '../../../components/Textarea';
 import { useToastStore } from '../../../components/toast/ToastStore';
+import { Button } from '../../../components/Button';
+import { TextAreaComponent } from '../../../components/Textarea';
 
 // Constants
 const API_ENDPOINT = 'https://dev.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
@@ -201,7 +201,7 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
             label="Updated Schema"
             className="font-mono text-sm"
             value={llmResponse.updated_schema}
-            onChange={e => setLlmResponse(prev => (prev ? { ...prev, updated_schema: e.target.value } : null))}
+            onChange={(e: any) => setLlmResponse(prev => (prev ? { ...prev, updated_schema: e.target.value } : null))}
           />
 
           <div className="mt-4 rounded-lg border bg-gray-50 p-4">

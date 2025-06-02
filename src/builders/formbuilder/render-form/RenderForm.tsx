@@ -1,7 +1,7 @@
 import { use, useEffect, useState } from 'react';
 import { mapRenderComponents, validateAllFields } from './MapRenderComponents';
 import { FieldIF, FormSettingsIF } from '../interface';
-import { Button } from '../../../components/button/Button';
+import { Button } from '../../../components/Button';
 
 interface RenderFormIF {
   fields: FieldIF[];

@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useEscapeKey } from '../hooks/useEscapeKey';
 import { ButtonBox } from './ButtonBox';
-import { Button } from './button/Button';
+import { Button } from './Button';
 
 interface DialogPropsIF {
   name?: string;
@@ -82,10 +82,10 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-0 left-0 z-1 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
+    <div className="fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
       <div
         ref={dialogRef}
-        className={`flex max-h-9/10 flex-col rounded-lg bg-[linear-gradient(180deg,_rgba(255,255,255,1)_0%,_rgb(246,250,252)_35%,_rgb(251,247,244)_100%)] shadow-xl ${className}`}
+        className={`flex max-h-[90%] flex-col rounded-lg bg-[linear-gradient(180deg,_rgba(255,255,255,1)_0%,_rgb(246,250,252)_35%,_rgb(251,247,244)_100%)] shadow-xl ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
@@ -104,19 +104,22 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
           </button>
         </div>
 
-        <div className="overflow-y-auto">{children}</div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
 
-        {secondaryButtonText ||
-          (primaryButtonText && (
-            <ButtonBox className="p-4">
-              {secondaryButtonText && (
-                <Button onClick={handleSecondaryAction} outlined>
-                  {secondaryButtonText}
-                </Button>
-              )}
-              {primaryButtonText && <Button onClick={handlePrimaryAction}>{primaryButtonText}</Button>}
-            </ButtonBox>
-          ))}
+        {(secondaryButtonText || primaryButtonText) && (
+          <ButtonBox className="p-4">
+            {secondaryButtonText && (
+              <Button id="secondary-button" onClick={handleSecondaryAction} outlined>
+                {secondaryButtonText}
+              </Button>
+            )}
+            {primaryButtonText && (
+              <Button id="primary-button" onClick={handlePrimaryAction}>
+                {primaryButtonText}
+              </Button>
+            )}
+          </ButtonBox>
+        )}
       </div>
     </div>
   );
