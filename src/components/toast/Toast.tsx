@@ -9,31 +9,31 @@ interface ToastProps extends ToastType {
 const toastTypeConfig = {
   info: {
     icon: Info,
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-blue-100',
     textColor: 'text-blue-600',
-    borderColor: 'border-blue-200',
+    borderColor: 'border-blue-400',
   },
   success: {
     icon: CheckCircle,
-    bgColor: 'bg-green-50',
+    bgColor: 'bg-white',
     textColor: 'text-green-600',
-    borderColor: 'border-green-200',
+    borderColor: 'border-green-400',
   },
   warning: {
     icon: AlertTriangle,
     bgColor: 'bg-yellow-50',
     textColor: 'text-yellow-600',
-    borderColor: 'border-yellow-200',
+    borderColor: 'border-yellow-400',
   },
   error: {
     icon: AlertCircle,
     bgColor: 'bg-red-50',
     textColor: 'text-red-600',
-    borderColor: 'border-red-200',
+    borderColor: 'border-red-400',
   },
 };
 
-export const Toast: React.FC<ToastProps> = ({ id, message, type, title, duration = 2000, onClose }) => {
+export const Toast: React.FC<ToastProps> = ({ id, message, type, title, duration = 4000, onClose }) => {
   const [progress, setProgress] = useState(100);
   const [isVisible, setIsVisible] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
@@ -84,7 +84,10 @@ export const Toast: React.FC<ToastProps> = ({ id, message, type, title, duration
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className={`flex cursor-pointer items-start rounded-lg border bg-white p-4 shadow-lg ${config.textColor} ${config.borderColor}`} role="alert">
+      <div
+        className={`flex cursor-pointer items-start rounded-lg border border-l-6 p-4 shadow-lg ${config.textColor} ${config.bgColor} ${config.borderColor}`}
+        role="alert"
+      >
         <div className="mr-3 flex-shrink-0">
           <Icon className="mt-1 h-5 w-5" />
         </div>

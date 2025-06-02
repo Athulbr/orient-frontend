@@ -1,129 +1,137 @@
 import { FileSpreadsheet, Package } from 'lucide-react';
 import { DialogComponent } from '../../../../components/Dialog';
 import DragAndDropFileInput from './DragAndDropFileInput';
-import { useEffect, useState } from 'react';
-import Spinner from '../../../../components/Spinner';
-import { entitySchema } from './../static-data/entitySchema';
+import React, { useState, useEffect } from 'react';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import httpRequest from '../../../../utils/httpRequest';
+import httpUploadRequest from '../../../../utils/httpUploadRequest';
+import { convertJSON } from './utils/convertJSON';
+import { FileUploadAnimationComponent } from './components/FileUploadAnimationComponent';
+import { useListRecordPageState } from './hooks/listRecordPageContext';
+import Spinner from '../../../../components/Spinner';
 
 interface ListProjectComponentIF {
   test?: string;
 }
 
-export const ListProjectComponent: React.FC<ListProjectComponentIF> = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [projects, setProjects] = useState<any>([]);
-  const [project, setProject] = useState<string>('');
-  const [documents, setDocuments] = useState<any>([]);
+// Define proper interfaces for better type safety
+interface Project {
+  _id: string;
+  name: string;
+}
+
+interface Document {
+  _id: string;
+  name: string;
+  docType?: string;
+  primaryModel: string;
+  enableOcr?: boolean;
+  fields: any;
+}
+
+export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectId, setProjectId] = useState<string>('');
+  const [documents, setDocuments] = useState<Document[]>([]);
+
   const toast = useToastStore();
+  const { state, setState } = useListRecordPageState();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const response = await httpRequest.get('/docsnap/project/list');
-        setTimeout(() => {
-          setDocuments(documentsDummy);
-        }, 2000);
+        const res = await httpRequest('POST', 'http://localhost:4000/api/idp/project');
+        setProjects(res.data || []);
       } catch (error) {
         console.error('Error fetching project list:', error);
+        toast.error('Failed to fetch projects');
       }
     };
 
     fetchData();
-  });
+  }, []);
+
   useEffect(() => {
-    setTimeout(() => {
-      setProjects(projectsDummy);
-    }, 1000);
-  });
+    if (!projectId) {
+      setState(prev => ({ ...prev, documents: [], loadingDocuments: false }));
 
-  const extractDocument = (selectedFile: File) => {
-    console.log('extractDocument():===========');
-    if (!selectedFile) {
-      console.error('No file selected');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('schema', JSON.stringify(entitySchema));
-    formData.append('filename', selectedFile.name);
+    const fetchData = async () => {
+      try {
+        setState(prev => ({ ...prev, loadingDocuments: true }));
+        const res = await httpRequest('POST', 'http://localhost:4000/api/idp/document', {
+          filters: { projectId: projectId },
+        });
+        setDocuments(res.data || []);
+      } catch (error) {
+        console.error('Error fetching documents:', error);
+        toast.error('Failed to fetch documents');
+      } finally {
+        setState(prev => ({ ...prev, loadingDocuments: false }));
+      }
+    };
 
-    fetch('http://localhost:3000/extract-data', {
-      method: 'POST',
-      body: formData,
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to upload file');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('File uploaded successfully:', data);
-      })
-      .catch(error => {
-        console.error('Error uploading file:', error);
-      });
+    fetchData();
+  }, [projectId, toast]);
+
+  const documentClickHandler = (document: any) => {
+    setState(prev => ({ ...prev, fileUploadDialog: true, document }));
   };
 
-  const onFileDrop = (files: FileList) => {
-    const file = files[0];
-    if (!file) return;
-    if (file && file.type !== 'application/pdf') {
-      toast.warning('Please upload a PDF file');
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    toast.success('Selected files added for extraction successfully');
-
-    setIsOpen(false);
-  };
-
-  const closeDialog = () => {
-    setIsOpen(false);
+  const toggleProject = (projectIdToToggle: string) => {
+    setProjectId(current => (current === projectIdToToggle ? '' : projectIdToToggle));
   };
 
   return (
-    <section className={`flex flex-col gap-2 ${projects.length ? 'border-b pb-2' : ''} `}>
+    <section className={`flex flex-col gap-2 ${projects.length ? 'border-b pb-2' : ''}`}>
       {Boolean(projects.length) && (
         <>
           <span className="text-md pl-1">Projects</span>
-          <div className={`animate-projects-container-slide-in flex h-full max-w-full gap-4 overflow-x-auto pb-2`}>
-            {projects.map((item: any, index: number) => (
+          <div className="animate-projects-container-slide-in flex h-full max-w-full gap-4 overflow-x-auto pb-2">
+            {projects.map((item, index) => (
               <div
-                key={index}
-                className={`flex items-center gap-4 rounded-xl border ${item._id === project ? 'bg-sky-50 pr-2' : 'animate-projects-container-slide-out pr-0'}`}
+                key={item._id || index}
+                className={`flex items-center gap-4 rounded-xl border ${
+                  item._id === projectId ? 'bg-sky-100 pr-2' : 'animate-projects-container-slide-out pr-0'
+                }`}
               >
                 <div
-                  onClick={() => (item._id === project ? setProject('') : setProject(item._id))}
-                  className="flex h-28 w-30 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-200 ease-in-out hover:border-sky-400 hover:bg-sky-50"
+                  onClick={() => toggleProject(item._id)}
+                  className="group flex h-28 w-30 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-200 ease-in-out hover:border-sky-400 hover:bg-sky-50"
                 >
                   <Package strokeWidth={1} className="text-gray-400 transition-colors duration-200 ease-in-out group-hover:text-sky-500" size={60} />
                   <span className="text-sm text-gray-600 transition-colors duration-200 ease-in-out group-hover:text-sky-600">{item.name}</span>
                 </div>
 
-                {item._id === project && (
+                {item._id === projectId && (
                   <div className="animate-documents-fade-in flex gap-2 overflow-hidden">
-                    {documents.map((doc: any, index: number) => (
-                      <div
-                        key={index}
-                        onClick={() => {
-                          setIsOpen(true);
-                        }}
-                        className="flex h-25 w-30 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
-                        style={{
-                          animationDelay: `${index * 100}ms`,
-                        }}
-                      >
-                        <FileSpreadsheet
-                          strokeWidth={1}
-                          className="text-gray-400 transition-colors duration-200 ease-in-out group-hover:text-sky-500"
-                          size={60}
-                        />
-                        <span className="text-sm text-gray-600 transition-colors duration-200 ease-in-out group-hover:text-sky-600">{doc.name}</span>
+                    {state.loadingDocuments ? (
+                      <div className="flex h-25 w-30 items-center justify-center">
+                        <Spinner />{' '}
                       </div>
-                    ))}
+                    ) : documents.length > 0 ? (
+                      documents.map((doc, docIndex) => (
+                        <div
+                          key={doc._id || docIndex}
+                          onClick={() => documentClickHandler(doc)}
+                          className="group flex h-25 w-40 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
+                          style={{
+                            animationDelay: `${docIndex * 100}ms`,
+                          }}
+                        >
+                          <FileSpreadsheet
+                            strokeWidth={1}
+                            className="text-gray-400 transition-colors duration-200 ease-in-out group-hover:text-sky-500"
+                            size={60}
+                          />
+                          <span className="text-sm text-gray-600 transition-colors duration-200 ease-in-out group-hover:text-sky-600">{doc.name}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex h-25 w-40 items-center justify-center text-sm text-gray-500">No documents found</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -131,32 +139,6 @@ export const ListProjectComponent: React.FC<ListProjectComponentIF> = () => {
           </div>
         </>
       )}
-      <DialogComponent name="Select File" isOpen={isOpen} closeDialog={closeDialog}>
-        <div className="flex h-[calc(100vh-200px)] w-[80vw] items-center justify-center px-20 py-5">
-          <DragAndDropFileInput onFileDrop={onFileDrop} />
-        </div>
-      </DialogComponent>
     </section>
   );
 };
-
-const projectsDummy = [
-  {
-    name: 'Purchase Order',
-    _id: '123456789082737737422991',
-  },
-  {
-    name: 'Demo',
-    _id: '123456789082737737422992',
-  },
-];
-const documentsDummy = [
-  {
-    name: 'PO Private',
-    _id: '123456789082737737422991',
-  },
-  {
-    name: 'Po Public',
-    _id: '123456789082737737422992',
-  },
-];

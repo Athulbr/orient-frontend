@@ -11,6 +11,7 @@ const CreateProjectComponent: React.FC = ({}) => {
       className="w-130"
       onSubmit={e => console.log(e)}
       closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '' }))}
+      existingData={[]}
     />
   );
 };

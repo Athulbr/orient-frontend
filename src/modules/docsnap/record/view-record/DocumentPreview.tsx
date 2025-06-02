@@ -26,15 +26,15 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const bbox = state.bbox;
 
   return (
-    <div className="flex w-3/5 items-center justify-center">
+    <div className="flex items-center justify-center xl:w-1/2 2xl:w-3/5">
       <div className="relative h-full w-fit">
         {/* <div className="relative mx-auto h-full w-full max-w-[830px] overflow-hidden rounded-lg"> */}
         {state.loading && (
-          <div className="pointer-events-none absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center rounded-xl border-3 border-sky-300 bg-[#1fa9f033]">
+          <div className="pointer-events-none absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center overflow-hidden rounded-xl border-3 border-sky-300 bg-[#1fa9f033]">
             <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
           </div>
         )}
-        <div className="relative h-full border bg-red-200">
+        <div className="relative h-full rounded-xl border bg-red-200">
           <img className="h-full w-full object-contain" src={pdfLocation} alt="PDF" />
           {bbox && state.tabIndex === 0 && (
             <div

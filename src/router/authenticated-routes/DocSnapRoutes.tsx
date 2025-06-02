@@ -2,10 +2,10 @@ import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { NotFoundPage } from '../not-found-routes/GlobalNotFoundPage';
 import FullScreenLoader from '../../components/FullScreenLoader';
-import ListRecordPage from '../../modules/docsnap/record/list-record/ListRecordPage';
 import ListProjectPage from '../../modules/docsnap/project';
 import ListDocumentPage from '../../modules/docsnap/document';
 import ViewRecordPage from '../../modules/docsnap/record/view-record';
+import ListRecordPage from '../../modules/docsnap/record/list-record';
 
 const DocSnapRoutes = () => {
   return (

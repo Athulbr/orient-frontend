@@ -11,7 +11,7 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
     <>
       {Object.entries(state.objectFields).map(([key, valueMain], mainIndex) => {
         return (
-          <div className="flex flex-col rounded-lg border bg-white">
+          <div className="flex flex-col rounded-lg border bg-white hover:border-amber-400">
             <label className="p-4 text-lg font-bold capitalize">{formatFieldLabel(key)}</label>
             <div className="flex flex-wrap gap-y-1">
               {Object.entries(valueMain).map(([subKey, value], i) => {

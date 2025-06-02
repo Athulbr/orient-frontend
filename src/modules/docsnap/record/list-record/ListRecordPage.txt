@@ -1,0 +1,69 @@
+import { useNavigate } from 'react-router-dom';
+import { StatusCustomUI } from '../../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
+import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
+import { useAlertStore } from '../../../../components/alert/AlertStore';
+import PageContainer from '../../../../components/PageContainer';
+import PageNameComponent from '../../../../components/PageName';
+import { ListProjectComponent } from './ListProjectComponent';
+import { useEffect, useState } from 'react';
+
+export interface ListRecordPageStateIF {
+  fileUploadDialog: boolean;
+}
+
+const initialState = {
+  fileUploadDialog: false,
+};
+
+const ListRecordPage: React.FC = () => {
+  const [state, setState] = useState<ListRecordPageStateIF>(initialState);
+  const navigate = useNavigate();
+
+  const customFunctions = {
+    rowClickHandler: (row: any) => {
+      navigate(`/docsnap/record/view/${row._id}`);
+    },
+    deleteClickHandler: (row: any) => {
+      alert(row._id);
+    },
+  };
+  const customUI = {
+    status: StatusCustomUI,
+    recordStatus: RecordStatusCustomUI,
+  };
+  return (
+    <PageContainer className="gap-2">
+      <PageNameComponent name="DocSnap" />
+      <ListProjectComponent />
+      <UseTablebuilder customUI={customUI} name="List Record Table" fluidHeight customFunctions={customFunctions} />
+    </PageContainer>
+  );
+};
+
+export default ListRecordPage;
+
+const RecordStatusCustomUI = (row: any) => {
+  const [data, setData] = useState<any>(null);
+
+  const streamUrl = row?.data?.metadata?.stream_url;
+
+  useEffect(() => {
+    if (!streamUrl) return;
+    const connect = () => {
+      const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+      const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${streamUrl}?token=Bearer ${JSON.parse(accessToken)}`);
+
+      eventSource.addEventListener('message', (event: any) => {
+        const data = JSON.parse(event.data);
+
+        setData(data);
+      });
+      eventSource.onerror = (error: any) => {
+        console.error('SSE connection error:', error);
+        eventSource.close();
+      };
+    };
+    connect();
+  }, [streamUrl]);
+  return <div className="">{data?.status || ''}</div>;
+};

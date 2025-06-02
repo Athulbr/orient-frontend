@@ -10,7 +10,7 @@ const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
   return (
     <div className="flex h-full flex-1 flex-col">
       <ChatContainer>
-        <div className="">test</div>
+        <div className="flex flex-1 flex-col">test</div>
         {/* {messages.map((message, index) => (
           <ChatMessage key={index} message={message.text} userMessage={message.userMessage} source={message.source} />
         ))}

@@ -53,7 +53,7 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
       onDrop={handleDrop}
       onClick={handleClick}
     >
-      <input accept="application/pdf" id="fileInput" type="file" className="hidden" multiple onChange={handleChange} />
+      <input accept="application/pdf,image/jpeg,image/png" id="fileInput" type="file" className="hidden" multiple onChange={handleChange} />
       <FileUp strokeWidth={1.5} size={50} className="text-gray-400" />
       <p className="text-gray-500">Drag & drop files here or click to select</p>
     </div>

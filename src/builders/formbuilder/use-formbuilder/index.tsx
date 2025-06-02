@@ -7,14 +7,14 @@ import { FieldIF } from '../interface';
 interface UseFormbuilderIF {
   isOpen?: boolean;
   className?: string;
-  existingData: Record<string, any> | null;
+  existingData?: Record<string, any> | null;
   name: string;
   title?: string;
   closeDialog: () => void;
   onSubmit: (fields: FieldIF[]) => void;
 }
 
-export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData, className, title }) => {
+export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData = null, className, title }) => {
   const [fields, setFields] = useState<FieldIF[]>([]);
   const [settings, setSettings] = useState({
     columns: 2,

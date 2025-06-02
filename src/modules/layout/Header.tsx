@@ -1,9 +1,10 @@
-import { Bell, CircleHelp, CircleUser, Menu, Search, Settings, X } from 'lucide-react';
+import { Bell, CircleHelp, CircleUser, LogIn, Menu, Search, Settings, X } from 'lucide-react';
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useAuthStore } from '../auth/AuthStore';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import DropdownMenu from '../../components/DropDownMenu';
+import httpRequest from '../../utils/httpRequest';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;
@@ -24,6 +25,16 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
   const onChangeDropDown = (e: string) => {
     if (e === 'Logout') logOut();
   };
+
+  const refreshAuth = async () => {
+    const res = await httpRequest('POST', `${import.meta.env.VITE_API_URL}/api/auth/login`, { email: 'sam@demo.com', password: 'welcome' });
+    if (res?.data?.accessToken) {
+      window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
+      window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
+      toast.success('Auth refreshed successfully');
+    }
+  };
+
   return (
     <div className="flex min-h-16 justify-between bg-[#001529]">
       {!showSidebar && (
@@ -36,6 +47,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
       </div>
       <div className="flex flex-1 items-center justify-end">
         <div className="hidden items-center gap-6 px-6 md:flex">
+          <LogIn onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <CircleHelp size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <DropdownMenu onChange={onChangeDropDown} options={['Account', 'Logout']}>

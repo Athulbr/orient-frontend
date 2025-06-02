@@ -20,8 +20,7 @@ export const useViewRecordApi = () => {
     console.log('running getRecordApiById:===========');
     try {
       setState(prev => ({ ...prev, loading: true }));
-      // const res = await httpRequest('GET', `${import.meta.env.VITE_API_URL}/api/idp/history/${id}`);
-      // console.log('res:===========', res);
+      const res: any = await httpRequest('GET', `${import.meta.env.VITE_API_URL}/api/idp/history/${id}`);
       const topLevelFields: Record<string, any> = {};
       const objectFields: Record<string, any> = {};
       const arrayFields: Record<string, any>[] = [];
@@ -31,7 +30,7 @@ export const useViewRecordApi = () => {
           // its array
           arrayFields.push(value);
           tableNames.push(key);
-        } else if (typeof value === 'object' && value.value === undefined) {
+        } else if (typeof value === 'object' && value?.value === undefined) {
           // its object
           objectFields[key] = value;
         } else if (typeof value === 'object') {

@@ -370,7 +370,7 @@ const sampleFields = [
   },
 ];
 
-export interface promptFieldIF {
+export interface PromptFieldIF {
   name: string;
   dataType: string;
   jsonKey: string;
@@ -394,7 +394,7 @@ export interface DocumentStateIF {
   projectId: string;
   showAddFieldDialog: boolean;
   showAddSubFieldDialog: boolean;
-  fields: promptFieldIF[];
+  fields: PromptFieldIF[];
   editFieldData: Record<string, any> | null;
   editFieldIndex: number | null;
 }

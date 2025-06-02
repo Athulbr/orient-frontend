@@ -10,7 +10,7 @@ const CreateUserComponent: React.FC = ({}) => {
       name="Create User Form"
       className="w-130"
       onSubmit={e => console.log(e)}
-      closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '' }))} // Reset id when closing the dialog
+      closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '' }))}
     />
   );
 };
