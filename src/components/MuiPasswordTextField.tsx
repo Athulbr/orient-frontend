@@ -26,6 +26,7 @@ export const MuiPasswordTextField: React.FC<MuiPasswordTextFieldIF> = ({ label, 
           {...rest}
           ref={inputRef}
           autoComplete="new-password"
+          role="textbox"
         />
         <span
           onClick={() => inputRef.current?.focus()}
@@ -38,7 +39,7 @@ export const MuiPasswordTextField: React.FC<MuiPasswordTextFieldIF> = ({ label, 
           {label}
         </span>
         {value && (
-          <span onClick={toggleVisibility} className="absolute top-1 right-2 cursor-pointer p-2 text-gray-400">
+          <span data-testid="toggle-visibility" onClick={toggleVisibility} className="absolute top-1 right-2 cursor-pointer p-2 text-gray-400">
             {visible ? <Eye size={20} /> : <EyeOff size={20} />}
           </span>
         )}

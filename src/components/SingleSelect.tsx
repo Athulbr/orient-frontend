@@ -46,23 +46,24 @@ export const SingleSelect: React.FC<SelectProps> = ({
     <div ref={selectRef} className={`relative w-full ${className}`}>
       {label && <label className="pl-1 text-sm text-gray-500">{label}</label>}
       <button
-        type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`mt-1 flex w-full items-center justify-between rounded-md border bg-white px-3 py-6 text-sm ${isOpen ? 'border-primary ring-primary/20 ring-2' : 'border-input'} ${value && value !== 'all' ? 'bg-primary/5' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'} h-10 transition-all duration-200`}
+        className={`mt-1 flex h-10 w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm transition-all duration-200 ${isOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'} ${value && value !== 'all' ? 'bg-blue-50' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         disabled={disabled}
+        type="button"
+        role="button"
       >
         <span className="truncate text-gray-700">{selectedOption?.label || placeholder}</span>
         <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
-        <div className="border-input absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-white shadow-lg">
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg">
           <ul className="max-h-60 overflow-auto py-1" role="listbox">
             {options.map(option => (
               <li
                 key={option.value}
-                className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${option.value === value ? 'bg-gray-200 font-medium' : ''} `}
+                className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${option.value === value ? 'bg-gray-200 font-medium' : ''}`}
                 onClick={() => {
                   onValueChange(option.value);
                   setIsOpen(false);

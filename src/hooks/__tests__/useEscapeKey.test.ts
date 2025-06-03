@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { useEscapeKey } from '../../../hooks/useEscapeKey';
+import { useEscapeKey } from '../useEscapeKey';
 
 describe('useEscapeKey', () => {
   const mockCallback = vi.fn();
