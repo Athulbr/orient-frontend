@@ -4,7 +4,7 @@ import { useEscapeKey } from '../hooks/useEscapeKey';
 import { ButtonBox } from './ButtonBox';
 import { Button } from './Button';
 
-interface DialogPropsIF {
+export interface DialogPropsIF {
   name?: string;
   primaryButtonText?: string;
   secondaryButtonText?: string;

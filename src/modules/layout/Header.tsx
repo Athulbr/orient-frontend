@@ -4,7 +4,7 @@ import { useAuthStore } from '../auth/AuthStore';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../utils/httpRequest';
-import { DropdownMenu } from '../../components/DropDownMenu';
+import { DropdownMenu } from '../../components/DropdownMenu';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, FC } from 'react';
 import styles from './TabNav.module.css';
 import { Button } from '../../../../../components/Button';
 import { useViewRecordState } from '../../view-record/hooks/viewRecordContext';
-import { DropdownMenu } from '../../../../../components/DropDownMenu';
+import { DropdownMenu } from '../../../../../components/DropdownMenu';
 
 export interface TabNavProps {
   defaultActiveTab?: number;
