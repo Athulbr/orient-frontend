@@ -50,7 +50,7 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
           setState(prev => ({ ...prev, hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}` }));
           updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
         }
-      }, 500);
+      }, 50);
     };
     const container = containerRef.current;
     container?.addEventListener('scroll', handleScroll);

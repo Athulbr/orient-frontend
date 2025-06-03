@@ -49,7 +49,11 @@ const configMenuItem = {
 
 // Component for a navigation item in desktop sidebar
 const DesktopNavItem: FC<any> = ({ item, onClick }) => (
-  <div onClick={onClick} className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md bg-[#28313A] hover:bg-[#34404c]">
+  <div
+    tabIndex={0}
+    onClick={onClick}
+    className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md bg-[#28313A] hover:bg-[#34404c]"
+  >
     {item.icon}
     <span className="text-[8px] text-gray-100">{item.name}</span>
   </div>
@@ -73,7 +77,7 @@ const DesktopSidebar = () => {
 
   return (
     <div className="hidden h-full min-w-16 flex-col bg-[#001529] md:flex">
-      <div className="flex h-16 w-16 items-center justify-center">
+      <div tabIndex={0} className="flex h-16 w-16 items-center justify-center">
         <Menu className="cursor-pointer" color="white" size={30} />
       </div>
       <section className="flex h-full flex-col items-center gap-5 pt-6">

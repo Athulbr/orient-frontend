@@ -143,7 +143,11 @@ const LoginPage: React.FC<LoginPageIF> = () => {
           onBlur={() => onBlurHandler('password')}
           onKeyDown={handleKeyDown}
         />
-        <p onClick={handleForgotPassword} className="w-fit cursor-pointer pl-1 text-[12px] text-gray-400 hover:text-gray-700">
+        <p
+          tabIndex={0}
+          onClick={handleForgotPassword}
+          className="w-fit cursor-pointer pl-1 text-[12px] text-gray-400 hover:text-gray-700 active:border-gray-400 active:outline-gray-400"
+        >
           Forgot Password?
         </p>
         <Button onClick={loginWithEmailAndPassword} className="mt-2" disabled={isLoading}>
@@ -192,7 +196,7 @@ const SignUpRedirectText = () => {
   return (
     <section className="mt-6 flex w-full justify-center gap-2">
       <p className="text-sm text-gray-400">Don't have an account?</p>
-      <p onClick={() => navigate('/auth/signup')} className="cursor-pointer text-sm font-semibold hover:underline">
+      <p tabIndex={0} onClick={() => navigate('/auth/signup')} className="cursor-pointer text-sm font-semibold hover:underline">
         Sign up
       </p>
     </section>

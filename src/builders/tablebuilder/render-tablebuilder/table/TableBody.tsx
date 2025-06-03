@@ -121,7 +121,6 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setState({ ...state, selectedIds: [row._id] });
 
     if (customFunctions['editClickHandler']) {
       customFunctions['editClickHandler'](row);
@@ -129,7 +128,6 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
   };
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setState({ ...state, selectedIds: [row._id] });
 
     alert.showAlert({
       alertText: 'Are you sure you want to delete this?',

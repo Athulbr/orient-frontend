@@ -33,6 +33,8 @@ export interface ViewRecordStateIF {
   wire: WirePoints | null;
   bbox: BboxIF | null;
   hoveredFieldId: string | null;
+  pageNumber: number;
+  images: any[];
 }
 const initialState = {
   showCreateDialog: false,
@@ -47,6 +49,8 @@ const initialState = {
   wire: null,
   bbox: null,
   hoveredFieldId: null,
+  pageNumber: 1,
+  images: [],
 };
 
 const ViewRecordPage: React.FC = () => {

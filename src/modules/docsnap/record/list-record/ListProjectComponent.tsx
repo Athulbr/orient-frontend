@@ -9,6 +9,7 @@ import { convertJSON } from './utils/convertJSON';
 import { FileUploadAnimationComponent } from './components/FileUploadAnimationComponent';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import Spinner from '../../../../components/Spinner';
+import PageNameComponent from '../../../../components/PageName';
 
 interface ListProjectComponentIF {
   test?: string;
@@ -85,13 +86,14 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
   };
 
   return (
-    <section className={`flex flex-col gap-2 ${projects.length ? 'border-b pb-2' : ''}`}>
+    <section className={`flex flex-col gap-2 ${projects.length ? 'pb-2' : ''}`}>
       {Boolean(projects.length) && (
         <>
           <span className="text-md pl-1">Projects</span>
           <div className="animate-projects-container-slide-in flex h-full max-w-full gap-4 overflow-x-auto pb-2">
             {projects.map((item, index) => (
               <div
+                tabIndex={0}
                 key={item._id || index}
                 className={`flex items-center gap-4 rounded-xl border ${
                   item._id === projectId ? 'bg-sky-100 pr-2' : 'animate-projects-container-slide-out pr-0'
@@ -114,6 +116,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
                     ) : documents.length > 0 ? (
                       documents.map((doc, docIndex) => (
                         <div
+                          tabIndex={0}
                           key={doc._id || docIndex}
                           onClick={() => documentClickHandler(doc)}
                           className="group flex h-25 w-40 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
@@ -139,6 +142,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
           </div>
         </>
       )}
+      <PageNameComponent name="List of Records" />
     </section>
   );
 };

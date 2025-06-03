@@ -3,6 +3,8 @@ import { useViewRecordState } from './viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
 import httpRequest from '../../../../../utils/httpRequest';
+import { fileTypeFromBuffer } from 'file-type';
+import { convertPdfToImages } from '../utils';
 
 export const useViewRecordApi = () => {
   const { setState } = useViewRecordState();
@@ -17,7 +19,6 @@ export const useViewRecordApi = () => {
   // ============================= Get Record By Id ==================================
 
   const getRecordApiById = async (id: string) => {
-    console.log('running getRecordApiById:===========');
     try {
       setState(prev => ({ ...prev, loading: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_API_URL}/api/idp/history/${id}`);
@@ -25,7 +26,7 @@ export const useViewRecordApi = () => {
       const objectFields: Record<string, any> = {};
       const arrayFields: Record<string, any>[] = [];
       const tableNames: string[] = [];
-      Object.entries(extractedData).forEach(([key, value]) => {
+      Object.entries(res.data.extractedData).forEach(([key, value]: any) => {
         if (Array.isArray(value)) {
           // its array
           arrayFields.push(value);
@@ -38,8 +39,28 @@ export const useViewRecordApi = () => {
           topLevelFields[key] = value;
         }
       });
+      const s3Response = await httpRequest('POST', `${import.meta.env.VITE_API_URL}/api/idp/document/get/file`, {
+        fileName: res.data.pdfFileName,
+      });
+      const imageData = s3Response?.data?.Body?.data;
+      if (!imageData) {
+        toast.error('S3 document not found');
+        return;
+      }
+      const uint8Array = new Uint8Array(imageData);
+      const getFileType = await fileTypeFromBuffer(uint8Array);
+      let pdfFile: any;
+      let imageUrl;
+      if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
+        pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+        imageUrl = [URL.createObjectURL(pdfFile).toString()];
+      } else {
+        pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+        imageUrl = await convertPdfToImages(pdfFile);
+      }
+
       setTimeout(() => {
-        setState(prev => ({ ...prev, topLevelFields, objectFields, arrayFields, tableNames, loading: false }));
+        setState(prev => ({ ...prev, topLevelFields, objectFields, arrayFields, tableNames, loading: false, images: imageUrl }));
         toast.success('Record fetched successfully');
       }, 2000);
     } catch (error) {
@@ -49,6 +70,11 @@ export const useViewRecordApi = () => {
   };
 
   return { getRecordApiById };
+};
+
+const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
+  const blob = new Blob([binaryData], { type: mimeType });
+  return new File([blob], fileName, { type: mimeType });
 };
 
 const extractedData: Record<string, any> = {

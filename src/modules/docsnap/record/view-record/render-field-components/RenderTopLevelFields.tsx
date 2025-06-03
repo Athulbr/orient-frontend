@@ -41,9 +41,12 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
             ref={el => (fieldRefs.current[fieldId] = el)}
             onMouseAction={() => {
               fieldRefs.current[fieldId].focus();
-              if (value.bbox) lastHoveredFieldRef.current = [fieldId, value.bbox];
+              if (value.bbox) {
+                lastHoveredFieldRef.current = [fieldId, value.bbox];
+                setState(prev => ({ ...prev, pageNumber: value.page ? value.page : prev.pageNumber }));
+              }
               if (!isScrollingRef.current) {
-                setState(prev => ({ ...prev, hoveredFieldId: fieldId }));
+                setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
                 updateWire(fieldId, value.bbox);
               }
             }}

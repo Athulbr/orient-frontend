@@ -38,25 +38,25 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
   return (
     <div className="flex min-h-16 justify-between bg-[#001529]">
       {!showSidebar && (
-        <div className="flex h-17 w-16 items-center justify-center md:hidden">
+        <div tabIndex={0} className="flex h-17 w-16 items-center justify-center md:hidden">
           <Menu onClick={() => setShowSidebar(true)} className="cursor-pointer" color="white" size={30} />
         </div>
       )}
-      <div className="flex h-full cursor-pointer items-center md:pl-6" onClick={() => navigate('/docsnap/record/list')}>
+      <div tabIndex={0} className="flex h-full cursor-pointer items-center md:pl-6" onClick={() => navigate('/docsnap/record/list')}>
         <MakezLogoHeader />
       </div>
       <div className="flex flex-1 items-center justify-end">
         <div className="hidden items-center gap-6 px-6 md:flex">
-          <LogIn onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          <CircleHelp size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          <Bell size={20} className="cursor-pointer text-gray-300 hover:text-white" />
+          {/* <LogIn tabIndex={0} onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
+          <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
+          <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <DropdownMenu onChange={onChangeDropDown} options={['Account', 'Logout']}>
             <span className="flex items-center gap-2 text-sm text-gray-300">
               <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
               {firstName}
             </span>
           </DropdownMenu>
-          <Settings onClick={() => navigate('/config')} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
+          <Settings tabIndex={0} onClick={() => navigate('/config')} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
         </div>
       </div>
     </div>
