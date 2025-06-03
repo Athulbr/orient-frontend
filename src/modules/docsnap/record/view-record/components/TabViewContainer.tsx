@@ -3,7 +3,7 @@ import { TabNavComponent } from '../../components/TabNav/TabNav';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import React from 'react';
-import { Button } from '../../../../../components/button/Button';
+import { Button } from '../../../../../components/Button';
 
 interface DataPreviewComponentIF {
   children: ReactNode;

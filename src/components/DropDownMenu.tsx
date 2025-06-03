@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 interface DropdownMenuPropsIF {
   children: ReactNode;
@@ -6,7 +6,7 @@ interface DropdownMenuPropsIF {
   onChange: (option: string) => void;
 }
 
-const DropdownMenu: React.FC<DropdownMenuPropsIF> = ({ children, options, onChange }) => {
+export const DropdownMenu: React.FC<DropdownMenuPropsIF> = ({ children, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -14,32 +14,63 @@ const DropdownMenu: React.FC<DropdownMenuPropsIF> = ({ children, options, onChan
     setIsOpen(!isOpen);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleOptionClick = (option: string) => {
+    onChange(option);
+    setIsOpen(false);
+  };
+
+  const handleClickOutside = useCallback((event: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setIsOpen(false);
+    }
+  }, []);
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
       setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [isOpen, handleClickOutside]);
 
   return (
     <div ref={dropdownRef} className="relative inline-block text-left">
-      <div onClick={toggleDropdown} className="cursor-pointer">
+      <div
+        onClick={toggleDropdown}
+        className="cursor-pointer"
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleDropdown();
+          }
+        }}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+      >
         {children}
       </div>
       {isOpen && (
-        <div className="absolute right-0 z-12 mt-2 origin-top-right divide-y divide-gray-100 rounded-md border border-gray-300 bg-white shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 origin-top-right divide-y divide-gray-100 rounded-md border border-gray-300 bg-white shadow-lg" role="menu">
           <div className="py-1">
             {options.map((option, index) => (
               <button
-                key={index}
-                className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                onClick={() => onChange(option)}
+                key={`${option}-${index}`}
+                className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:outline-none"
+                onClick={() => handleOptionClick(option)}
+                role="menuitem"
+                type="button"
               >
                 {option}
               </button>
@@ -50,5 +81,3 @@ const DropdownMenu: React.FC<DropdownMenuPropsIF> = ({ children, options, onChan
     </div>
   );
 };
-
-export default DropdownMenu;

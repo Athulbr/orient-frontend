@@ -1,6 +1,6 @@
 import { FC, RefObject, useState } from 'react';
 import { MessageSquareMore } from 'lucide-react';
-import { Button } from '../../../../../components/button/Button';
+import { Button } from '../../../../../components/Button';
 import { useEffect, useRef } from 'react';
 import { CommentDialog } from './CommentDialog';
 import { ValidateSkuButton } from './ValidateSkuButton';

@@ -8,9 +8,9 @@ import { TextField } from '../../components/textfield';
 import { httpAiRequest } from '../../utils/functions/httpAiRequest';
 import { useFormBuilder } from '../formbuilder-context/useFormBuilder';
 import Spinner from '../../components/spinner';
-import { Button } from '../../../../components/button/Button';
+import { Button } from '../../../../components/Button';
 import { useParams } from 'react-router-dom';
-import { DialogComponent } from '../../../../components/Dialog';
+import { DialogComponent } from '../../../../components/DialogComponent';
 import { RenderForm } from '../../render-form/RenderForm';
 import { UseFormbuilder } from '../../use-formbuilder';
 

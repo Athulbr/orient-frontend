@@ -4,7 +4,7 @@ import { FieldIF } from '../../interface';
 import { useFormBuilder } from '../formbuilder-context/useFormBuilder';
 import { Plus } from 'lucide-react';
 import { inputTypes } from '../../static-data/inputTypes';
-import { Button } from '../../../../components/button/Button';
+import { Button } from '../../../../components/Button';
 
 interface PropsIF {
   test?: string;

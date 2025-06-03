@@ -1,13 +1,10 @@
 import { useEffect } from 'react';
 
-/**
- * Hook that calls the provided callback when the Escape key is pressed
- */
-export const useEscapeKey = (callback: () => void): void => {
+export const useEscapeKey = (onEscape: () => void) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        callback();
+        onEscape();
       }
     };
 
@@ -16,5 +13,5 @@ export const useEscapeKey = (callback: () => void): void => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [callback]);
+  }, [onEscape]);
 };

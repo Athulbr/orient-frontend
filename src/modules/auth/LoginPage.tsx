@@ -8,7 +8,7 @@ import httpRequest from '../../utils/httpRequest';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/Spinner';
 import { useToastStore } from '../../components/toast/ToastStore';
-import { Button } from '../../components/button/Button';
+import { Button } from '../../components/Button';
 
 interface LoginPageIF {
   test?: string;

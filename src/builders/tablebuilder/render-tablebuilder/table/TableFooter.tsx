@@ -3,7 +3,7 @@ import { useTablebuilderSettings } from '../../create-tablebuilder/hooks/useTabl
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { useEffect, useState } from 'react';
-import { Button } from '../../../../components/button/Button';
+import { Button } from '../../../../components/Button';
 
 export function TableFooter() {
   return (

@@ -1,64 +1,160 @@
-import React, { forwardRef } from 'react';
+import { ReactNode, useState, useEffect, useRef, ButtonHTMLAttributes } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outlined';
-
-type ButtonSize = 'sm' | 'md' | 'lg';
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+interface ButtonPropsIF extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children?: ReactNode;
+  outlined?: boolean;
+  small?: boolean;
+  large?: boolean;
   startIcon?: ReactNode;
   endIcon?: ReactNode;
-  fullWidth?: boolean;
   className?: string;
+  disabled?: boolean;
+  onClick?: () => void;
+  disableRipple?: boolean;
+  ref?: React.RefObject<HTMLButtonElement>;
 }
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, variant = 'primary', size = 'md', startIcon, endIcon, fullWidth = false, className = '', disabled = false, type = 'button', ...props }, ref) => {
-    // Base styles applied to all buttons
-    const baseStyles =
-      'py-3 inline-flex items-center justify-center font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
-    // Variant-specific styles
-    const variantStyles = {
-      primary: 'bg-primary text-white hover:bg-gray-800 active:bg-blue-800 focus:ring-blue-500',
-      secondary: 'bg-secondary text-gray-800 hover:bg-gray-300 active:bg-gray-400 focus:ring-gray-500',
-      outlined: 'bg-transparent text-primary-600 border border-gray-600 hover:bg-primary-light-50  focus:ring-primary-500',
-    };
+interface RippleType {
+  x: number;
+  y: number;
+  size: number;
+  id: number;
+}
 
-    // Size-specific styles
-    const sizeStyles = {
-      sm: 'text-xs px-3 py-1.5 gap-1.5',
-      md: 'text-sm px-4 py-2 gap-2',
-      lg: 'text-base px-5 py-2.5 gap-2.5',
-    };
+// Waves component for Material UI style ripple effect
+const Waves = () => {
+  const [ripples, setRipples] = useState<RippleType[]>([]);
+  const nextId = useRef(0);
 
-    // Apply disabled styles if the button is disabled
-    const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : '';
+  useEffect(() => {
+    // Clean up ripples after animation completes
+    if (ripples.length > 0) {
+      const timeoutId = setTimeout(() => {
+        setRipples(prevRipples => prevRipples.slice(1));
+      }, 550); // Match the animation duration
+      return () => clearTimeout(timeoutId);
+    }
+  }, [ripples]);
 
-    // Apply full width style if fullWidth is true
-    const widthStyle = fullWidth ? 'w-full' : '';
+  // Function to add a ripple at the specified position
+  const addRipple = (x: number, y: number, size: number) => {
+    const id = nextId.current;
+    nextId.current += 1;
+    setRipples([...ripples, { x, y, size, id }]);
+  };
 
-    // Combine all styles
-    const buttonStyles = `
-      ${baseStyles}
-      ${variantStyles[variant]}
-      ${sizeStyles[size]}
-      ${disabledStyles}
-      ${widthStyle}
-      ${className} cursor-pointer
-    `;
+  return {
+    ripples,
+    addRipple,
+    RippleEffect: () => (
+      <>
+        {ripples.map(ripple => (
+          <span
+            key={ripple.id}
+            className="pointer-events-none absolute rounded-full bg-current opacity-20"
+            style={{
+              left: ripple.x - ripple.size / 2,
+              top: ripple.y - ripple.size / 2,
+              width: ripple.size,
+              height: ripple.size,
+              transform: 'scale(0)',
+              animation: 'waves-ripple 0.55s linear',
+            }}
+          />
+        ))}
+      </>
+    ),
+  };
+};
 
-    return (
-      <button ref={ref} type={type} disabled={disabled} className={buttonStyles} {...props}>
-        {startIcon && <span className="inline-flex">{startIcon}</span>}
-        {children}
-        {endIcon && <span className="inline-flex">{endIcon}</span>}
-      </button>
-    );
-  }
-);
+export const Button = ({
+  children,
+  outlined = false,
+  small = false,
+  large = false,
+  startIcon,
+  endIcon,
+  className = '',
+  disabled = false,
+  onClick,
+  disableRipple = false,
+  ref,
+  ...rest
+}: ButtonPropsIF) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { addRipple, RippleEffect } = Waves();
 
-Button.displayName = 'Button';
+  // Handle ref prop in React 19 style
+  useEffect(() => {
+    if (ref && buttonRef.current) {
+      ref.current = buttonRef.current;
+    }
+  }, [ref]);
 
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+
+    if (!disableRipple) {
+      // Get click coordinates relative to button
+      const button = e.currentTarget;
+      const rect = button.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Calculate the size of the ripple
+      const maxSize = Math.max(rect.width, rect.height);
+      const rippleSize = maxSize * 2;
+
+      // Add new ripple
+      addRipple(x, y, rippleSize);
+    }
+
+    // Call the provided onClick handler
+    if (onClick) onClick();
+  };
+
+  const sizeClasses = small ? 'h-8 px-3 text-sm' : large ? 'h-12 px-6 text-lg' : 'h-10 px-4';
+
+  const colorClasses = outlined
+    ? 'bg-white border-1 border-gray-200 text-sm text-gray-800 hover:bg-gray-100'
+    : 'bg-black text-white border border-black text-sm hover:bg-gray-800 hover:text-gray-200';
+
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
+
+  const activeClasses = 'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2';
+
+  return (
+    <button
+      ref={buttonRef}
+      className={`relative flex items-center justify-center gap-2 overflow-hidden rounded-md font-medium transition-colors duration-200 ${sizeClasses} ${colorClasses} ${disabledClasses} ${activeClasses} ${className} `}
+      disabled={disabled}
+      onClick={handleClick}
+      {...rest}
+    >
+      {/* Material UI style ripple effect */}
+      {!disableRipple && <RippleEffect />}
+
+      {startIcon && <span className="inline-flex items-center">{startIcon}</span>}
+      {children}
+      {endIcon && <span className="inline-flex items-center">{endIcon}</span>}
+    </button>
+  );
+};
+
+// Add Material UI waves ripple animation to document
+if (typeof document !== 'undefined') {
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `
+    @keyframes waves-ripple {
+      0% {
+        transform: scale(0);
+        opacity: 0.60;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(styleEl);
+}

@@ -1,5 +1,5 @@
 import { FileSpreadsheet, Package } from 'lucide-react';
-import { DialogComponent } from '../../../../components/Dialog';
+import { DialogComponent } from '../../../../components/DialogComponent';
 import DragAndDropFileInput from './DragAndDropFileInput';
 import React, { useState, useEffect } from 'react';
 import { useToastStore } from '../../../../components/toast/ToastStore';

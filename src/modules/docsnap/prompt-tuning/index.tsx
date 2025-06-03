@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { UpdatedFieldsIF } from './interface';
 import FieldDetailsComponent from './FieldDetailsComponent';
 import TuningInputComponent from './TuningInputComponent';
-import { DialogComponent } from '../../../components/Dialog';
+import { DialogComponent } from '../../../components/DialogComponent';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageNameComponent from '../../../components/PageName';
 import PageContainer from '../../../components/PageContainer';

@@ -2,7 +2,7 @@ import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import { useDocumentState } from './hooks/documentContext';
 import pdfLocation from '../../../assets/temp/PO_Private_00114126882.pdf';
-import { Button } from '../../../components/button/Button';
+import { Button } from '../../../components/Button';
 import { Copy, Edit, Plus, Save, Trash } from 'lucide-react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import { PromptFieldIF } from '.';
