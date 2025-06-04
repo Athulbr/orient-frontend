@@ -29,27 +29,33 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     <div className="flex items-center justify-center xl:w-1/2 2xl:w-3/5">
       <div className="relative h-full w-fit">
         {/* <div className="relative mx-auto h-full w-full max-w-[830px] overflow-hidden rounded-lg"> */}
-        {state.loading && (
+        {state.loading ? (
+          <div className="flex h-full w-full items-center justify-center gap-2">
+            <Spinner /> Loading Document...
+          </div>
+        ) : (
+          <div className="relative h-full rounded-lg border">
+            <img className="h-full w-full rounded-lg object-contain transition-discrete" src={state.images[state.pageNumber - 1]} alt="PDF" />
+            {bbox && state.tabIndex === 0 && (
+              <div
+                // @ts-ignore
+                ref={el => (bboxRef.current[1234] = el)}
+                className="absolute border-2 border-[#FFA901]"
+                style={{
+                  left: `${bbox.x_min * 100 - 0.4}%`,
+                  top: `${bbox.y_min * 100 - 0.4}%`,
+                  width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
+                  height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
+                }}
+              />
+            )}
+          </div>
+        )}
+        {/* {state.loading && (
           <div className="pointer-events-none absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center overflow-hidden rounded-xl border-3 border-sky-300 bg-[#1fa9f033]">
             <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
           </div>
-        )}
-        <div className="relative h-full rounded-xl border bg-red-200">
-          <img className="h-full w-full object-contain transition-discrete" src={state.images[state.pageNumber - 1]} alt="PDF" />
-          {bbox && state.tabIndex === 0 && (
-            <div
-              // @ts-ignore
-              ref={el => (bboxRef.current[1234] = el)}
-              className="absolute border-2 border-[#FFA901]"
-              style={{
-                left: `${bbox.x_min * 100 - 0.4}%`,
-                top: `${bbox.y_min * 100 - 0.4}%`,
-                width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
-                height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
-              }}
-            />
-          )}
-        </div>
+        )} */}
       </div>
     </div>
   );

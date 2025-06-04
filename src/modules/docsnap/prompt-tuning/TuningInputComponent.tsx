@@ -8,6 +8,7 @@ import { SingleSelect } from '../../../components/SingleSelect';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { Button } from '../../../components/Button';
 import { TextAreaComponent } from '../../../components/Textarea';
+import httpUploadRequest from '../../../utils/httpUploadRequest';
 
 // Constants
 const API_ENDPOINT = 'https://dev.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
@@ -117,21 +118,11 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setFileSelected(files[0]);
-    }
-  };
-
   const handleExtract = async () => {
     if (!fileSelected) {
       toast.warning('Please select a file first', { title: 'Warning' });
       return;
     }
-
-    // Implement file extraction logic here
-    toast.info('File extraction feature is not implemented yet', { title: 'Info' });
   };
 
   const renderDiffList = (items: string[]) => {
@@ -223,26 +214,11 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
             </div>
           </div>
 
-          {/* File Upload Section */}
-          <div className="mt-6 rounded-lg border p-4">
-            <h3 className="mb-3 text-sm font-medium text-gray-900">Extract Data from File</h3>
-            <input
-              className="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 p-3 text-sm text-gray-900 focus:outline-none"
-              id="file_input"
-              type="file"
-              onChange={handleFileChange}
-              aria-describedby="file_input_help"
-            />
-            <p className="mt-1 text-xs text-gray-500" id="file_input_help">
-              Upload a file to extract data using the updated schema
-            </p>
-
-            <ButtonBox className="mt-4">
-              <Button className="px-4 py-2" onClick={handleExtract} disabled={!fileSelected}>
-                Extract Data
-              </Button>
-            </ButtonBox>
-          </div>
+          <ButtonBox className="mt-4">
+            <Button className="px-4 py-2" onClick={handleExtract} disabled={!fileSelected}>
+              Extract Data
+            </Button>
+          </ButtonBox>
         </>
       )}
     </section>

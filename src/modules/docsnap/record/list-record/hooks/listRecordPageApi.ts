@@ -14,7 +14,6 @@ export const useFetchListRecord = () => {
       toast.success('Record created successfully');
       return res;
     } catch (error) {
-      console.log('error:===========', error);
       toast.error('Failed to Create record');
     }
   };
@@ -23,7 +22,6 @@ export const useFetchListRecord = () => {
       const res = await httpRequest('PATCH', `${import.meta.env.VITE_API_URL}/api/idp/history/update/${id}`, requestBody);
       toast.success('Record created successfully');
     } catch (error) {
-      console.log('error:===========', error);
       toast.error('Failed to Create record');
     }
   };

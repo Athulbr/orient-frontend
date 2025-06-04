@@ -15,7 +15,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
     <>
       {state.arrayFields.map((item, mainIndex) => {
         return (
-          <div className="flex flex-col rounded-lg border bg-white hover:shadow-lg">
+          <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:shadow-lg">
             <label className="flex justify-between p-4 text-lg font-bold capitalize">
               {formatFieldLabel(state.tableNames[mainIndex])}
               <span className="flex cursor-pointer items-center gap-1 text-sm font-normal text-sky-500 hover:text-sky-600">
@@ -37,6 +37,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
                       <InputField
                         label={formatFieldLabel(label)}
                         value={value.value}
+                        confidence={`${value.confidence * 100}`}
                         // @ts-ignore
                         ref={el => (fieldRefs.current[fieldId] = el)}
                         onMouseAction={() => {

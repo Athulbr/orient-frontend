@@ -9,7 +9,7 @@ const CreateUserComponent: React.FC = ({}) => {
       title={state.id ? 'Update User' : 'Add User'}
       name="Create User Form"
       className="w-130"
-      onSubmit={e => console.log(e)}
+      onSubmit={e => alert('CreateUser Submit')}
       closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '' }))}
     />
   );

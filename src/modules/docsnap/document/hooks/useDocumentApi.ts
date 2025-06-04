@@ -23,7 +23,7 @@ export const useDocumentsApi = () => {
         toast.success('Document Created Successfully');
       }, 2000);
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to Create Document');
     }
   };
@@ -32,7 +32,7 @@ export const useDocumentsApi = () => {
       const res = await httpRequest('GET', `http://localhost:4000/api/idp/document/${id}`);
       setState(prev => ({ ...prev, fields: res.data.fields }));
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to Create Document');
     }
   };

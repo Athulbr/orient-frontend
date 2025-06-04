@@ -66,7 +66,6 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
       setFields(res?.data.fields);
       setFormbuilderName(res?.data.name);
       setFormSettings(res?.data.settings);
-      console.log('res:===========', res);
       return true;
     } catch (error) {
       console.error(error);

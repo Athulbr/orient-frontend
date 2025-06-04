@@ -5,7 +5,7 @@ import { useListRecordPageState } from './hooks/listRecordPageContext';
 import PageNameComponent from '../../../../components/PageName';
 
 export const ListRecordComponent: React.FC = () => {
-  const { setState } = useListRecordPageState();
+  const { state } = useListRecordPageState();
   const navigate = useNavigate();
 
   const customFunctions = {
@@ -19,8 +19,5 @@ export const ListRecordComponent: React.FC = () => {
   const customUI = {
     recordStatus: RecordStatusCustomUI,
   };
-  return (
-      
-      <UseTablebuilder customUI={customUI} name="List Record Table" fluidHeight customFunctions={customFunctions} />
-  );
+  return <UseTablebuilder customUI={customUI} refresh={state.refresh} name="List Record Table" fluidHeight customFunctions={customFunctions} />;
 };

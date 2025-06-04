@@ -22,7 +22,6 @@ export const TablebuilderBot = () => {
         throw new Error('Failed to parse AI response');
       }
       const finalData: TablebuilderSettingsIF = parsedJson;
-      console.log('AI parsedJson:', finalData);
       setSettings(finalData);
     } catch (error) {
       console.error('Error in sendPrompt:', error);

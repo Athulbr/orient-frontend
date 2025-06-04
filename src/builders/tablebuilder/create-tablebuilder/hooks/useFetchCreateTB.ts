@@ -21,7 +21,7 @@ export const useFetchCreateTB = () => {
       });
       toast.success('Tablebuilder Created Successfully');
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to Create Tablebuilder');
     } finally {
       setBuilder(prev => ({ ...prev, loading: false }));
@@ -40,7 +40,7 @@ export const useFetchCreateTB = () => {
       });
       toast.success('Tablebuilder Updated Successfully');
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to Update Tablebuilder');
     } finally {
       setBuilder(prev => ({ ...prev, loading: false }));
@@ -57,7 +57,7 @@ export const useFetchCreateTB = () => {
       toast.success('Fetched Tablebuilder List Successfully');
     } catch (error) {
       toast.error('Failed to Fetch Tablebuilder List');
-      console.log('error:===========', error);
+      console.error('error:===========', error);
     }
   };
 
@@ -74,7 +74,6 @@ export const useFetchCreateTB = () => {
   //         throw new Error('Failed to parse AI response');
   //       }
   //       const finalData: TablebuilderSettingsIF = parsedJson;
-  //       console.log('AI parsedJson:', finalData);
   //       setSettings(finalData);
   //     } catch (error) {
   //       console.error('Error in sendPrompt:', error);

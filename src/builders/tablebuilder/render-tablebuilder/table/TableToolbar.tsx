@@ -53,8 +53,6 @@ function Filters() {
       // Convert filters array to object
       const filtersObject = getFiltersObject(newActiveFilters);
 
-      console.log('filtersObject==========', filtersObject);
-
       // Get data with new filters
       getDataFromApi({
         page: 1,
@@ -251,8 +249,6 @@ const ExportButton = () => {
     (value: string) => {
       let dataToExport: Record<string, any>[] = [];
 
-      console.log(value);
-
       if (value === 'selected') {
         // Filter data to only include selected rows
         const filtered = data.filter(row => selectedIds.includes(row._id));
@@ -264,8 +260,6 @@ const ExportButton = () => {
       if (dataToExport.length === 0) {
         return;
       }
-
-      console.log(dataToExport);
 
       // Convert data to CSV string
       const headers = Object.keys(dataToExport[0]).join(',');

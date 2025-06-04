@@ -11,7 +11,6 @@ export const formatFieldLabel = (fieldId: string): string => {
 
 export let convertPdfToImages = async (file: File): Promise<string[]> => {
   try {
-    console.log('Using PDF.js worker from:', pdfjsLib.GlobalWorkerOptions.workerSrc);
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument(arrayBuffer);
     const pdf = await loadingTask.promise;
@@ -55,11 +54,7 @@ let renderPageToImage = async (pdf: any, pageNumber: number): Promise<string> =>
                 viewport: viewport
             }).promise;
 
-            // // Check if the page is empty
-            // if (isCanvasEmpty(canvas)) {
-            //     console.log(`Skipping empty page: ${pageNumber}`);
-            //     return resolve('');
-            // }
+      
 
             canvas.toBlob((blob) => {
                 if (blob) {

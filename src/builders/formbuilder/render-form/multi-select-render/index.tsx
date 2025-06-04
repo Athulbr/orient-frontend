@@ -79,8 +79,6 @@ export const MultiSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fi
 };
 
 export const validateMultiSelect = (value: string[], config: FieldConfigIF): string => {
-  console.log('value=================', value);
-
   if (config.mandatory && value.length < 1) return 'This field is required.';
   if (config.minimum && value.length < config.minimum) return `Minimum selection is ${config.minimum}`;
   if (config.maximum && value.length > config.maximum) return `Maximum selection is ${config.maximum}`;

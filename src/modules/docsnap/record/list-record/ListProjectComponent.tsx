@@ -75,7 +75,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
     };
 
     fetchData();
-  }, [projectId, toast]);
+  }, [projectId]);
 
   const documentClickHandler = (document: any) => {
     setState(prev => ({ ...prev, fileUploadDialog: true, document }));

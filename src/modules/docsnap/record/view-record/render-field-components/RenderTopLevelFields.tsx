@@ -34,6 +34,7 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
         };
         return (
           <InputField
+            key={fieldId}
             label={formatFieldLabel(key)}
             value={value.value}
             confidence={`${value.confidence * 100}`}

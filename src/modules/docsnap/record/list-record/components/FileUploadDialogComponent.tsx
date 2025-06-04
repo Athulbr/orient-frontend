@@ -1,5 +1,6 @@
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import httpRequest from '../../../../../utils/httpRequest';
 import httpUploadRequest from '../../../../../utils/httpUploadRequest';
 import DragAndDropFileInput from '../DragAndDropFileInput';
 import { useFetchListRecord } from '../hooks/listRecordPageApi';
@@ -27,16 +28,49 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
       const res = await httpUploadRequest(`${import.meta.env.VITE_API_URL}/api/idp/document/upload`, file);
       setState(prev => ({ ...prev, uploading: false, uploadDone: true, analyzing: true }));
 
-      return { s3FileName: res.data.fileName, s3FileType: res.data.fileType };
+      return { s3FileName: res.data.fileName, s3FileType: res.data.fileType, url: res.data.url };
     } catch (error) {
       setState(prev => ({ ...prev, processing: false }));
+    }
+  };
+
+  const trainChatWithDocumentEngine = async (s3fileName: string, s3Url: string) => {
+    const response = await fetch(`${import.meta.env.VITE_BASR_URL}/chatbot/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: [
+          {
+            name: s3fileName,
+            fileType: 'application/pdf',
+            url: s3Url,
+            active: true,
+          },
+        ],
+        botName: s3fileName || 'Testbot',
+      }),
+    });
+    const reader = response?.body?.getReader();
+    if (!reader) {
+      toast.error('Error in training the bot');
+      return null;
+    }
+    while (true) {
+      const { value, done } = await reader?.read();
+      if (done) {
+        // setloader(false);
+        toast.success('Document Bot trained successfully');
+        break;
+      } else {
+        // showToast('success', decoder.decode(value));
+        toast.error('Failed to train Document Bot ');
+      }
     }
   };
 
   const analyzeDocument = async (s3FileName: string) => {
     try {
       const convertedJson = convertJSON(state.document?.fields || []);
-      const accessToken = window?.sessionStorage?.getItem('accessToken') || '';
       const formData = new FormData();
       formData.append('s3_file_name', s3FileName);
       formData.append('document_type', state.document?.docType || 'other');
@@ -44,22 +78,23 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
       formData.append('model_type', state.document?.primaryModel || 'openai');
       if (state.document?.enableOcr) formData.append('ocr_engine', 'doctr');
 
-      const response = await fetch(`${import.meta.env.VITE_PYTHON_API_URL}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      // 'document_type=purchase_order&entity_schema=%7B%7D&ocr_engine=doctr&include_confidence=false&include_bbox=false&confidence_threshold=0.5&s3_file_name=s3jjaj&provider_id=openai&model_id=aa&use_latest=false' \
+      const requestBody: Record<string, any> = {
+        document_type: state.document?.docType || 'other',
+        entity_schema: convertedJson,
+        include_confidence: true,
+        include_bbox: true,
+        confidence_threshold: 0.8,
+        s3_file_name: s3FileName,
+        provider_id: 'openai',
+        model_id: 'gpt-4o',
+        use_latest: false,
+      };
+      if (state.document?.enableOcr) requestBody.ocr_engine = 'doctr';
+      const res = httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
 
       setState(prev => ({ ...prev, analyzeDone: true, analyzing: false }));
-      return data;
+      return res;
     } catch (error) {
       toast.error('Failed to add document for extraction');
       setState(prev => ({ ...prev, processing: false, uploadDone: false, uploading: false, analyzing: false }));
@@ -73,9 +108,9 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
 
     const s3Response = await uploadFilesToAwsS3(file);
 
-    const res = await analyzeDocument(s3Response?.s3FileName);
+    // trainChatWithDocumentEngine(s3Response?.s3FileName, s3Response?.url);
 
-    console.log('analyze:===========', res);
+    const res = await analyzeDocument(s3Response?.s3FileName);
 
     const createReqObject = {
       metadata: res.data,
@@ -86,6 +121,8 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
       documentType: s3Response?.s3FileType ? s3Response.s3FileType : 'application/pdf',
     };
     const createRecordResponse: any = await createRecordApi(createReqObject);
+    setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
+
     setTimeout(() => {
       setState(prev => ({ ...prev, processing: false, fileUploadDialog: false, progress: 0, analyzeDone: false, uploadDone: false }));
     }, 2000);
@@ -93,15 +130,19 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
     const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
-    eventSource.addEventListener('message', (event: any) => {
+    eventSource.addEventListener('task_update', async (event: any) => {
       const data = JSON.parse(event.data);
-      console.log('data:===========', data);
-      if (data.status === 'SUCCESS') {
-        console.log('createRecordResponse:===========', createRecordResponse);
-        updateRecordApi(
-          { extractedData: data.result?.result?.vision_llm_response?.purchase_order || {}, metaData: data?.result?.result?.metadata || {} },
+      console.info('data:===========', data);
+      if (data.current_step === 'Complete') {
+        await updateRecordApi(
+          {
+            extractedData: data?.result?.extracted_data || {},
+            metaData: data?.result?.metadata,
+            apiResponse: data?.result?.extracted_data || {},
+          },
           createRecordResponse.data._id
         );
+        setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
         eventSource.close();
       }
     });
@@ -176,4 +217,16 @@ const aaaa = {
     },
   },
   ocr_info: { engine: 'doctr', include_confidence: true, include_bbox: true, confidence_threshold: 0.9 },
+};
+
+const sampleResponse = {
+  task_id: '76f56ff0-4c8c-41c7-8562-13c0c845fd11',
+  request_id: '16f49985-851f-43c7-85f5-16df60f734a6',
+  status: 'Processing',
+  status_url: '/api/v5/document/tasks/76f56ff0-4c8c-41c7-8562-13c0c845fd11/status',
+  stream_url: '/api/v5/document/tasks/76f56ff0-4c8c-41c7-8562-13c0c845fd11/stream',
+  provider: 'Azure OpenAI',
+  model: 'GPT-4o',
+  ocr_enabled: false,
+  ocr_engine: null,
 };

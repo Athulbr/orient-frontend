@@ -16,7 +16,7 @@ export const useFetchCreateTB = () => {
         toast.success('Project Created Successfully');
       }, 2000);
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to Create Project');
     }
   };

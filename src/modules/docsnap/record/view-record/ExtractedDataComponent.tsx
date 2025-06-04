@@ -6,6 +6,7 @@ import { formatFieldLabel } from './utils';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
 import { RenderTopLevelFields } from './render-field-components/RenderTopLevelFields';
+import Spinner from '../../../../components/Spinner';
 
 interface ExtractedDataComponentIF {
   containerRef: any;
@@ -69,9 +70,10 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
 
   if (state.loading) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center bg-white">
-        <Loader size={26} className="ml-2 animate-spin" />
-        <div className="pt-2 pl-4 text-sm">Extracting Document...</div>
+      <div className="flex flex-1 items-center justify-center gap-2 bg-white">
+        {/* <Loader size={26} className="ml-2 animate-spin" />
+        <div className="pt-2 pl-4 text-sm"></div> */}
+        <Spinner /> Loading Data...
       </div>
     );
   }
@@ -79,7 +81,7 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
     <div className="flex flex-col gap-y-2 p-2">
       <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
       <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-      <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+      {/* <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} /> */}
     </div>
   );
 };

@@ -9,7 +9,7 @@ const CreateProjectComponent: React.FC = ({}) => {
       title={state.id ? 'Update Project' : 'Add Project'}
       name="Create Project Form"
       className="w-130"
-      onSubmit={e => console.log(e)}
+      onSubmit={e => console.info(e)}
       closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '' }))}
       existingData={[]}
     />

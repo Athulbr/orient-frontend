@@ -31,10 +31,10 @@ export const useViewRecordApi = () => {
           // its array
           arrayFields.push(value);
           tableNames.push(key);
-        } else if (typeof value === 'object' && value?.value === undefined) {
+        } else if (typeof value === 'object' && value !== null && value?.value === undefined) {
           // its object
           objectFields[key] = value;
-        } else if (typeof value === 'object') {
+        } else if (typeof value === 'object' && value !== null) {
           // its Key Value
           topLevelFields[key] = value;
         }
@@ -64,7 +64,6 @@ export const useViewRecordApi = () => {
         toast.success('Record fetched successfully');
       }, 2000);
     } catch (error) {
-      console.log('error:===========', error);
       toast.error('Failed to get Record');
     }
   };
