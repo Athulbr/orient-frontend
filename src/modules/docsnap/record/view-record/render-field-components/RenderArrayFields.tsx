@@ -9,7 +9,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
 
-  const [dialog, setDialog] = useState(false);
+  const onChange = () => {};
 
   return (
     <>
@@ -23,35 +23,34 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
               </span>
             </label>
             <div className="flex flex-col gap-y-4 rounded-lg bg-white p-2">
-              {/* bg-[#f9fafb] */}
               {Object.entries(item).map(([key, subItem], rowIndex) => (
-                <div className="flex flex-wrap gap-y-1 rounded-lg border bg-white hover:border-yellow-500">
+                <div key={rowIndex} className="flex flex-wrap gap-y-1 rounded-lg border bg-white hover:border-yellow-500">
                   <label className="text-md flex w-full items-center justify-between px-4 py-2 font-bold text-gray-600">
                     Row {rowIndex + 1} <Trash className="cursor-pointer hover:text-red-500" size={18} />
                   </label>
 
                   {Object.entries(subItem).map(([label, value], i) => {
                     const fieldId = `${label}_${rowIndex}_${mainIndex}_${i}`;
-
+                    if (value === null) return;
                     return (
                       <InputField
+                        key={fieldId}
                         label={formatFieldLabel(label)}
                         value={value.value}
                         confidence={`${value.confidence * 100}`}
                         // @ts-ignore
                         ref={el => (fieldRefs.current[fieldId] = el)}
-                        onMouseAction={() => {
-                          fieldRefs.current[fieldId].focus();
-
-                          if (value.bbox) {
-                            lastHoveredFieldRef.current = [fieldId, value.bbox];
-                            setState(prev => ({ ...prev, pageNumber: value.page ? value.page : prev.pageNumber }));
-                          }
-                          if (!isScrollingRef.current) {
-                            setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
-                            updateWire(fieldId, value.bbox);
+                        bbox={value.bbox}
+                        onMouseAction={bbox => {
+                          if (bbox) {
+                            lastHoveredFieldRef.current = [fieldId, bbox, value.page];
+                            if (!isScrollingRef.current) {
+                              setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
+                              updateWire(fieldId, bbox);
+                            }
                           }
                         }}
+                        onChange={onChange}
                         description={label === 'description'}
                       />
                     );

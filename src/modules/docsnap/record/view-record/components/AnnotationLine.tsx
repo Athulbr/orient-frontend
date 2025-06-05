@@ -4,7 +4,7 @@ export const AnnotationLine = () => {
   const { state } = useViewRecordState();
   const wire = state.wire;
 
-  if (!wire || state.tabIndex !== 0) return null;
+  if (!wire || state.tabIndex !== 0 || state.loadingS3File) return null;
 
   return (
     <svg className="pointer-events-none absolute top-0 left-0 z-10 flex h-full w-full">

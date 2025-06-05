@@ -11,16 +11,18 @@ interface InputFieldProps {
   label?: string;
   confidence?: string;
   errorMessage?: string;
-  onMouseAction?: () => void;
+  onMouseAction?: (bbox: any) => void;
+  onchange: (bbox: any) => void;
   ref?: RefObject<any>;
   value: string;
+  bbox: string;
 }
 
-export const InputField = ({ label, errorMessage, onMouseAction, description, ref, confidence, value, ...props }: InputFieldProps) => {
+export const InputField = ({ label, errorMessage, onMouseAction, description, ref, confidence, value, bbox, onchange, ...props }: InputFieldProps) => {
   const [commentDialog, setCommentDialog] = useState(false);
 
   return (
-    <div className={`group ${description ? 'w-full' : 'w-1/2'} relative rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.()}>
+    <div className={`group ${description ? 'w-full' : 'w-1/2'} relative rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.(bbox)}>
       {label && (
         <label className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
           {label}
@@ -35,7 +37,7 @@ export const InputField = ({ label, errorMessage, onMouseAction, description, re
         {description ? (
           <textarea rows={3} ref={ref} className="min-w-0 flex-1 resize-none px-2 text-sm text-gray-700 focus:outline-none" value={value} {...props} />
         ) : (
-          <input ref={ref} className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none" value={value} {...props} />
+          <input ref={ref} className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none" value={value} onChange={onchange} {...props} />
         )}
         <div
           onClick={() => setCommentDialog(true)}

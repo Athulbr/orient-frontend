@@ -1,7 +1,9 @@
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
 import httpRequest from '../../../../../utils/httpRequest';
 import httpUploadRequest from '../../../../../utils/httpUploadRequest';
+import { useViewRecordGlobalStore } from '../../view-record/hooks/useViewRecordGlobalStore';
 import DragAndDropFileInput from '../DragAndDropFileInput';
 import { useFetchListRecord } from '../hooks/listRecordPageApi';
 import { useListRecordPageState } from '../hooks/listRecordPageContext';
@@ -14,71 +16,15 @@ interface FileUploadDialogComponentIF {
 
 const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
   const { state, setState } = useListRecordPageState();
-  const { createRecordApi, updateRecordApi } = useFetchListRecord();
+  const { createRecordApi, updateRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine } = useFetchListRecord();
   const toast = useToastStore();
-
-  const clearState = () => {
-    setState(prev => ({ ...prev, processing: false, fileUploadDialog: false, progress: 0, analyzeDone: false, uploadDone: false }));
-  };
-
-  const uploadFilesToAwsS3 = async (file: File) => {
-    try {
-      setState(prev => ({ ...prev, processing: true, uploading: true }));
-
-      const res = await httpUploadRequest(`${import.meta.env.VITE_API_URL}/api/idp/document/upload`, file);
-      setState(prev => ({ ...prev, uploading: false, uploadDone: true, analyzing: true }));
-
-      return { s3FileName: res.data.fileName, s3FileType: res.data.fileType, url: res.data.url };
-    } catch (error) {
-      setState(prev => ({ ...prev, processing: false }));
-    }
-  };
-
-  const trainChatWithDocumentEngine = async (s3fileName: string, s3Url: string) => {
-    const response = await fetch(`${import.meta.env.VITE_BASR_URL}/chatbot/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source: [
-          {
-            name: s3fileName,
-            fileType: 'application/pdf',
-            url: s3Url,
-            active: true,
-          },
-        ],
-        botName: s3fileName || 'Testbot',
-      }),
-    });
-    const reader = response?.body?.getReader();
-    if (!reader) {
-      toast.error('Error in training the bot');
-      return null;
-    }
-    while (true) {
-      const { value, done } = await reader?.read();
-      if (done) {
-        // setloader(false);
-        toast.success('Document Bot trained successfully');
-        break;
-      } else {
-        // showToast('success', decoder.decode(value));
-        toast.error('Failed to train Document Bot ');
-      }
-    }
-  };
+  const { updateRefresh } = useViewRecordGlobalStore();
+  const { getS3File } = useS3DocumentsStore();
 
   const analyzeDocument = async (s3FileName: string) => {
     try {
       const convertedJson = convertJSON(state.document?.fields || []);
-      const formData = new FormData();
-      formData.append('s3_file_name', s3FileName);
-      formData.append('document_type', state.document?.docType || 'other');
-      formData.append('entity_schema', JSON.stringify(convertedJson));
-      formData.append('model_type', state.document?.primaryModel || 'openai');
-      if (state.document?.enableOcr) formData.append('ocr_engine', 'doctr');
 
-      // 'document_type=purchase_order&entity_schema=%7B%7D&ocr_engine=doctr&include_confidence=false&include_bbox=false&confidence_threshold=0.5&s3_file_name=s3jjaj&provider_id=openai&model_id=aa&use_latest=false' \
       const requestBody: Record<string, any> = {
         document_type: state.document?.docType || 'other',
         entity_schema: convertedJson,
@@ -91,7 +37,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
         use_latest: false,
       };
       if (state.document?.enableOcr) requestBody.ocr_engine = 'doctr';
-      const res = httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+      const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
 
       setState(prev => ({ ...prev, analyzeDone: true, analyzing: false }));
       return res;
@@ -108,12 +54,12 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
 
     const s3Response = await uploadFilesToAwsS3(file);
 
-    // trainChatWithDocumentEngine(s3Response?.s3FileName, s3Response?.url);
+    trainChatWithDocumentEngine(s3Response?.s3FileName, s3Response?.url);
 
     const res = await analyzeDocument(s3Response?.s3FileName);
 
     const createReqObject = {
-      metadata: res.data,
+      metadata: res,
       extractedData: null,
       pdfFileName: s3Response?.s3FileName,
       name: s3Response?.s3FileName,
@@ -121,19 +67,18 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
       documentType: s3Response?.s3FileType ? s3Response.s3FileType : 'application/pdf',
     };
     const createRecordResponse: any = await createRecordApi(createReqObject);
-    setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
+    getS3File(s3Response?.s3FileName || '');
 
-    setTimeout(() => {
-      setState(prev => ({ ...prev, processing: false, fileUploadDialog: false, progress: 0, analyzeDone: false, uploadDone: false }));
-    }, 2000);
+    setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
+    setState(prev => ({ ...prev, processing: false, fileUploadDialog: false, progress: 0, analyzeDone: false, uploadDone: false }));
 
     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
     const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
     eventSource.addEventListener('task_update', async (event: any) => {
       const data = JSON.parse(event.data);
-      console.info('data:===========', data);
       if (data.current_step === 'Complete') {
+        eventSource.close();
         await updateRecordApi(
           {
             extractedData: data?.result?.extracted_data || {},
@@ -143,7 +88,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
           createRecordResponse.data._id
         );
         setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
-        eventSource.close();
+        updateRefresh();
       }
     });
     eventSource.onerror = (error: any) => {

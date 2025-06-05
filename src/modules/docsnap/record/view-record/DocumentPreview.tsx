@@ -2,6 +2,7 @@ import Spinner from '../../../../components/Spinner';
 import { useViewRecordState } from './hooks/viewRecordContext';
 import pdfLocation from '../../../../assets/PO_Private_hc7536 4_page-0001 (1).jpg';
 import { useEffect, useRef } from 'react';
+import { useViewRecordGlobalStore } from './hooks/useViewRecordGlobalStore';
 
 interface DocumentPreviewComponentIF {
   test?: string;
@@ -29,14 +30,19 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     <div className="flex items-center justify-center xl:w-1/2 2xl:w-3/5">
       <div className="relative h-full w-fit">
         {/* <div className="relative mx-auto h-full w-full max-w-[830px] overflow-hidden rounded-lg"> */}
-        {state.loading ? (
+        {state.loadingS3File ? (
           <div className="flex h-full w-full items-center justify-center gap-2">
             <Spinner /> Loading Document...
           </div>
         ) : (
           <div className="relative h-full rounded-lg border">
+            {!state.record?.extractedData && (
+              <div className="pointer-events-none absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center overflow-hidden rounded-xl border-3 border-sky-300 bg-[#1fa9f033]">
+                <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
+              </div>
+            )}
             <img className="h-full w-full rounded-lg object-contain transition-discrete" src={state.images[state.pageNumber - 1]} alt="PDF" />
-            {bbox && state.tabIndex === 0 && (
+            {bbox && state.tabIndex === 0 && !state.loadingS3File && (
               <div
                 // @ts-ignore
                 ref={el => (bboxRef.current[1234] = el)}

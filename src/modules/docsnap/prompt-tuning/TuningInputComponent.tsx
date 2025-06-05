@@ -9,6 +9,7 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 import { Button } from '../../../components/Button';
 import { TextAreaComponent } from '../../../components/Textarea';
 import httpUploadRequest from '../../../utils/httpUploadRequest';
+import Spinner from '../../../components/Spinner';
 
 // Constants
 const API_ENDPOINT = 'https://dev.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
@@ -50,8 +51,11 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
     fallBack: '',
   });
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractedData, setExtractedData] = useState<any>(null);
   const [llmResponse, setLlmResponse] = useState<LlmResponse | null>(null);
-  const [fileSelected, setFileSelected] = useState<File | null>(null);
+
+  if (extractedData) console.log('extractedData:===========', extractedData);
 
   const toast = useToastStore();
 
@@ -119,9 +123,46 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
   };
 
   const handleExtract = async () => {
-    if (!fileSelected) {
-      toast.warning('Please select a file first', { title: 'Warning' });
-      return;
+    setExtracting(true);
+    const requestBody = {
+      document_type: 'purchase_order',
+      entity_schema: {
+        fields: {
+          po_number: {
+            type: 'str',
+            description: 'Purchase Order Number',
+            instruction:
+              "Extract PO numbers labeled as 'Order #', 'PO', or 'Purchase Order No.' with no prefixes. If the extracted result is longer than the corrected result provided by the user, consider truncating the excess characters.",
+          },
+        },
+      },
+      include_confidence: true,
+      include_bbox: true,
+      confidence_threshold: 0.8,
+      s3_file_name: 'PO_Private_00114126882.pdf',
+      provider_id: 'openai',
+      model_id: 'gpt-4o',
+      use_latest: false,
+      ocr_engine: 'doctr',
+    };
+    const response = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+    if (response.stream_url) {
+      const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+      const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${response.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+      eventSource.addEventListener('task_update', (event: any) => {
+        const data = JSON.parse(event.data);
+        if (data.status === 'Complete') {
+          console.log('data:===========', data?.result?.extracted_data);
+          setExtracting(false);
+
+          setExtractedData(data?.result?.extracted_data);
+        }
+      });
+      eventSource.onerror = (error: any) => {
+        eventSource.close();
+        setExtracting(false);
+      };
     }
   };
 
@@ -215,10 +256,19 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
           </div>
 
           <ButtonBox className="mt-4">
-            <Button className="px-4 py-2" onClick={handleExtract} disabled={!fileSelected}>
-              Extract Data
+            <Button className="px-4 py-2" onClick={handleExtract}>
+              {extracting ? (
+                <span className="flex items-center gap-2">
+                  <Spinner />
+                  Extracting Field
+                </span>
+              ) : (
+                'Extract Field'
+              )}
             </Button>
           </ButtonBox>
+
+          {extractedData && <div className="border p-4 text-lg font-semibold text-green-700">po_number: {extractedData.po_number.value}</div>}
         </>
       )}
     </section>

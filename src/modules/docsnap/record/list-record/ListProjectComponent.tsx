@@ -90,27 +90,26 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
       {Boolean(projects.length) && (
         <>
           <span className="text-md pl-1">Projects</span>
-          <div className="animate-projects-container-slide-in flex h-full max-w-full gap-4 overflow-x-auto pb-2">
+          <div className="animate-projects-container-slide-in flex h-full max-w-full gap-2 overflow-x-auto pb-2">
             {projects.map((item, index) => (
               <div
                 tabIndex={0}
                 key={item._id || index}
-                className={`flex items-center gap-4 rounded-xl border ${
-                  item._id === projectId ? 'bg-sky-100 pr-2' : 'animate-projects-container-slide-out pr-0'
+                className={`flex items-center gap-2 rounded-lg border ${
+                  item._id === projectId ? 'bg-sky-50 pr-2' : 'animate-projects-container-slide-out pr-0'
                 }`}
               >
                 <div
                   onClick={() => toggleProject(item._id)}
-                  className="group flex h-28 w-30 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-200 ease-in-out hover:border-sky-400 hover:bg-sky-50"
+                  className="group flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-1 border-gray-300 p-2 text-nowrap transition-all duration-200 ease-in-out hover:border-sky-400 hover:bg-sky-50"
                 >
-                  <Package strokeWidth={1} className="text-gray-400 transition-colors duration-200 ease-in-out group-hover:text-sky-500" size={60} />
                   <span className="text-sm text-gray-600 transition-colors duration-200 ease-in-out group-hover:text-sky-600">{item.name}</span>
                 </div>
 
                 {item._id === projectId && (
                   <div className="animate-documents-fade-in flex gap-2 overflow-hidden">
                     {state.loadingDocuments ? (
-                      <div className="flex h-25 w-30 items-center justify-center">
+                      <div className="flex items-center justify-center">
                         <Spinner />{' '}
                       </div>
                     ) : documents.length > 0 ? (
@@ -119,16 +118,11 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
                           tabIndex={0}
                           key={doc._id || docIndex}
                           onClick={() => documentClickHandler(doc)}
-                          className="group flex h-25 w-40 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-gray-300 transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
+                          className="group flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-1 border-gray-300 p-1 px-2 text-nowrap transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
                           style={{
                             animationDelay: `${docIndex * 100}ms`,
                           }}
                         >
-                          <FileSpreadsheet
-                            strokeWidth={1}
-                            className="text-gray-400 transition-colors duration-200 ease-in-out group-hover:text-sky-500"
-                            size={60}
-                          />
                           <span className="text-sm text-gray-600 transition-colors duration-200 ease-in-out group-hover:text-sky-600">{doc.name}</span>
                         </div>
                       ))

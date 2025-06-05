@@ -48,10 +48,10 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
         isScrollingRef.current = false;
         // After scrolling completes, connect to the last hovered field if one exists
         if (lastHoveredFieldRef.current !== null) {
-          setState(prev => ({ ...prev, hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}` }));
+          setState(prev => ({ ...prev, hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}`, pageNumber: lastHoveredFieldRef.current?.[2] }));
           updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
         }
-      }, 50);
+      }, 500);
     };
     const container = containerRef.current;
     container?.addEventListener('scroll', handleScroll);
@@ -68,7 +68,11 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
     };
   }, [state.hoveredFieldId]);
 
-  if (state.loading) {
+  if (!state.record?.extractedData) {
+    return <div className="">Show Status Here</div>;
+  }
+
+  if (state.loadingData) {
     return (
       <div className="flex flex-1 items-center justify-center gap-2 bg-white">
         {/* <Loader size={26} className="ml-2 animate-spin" />
@@ -81,7 +85,7 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
     <div className="flex flex-col gap-y-2 p-2">
       <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
       <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-      {/* <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} /> */}
+      <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
     </div>
   );
 };

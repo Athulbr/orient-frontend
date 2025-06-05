@@ -116,7 +116,7 @@ export const Button = ({
   const sizeClasses = small ? 'h-8 px-3 text-sm' : large ? 'h-12 px-6 text-lg' : 'h-10 px-4';
 
   const colorClasses = outlined
-    ? 'bg-white border-1 border-gray-200 text-sm text-gray-800 hover:bg-gray-100'
+    ? 'bg-white border-1 border-gray-300 text-sm text-gray-800 hover:bg-gray-100'
     : 'bg-black text-white border border-black text-sm hover:bg-gray-800 hover:text-gray-200';
 
   const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';

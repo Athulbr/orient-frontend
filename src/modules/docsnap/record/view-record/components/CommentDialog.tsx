@@ -1,5 +1,6 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import { Button } from '../../../../../components/Button';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 interface CommentDialogPropsIF {
   closeDialog: () => void;
@@ -7,6 +8,9 @@ interface CommentDialogPropsIF {
 }
 export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog }) => {
   const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const toast = useToastStore();
 
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -24,8 +28,14 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
   }, [isOpen, closeDialog]);
 
   const onClickHandler = () => {
-    alert('Comment saved: ' + comment);
-    closeDialog();
+    if (!comment) return;
+    setLoading(true);
+    setTimeout(() => {
+      toast.success('Comment added successfully');
+      setComment('');
+      closeDialog();
+      setLoading(false);
+    }, 1000);
   };
   if (!isOpen) return null;
 
@@ -42,8 +52,8 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
         rows={3}
         placeholder="Add your comment here..."
       />
-      <Button onClick={onClickHandler} small className="w-fit" outlined>
-        Save
+      <Button onClick={onClickHandler} disabled={!comment} small className="w-fit" outlined>
+        {loading ? 'Saving...' : 'Save'}
       </Button>
     </div>
   );

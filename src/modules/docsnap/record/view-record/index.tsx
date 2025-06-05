@@ -22,7 +22,8 @@ interface BboxIF {
 }
 export interface ViewRecordStateIF {
   showCreateDialog: boolean;
-  loading: boolean;
+  loadingData: boolean;
+  loadingS3File: boolean;
   tabIndex: number;
   id: string;
   extractedData: Record<string, any>;
@@ -35,10 +36,12 @@ export interface ViewRecordStateIF {
   hoveredFieldId: string | null;
   pageNumber: number;
   images: any[];
+  record: any;
 }
 const initialState = {
   showCreateDialog: false,
-  loading: false,
+  loadingData: false,
+  loadingS3File: false,
   tabIndex: 0,
   id: '',
   extractedData: {},
@@ -51,6 +54,7 @@ const initialState = {
   hoveredFieldId: null,
   pageNumber: 1,
   images: [],
+  record: null,
 };
 
 const ViewRecordPage: React.FC = () => {
