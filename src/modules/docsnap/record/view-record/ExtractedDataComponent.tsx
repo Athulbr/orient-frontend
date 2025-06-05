@@ -14,6 +14,8 @@ interface ExtractedDataComponentIF {
 
 const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerRef }) => {
   const { state, setState } = useViewRecordState();
+  const [data, setData] = useState<any>({});
+
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,8 +70,53 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
     };
   }, [state.hoveredFieldId]);
 
+  useEffect(() => {
+    if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
+      const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+      const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${state.record?.metadata?.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+      eventSource.addEventListener('task_update', (event: any) => {
+        const data = JSON.parse(event.data);
+        setData(data);
+      });
+      eventSource.onerror = (error: any) => {
+        eventSource.close();
+      };
+    }
+  }, [state.record]);
+
   if (!state.record?.extractedData) {
-    return <div className="">Show Status Here</div>;
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-1">
+          <div className="relative">
+            <svg height={90} width={90} className="-rotate-90 transform">
+              {/* Background circle */}
+              <circle stroke="#e5e7eb" fill="transparent" strokeWidth={8} r={37} cx={45} cy={45} />
+              {/* Progress circle */}
+              <circle
+                stroke="#f59e0b"
+                fill="transparent"
+                strokeWidth={8}
+                strokeDasharray={`${37 * 2 * Math.PI} ${37 * 2 * Math.PI}`}
+                strokeDashoffset={37 * 2 * Math.PI - ((data?.progress || 0) / 100) * 37 * 2 * Math.PI}
+                strokeLinecap="round"
+                r={37}
+                cx={45}
+                cy={45}
+                className="transition-all duration-300 ease-in-out"
+              />
+            </svg>
+            {/* Percentage text in center */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-lg font-semibold text-amber-500">{data?.progress || 0}%</span>
+            </div>
+          </div>
+          {/* Current step text */}
+          <div className="text-center font-medium text-amber-500">{data?.current_step || ''}</div>
+        </div>
+      </div>
+    );
   }
 
   if (state.loadingData) {

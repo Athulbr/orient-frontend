@@ -4,7 +4,7 @@ import httpRequest from '../../../../../utils/httpRequest';
 import httpUploadRequest from '../../../../../utils/httpUploadRequest';
 import { useListRecordPageState } from './listRecordPageContext';
 
-export const useFetchListRecord = () => {
+export const useListRecordApi = () => {
   const { id } = useParams();
   const toast = useToastStore();
   const { state, setState } = useListRecordPageState();
@@ -26,6 +26,15 @@ export const useFetchListRecord = () => {
       toast.success('Record created successfully');
     } catch (error) {
       toast.error('Failed to Create record');
+    }
+  };
+  const deleteRecordApi = async (id: string) => {
+    try {
+      const res = await httpRequest('DELETE', `${import.meta.env.VITE_API_URL}/api/idp/history/delete/${id}`);
+      setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
+      toast.success('Record deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete record');
     }
   };
 
@@ -76,5 +85,5 @@ export const useFetchListRecord = () => {
     }
   };
 
-  return { createRecordApi, updateRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine };
+  return { createRecordApi, updateRecordApi, deleteRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine };
 };

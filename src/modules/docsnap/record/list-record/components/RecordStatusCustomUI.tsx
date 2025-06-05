@@ -30,9 +30,9 @@ export const RecordStatusCustomUI = (row: any) => {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xs text-amber-500">{data?.status || ''}</div>
-      <div className="flex gap-2">
+    <div className="flex flex-col">
+      <div className="text-xs text-amber-500">{data?.current_step || ''}</div>
+      <div className="flex items-center gap-2">
         <div className="h-2 w-32 rounded-full bg-gray-200">
           <div className="h-full rounded-full bg-amber-500 transition-all duration-300" style={{ width: `${data?.progress || 0}%` }} />
         </div>

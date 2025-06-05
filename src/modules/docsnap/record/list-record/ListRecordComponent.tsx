@@ -2,22 +2,32 @@ import { useNavigate } from 'react-router-dom';
 import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { RecordStatusCustomUI } from './components/RecordStatusCustomUI';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
-import PageNameComponent from '../../../../components/PageName';
+import { useListRecordApi } from './hooks/useListRecordApi';
 
 export const ListRecordComponent: React.FC = () => {
   const { state } = useListRecordPageState();
   const navigate = useNavigate();
+  const { deleteRecordApi } = useListRecordApi();
 
   const customFunctions = {
     rowClickHandler: (row: any) => {
       navigate(`/docsnap/record/view/${row._id}`);
     },
     deleteClickHandler: (row: any) => {
-      alert(`${row.name} Deleted`);
+      deleteRecordApi(row._id);
     },
   };
   const customUI = {
     recordStatus: RecordStatusCustomUI,
   };
-  return <UseTablebuilder customUI={customUI} refresh={state.refresh} name="List Record Table" fluidHeight customFunctions={customFunctions} />;
+  return (
+    <UseTablebuilder
+      customUI={customUI}
+      externalFilters={{ deleted: false }}
+      refresh={state.refresh}
+      name="List Record Table"
+      fluidHeight
+      customFunctions={customFunctions}
+    />
+  );
 };

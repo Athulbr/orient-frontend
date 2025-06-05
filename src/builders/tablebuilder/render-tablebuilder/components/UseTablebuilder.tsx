@@ -9,7 +9,7 @@ interface UseTablebuilderPropsIF {
   fluidHeight?: boolean;
   name: string;
   customUI?: Record<string, ({ data }: { data: any }) => JSX.Element>;
-  externalFilters?: Record<string, string>;
+  externalFilters?: Record<string, any>;
   customFunctions?: Record<string, (data: any) => void>;
   actionButtons?: { label: string; action: () => void }[];
   refresh?: number;

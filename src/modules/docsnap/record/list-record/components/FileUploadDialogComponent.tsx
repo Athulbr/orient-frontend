@@ -5,7 +5,7 @@ import httpRequest from '../../../../../utils/httpRequest';
 import httpUploadRequest from '../../../../../utils/httpUploadRequest';
 import { useViewRecordGlobalStore } from '../../view-record/hooks/useViewRecordGlobalStore';
 import DragAndDropFileInput from '../DragAndDropFileInput';
-import { useFetchListRecord } from '../hooks/listRecordPageApi';
+import { useListRecordApi } from '../hooks/useListRecordApi';
 import { useListRecordPageState } from '../hooks/listRecordPageContext';
 import { convertJSON } from '../utils/convertJSON';
 import { FileUploadAnimationComponent } from './FileUploadAnimationComponent';
@@ -16,7 +16,7 @@ interface FileUploadDialogComponentIF {
 
 const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
   const { state, setState } = useListRecordPageState();
-  const { createRecordApi, updateRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine } = useFetchListRecord();
+  const { createRecordApi, updateRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine } = useListRecordApi();
   const toast = useToastStore();
   const { updateRefresh } = useViewRecordGlobalStore();
   const { getS3File } = useS3DocumentsStore();
@@ -77,6 +77,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
 
     eventSource.addEventListener('task_update', async (event: any) => {
       const data = JSON.parse(event.data);
+      console.log('data:===========', data);
       if (data.current_step === 'Complete') {
         eventSource.close();
         await updateRecordApi(

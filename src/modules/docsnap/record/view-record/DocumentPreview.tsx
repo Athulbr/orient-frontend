@@ -1,8 +1,6 @@
 import Spinner from '../../../../components/Spinner';
 import { useViewRecordState } from './hooks/viewRecordContext';
-import pdfLocation from '../../../../assets/PO_Private_hc7536 4_page-0001 (1).jpg';
 import { useEffect, useRef } from 'react';
-import { useViewRecordGlobalStore } from './hooks/useViewRecordGlobalStore';
 
 interface DocumentPreviewComponentIF {
   test?: string;
