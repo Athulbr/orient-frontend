@@ -52,36 +52,60 @@ export const useListRecordApi = () => {
   };
 
   const trainChatWithDocumentEngine = async (s3fileName: string, s3Url: string) => {
-    const response = await fetch(`${import.meta.env.VITE_BASR_URL}/chatbot/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source: [
-          {
-            name: s3fileName,
-            fileType: 'application/pdf',
-            url: s3Url,
-            active: true,
-          },
-        ],
-        botName: s3fileName || 'Testbot',
-      }),
-    });
-    const reader = response?.body?.getReader();
-    if (!reader) {
-      toast.error('Error in training the bot');
-      return null;
-    }
-    while (true) {
-      const { value, done } = await reader?.read();
-      if (done) {
-        // setloader(false);
-        toast.success('Document Bot trained successfully');
-        break;
-      } else {
-        // showToast('success', decoder.decode(value));
-        toast.error('Failed to train Document Bot ');
+    try {
+      const response = await fetch(`https://dev.makez.ai/chatbot/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: [
+            {
+              name: s3fileName,
+              fileType: 'application/pdf',
+              url: s3Url,
+              active: true,
+            },
+          ],
+          botName: s3fileName || 'Testbot',
+        }),
+      });
+
+      // Check if the response is ok
+      if (!response.ok) {
+        toast.error(`HTTP error! status: ${response.status}`);
+        return null;
       }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        toast.error('Error in training the bot - no response body');
+        return null;
+      }
+
+      const decoder = new TextDecoder();
+      let hasError = false;
+
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+
+          if (done) {
+            if (!hasError) {
+              toast.success('Document Bot trained successfully');
+            }
+            break;
+          }
+        }
+      } catch (streamError) {
+        console.error('Stream reading error:', streamError);
+        toast.error('Error reading training response');
+        hasError = true;
+      } finally {
+        reader.releaseLock();
+      }
+    } catch (error) {
+      console.error('Training error:', error);
+      toast.error('Failed to train Document Bot');
+      return null;
     }
   };
 

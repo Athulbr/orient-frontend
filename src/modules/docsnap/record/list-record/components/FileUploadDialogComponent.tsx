@@ -32,7 +32,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
         include_bbox: true,
         confidence_threshold: 0.8,
         s3_file_name: s3FileName,
-        provider_id: 'openai',
+        provider_id: 'azure',
         model_id: 'gpt-4o',
         use_latest: false,
       };
@@ -77,7 +77,6 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
 
     eventSource.addEventListener('task_update', async (event: any) => {
       const data = JSON.parse(event.data);
-      console.log('data:===========', data);
       if (data.current_step === 'Complete') {
         eventSource.close();
         await updateRecordApi(

@@ -2,6 +2,7 @@ import { FC, useState } from 'react';
 import { Dock, FileText, LayoutDashboard, Menu, Settings, Users, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
+import useToggle from '../../hooks/useToggleHook';
 
 // Types
 interface NavItemType {
@@ -48,16 +49,26 @@ const configMenuItem = {
 // Mock Logo component
 
 // Component for a navigation item in desktop sidebar
-const DesktopNavItem: FC<any> = ({ item, onClick }) => (
-  <div
-    tabIndex={0}
-    onClick={onClick}
-    className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md bg-[#28313A] hover:bg-[#34404c]"
-  >
-    {item.icon}
-    <span className="text-[8px] text-gray-100">{item.name}</span>
-  </div>
-);
+const DesktopNavItem: FC<any> = ({ item, onClick, expandedSidebar }) => {
+  if (expandedSidebar) {
+    return (
+      <div tabIndex={0} onClick={onClick} className="flex w-full cursor-pointer items-center gap-2 p-2 hover:bg-[#24333f]">
+        {item.icon}
+        <span className="text-gray-100">{item.name}</span>
+      </div>
+    );
+  }
+  return (
+    <div
+      tabIndex={0}
+      onClick={onClick}
+      className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md bg-[#28313A] hover:bg-[#34404c]"
+    >
+      {item.icon}
+      <span className="text-[8px] text-gray-100">{item.name}</span>
+    </div>
+  );
+};
 
 // Component for a navigation item in mobile sidebar
 const MobileNavItem: FC<any> = ({ item, onClick }) => (
@@ -70,22 +81,29 @@ const MobileNavItem: FC<any> = ({ item, onClick }) => (
 // Desktop sidebar component
 const DesktopSidebar = () => {
   const navigate = useNavigate();
+  const [expandedSidebar, toggleExpandedSidebar] = useToggle();
   // Mock navigation function
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
   return (
-    <div className="hidden h-full min-w-16 flex-col bg-[#001529] md:flex">
+    <div className={`hidden h-full ${expandedSidebar ? 'min-w-40' : 'min-w-16'} flex-col bg-[#001529] md:flex`}>
       <div tabIndex={0} className="flex h-16 w-16 items-center justify-center">
-        <Menu className="cursor-pointer" color="white" size={30} />
+        <Menu onClick={toggleExpandedSidebar} className="cursor-pointer" color="white" size={30} />
       </div>
       <section className="flex h-full flex-col items-center gap-5 pt-6">
         {navItems.map(item => (
-          <DesktopNavItem key={item.key} item={item} onClick={() => handleNavigation(item.path)} />
+          <DesktopNavItem expandedSidebar={expandedSidebar} key={item.key} item={item} onClick={() => handleNavigation(item.path)} />
         ))}
         <div className="flex flex-1 flex-col items-center justify-end gap-4 pb-2 text-[10px] text-gray-400">
-          <DesktopNavItem key={configMenuItem.key} item={configMenuItem} onClick={() => handleNavigation(configMenuItem.path)} />V 1.0.0
+          <DesktopNavItem
+            expandedSidebar={expandedSidebar}
+            key={configMenuItem.key}
+            item={configMenuItem}
+            onClick={() => handleNavigation(configMenuItem.path)}
+          />
+          V 1.0.0
         </div>
       </section>
     </div>

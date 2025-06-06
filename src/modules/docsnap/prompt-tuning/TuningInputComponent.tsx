@@ -55,8 +55,6 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
   const [extractedData, setExtractedData] = useState<any>(null);
   const [llmResponse, setLlmResponse] = useState<LlmResponse | null>(null);
 
-  if (extractedData) console.log('extractedData:===========', extractedData);
-
   const toast = useToastStore();
 
   const updateField = (field: keyof TuningConfig, value: string) => {
@@ -153,7 +151,6 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
       eventSource.addEventListener('task_update', (event: any) => {
         const data = JSON.parse(event.data);
         if (data.status === 'Complete') {
-          console.log('data:===========', data?.result?.extracted_data);
           setExtracting(false);
 
           setExtractedData(data?.result?.extracted_data);

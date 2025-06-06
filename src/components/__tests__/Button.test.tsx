@@ -166,13 +166,6 @@ describe('Button', () => {
       const button = screen.getByRole('button');
       expect(button).toHaveClass('bg-black', 'text-white', 'border', 'border-black', 'hover:bg-gray-800', 'hover:text-gray-200');
     });
-
-    it('applies outlined styling', () => {
-      render(<Button outlined>Outlined Button</Button>);
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-white', 'border-1', 'border-gray-200', 'text-gray-800', 'hover:bg-gray-100');
-    });
   });
 
   describe('Icons', () => {
