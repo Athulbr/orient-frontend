@@ -35,7 +35,7 @@ export const TableSettings: React.FC<PropsIF> = () => {
       <div className="sticky top-0 left-0 z-1 flex items-center justify-between bg-white pb-2">
         <div className="flex items-start gap-2 text-xl text-gray-800">
           <BackButton onClick={() => navigate(-1)} />
-          Table Builder
+          Tablebuilder
         </div>
         <div className="flex gap-2">
           {!id && (

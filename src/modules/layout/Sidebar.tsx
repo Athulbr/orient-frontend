@@ -96,14 +96,14 @@ const DesktopSidebar = () => {
         {navItems.map(item => (
           <DesktopNavItem expandedSidebar={expandedSidebar} key={item.key} item={item} onClick={() => handleNavigation(item.path)} />
         ))}
-        <div className="flex flex-1 flex-col items-center justify-end gap-4 pb-2 text-[10px] text-gray-400">
+        <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 ${expandedSidebar ? 'w-full' : 'items-center text-[10px]'}`}>
           <DesktopNavItem
             expandedSidebar={expandedSidebar}
             key={configMenuItem.key}
             item={configMenuItem}
             onClick={() => handleNavigation(configMenuItem.path)}
           />
-          V 1.0.0
+          <span className="flex justify-center text-sm">{expandedSidebar ? '© 2025 makez.ai' : 'V 1.0.0'}</span>
         </div>
       </section>
     </div>
@@ -121,7 +121,7 @@ const MobileSidebar: FC<SidebarComponentIF> = ({ showSidebar, setShowSidebar }) 
 
   return (
     <div className="absolute top-0 left-0 z-20 flex h-screen w-screen bg-[#00000080] md:hidden">
-      <div className="h-screen w-3/4 bg-black">
+      <div className="h-screen w-1/2 bg-black">
         <div className="flex h-17 w-full items-center justify-between pl-6">
           <MakezLogoHeader />
         </div>

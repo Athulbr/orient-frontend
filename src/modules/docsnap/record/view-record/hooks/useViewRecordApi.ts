@@ -9,7 +9,7 @@ import { useViewRecordGlobalStore } from './useViewRecordGlobalStore';
 import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
 
 export const useViewRecordApi = () => {
-  const { setState } = useViewRecordState();
+  const { state, setState } = useViewRecordState();
   const { id } = useParams();
   const toast = useToastStore();
   const { refresh } = useViewRecordGlobalStore();
@@ -78,7 +78,60 @@ export const useViewRecordApi = () => {
     }
   };
 
-  return { getRecordApiById };
+  const sendMessage = async (message: string) => {
+    setState(prev => ({
+      ...prev,
+      chatLoading: true,
+      messages: [
+        ...prev.messages,
+        {
+          text: message,
+          userMessage: true,
+        },
+      ],
+    }));
+
+    // setMessages((prev) => [
+    //   ...prev,
+    //   {
+    //     text: message,
+    //     userMessage: true,
+    //   },
+    // ]);
+
+    console.log('state.record:===========', state.record);
+
+    const requestBody = {
+      query: message,
+      botName: state.record?.pdfFileName,
+    };
+
+    const response: any = await httpRequest('POST', `https://dev.makez.ai/chatbot/query`, requestBody);
+    // const response:any = await dymmyApiCall();
+
+    // setMessages((prev) => [
+    //   ...prev,
+    //   {
+    //     text: response.answer,
+    //     source: response.source_documents,
+    //     userMessage: false,
+    //   },
+    // ]);
+    setState(prev => ({
+      ...prev,
+      chatLoading: false,
+      messages: [
+        ...prev.messages,
+        {
+          text: response.answer,
+          source: response.source_documents,
+          userMessage: false,
+        },
+      ],
+    }));
+  };
+
+  return { getRecordApiById, sendMessage };
 };
 
 const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {

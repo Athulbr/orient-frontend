@@ -57,7 +57,7 @@ export const ImageMagnifier: React.FC<ImageMagnifierProps> = ({
     const y = e.clientY - rect.top;
 
     // Calculate magnifier position (offset to avoid covering cursor)
-    const magnifierX = e.clientX + 20;
+    const magnifierX = e.clientX - 120;
     const magnifierY = e.clientY - magnifierHeight / 2;
 
     setMagnifierPosition({ x: magnifierX, y: magnifierY });
@@ -67,7 +67,7 @@ export const ImageMagnifier: React.FC<ImageMagnifierProps> = ({
     if (!imgRef.current || !showMagnifier) return {};
 
     const rect = imgRef.current.getBoundingClientRect();
-    const x = magnifierPosition.x - rect.left - 20; // Adjust for offset
+    const x = magnifierPosition.x - rect.left + 120; // Adjust for offset
     const y = magnifierPosition.y - rect.top + magnifierHeight / 2;
 
     // Calculate background position for magnification

@@ -20,6 +20,12 @@ interface BboxIF {
   x_max: number;
   y_max: number;
 }
+
+export interface Message {
+  text: string;
+  source?: string[];
+  userMessage: boolean;
+}
 export interface ViewRecordStateIF {
   showCreateDialog: boolean;
   loadingData: boolean;
@@ -37,6 +43,8 @@ export interface ViewRecordStateIF {
   pageNumber: number;
   images: any[];
   record: any;
+  messages: Message[];
+  chatLoading: boolean;
 }
 const initialState = {
   showCreateDialog: false,
@@ -55,6 +63,8 @@ const initialState = {
   pageNumber: 1,
   images: [],
   record: null,
+  messages: [],
+  chatLoading: false,
 };
 
 const ViewRecordPage: React.FC = () => {

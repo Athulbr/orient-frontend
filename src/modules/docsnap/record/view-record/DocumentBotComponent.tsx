@@ -1,22 +1,31 @@
 import { ChatContainer } from './components/ChatContainer';
 import { ChatInput } from './components/ChatInput';
+import ChatMessage from './components/ChatMessage';
+import DotLoader from './components/dot-loader';
+import { useViewRecordApi } from './hooks/useViewRecordApi';
+import { useViewRecordState } from './hooks/viewRecordContext';
 
 interface DocumentBotComponentIF {
   test?: string;
 }
 
 const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
-  const sendMessage = async (message: string) => {};
+  const { state, setState } = useViewRecordState();
+  const { sendMessage } = useViewRecordApi();
+
+  const sendMessageHandler = async (message: string) => {
+    sendMessage(message);
+  };
+  const messages = state.messages;
   return (
-    <div className="flex h-full flex-1 flex-col">
+    <div className="flex flex-1 flex-col">
       <ChatContainer>
-        <div className="flex flex-1 flex-col">test</div>
-        {/* {messages.map((message, index) => (
+        {state.messages.map((message, index) => (
           <ChatMessage key={index} message={message.text} userMessage={message.userMessage} source={message.source} />
         ))}
-        {messages[messages.length - 1]?.userMessage && isLoading && <DotLoader />} */}
+        {messages[messages.length - 1]?.userMessage && state.chatLoading && <DotLoader />}
       </ChatContainer>
-      <ChatInput sendMessage={sendMessage} />
+      <ChatInput sendMessage={sendMessageHandler} />
     </div>
   );
 };
