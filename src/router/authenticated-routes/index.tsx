@@ -14,6 +14,7 @@ const AuthenticatedRoutes = () => {
         <Route path="/docsnap/*" element={<DocSnapRoutes />} />
         <Route path="/promate/*" element={<PromateRoutes />} />
         <Route path="/config/*" element={<ConfigRoutes />} />
+        <Route path="/" element={<DocSnapRoutes />} />
         <Route path="/*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

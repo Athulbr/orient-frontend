@@ -10,6 +10,7 @@ const UnauthenticatedRoutes = () => {
     <Suspense fallback={<FullScreenLoader />}>
       <Routes>
         <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route path="/" element={<AuthRoutes />} />
         <Route path="/*" element={<Navigate to="/auth/login" replace />} />
       </Routes>
     </Suspense>

@@ -1,9 +1,7 @@
 import { Bell, CircleHelp, CircleUser, LogIn, Menu, Search, Settings, X } from 'lucide-react';
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
-import { useAuthStore } from '../auth/AuthStore';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
-import httpRequest from '../../utils/httpRequest';
 import { DropdownMenu } from '../../components/DropdownMenu';
 
 interface HeaderComponentIF {
@@ -14,25 +12,16 @@ interface HeaderComponentIF {
 const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSidebar }) => {
   const toast = useToastStore();
   const navigate = useNavigate();
-  const firstName = JSON.parse(window?.sessionStorage.getItem('firstName') || 'User');
+  const firstName = JSON.parse(window?.sessionStorage.getItem(`${'firstName'}`) as string) || 'User';
   const logOut = () => {
     toast.success('Logged out successfully');
     setTimeout(() => {
       window.sessionStorage.clear();
-      window?.location?.replace('/auth/login');
-    }, 1000);
+      window?.location?.replace('/');
+    }, 500);
   };
   const onChangeDropDown = (e: string) => {
     if (e === 'Logout') logOut();
-  };
-
-  const refreshAuth = async () => {
-    const res = await httpRequest('POST', `${import.meta.env.VITE_API_URL}/api/auth/login`, { email: 'sam@demo.com', password: 'welcome' });
-    if (res?.data?.accessToken) {
-      window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
-      window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-      toast.success('Auth refreshed successfully');
-    }
   };
 
   return (
@@ -42,7 +31,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
           <Menu onClick={() => setShowSidebar(true)} className="cursor-pointer" color="white" size={30} />
         </div>
       )}
-      <div tabIndex={0} className="flex h-full cursor-pointer items-center md:pl-6" onClick={() => navigate('/docsnap/record/list')}>
+      <div tabIndex={0} className="flex h-full cursor-pointer items-center md:pl-6" onClick={() => navigate('/')}>
         <MakezLogoHeader />
       </div>
       <div className="flex flex-1 items-center justify-end">

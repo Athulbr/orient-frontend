@@ -18,7 +18,10 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
           <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:shadow-lg">
             <label className="flex justify-between p-4 text-lg font-bold capitalize">
               {formatFieldLabel(state.tableNames[mainIndex])}
-              <span className="flex cursor-pointer items-center gap-1 text-sm font-normal text-sky-500 hover:text-sky-600">
+              <span
+                onClick={() => setState(prev => ({ ...prev, tableViewDialog: true }))}
+                className="flex cursor-pointer items-center gap-1 text-sm font-normal text-sky-500 hover:text-sky-600"
+              >
                 <Table size={16} strokeWidth={1} /> View in table
               </span>
             </label>

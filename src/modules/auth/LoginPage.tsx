@@ -86,7 +86,7 @@ const LoginPage: React.FC<LoginPageIF> = () => {
         window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
         toast.success('Logged in successfully');
         setTimeout(() => {
-          window?.location?.replace('/docsnap/record/list');
+          window?.location?.replace('/');
         }, 1000);
       } else {
         setAuthError('Login failed. Please check your credentials.');

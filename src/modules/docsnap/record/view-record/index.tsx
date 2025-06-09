@@ -45,6 +45,7 @@ export interface ViewRecordStateIF {
   record: any;
   messages: Message[];
   chatLoading: boolean;
+  tableViewDialog: boolean;
 }
 const initialState = {
   showCreateDialog: false,
@@ -65,6 +66,7 @@ const initialState = {
   record: null,
   messages: [],
   chatLoading: false,
+  tableViewDialog: false,
 };
 
 const ViewRecordPage: React.FC = () => {

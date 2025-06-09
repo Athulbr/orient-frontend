@@ -7,6 +7,7 @@ import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
 import { RenderTopLevelFields } from './render-field-components/RenderTopLevelFields';
 import Spinner from '../../../../components/Spinner';
+import { TableViewDialog } from './render-field-components/TableViewDialog';
 
 interface ExtractedDataComponentIF {
   containerRef: any;
@@ -133,6 +134,7 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
       <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
       <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
       <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+      <TableViewDialog refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
     </div>
   );
 };

@@ -41,7 +41,7 @@ export const useToastStore = create<ToastStore>((set, get) => ({
       message,
       title,
       type,
-      duration: duration || 2000,
+      duration: duration || 6000,
       createdAt: Date.now(),
     };
 
