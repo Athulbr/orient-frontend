@@ -27,6 +27,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
   onPrimaryAction,
   onSecondaryAction,
   className,
+  fullScreen,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -85,7 +86,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
     <div className="fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
       <div
         ref={dialogRef}
-        className={`flex max-h-[90%] flex-col rounded-lg bg-[linear-gradient(180deg,_rgba(255,255,255,1)_0%,_rgb(246,250,252)_35%,_rgb(251,247,244)_100%)] shadow-xl ${className}`}
+        className={`flex ${fullScreen ? 'h-full w-full rounded-none' : 'max-h-[90%]'} flex-col rounded-lg bg-[linear-gradient(180deg,_rgba(255,255,255,1)_0%,_rgb(246,250,252)_35%,_rgb(251,247,244)_100%)] shadow-xl ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"

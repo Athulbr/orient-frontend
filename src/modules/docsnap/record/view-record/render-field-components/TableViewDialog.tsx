@@ -33,9 +33,9 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
 
     return {
       x_min_px: 0,
-      y_min_px: y_min * imageDimensions.height - 50,
+      y_min_px: y_min * imageDimensions.height - 100,
       x_max_px: imageDimensions.width,
-      y_max_px: y_max * imageDimensions.height + 50,
+      y_max_px: y_max * imageDimensions.height + 100,
     };
   };
 
@@ -45,6 +45,7 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
 
   return (
     <DialogComponent
+      fullScreen
       name="Table View"
       className="h-full w-[calc(100%-40px)]"
       isOpen={state.tableViewDialog}
@@ -53,25 +54,27 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
       <div className="p-2">
         {/* Show cropped image if bbox coordinates are available */}
         {pixelCoords ? (
-          <div
-            className="relative overflow-hidden border-2 border-blue-300"
-            style={{
-              width: `${cropWidth}px`,
-              height: `${cropHeight}px`,
-            }}
-          >
-            <img
-              src={state.images[state.pageNumber - 1]}
-              className="absolute"
+          <div className="flex h-56 w-full justify-center">
+            <div
+              className="relative overflow-hidden border-2 border-blue-300"
               style={{
-                left: `-${pixelCoords.x_min_px}px`,
-                top: `-${pixelCoords.y_min_px}px`,
-                maxWidth: 'none',
-                maxHeight: 'none',
+                width: `${cropWidth}px`,
+                height: `${cropHeight}px`,
               }}
-              alt="Cropped document section"
-              onLoad={handleImageLoad}
-            />
+            >
+              <img
+                src={state.images[state.pageNumber - 1]}
+                className="absolute"
+                style={{
+                  left: `-${pixelCoords.x_min_px}px`,
+                  top: `-${pixelCoords.y_min_px}px`,
+                  maxWidth: 'none',
+                  maxHeight: 'none',
+                }}
+                alt="Cropped document section"
+                onLoad={handleImageLoad}
+              />
+            </div>
           </div>
         ) : (
           // Fallback to full image if no bbox coordinates, also used to get image dimensions

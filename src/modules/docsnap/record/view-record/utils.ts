@@ -34,37 +34,35 @@ export let convertPdfToImages = async (file: File): Promise<string[]> => {
 };
 
 let renderPageToImage = async (pdf: any, pageNumber: number): Promise<string> => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const page = await pdf.getPage(pageNumber);
-            const viewport = page.getViewport({ scale: 1.5 });
+  return new Promise(async (resolve, reject) => {
+    try {
+      const page = await pdf.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 1.5 });
 
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
 
-            if (!context) {
-                return reject(new Error('Could not create canvas context'));
-            }
+      if (!context) {
+        return reject(new Error('Could not create canvas context'));
+      }
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
 
-            await page.render({
-                canvasContext: context,
-                viewport: viewport
-            }).promise;
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+      }).promise;
 
-      
-
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    resolve(URL.createObjectURL(blob));
-                } else {
-                    reject(new Error('Failed to create Blob from canvas'));
-                }
-            }, "image/png");
-        } catch (error) {
-            reject(error);
+      canvas.toBlob(blob => {
+        if (blob) {
+          resolve(URL.createObjectURL(blob));
+        } else {
+          reject(new Error('Failed to create Blob from canvas'));
         }
-    });
-}
+      }, 'image/png');
+    } catch (error) {
+      reject(error);
+    }
+  });
+};

@@ -15,7 +15,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
     <>
       {state.arrayFields.map((item, mainIndex) => {
         return (
-          <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:shadow-lg">
+          <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:border-yellow-300">
             <label className="flex justify-between p-4 text-lg font-bold capitalize">
               {formatFieldLabel(state.tableNames[mainIndex])}
               <span
