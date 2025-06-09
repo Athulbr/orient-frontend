@@ -10,6 +10,8 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
 
+  console.log('state.bbox:===========', state.bbox);
+
   const x_min = state.bbox?.x_min;
   const y_min = state.bbox?.y_min;
   const x_max = state.bbox?.x_max;
@@ -54,9 +56,9 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
       <div className="p-2">
         {/* Show cropped image if bbox coordinates are available */}
         {pixelCoords ? (
-          <div className="flex h-56 w-full justify-center">
+          <div className="flex h-58 w-full justify-center">
             <div
-              className="relative overflow-hidden border-2 border-blue-300"
+              className="relative overflow-hidden rounded-lg border-2 border-blue-300 bg-red-200"
               style={{
                 width: `${cropWidth}px`,
                 height: `${cropHeight}px`,
@@ -64,7 +66,7 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
             >
               <img
                 src={state.images[state.pageNumber - 1]}
-                className="absolute"
+                className="absolute max-w-[1280px]"
                 style={{
                   left: `-${pixelCoords.x_min_px}px`,
                   top: `-${pixelCoords.y_min_px}px`,
@@ -74,11 +76,23 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
                 alt="Cropped document section"
                 onLoad={handleImageLoad}
               />
+              {x_min && x_max && (
+                <div
+                  title="bbox"
+                  className="pointer-events-none absolute border-2 border-[#FFA901]"
+                  style={{
+                    left: `${(x_min - 0) * 100 - 0.2}%`,
+                    top: `${45}%`,
+                    width: `${(x_max - x_min) * 100 + 0.6}%`,
+                    height: `${12}%`,
+                  }}
+                />
+              )}
             </div>
           </div>
         ) : (
           // Fallback to full image if no bbox coordinates, also used to get image dimensions
-          <img src={state.images[state.pageNumber - 1]} alt="Full document" onLoad={handleImageLoad} />
+          <img src={state.images[state.pageNumber - 1]} className="h-50" alt="Full document" onLoad={handleImageLoad} />
         )}
 
         {state.arrayFields.map((item, mainIndex) => {

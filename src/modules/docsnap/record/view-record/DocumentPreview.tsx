@@ -52,7 +52,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                     left: `${bbox.x_min * 100 - 0.4}%`,
                     top: `${bbox.y_min * 100 - 0.4}%`,
                     width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
-                    height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
+                    height: `${(bbox.y_max - bbox.y_min) * 100 + 0.7}%`,
                   }}
                 />
               )}
