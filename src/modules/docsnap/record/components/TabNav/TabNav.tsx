@@ -3,7 +3,6 @@ import styles from './TabNav.module.css';
 import { Button } from '../../../../../components/Button';
 import { useViewRecordState } from '../../view-record/hooks/viewRecordContext';
 import { DropdownMenu } from '../../../../../components/DropdownMenu';
-
 export interface TabNavProps {
   defaultActiveTab?: number;
   className?: string;
