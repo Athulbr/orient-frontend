@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { DropdownMenu } from '../DropdownMenu';
 
 export default {
   title: 'Components/DropdownMenu',
@@ -9,6 +8,7 @@ export default {
   },
 };
 import { StoryFn } from '@storybook/react';
+import { DropdownMenu } from '../DropdownMenu';
 
 const optionsList = ['Option 1', 'Option 2', 'Option 3'];
 
