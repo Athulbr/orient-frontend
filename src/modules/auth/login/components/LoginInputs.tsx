@@ -6,6 +6,7 @@ import Spinner from '../../../../components/Spinner';
 import { useLoginPageState } from '../hooks/LoginPageStateProvider';
 import { useNavigate } from 'react-router-dom';
 import { useLoginPageApi } from '../hooks/useLoginPageApi';
+import { useEffect } from 'react';
 
 interface LoginInputsIF {
   test?: string;
@@ -15,6 +16,7 @@ export const LoginInputs: React.FC<LoginInputsIF> = () => {
   const { state, setState } = useLoginPageState();
   const navigate = useNavigate();
   const { loginWithEmailAndPassword } = useLoginPageApi();
+
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
       loginWithEmailAndPassword();

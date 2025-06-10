@@ -16,6 +16,7 @@ export interface LoginPageStateIF {
     email: string;
     password: string;
   };
+  isSubmitClicked: boolean;
 }
 const initialState = {
   email: '',
@@ -26,6 +27,7 @@ const initialState = {
     email: '',
     password: '',
   },
+  isSubmitClicked: false,
 };
 const LoginPage: FC = () => {
   const [state, setState] = useState<LoginPageStateIF>(initialState);

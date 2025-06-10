@@ -4,13 +4,23 @@ import { useLoginPageState } from './LoginPageStateProvider';
 import { validateEmail, validatePassword } from '../utils';
 import httpRequest from '../../../../utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useEffect } from 'react';
 
 export const useLoginPageApi = () => {
   const { state, setState } = useLoginPageState();
   const toast = useToastStore();
 
+  // ============================= UseEffect ==================================
+  useEffect(() => {
+    if (!state.isSubmitClicked) return;
+    const emailError = validateEmail(state.email);
+    const passwordError = validatePassword(state.password);
+    setState(prev => ({ ...prev, fieldError: { email: emailError, password: passwordError } }));
+  }, [state.email, state.password]);
+
   // ============================= login With Email And Password ==================================
   const loginWithEmailAndPassword = async () => {
+    setState(prev => ({ ...prev, isSubmitClicked: true }));
     const emailError = validateEmail(state.email);
     const passwordError = validatePassword(state.password);
     if (emailError || passwordError) {
@@ -77,5 +87,6 @@ export const useLoginPageApi = () => {
     },
   });
 
+  // ============================= Return ==================================
   return { loginWithEmailAndPassword, loginWithGoogle };
 };

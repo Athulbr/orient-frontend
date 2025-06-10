@@ -1,16 +1,16 @@
 import { Table, Trash } from 'lucide-react';
-import { FC, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { RenderTopLevelFieldsIF } from './RenderTopLevelFields';
 import { DialogComponent } from '../../../../../components/DialogComponent';
+import { AnnotationLine } from '../components/AnnotationLine';
 
 export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }) => {
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
-
-  console.log('state.bbox:===========', state.bbox);
+  const bboxRef = useRef<Record<string, HTMLDivElement | null>>({});
 
   const x_min = state.bbox?.x_min;
   const y_min = state.bbox?.y_min;
@@ -54,9 +54,8 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
       closeDialog={() => setState(prev => ({ ...prev, tableViewDialog: false }))}
     >
       <div className="p-2">
-        {/* Show cropped image if bbox coordinates are available */}
         {pixelCoords ? (
-          <div className="flex h-58 w-full justify-center">
+          <div className="flex h-58 max-h-58 min-h-58 w-full justify-center">
             <div
               className="relative overflow-hidden rounded-lg border-2 border-blue-300 bg-red-200"
               style={{
@@ -89,9 +88,13 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
                 />
               )}
             </div>
+            <svg className="pointer-events-none absolute top-0 left-0 z-10 flex h-full w-full">
+              {/* <line x1={wire.x1} y1={wire.y1} x2={wire.x2} y2={wire.y2} stroke="#FFA901" strokeWidth={2} strokeDasharray={4} />
+      <circle cx={wire.x1} cy={wire.y1} r={4} fill="#FFA901" /> */}
+              <circle cx={100} cy={100} r={4} fill="#FFA901" />
+            </svg>
           </div>
         ) : (
-          // Fallback to full image if no bbox coordinates, also used to get image dimensions
           <img src={state.images[state.pageNumber - 1]} className="h-50" alt="Full document" onLoad={handleImageLoad} />
         )}
 
@@ -135,6 +138,7 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
           );
         })}
       </div>
+      <AnnotationLine />
     </DialogComponent>
   );
 };
