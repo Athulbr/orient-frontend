@@ -2,7 +2,7 @@ import { Bell, CircleHelp, CircleUser, LogIn, Menu, Search, Settings, X } from '
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
-import { DropdownMenu } from '../../components/DropdownMenu';
+import { Dropdown } from '../../components/Dropdown';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;
@@ -39,12 +39,12 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
           {/* <LogIn tabIndex={0} onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
           <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          <DropdownMenu onChange={onChangeDropDown} options={['Account', 'Logout']}>
+          <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
             <span className="flex items-center gap-2 text-sm text-gray-300">
               <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
               {firstName}
             </span>
-          </DropdownMenu>
+          </Dropdown>
           <Settings tabIndex={0} onClick={() => navigate('/config')} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
         </div>
       </div>

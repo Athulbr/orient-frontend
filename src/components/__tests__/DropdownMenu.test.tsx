@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DropdownMenu } from '../DropdownMenu';
+import { Dropdown } from '../Dropdown';
 
-describe('DropdownMenu', () => {
+describe('Dropdown', () => {
   const mockOnChange = vi.fn();
   const options = ['Option 1', 'Option 2', 'Option 3'];
   const triggerText = 'Open Menu';
@@ -18,9 +18,9 @@ describe('DropdownMenu', () => {
 
   it('renders children as trigger', () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByText(triggerText);
@@ -29,9 +29,9 @@ describe('DropdownMenu', () => {
 
   it('does not show options initially', () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     options.forEach(option => {
@@ -41,9 +41,9 @@ describe('DropdownMenu', () => {
 
   it('shows options when trigger is clicked', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -58,9 +58,9 @@ describe('DropdownMenu', () => {
 
   it('hides options when trigger is clicked again', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -78,9 +78,9 @@ describe('DropdownMenu', () => {
 
   it('calls onChange when option is selected', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -98,9 +98,9 @@ describe('DropdownMenu', () => {
 
   it('closes dropdown after option selection', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -121,9 +121,9 @@ describe('DropdownMenu', () => {
   it('closes dropdown when clicking outside', async () => {
     render(
       <div>
-        <DropdownMenu options={options} onChange={mockOnChange}>
+        <Dropdown options={options} onChange={mockOnChange}>
           <span>{triggerText}</span>
-        </DropdownMenu>
+        </Dropdown>
         <div data-testid="outside">Outside element</div>
       </div>
     );
@@ -145,9 +145,9 @@ describe('DropdownMenu', () => {
 
   it('does not close dropdown when clicking inside', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -157,8 +157,8 @@ describe('DropdownMenu', () => {
       expect(screen.getByText('Option 1')).toBeInTheDocument();
     });
 
-    const dropdownMenu = screen.getByRole('menu');
-    fireEvent.mouseDown(dropdownMenu);
+    const dropdown = screen.getByRole('menu');
+    fireEvent.mouseDown(dropdown);
 
     expect(screen.getByText('Option 1')).toBeInTheDocument();
   });
@@ -166,9 +166,9 @@ describe('DropdownMenu', () => {
   it('opens dropdown with Enter key', async () => {
     const user = userEvent.setup();
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -183,9 +183,9 @@ describe('DropdownMenu', () => {
   it('opens dropdown with Space key', async () => {
     const user = userEvent.setup();
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -200,9 +200,9 @@ describe('DropdownMenu', () => {
   it('closes dropdown with Escape key', async () => {
     const user = userEvent.setup();
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -221,9 +221,9 @@ describe('DropdownMenu', () => {
 
   it('has correct accessibility attributes when closed', () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -234,9 +234,9 @@ describe('DropdownMenu', () => {
 
   it('has correct accessibility attributes when open', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -253,9 +253,9 @@ describe('DropdownMenu', () => {
 
   it('renders all options correctly', async () => {
     render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -273,9 +273,9 @@ describe('DropdownMenu', () => {
 
   it('handles empty options array', () => {
     render(
-      <DropdownMenu options={[]} onChange={mockOnChange}>
+      <Dropdown options={[]} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -291,9 +291,9 @@ describe('DropdownMenu', () => {
   it('handles duplicate options', async () => {
     const duplicateOptions = ['Option 1', 'Option 1', 'Option 2'];
     render(
-      <DropdownMenu options={duplicateOptions} onChange={mockOnChange}>
+      <Dropdown options={duplicateOptions} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');
@@ -313,9 +313,9 @@ describe('DropdownMenu', () => {
   //   it('prevents default behavior on Enter and Space keys', async () => {
   //     const user = userEvent.setup();
   //     render(
-  //       <DropdownMenu options={options} onChange={mockOnChange}>
+  //       <Dropdown options={options} onChange={mockOnChange}>
   //         <span>{triggerText}</span>
-  //       </DropdownMenu>
+  //       </Dropdown>
   //     );
 
   //     const trigger = screen.getByRole('button');
@@ -337,9 +337,9 @@ describe('DropdownMenu', () => {
     const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
 
     const { unmount } = render(
-      <DropdownMenu options={options} onChange={mockOnChange}>
+      <Dropdown options={options} onChange={mockOnChange}>
         <span>{triggerText}</span>
-      </DropdownMenu>
+      </Dropdown>
     );
 
     const trigger = screen.getByRole('button');

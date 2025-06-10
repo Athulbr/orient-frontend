@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, FC } from 'react';
 import styles from './TabNav.module.css';
 import { Button } from '../../../../../components/Button';
 import { useViewRecordState } from '../../view-record/hooks/viewRecordContext';
-import { DropdownMenu } from '../../../../../components/DropdownMenu';
+import { Dropdown } from '../../../../../components/Dropdown';
 export interface TabNavProps {
   defaultActiveTab?: number;
   className?: string;
@@ -112,10 +112,10 @@ const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton }) => {
   };
   if (!showExportButton) return;
   return (
-    <DropdownMenu onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
+    <Dropdown onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
       <Button small outlined>
         Export
       </Button>
-    </DropdownMenu>
+    </Dropdown>
   );
 };

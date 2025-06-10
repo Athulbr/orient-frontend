@@ -6,7 +6,7 @@ interface DropdownMenuPropsIF {
   onChange: (option: string) => void;
 }
 
-export const DropdownMenu: React.FC<DropdownMenuPropsIF> = ({ children, options, onChange }) => {
+export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
