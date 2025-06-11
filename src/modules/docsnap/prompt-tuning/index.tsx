@@ -6,6 +6,7 @@ import { DialogComponent } from '../../../components/DialogComponent';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageNameComponent from '../../../components/PageName';
 import PageContainer from '../../../components/PageContainer';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const UpdatedFieldsListPage: React.FC = () => {
   const [dialog, setDialog] = useState(false);
@@ -21,7 +22,9 @@ const UpdatedFieldsListPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <PageNameComponent name="Updated Fields" showBackButton />
+      <PageNameComponent name="Updated Fields" showBackButton>
+        <Breadcrumbs page="listUpdatedField" />
+      </PageNameComponent>
       <UseTablebuilder name="updated fields" customFunctions={customFunctions} fluidHeight />
       {/* <PromptTuningDialog isOpen={dialog} closeDialog={() => setDialog(false)} selectedRow={selectedRow} /> */}
       <DialogComponent name="Prompt Tunning" className="h-4/5 w-3/4" isOpen={dialog} closeDialog={() => setDialog(false)}>

@@ -6,6 +6,7 @@ import PageNameComponent from '../../../components/PageName';
 import httpRequest from '../../../utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useState } from 'react';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 interface ListFormbuilderPageIF {
   test?: string;
@@ -48,7 +49,9 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
   };
   return (
     <PageContainer className="gap-2">
-      <PageNameComponent name="Formbuilder List" showBackButton />
+      <PageNameComponent name="Formbuilder List" showBackButton>
+        <Breadcrumbs page="listFormbuilder" />
+      </PageNameComponent>
       <UseTablebuilder
         refresh={refresh}
         name="list formbuilder"

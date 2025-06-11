@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 interface ListCommentPageIF {
   test?: string;
@@ -29,8 +30,8 @@ const ListCommentPage: React.FC<ListCommentPageIF> = () => {
   return (
     <PageContainer className="gap-4">
       <PageNameComponent name="Comment List" showBackButton>
-        <div className="cursor-pointer pt-1 pl-15 text-xs text-gray-500 hover:text-blue-400">Config&nbsp;&nbsp;/&nbsp;&nbsp;Comments</div>
-      </PageNameComponent>{' '}
+        <Breadcrumbs page="listComment" />
+      </PageNameComponent>
       <UseTablebuilder name="List Comments" customFunctions={customFunctions} fluidHeight customUI={customUI} />
     </PageContainer>
   );

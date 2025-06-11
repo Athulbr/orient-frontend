@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useProjectState } from './projectContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import httpRequest from '../../../../utils/httpRequest';
 
 export const useFetchCreateTB = () => {
   const { setState } = useProjectState();
@@ -9,12 +10,9 @@ export const useFetchCreateTB = () => {
 
   // ============================= CREATE ==================================
 
-  const createProjectApi = async (project: any) => {
+  const createProjectApi = async (requestBody: any) => {
     try {
-      setTimeout(() => {
-        setState(prev => ({ ...prev, loading: true }));
-        toast.success('Project Created Successfully');
-      }, 2000);
+      const res = httpRequest('POST', `/api/idp/project`, requestBody);
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to Create Project');
