@@ -47,7 +47,7 @@ export const useViewRecordApi = () => {
   const getRecordApiById = async (id: string) => {
     try {
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest('GET', `${import.meta.env.VITE_API_URL}/api/idp/history/${id}`);
+      const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
 
       getAndConvertDocumentToImage(res.data.pdfFileName);
       const topLevelFields: Record<string, any> = {};

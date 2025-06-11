@@ -14,7 +14,7 @@ export const MultiSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fi
   useEffect(() => {
     const callApi = async () => {
       setLoading(true);
-      const res = await httpRequest('POST', `http://localhost:4000/${config.apiEndpoint}`, {});
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/${config.apiEndpoint}`, {});
       setFields(prev => {
         const updatedFields = [...prev];
         updatedFields[index].config.options = res.data;

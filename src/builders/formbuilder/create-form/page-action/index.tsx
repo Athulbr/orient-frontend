@@ -88,7 +88,7 @@ const PageActionComponent: React.FC = () => {
     addMessage(prompt, true);
 
     try {
-      const res = await httpAiRequest('POST', `http://localhost:4000/${regenerate ? 'regenerate' : 'generate'}`, {
+      const res = await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/${regenerate ? 'regenerate' : 'generate'}`, {
         prompt,
         fields,
       });

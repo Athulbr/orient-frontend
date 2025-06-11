@@ -73,7 +73,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
     setState(prev => ({ ...prev, processing: false, fileUploadDialog: false, progress: 0, analyzeDone: false, uploadDone: false }));
 
     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-    const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
     eventSource.addEventListener('task_update', async (event: any) => {
       const data = JSON.parse(event.data);

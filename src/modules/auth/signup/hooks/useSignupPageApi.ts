@@ -33,7 +33,7 @@ export const useSignupPageApi = () => {
     }
     setState(prev => ({ ...prev, loading: true }));
     try {
-      const res = await httpRequest('POST', `${import.meta.env.VITE_API_URL}/api/auth/signup`, { email: state.email, password: state.password });
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, { email: state.email, password: state.password });
       if (res?.data?.accessToken) {
         window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
         window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
@@ -66,7 +66,7 @@ export const useSignupPageApi = () => {
           lastName: user.family_name,
           email: user.email,
         };
-        const res = await httpRequest('POST', `${import.meta.env.VITE_API_URL}/api/auth/signup`, ssoRegistration);
+        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, ssoRegistration);
         if (res.data?.accessToken) {
           window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
           window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));

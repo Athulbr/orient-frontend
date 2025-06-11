@@ -29,7 +29,7 @@ export const useDocumentsApi = () => {
   };
   const getDocumentByIdApi = async (id: string) => {
     try {
-      const res = await httpRequest('GET', `http://localhost:4000/api/idp/document/${id}`);
+      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/document/${id}`);
       setState(prev => ({ ...prev, fields: res.data.fields }));
     } catch (error) {
       console.error('error:===========', error);

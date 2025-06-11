@@ -31,9 +31,9 @@ export const filledInitialData: TablebuilderSettingsIF = {
     options: [10, 20, 50, 100],
   },
   api: {
-    getUrlFromEnv: false,
-    envVariable: 'VITE_API_URL',
-    url: 'http://localhost:4000',
+    getUrlFromEnv: true,
+    envVariable: 'VITE_NODE_URL',
+    url: `${import.meta.env.VITE_NODE_URL}`,
     endPoint: '/api/',
     refresh: 1,
   },
@@ -87,8 +87,8 @@ export const emptyInitialData: TablebuilderSettingsIF = {
   },
   api: {
     getUrlFromEnv: false,
-    envVariable: 'VITE_API_URL',
-    url: 'http://localhost:4600',
+    envVariable: 'VITE_NODE_URL',
+    url: `${import.meta.env.VITE_NODE_URL}`,
     endPoint: '/api/user/query',
     refresh: 1,
   },

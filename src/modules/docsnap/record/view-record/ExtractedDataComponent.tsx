@@ -74,7 +74,9 @@ const ExtractedDataComponent: React.FC<ExtractedDataComponentIF> = ({ containerR
   useEffect(() => {
     if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
       const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-      const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${state.record?.metadata?.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+      const eventSource = new EventSource(
+        `${import.meta.env.VITE_PYTHON_URL}/ai/${state.record?.metadata?.stream_url}?token=Bearer ${JSON.parse(accessToken)}`
+      );
 
       eventSource.addEventListener('task_update', (event: any) => {
         const data = JSON.parse(event.data);

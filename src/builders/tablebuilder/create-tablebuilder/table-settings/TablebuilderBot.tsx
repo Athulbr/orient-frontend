@@ -15,7 +15,7 @@ export const TablebuilderBot = () => {
     if (!input) return;
     setLoading(true);
     try {
-      const response = await httpRequest('POST', 'http://localhost:4000/generate-table-settings', { prompt });
+      const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/generate-table-settings`, { prompt });
       const parsedJson: any = safeJsonParse(response.data);
 
       if (!parsedJson) {

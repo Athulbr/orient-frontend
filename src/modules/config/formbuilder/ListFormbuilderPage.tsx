@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { StatusCustomUI, DeleteCustomUI, DateCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
+import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
@@ -33,14 +33,13 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
     },
     deleteClickHandler: async (row: Record<string, string>) => {
       try {
-        await httpRequest('DELETE', `http://localhost:4600/api/formbuilder/${row._id}`);
+        await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/formbuilder/${row._id}`);
         toast.success('Formbuilder updated successfully');
         setRefresh(prev => prev + 1);
         return true;
       } catch (error) {
         console.error(error);
         return false;
-      } finally {
       }
     },
   };

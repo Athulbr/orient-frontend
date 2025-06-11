@@ -21,7 +21,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
   });
 
   const getFormbuilder = async () => {
-    const res = await httpRequest('POST', 'http://localhost:4600/api/formbuilder/name', { name });
+    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/formbuilder/name`, { name });
     setFields(res.data.fields);
     setSettings(res.data.settings);
   };

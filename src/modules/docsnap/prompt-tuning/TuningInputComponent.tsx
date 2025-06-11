@@ -146,7 +146,7 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
     const response = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
     if (response.stream_url) {
       const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-      const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${response.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+      const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${response.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
       eventSource.addEventListener('task_update', (event: any) => {
         const data = JSON.parse(event.data);

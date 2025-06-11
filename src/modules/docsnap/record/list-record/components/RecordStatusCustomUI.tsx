@@ -9,7 +9,7 @@ export const RecordStatusCustomUI = (row: any) => {
     if (!streamUrl || row?.data?.extractedData) return;
     const connect = () => {
       const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-      const eventSource = new EventSource(`${import.meta.env.VITE_BASR_URL}/ai/${streamUrl}?token=Bearer ${JSON.parse(accessToken)}`);
+      const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${streamUrl}?token=Bearer ${JSON.parse(accessToken)}`);
 
       eventSource.addEventListener('task_update', (event: any) => {
         const data = JSON.parse(event.data);

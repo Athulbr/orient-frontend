@@ -3,7 +3,6 @@ import { RenderTablebuilder } from '..';
 import httpRequest from '../utils/HttpRequest';
 import { TablebuilderSettingsIF } from '../interface';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
-import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 
 interface UseTablebuilderPropsIF {
   fluidHeight?: boolean;
@@ -28,7 +27,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
   useEffect(() => {
     const getTableSettings = async () => {
       try {
-        const res: any = await httpRequest('POST', 'http://localhost:4600/api/tablebuilder/name', { name });
+        const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/name`, { name });
         setSettings(res?.data?.settings);
       } catch (error: any) {
         console.error('error.message:===========', error.message);

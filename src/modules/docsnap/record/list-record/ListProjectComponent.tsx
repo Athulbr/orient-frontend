@@ -41,7 +41,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await httpRequest('POST', 'http://localhost:4000/api/idp/project');
+        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project`);
         setProjects(res.data || []);
       } catch (error) {
         console.error('Error fetching project list:', error);
@@ -62,7 +62,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
     const fetchData = async () => {
       try {
         setState(prev => ({ ...prev, loadingDocuments: true }));
-        const res = await httpRequest('POST', 'http://localhost:4000/api/idp/document', {
+        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/document`, {
           filters: { projectId: projectId },
         });
         setDocuments(res.data || []);
