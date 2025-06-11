@@ -76,7 +76,9 @@ const ViewRecordPage: React.FC = () => {
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
       <PageContainer className="gap-2">
-        <PageNameComponent name="View Record" showBackButton />
+        <PageNameComponent name="View Record" showBackButton>
+          <div className="pt-1 pl-15 text-xs text-gray-500">Docsnap&nbsp;&nbsp;/&nbsp;&nbsp;{'-'}&nbsp;&nbsp;/&nbsp;&nbsp;New Document</div>
+        </PageNameComponent>
         <div className="relative flex flex-1 overflow-y-auto" ref={containerRef}>
           <DocumentPreviewComponent containerRef={containerRef} />
           <TabViewContainer>

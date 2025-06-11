@@ -22,7 +22,9 @@ const ListProjectPage: React.FC = () => {
   return (
     <ProjectStateProvider value={{ state, setState }}>
       <PageContainer className="gap-4">
-        <PageNameComponent name="Project List" showBackButton />
+        <PageNameComponent name="Project List" showBackButton>
+          <div className="cursor-pointer pt-1 pl-15 text-xs text-gray-500 hover:text-blue-400">Config&nbsp;&nbsp;/&nbsp;&nbsp;Projects</div>
+        </PageNameComponent>{' '}
         <ListProjectComponent />
         <CreateProjectComponent />
       </PageContainer>

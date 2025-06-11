@@ -24,7 +24,7 @@ export const LoginInputs: React.FC<LoginInputsIF> = () => {
   };
 
   return (
-    <div className="mt-8 flex flex-col gap-2">
+    <div className="mt-4 flex flex-col gap-2">
       <MuiTextField
         errorMessage={state.fieldError.email}
         label="Email"

@@ -22,6 +22,9 @@ const ListPromatePage: React.FC<ListPromatePageIF> = () => {
     rowClickHandler: (row: Record<string, string>) => {
       navigate(`/config/promate/update/${row._id}`);
     },
+    editClickHandler: () => {
+      alert('vinayak');
+    },
   };
   const customUI = {
     status: StatusCustomUI,
@@ -29,7 +32,7 @@ const ListPromatePage: React.FC<ListPromatePageIF> = () => {
   return (
     <PageContainer className="gap-4">
       <PageNameComponent name="Promate List" />
-      <UseTablebuilder name="list user" fluidHeight customUI={customUI} />
+      <UseTablebuilder name="List Comments" customFunctions={customFunctions} fluidHeight customUI={customUI} />
     </PageContainer>
   );
 };

@@ -22,7 +22,9 @@ const ListUserPage: React.FC = () => {
   return (
     <UserStateProvider value={{ state, setState }}>
       <PageContainer className="gap-4">
-        <PageNameComponent name="User List" showBackButton />
+        <PageNameComponent name="User List" showBackButton>
+          <div className="cursor-pointer pt-1 pl-15 text-xs text-gray-500 hover:text-blue-400">Config&nbsp;&nbsp;/&nbsp;&nbsp;Users</div>
+        </PageNameComponent>
         <ListUserComponent />
         <CreateUserComponent />
       </PageContainer>

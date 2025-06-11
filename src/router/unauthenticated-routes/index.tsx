@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import { NotFoundPage } from '../not-found-routes/GlobalNotFoundPage';
 import FullScreenLoader from '../../components/FullScreenLoader';
 
 const AuthRoutes = lazy(() => import('./AuthRoutes'));

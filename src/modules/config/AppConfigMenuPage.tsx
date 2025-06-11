@@ -1,4 +1,4 @@
-import { BookText, Cog, Component, FormInput, ListOrdered, Sheet, UserRoundCheck, Users } from 'lucide-react';
+import { BookText, ChartArea, Cog, Component, FormInput, ListOrdered, MessageSquareText, Sheet, UserRoundCheck, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageNameComponent from '../../components/PageName';
 import PageContainer from '../../components/PageContainer';
@@ -75,5 +75,11 @@ const utils = [
     icon: <Cog strokeWidth={1} className="text-gray-400" size={60} />,
     path: '/config/prompt-tuning',
     key: 'promptTuning',
+  },
+  {
+    name: 'Comments',
+    icon: <MessageSquareText strokeWidth={1} className="text-gray-400" size={60} />,
+    path: '/config/comment',
+    key: 'comment',
   },
 ];

@@ -1,5 +1,4 @@
-import { Eye, EyeOff } from 'lucide-react';
-import { InputHTMLAttributes, useEffect, useRef, useState } from 'react';
+import { InputHTMLAttributes, useRef } from 'react';
 
 interface MuiTextFieldIF extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -9,7 +8,7 @@ interface MuiTextFieldIF extends InputHTMLAttributes<HTMLInputElement> {
 export const MuiTextField: React.FC<MuiTextFieldIF> = ({ label, errorMessage, value, onChange, className, ...rest }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex flex-col">
+    <div className="mt-4 flex flex-col">
       <div className="relative">
         <input
           type="text"

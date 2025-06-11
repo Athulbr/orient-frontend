@@ -8,6 +8,7 @@ import { NotFoundPage } from '../../not-found-routes/GlobalNotFoundPage';
 import FormbuilderRoutes from './FormbuilderRoutes';
 import PermissionRoutes from './PermissionRoutes';
 import UserRoutes from '../UserRoutes';
+import ListCommentPage from '../../../modules/config/comment/ListCommentPage';
 
 const AppConfigMenuPage = lazy(() => import('../../../modules/config/AppConfigMenuPage'));
 
@@ -21,6 +22,7 @@ const ConfigRoutes = () => {
         <Route path="/formbuilder/*" element={<FormbuilderRoutes />} />
         <Route path="/prompt-tuning" element={<UpdatedFieldsListPage />} />
         <Route path="/user/*" element={<UserRoutes />} />
+        <Route path="/comment/*" element={<ListCommentPage />} />
         <Route path="/" element={<AppConfigMenuPage />} />
         <Route path="/*" element={<NotFoundPage />} />
       </Routes>

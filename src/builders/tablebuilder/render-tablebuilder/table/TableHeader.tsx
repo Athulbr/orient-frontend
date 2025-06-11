@@ -11,10 +11,6 @@ export function TableHeader() {
 
   const selectable = rowSelection.showRowSelection;
 
-  useEffect(() => {
-    getDataFromApi({});
-  }, []);
-
   const getSortIcon = (columnKey: string) => {
     const sort = sorts.find(s => s.column === columnKey);
     if (!sort) return <ChevronsUpDown className="h-4 w-4" />;

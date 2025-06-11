@@ -4,7 +4,7 @@ import FullScreenLoader from '../../components/FullScreenLoader';
 import AuthLayoutComponent from '../../modules/auth/AuthLayout';
 
 const LoginPage = lazy(() => import('../../modules/auth/login'));
-const SignUpPage = lazy(() => import('../../modules/auth/SignUpPage'));
+const SignUpPage = lazy(() => import('../../modules/auth/signup'));
 
 const AuthRoutes = () => {
   return (

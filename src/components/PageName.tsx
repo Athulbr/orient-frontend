@@ -1,13 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import BackButton from './BackButton';
+import { ReactElement } from 'react';
 
 interface PageNameComponentIF {
   showBackButton?: boolean;
   name: string;
   customGoBackFunction?: () => void;
+  children?: ReactElement;
 }
 
-const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name, customGoBackFunction }) => {
+const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name, customGoBackFunction, children }) => {
   const navigate = useNavigate();
 
   const onClickHandler = () => {
@@ -18,6 +20,7 @@ const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name
       <div className="flex items-center gap-4 text-xl">
         {showBackButton && <BackButton onClick={onClickHandler} />} {name}
       </div>
+      {children}
     </div>
   );
 };
