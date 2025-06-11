@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import GoogleIcon from '../../assets/svg-icons/GoogleIcon';
 import { MakezLogoAuth } from '../../assets/svg-icons/MakezLogoAuth';
 import { Button } from '../../components/Button';
@@ -10,6 +10,7 @@ interface AuthLayoutComponentIF {
 }
 
 const AuthLayoutComponent: React.FC<AuthLayoutComponentIF> = ({ children }) => {
+  console.log('innerHeight', window.innerHeight);
   return (
     <div className="flex h-full w-full">
       <div className="hidden h-full flex-1 flex-col bg-[url(/auth-banner.svg)] bg-cover bg-center md:flex">
@@ -22,7 +23,7 @@ const AuthLayoutComponent: React.FC<AuthLayoutComponentIF> = ({ children }) => {
         </div>
         <div className="flex w-full justify-center pb-5 text-sm text-gray-500">@ 2024 makez.ai. All rights reserved</div>
       </div>
-      <div className="flex h-full w-screen flex-col items-center justify-center md:w-1/2 lg:w-2/5">
+      <div className={`flex h-full w-screen flex-col items-center    ${window.innerHeight > 800 ? 'justify-center p-0' : 'justify-start overflow-y-auto py-8'} md:w-1/2 lg:w-2/5`}>
         <div className="flex w-full justify-center">
           <MakezLogoAuth />
         </div>
