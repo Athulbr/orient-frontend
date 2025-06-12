@@ -59,61 +59,24 @@ const SelectedDocumentsCount = () => {
 const PaginationComponent = () => {
   const { state, settings, setState } = useTablebuilderState();
   const { getDataFromApi } = useFetchDataFromApi();
-  const [showPopUp, setShowPopUp] = useState(false);
-
-  const handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.relative.mt-2.flex.items-center.gap-2')) {
-      setShowPopUp(false);
-    }
-  };
-
-  useEffect(() => {
-    if (showPopUp) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showPopUp]);
 
   const { total, page, pageRows } = state;
   const { pagination } = settings;
 
-  if (!pagination.showPaginaion || total === 0) return null;
-
+  
   const totalPages = Math.ceil(total / pageRows);
-
+  
   const setPage = (pageNumber: number) => {
     setState(prev => ({ ...prev, page: pageNumber }));
     getDataFromApi({ page: pageNumber });
   };
+  if (!pagination.showPaginaion || total === 0) return null;
 
   return (
     <div className="relative mt-2 flex items-center gap-2">
-      {showPopUp && (
-        <div className="absolute right-0 bottom-11 grid w-full grid-cols-5 gap-2 rounded-lg border bg-white p-4">
-          {Array.from({ length: Math.ceil(190 / pageRows) }, (_, index) => (
-            <Button
-              outlined
-              key={index}
-              onClick={() => {
-                setPage(index + 1);
-                setShowPopUp(false);
-              }}
-              className={page === index + 1 ? 'border-gray-300 !bg-gray-200' : ''}
-            >
-              {index + 1}
-            </Button>
-          ))}
-        </div>
-      )}
       <PaginationButton onClick={() => setPage(1)} disabled={page === 1} icon={<ChevronsLeft className="h-4 w-4" />} />
       <PaginationButton onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} icon={<ChevronLeft className="h-4 w-4" />} />
-      <span onMouseEnter={() => setShowPopUp(true)} className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
+      <span className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
         Page {page} of {totalPages}
       </span>
       <PaginationButton onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} icon={<ChevronRight className="h-4 w-4" />} />
