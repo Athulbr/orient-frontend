@@ -25,10 +25,25 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
         <Button onClick={() => navigate(-1)} outlined small>
           Cancel
         </Button>
-        <Button outlined small>
+        <Button
+          onClick={() => {
+            console.log('Update clicked arrayFields------->', state.arrayFields);
+            console.log('Update clicked objectFields------->', state.objectFields);
+            console.log('Update clicked topLevelFields------->', state.topLevelFields);
+            console.log('record------->', state.record);
+          }}
+          outlined
+          small
+        >
           Update
         </Button>
-        <Button outlined small>
+        <Button
+          onClick={() => {
+            console.log('Update clicked');
+          }}
+          outlined
+          small
+        >
           Submit
         </Button>
       </div>

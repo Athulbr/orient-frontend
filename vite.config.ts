@@ -6,6 +6,9 @@ import tailwindcss from '@tailwindcss/vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  preview: {
+    allowedHosts: ['dev.makez.ai', 'app.makez.ai', 'atl-xfactr-web.maximtech.com', "frontend-kjqb.onrender.com", "demo.makez.ai"],
+  },
   test: {
     globals: true,
     environment: 'jsdom',
