@@ -25,10 +25,18 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
   return (
     <div className="mt-4 flex flex-col gap-2">
       <MuiTextField
-        errorMessage={state.fieldError.name}
-        label="Name"
-        value={state.name}
-        onChange={e => setState(prev => ({ ...prev, name: e.target.value }))}
+        errorMessage={state.fieldError.firstName}
+        label="First Name"
+        value={state.firstName}
+        onChange={e => setState(prev => ({ ...prev, firstName: e.target.value }))}
+        className="-webkit-text-fill-color: #fff"
+        onKeyDown={handleKeyDown}
+      />
+      <MuiTextField
+        errorMessage={state.fieldError.lastName}
+        label="Last Name"
+        value={state.lastName}
+        onChange={e => setState(prev => ({ ...prev, lastName: e.target.value }))}
         className="-webkit-text-fill-color: #fff"
         onKeyDown={handleKeyDown}
       />

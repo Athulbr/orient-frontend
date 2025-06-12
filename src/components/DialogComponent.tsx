@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { useEscapeKey } from '../hooks/useEscapeKey';
 import { ButtonBox } from './ButtonBox';
 import { Button } from './Button';
+import FullScreenLoader from './FullScreenLoader';
+import Spinner from './Spinner';
 
 export interface DialogPropsIF {
   name?: string;
@@ -15,10 +17,11 @@ export interface DialogPropsIF {
   onSecondaryAction?: () => void;
   fullScreen?: boolean;
   className?: string;
+  loading?: boolean;
 }
 
 export const DialogComponent: React.FC<DialogPropsIF> = ({
-  name = 'Dialog Title',
+  name,
   primaryButtonText,
   secondaryButtonText,
   children = <></>,
@@ -28,6 +31,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
   onSecondaryAction,
   className,
   fullScreen,
+  loading,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +86,10 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
 
   if (!isOpen) return null;
 
+  if (loading) return <div className="fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
+      <Spinner className='text-white'  />
+  </div>
+
   return (
     <div className="fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
       <div
@@ -91,7 +99,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
         aria-modal="true"
         aria-labelledby="dialog-title"
       >
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
+       {name && <div className="flex items-center justify-between border-b border-gray-200 p-4">
           <h2 id="dialog-title" className="text-2xl font-bold text-gray-900">
             {name}
           </h2>
@@ -103,7 +111,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
           >
             <X size={20} />
           </button>
-        </div>
+        </div>}
 
         <div className="flex-1 overflow-y-auto">{children}</div>
 

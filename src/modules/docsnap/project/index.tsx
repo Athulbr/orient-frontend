@@ -10,11 +10,17 @@ export interface ProjectStateIF {
   showCreateDialog: boolean;
   loading: boolean;
   id: string;
+  refresh: number;
+  project: any | null;
+  loadingProject: boolean;
 }
 const initialState = {
   showCreateDialog: false,
   loading: false,
   id: '',
+  refresh:1,
+  project:null,
+  loadingProject:false
 };
 
 const ListProjectPage: React.FC = () => {

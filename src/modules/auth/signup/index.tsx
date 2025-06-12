@@ -6,36 +6,43 @@ import { OAuthButtons } from './components/OAuthButtons';
 import { LoginRedirectText } from '../signup/components/LoginRedirectText';
 import { SignupPageStateProvider } from './hooks/SignupPageStateProvider';
 import { SignupInputs } from './components/SignupInputs';
+import OtpVerification from './components/OtpVerification';
 
 export interface SignupPageStateIF {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
   loading: boolean;
   authError: string;
   fieldError: {
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     password: string;
     confirmPassword: string;
   };
   isSubmitClicked: boolean;
+  showOtpVerification: boolean;
 }
 const initialState = {
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   password: '',
   confirmPassword: '',
   loading: false,
   authError: '',
   fieldError: {
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
   },
   isSubmitClicked: false,
+  showOtpVerification: false,
 };
 const SignupPage: FC = () => {
   const [state, setState] = useState<SignupPageStateIF>(initialState);
@@ -49,6 +56,7 @@ const SignupPage: FC = () => {
         <Divider />
         <OAuthButtons />
         <LoginRedirectText />
+        <OtpVerification />
       </div>
     </SignupPageStateProvider>
   );

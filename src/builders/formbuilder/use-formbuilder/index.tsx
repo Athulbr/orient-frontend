@@ -12,16 +12,17 @@ interface UseFormbuilderIF {
   title?: string;
   closeDialog: () => void;
   onSubmit: (fields: FieldIF[]) => void;
+  loading?: boolean;
 }
 
-export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData = null, className, title }) => {
+export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData = null, className, title, loading }) => {
   const [fields, setFields] = useState<FieldIF[]>([]);
   const [settings, setSettings] = useState({
     columns: 2,
   });
 
   const getFormbuilder = async () => {
-    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/formbuilder/name`, { name });
+    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/name`, { name });
     setFields(res.data.fields);
     setSettings(res.data.settings);
   };
@@ -44,7 +45,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
     setFields(updatedFields);
   }, [existingData]);
   return (
-    <DialogComponent closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
+    <DialogComponent loading={loading} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
       <RenderForm fields={fields} submitClickHandler={onSubmit} cancelClickHandler={closeDialog} columns={settings.columns} />
     </DialogComponent>
   );

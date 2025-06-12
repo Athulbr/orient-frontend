@@ -1,7 +1,6 @@
-import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useSignupPageState } from './SignupPageStateProvider';
-import { validateEmail, validatePassword } from '../utils';
+import { validateConfirmPassword, validateEmail, validateFirstName, validateLastName, validatePassword } from '../utils';
 import httpRequest from '../../../../utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useEffect } from 'react';
@@ -13,27 +12,36 @@ export const useSignupPageApi = () => {
   // ============================= UseEffect ==================================
   useEffect(() => {
     if (!state.isSubmitClicked) return;
-    const nameError = validateEmail(state.email);
+    const firstNameError = validateFirstName(state.firstName);
+    const lastNameError = validateLastName(state.lastName);
     const emailError = validateEmail(state.email);
     const passwordError = validatePassword(state.password);
-    const confirmPasswordError = validatePassword(state.password);
-    setState(prev => ({ ...prev, fieldError: { name: nameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError } }));
-  }, [state.email, state.password]);
+    const confirmPasswordError = validateConfirmPassword(state.password, state.confirmPassword);
+    setState(prev => ({ ...prev, fieldError: { firstName: firstNameError, lastName:lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError } }));
+  }, [state.email, state.password, state.firstName, state.lastName, state.confirmPassword]);
 
   // ============================= signup With Email And Password ==================================
   const signupWithEmailAndPassword = async () => {
     setState(prev => ({ ...prev, isSubmitClicked: true }));
-    const nameError = validateEmail(state.email);
+    const firstNameError = validateFirstName(state.firstName);
+    const lastNameError = validateLastName(state.lastName);
     const emailError = validateEmail(state.email);
     const passwordError = validatePassword(state.password);
-    const confirmPasswordError = validatePassword(state.password);
+    const confirmPasswordError = validateConfirmPassword(state.password, state.confirmPassword);
     if (emailError || passwordError) {
-      setState(prev => ({ ...prev, fieldError: { name: nameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError } }));
+      setState(prev => ({ ...prev, fieldError: { firstName: firstNameError, lastName: lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError } }));
       return;
     }
     setState(prev => ({ ...prev, loading: true }));
     try {
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, { email: state.email, password: state.password });
+      const requestBody = {
+        firstName: state.firstName,
+        lastName: state.lastName,
+        email: state.email,
+        password: state.password,
+        confirmPassword: state.confirmPassword,
+      }
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/signup`, requestBody);
       if (res?.data?.accessToken) {
         window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
         window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));

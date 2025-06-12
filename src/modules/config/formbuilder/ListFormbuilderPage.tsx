@@ -33,7 +33,7 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
     },
     deleteClickHandler: async (row: Record<string, string>) => {
       try {
-        await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/formbuilder/${row._id}`);
+        await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${row._id}`);
         toast.success('Formbuilder updated successfully');
         setRefresh(prev => prev + 1);
         return true;

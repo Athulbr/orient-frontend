@@ -26,7 +26,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
     try {
       setLoading(true);
       const formName = prompt('Enter form name');
-      await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/formbuilder`, {
+      await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder`, {
         name: formName || 'Form-1',
         fields,
         settings: formSettings,
@@ -44,7 +44,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
   const updateForm = async () => {
     try {
       setLoading(true);
-      await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/formbuilder/${id}`, {
+      await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`, {
         name: formbuilderName || 'Form-1',
         fields,
         settings: formSettings,
@@ -62,7 +62,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
   const getFormbuilderByIdApi = async () => {
     try {
       setLoading(true);
-      const res = await httpAiRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/formbuilder/${id}`);
+      const res = await httpAiRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`);
       setFields(res?.data.fields);
       setFormbuilderName(res?.data.name);
       setFormSettings(res?.data.settings);
