@@ -30,7 +30,7 @@ const UpdatedFieldsListPage: React.FC = () => {
       <DialogComponent name="Prompt Tunning" className="h-4/5 w-3/4" isOpen={dialog} closeDialog={() => setDialog(false)}>
         <div className="flex max-w-full flex-col gap-10 p-5">
           <FieldDetailsComponent selectedRow={selectedRow} />
-          <UseTablebuilder name="updated field comment" externalFilters={tablebuilderFilters} />
+          <UseTablebuilder name="updated field comment" externalFilters={[]} />
           <TuningInputComponent selectedRow={selectedRow} />
         </div>
       </DialogComponent>
