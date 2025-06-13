@@ -22,10 +22,10 @@ export const useListRecordApi = () => {
   };
   const updateRecordApi = async (requestBody: any, id: string) => {
     try {
-      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, requestBody);
-      toast.success('Record created successfully');
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${id}`, requestBody);
+      toast.success('Record updated successfully');
     } catch (error) {
-      toast.error('Failed to Create record');
+      toast.error('Failed to update record');
     }
   };
   const deleteRecordApi = async (id: string) => {

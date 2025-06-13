@@ -88,14 +88,13 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
         await updateRecordApi(
           {
             extractedData: data?.result?.extracted_data || {},
-            metaData: data?.result?.metadata,
-            apiResponse: data?.result?.extracted_data || {},
           },
           createRecordResponse.data._id
         );
         setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
         updateRefresh();
       }
+
     });
     eventSource.onerror = (error: any) => {
       console.error('SSE connection error:', error);
