@@ -24,7 +24,7 @@ export interface SignupPageStateIF {
     confirmPassword: string;
   };
   isSubmitClicked: boolean;
-  showOtpVerification: boolean;
+  showOtpVerificationDialog: boolean;
 }
 const initialState = {
   firstName: '',
@@ -42,7 +42,7 @@ const initialState = {
     confirmPassword: '',
   },
   isSubmitClicked: false,
-  showOtpVerification: false,
+  showOtpVerificationDialog: false,
 };
 const SignupPage: FC = () => {
   const [state, setState] = useState<SignupPageStateIF>(initialState);
@@ -56,7 +56,7 @@ const SignupPage: FC = () => {
         <Divider />
         <OAuthButtons />
         <LoginRedirectText />
-        <OtpVerification />
+        {state.showOtpVerificationDialog && <OtpVerification />}
       </div>
     </SignupPageStateProvider>
   );

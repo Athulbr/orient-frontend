@@ -42,7 +42,8 @@ export const useLoginPageApi = () => {
       }
     } catch (error: any) {
       console.log('error:===========', error.message);
-      if (error.message === 'Invalid password') return setState(prev => ({ ...prev, authError: 'Invalid password' }));
+      if (error.message === 'Invalid password') return setState(prev => ({ ...prev, authError: 'Invalid Credentials' }));
+      if (error.message === 'Invalid email') return setState(prev => ({ ...prev, authError: 'Invalid Credentials' }));
 
       setState(prev => ({ ...prev, authError: 'Something went wrong' }));
     } finally {

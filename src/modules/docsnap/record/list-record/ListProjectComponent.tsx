@@ -1,6 +1,6 @@
 import { FileSpreadsheet, Package } from 'lucide-react';
 import { DialogComponent } from '../../../../components/DialogComponent';
-import DragAndDropFileInput from './DragAndDropFileInput';
+import DragAndDropFileInput from './components/DragAndDropFileInput';
 import React, { useState, useEffect } from 'react';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../utils/httpRequest';
@@ -101,7 +101,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
               >
                 <div
                   onClick={() => toggleProject(item._id)}
-                  className="group flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-1 border-gray-300 p-2 text-nowrap transition-all duration-200 ease-in-out hover:border-sky-400 hover:bg-sky-50"
+                  className="group flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-1 border-gray-300 p-3 text-nowrap transition-all duration-200 ease-in-out hover:border-sky-400 hover:bg-sky-50"
                 >
                   <span className="text-sm text-gray-600 transition-colors duration-200 ease-in-out group-hover:text-sky-600">{item.name}</span>
                 </div>
@@ -118,7 +118,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
                           tabIndex={0}
                           key={doc._id || docIndex}
                           onClick={() => documentClickHandler(doc)}
-                          className="group flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-1 border-gray-300 p-1 px-2 text-nowrap transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
+                          className="group flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-1 border-gray-300 p-2 px-2 text-nowrap transition-all duration-300 ease-in-out hover:border-sky-400 hover:bg-sky-50"
                           style={{
                             animationDelay: `${docIndex * 100}ms`,
                           }}

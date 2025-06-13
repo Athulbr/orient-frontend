@@ -4,7 +4,7 @@ import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
 import httpRequest from '../../../../../utils/httpRequest';
 import httpUploadRequest from '../../../../../utils/httpUploadRequest';
 import { useViewRecordGlobalStore } from '../../view-record/hooks/useViewRecordGlobalStore';
-import DragAndDropFileInput from '../DragAndDropFileInput';
+import DragAndDropFileInput from './DragAndDropFileInput';
 import { useListRecordApi } from '../hooks/useListRecordApi';
 import { useListRecordPageState } from '../hooks/listRecordPageContext';
 import { convertJSON } from '../utils/convertJSON';

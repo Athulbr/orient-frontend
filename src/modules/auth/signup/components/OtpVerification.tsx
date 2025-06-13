@@ -3,24 +3,24 @@ import { Mail, Shield, Clock, RefreshCw } from 'lucide-react';
 import { Button } from '../../../../components/Button';
 import { DialogComponent } from '../../../../components/DialogComponent';
 import { useSignupPageState } from '../hooks/SignupPageStateProvider';
+import { useSignupPageApi } from '../hooks/useSignupPageApi';
+import { useToastStore } from '../../../../components/toast/ToastStore';
 
-interface OTPVerificationProps {
-  onSubmit?: (otp: string) => void;
-  onClose?: () => void;
-  onResend?: () => void;
-}
-
-const OTPVerification: React.FC<OTPVerificationProps> = ({
-  onSubmit = otp => console.log('OTP submitted:', otp),
-  onClose = () => console.log('Modal closed'),
-  onResend = () => console.log('OTP resent'),
-}) => {
-  const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
+const OTPVerification: React.FC = ({}) => {
+  const delayTime = 150;
+  const [otp, setOtp] = useState<string[]>(new Array(4).fill(''));
   const [isExpired, setIsExpired] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(delayTime);
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { state, setState } = useSignupPageState();
+  const { resendOtpApi, verifyOtpAPI } = useSignupPageApi();
+  const toast = useToastStore();
+  console.log('isExpired', isExpired);
+
+  const closeDialog = () => {
+    setState(prev => ({ ...prev, showOtpVerificationDialog: false }));
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -51,7 +51,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
     setOtp(newOtp);
 
     // Move to next input
-    if (value && index < 5) {
+        if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -64,35 +64,39 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, 6);
+    const pastedData = e.clipboardData.getData('text').slice(0, 4);
     if (!/^\d+$/.test(pastedData)) return;
 
     const newOtp = [...otp];
     pastedData.split('').forEach((digit, index) => {
-      if (index < 6) newOtp[index] = digit;
+      if (index < 4) newOtp[index] = digit;
     });
     setOtp(newOtp);
 
     // Focus the last filled input or the next empty one
-    const lastIndex = Math.min(pastedData.length - 1, 5);
+    const lastIndex = Math.min(pastedData.length - 1, 3);
     inputRefs.current[lastIndex]?.focus();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const otpString = otp.join('');
-    if (otpString.length === 6) {
-      onSubmit(otpString);
+    if (otpString.length === 4) {
+       verifyOtpAPI(otpString);
+      
     }
   };
 
   const handleResend = async () => {
-    setIsResending(true);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    setIsExpired(false);
-    setTimeLeft(300);
-    setOtp(new Array(6).fill(''));
-    setIsResending(false);
-    onResend();
+    try {
+      setIsResending(true);
+      setTimeLeft(delayTime);
+      const res = await resendOtpApi();
+      setIsExpired(false);
+      setOtp(new Array(4).fill(''));
+      setIsResending(false);
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+    }
   };
 
   const isComplete = otp.every(digit => digit !== '');
@@ -100,16 +104,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   return (
     <DialogComponent
-      isOpen={state.showOtpVerification}
-      // name='OTP Verification'
-      closeDialog={onClose}
+      isOpen={true}
       className="w-full max-w-md p-4"
     >
-      {/* Background decoration */}
-      {/* <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full -translate-y-16 translate-x-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-green-500/10 to-blue-500/10 rounded-full translate-y-12 -translate-x-12"></div>
-         */}
-      {/* Header */}
       <div className="relative mb-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg">
           <Shield className="h-8 w-8 text-white" />
@@ -153,27 +150,10 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         </div>
       </div>
 
-      {/* Error message */}
-      {isExpired && (
-        <div className="mb-4 text-center">
-          <p className="flex items-center justify-center gap-2 text-sm text-red-500">
-            <Clock className="h-4 w-4" />
-            OTP has expired
-          </p>
-          <button
-            onClick={handleResend}
-            disabled={isResending}
-            className="mx-auto mt-2 flex items-center gap-1 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 disabled:opacity-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
-            {isResending ? 'Resending...' : 'Resend OTP'}
-          </button>
-        </div>
-      )}
 
       {/* Action Buttons */}
-      <div className="flex w-full gap-2">
-        <Button onClick={onClose} className="flex-1">
+      <div className="flex w-full gap-2 px-1">
+        <Button onClick={closeDialog} className="flex-1">
           Close
         </Button>
         <Button onClick={handleSubmit} disabled={!canSubmit} className="flex-1">
@@ -182,9 +162,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
       </div>
 
       {/* Resend link */}
-      {!isExpired && (
-        <div className="mt-4 flex w-full text-center">
-          <Button onClick={handleResend} disabled={isResending} className="flex-1">
+      {isExpired && (
+        <div className="mt-4 flex w-full px-1 text-center">
+          <Button onClick={handleResend} disabled={isResending || !isExpired} className="flex-1">
             <RefreshCw className={`h-4 w-4 ${isResending ? 'animate-spin' : ''}`} />
             {isResending ? 'Resending...' : 'Resend OTP'}
           </Button>
@@ -200,7 +180,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         </div>
       </div>
 
-      {/* end */}
     </DialogComponent>
   );
 };

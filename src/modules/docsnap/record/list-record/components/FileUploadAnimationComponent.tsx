@@ -1,4 +1,4 @@
-import { UploadCloud, FileText, Search } from 'lucide-react';
+import { UploadCloud, FileText, FilePlus } from 'lucide-react';
 import { FC, useState, useCallback, useEffect } from 'react';
 
 interface FileUploadAnimationComponentProps {
@@ -105,7 +105,7 @@ export const FileUploadAnimationComponent: FC<FileUploadAnimationComponentProps>
     }
 
     if (analyzing && !analyzeDone) {
-      return <Search strokeWidth={1.5} size={64} className="text-purple-500 transition-colors duration-300" />;
+      return <FilePlus strokeWidth={1.5} size={64} className="text-purple-500 transition-colors duration-300" />;
     }
 
     if (uploading && !uploadDone) {
@@ -223,7 +223,7 @@ export const FileUploadAnimationComponent: FC<FileUploadAnimationComponentProps>
                 analyzing ? 'bg-purple-100 text-purple-700' : progress === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
               }`}
             >
-              <Search size={12} />
+              <FilePlus size={12} />
               Adding document for extraction {analyzing ? '...' : progress === 100 ? '✓' : ''}
             </div>
           </div>

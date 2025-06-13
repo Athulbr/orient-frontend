@@ -4,10 +4,12 @@ import { validateConfirmPassword, validateEmail, validateFirstName, validateLast
 import httpRequest from '../../../../utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const useSignupPageApi = () => {
   const { state, setState } = useSignupPageState();
   const toast = useToastStore();
+  const navigate = useNavigate();
 
   // ============================= UseEffect ==================================
   useEffect(() => {
@@ -42,20 +44,10 @@ export const useSignupPageApi = () => {
         confirmPassword: state.confirmPassword,
       }
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/signup`, requestBody);
-      if (res?.data?.accessToken) {
-        window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
-        window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-        toast.success('Logged in successfully');
-        setTimeout(() => {
-          window?.location?.replace('/');
-        }, 500);
-      } else {
-        setState(prev => ({ ...prev, authError: 'Signup failed. Please check your credentials.' }));
-      }
+      if (res?.success)setState(prev => ({ ...prev, showOtpVerificationDialog:true }))
     } catch (error: any) {
-      console.log('error:===========', error.message);
-      if (error.message === 'Invalid password') return setState(prev => ({ ...prev, authError: 'Invalid password' }));
-
+      console.error('error:===========', error.message);
+      if (error.message === 'User already exists') return setState(prev => ({ ...prev, authError: 'User already exists' }));
       setState(prev => ({ ...prev, authError: 'Something went wrong' }));
     } finally {
       setState(prev => ({ ...prev, loading: false }));
@@ -99,6 +91,27 @@ export const useSignupPageApi = () => {
     },
   });
 
+  // ============================= Resend OTP ==================================
+  const resendOtpApi = async () => {
+    try {
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/resend/otp`, { email:state.email });
+      return res;
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+  }}
+  // ============================= verify OTP ==================================
+  const verifyOtpAPI = async (otp: string) => {
+    try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/trial/verify`, { email:state.email, verificationCode:otp });
+      if (res.success) {
+        setState(prev => ({ ...prev, showOtpVerificationDialog: false }));
+        toast.success('OTP verified successfully');
+        navigate('/auth/login');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+  }}
+
   // ============================= Return ==================================
-  return { signupWithEmailAndPassword, signupWithGoogle };
+  return { signupWithEmailAndPassword, signupWithGoogle, resendOtpApi, verifyOtpAPI };
 };

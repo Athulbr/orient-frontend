@@ -9,7 +9,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
 
-  const onChange = () => {};
+  
 
   return (
     <>
@@ -35,6 +35,16 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
                   {Object.entries(subItem).map(([label, value], i) => {
                     const fieldId = `${label}_${rowIndex}_${mainIndex}_${i}`;
                     if (value === null) return;
+                    const onChange = (e: any) => {
+                      setState(prev => {
+                        const updated = [...prev.arrayFields];
+                        updated[mainIndex][key][label] = {
+                          ...updated[mainIndex][key][label],
+                          value: e.target.value
+                        };
+                        return { ...prev, arrayFields: updated };
+                      });
+                    };
                     return (
                       <InputField
                         key={fieldId}
