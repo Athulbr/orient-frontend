@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useViewRecordState } from './viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
@@ -11,6 +11,7 @@ import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
 export const useViewRecordApi = () => {
   const { state, setState } = useViewRecordState();
   const { id } = useParams();
+  const navigate = useNavigate();
   const toast = useToastStore();
   const { refresh } = useViewRecordGlobalStore();
   const { getS3File } = useS3DocumentsStore();
@@ -127,17 +128,11 @@ export const useViewRecordApi = () => {
 
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
       const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
-
-      if (res.status !== 200) {
-        toast.error('Failed to update Record');
-        return;
-      }
       toast.success('Record updated successfully');
-
-      // setState(prev => ({ ...prev, topLevelFields, record: res.data, objectFields, arrayFields, tableNames, loadingData: false }));
+      navigate('/');
     } catch (error) {
       console.log('error:===========', error);
-      toast.error('Failed to get Record');
+      toast.error('Failed to update Record');
     } finally {
       setState(prev => ({ ...prev, loadingData: false }));
     }

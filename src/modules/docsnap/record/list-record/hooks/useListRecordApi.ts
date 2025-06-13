@@ -48,6 +48,7 @@ export const useListRecordApi = () => {
       return { s3FileName: res.data.fileName, s3FileType: res.data.fileType, url: res.data.url };
     } catch (error) {
       setState(prev => ({ ...prev, processing: false }));
+      return null;
     }
   };
 

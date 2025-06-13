@@ -54,6 +54,12 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
 
     const s3Response = await uploadFilesToAwsS3(file);
 
+    if (!s3Response) {
+      toast.error('Failed to upload file');
+      setState(prev => ({ ...prev, processing: false, uploadDone: false, uploading: false, analyzing: false }));
+      return;
+    }
+
     trainChatWithDocumentEngine(s3Response?.s3FileName, s3Response?.url);
 
     const res = await analyzeDocument(s3Response?.s3FileName);
