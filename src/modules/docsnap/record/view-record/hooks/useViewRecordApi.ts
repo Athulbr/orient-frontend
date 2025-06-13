@@ -55,7 +55,8 @@ export const useViewRecordApi = () => {
       const arrayFields: Record<string, any>[] = [];
       const tableNames: string[] = [];
       if (res.data.extractedData) {
-        Object.entries(res.data.extractedData).forEach(([key, value]: any) => {
+        const extractedData = JSON.parse(JSON.stringify(res.data.extractedData));
+        Object.entries(extractedData).forEach(([key, value]: any) => {
           if (Array.isArray(value)) {
             // its array
             arrayFields.push(value);
@@ -91,15 +92,6 @@ export const useViewRecordApi = () => {
       ],
     }));
 
-    // setMessages((prev) => [
-    //   ...prev,
-    //   {
-    //     text: message,
-    //     userMessage: true,
-    //   },
-    // ]);
-
-    console.log('state.record:===========', state.record);
 
     const requestBody = {
       query: message,
@@ -107,16 +99,8 @@ export const useViewRecordApi = () => {
     };
 
     const response: any = await httpRequest('POST', `https://dev.makez.ai/chatbot/query`, requestBody);
-    // const response:any = await dymmyApiCall();
 
-    // setMessages((prev) => [
-    //   ...prev,
-    //   {
-    //     text: response.answer,
-    //     source: response.source_documents,
-    //     userMessage: false,
-    //   },
-    // ]);
+
     setState(prev => ({
       ...prev,
       chatLoading: false,
@@ -131,7 +115,35 @@ export const useViewRecordApi = () => {
     }));
   };
 
-  return { getRecordApiById, sendMessage };
+  const updateRecordApiById = async () => {
+    try {
+
+      const payload = {
+        document: state.record.document,
+        extractedData: state.record.extractedData,
+        metadata: state.record.metadata,
+        updatedData: { ...state.topLevelFields, ...state.objectFields, line_items: state.arrayFields[0] }
+      }
+
+      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
+
+      if (res.status !== 200) {
+        toast.error('Failed to update Record');
+        return;
+      }
+      toast.success('Record updated successfully');
+
+      // setState(prev => ({ ...prev, topLevelFields, record: res.data, objectFields, arrayFields, tableNames, loadingData: false }));
+    } catch (error) {
+      console.log('error:===========', error);
+      toast.error('Failed to get Record');
+    } finally {
+      setState(prev => ({ ...prev, loadingData: false }));
+    }
+  };
+
+  return { getRecordApiById, sendMessage, updateRecordApiById };
 };
 
 const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {

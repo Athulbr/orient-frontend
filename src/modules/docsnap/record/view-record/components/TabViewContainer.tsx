@@ -5,7 +5,6 @@ import { useViewRecordState } from '../hooks/viewRecordContext';
 import React from 'react';
 import { Button } from '../../../../../components/Button';
 import { useNavigate } from 'react-router-dom';
-
 interface DataPreviewComponentIF {
   children: ReactNode;
 }
@@ -13,7 +12,8 @@ interface DataPreviewComponentIF {
 export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children }) => {
   const { state, setState } = useViewRecordState();
   const navigate = useNavigate();
-  useViewRecordApi();
+  const { updateRecordApiById } = useViewRecordApi();
+
   return (
     <div className="flex flex-1 flex-col overflow-y-auto rounded-lg border bg-[#f9fafb]">
       <TabNavComponent className="sticky top-0 left-0 z-11 bg-[#f9fafb]" onChange={tabIndex => setState(prev => ({ ...prev, tabIndex }))} showExportButton />
@@ -25,16 +25,7 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
         <Button onClick={() => navigate(-1)} outlined small>
           Cancel
         </Button>
-        <Button
-          onClick={() => {
-            console.log('Update clicked arrayFields------->', state.arrayFields);
-            console.log('Update clicked objectFields------->', state.objectFields);
-            console.log('Update clicked topLevelFields------->', state.topLevelFields);
-            console.log('record------->', state.record);
-          }}
-          outlined
-          small
-        >
+        <Button onClick={updateRecordApiById} outlined small>
           Update
         </Button>
         <Button

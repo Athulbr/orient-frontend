@@ -7,7 +7,7 @@ export const useProjectApi = () => {
   const { state,setState } = useProjectState();
   const toast = useToastStore();
 
-  // ============================= CREATE ==================================
+  // ============================= CREATE PROJECT ==================================
 
   const getProjectApi = async (id:string) => {
     try {
