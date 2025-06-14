@@ -9,8 +9,6 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
 
-  
-
   return (
     <>
       {state.arrayFields.map((item, mainIndex) => {
@@ -40,7 +38,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
                         const updated = [...prev.arrayFields];
                         updated[mainIndex][key][label] = {
                           ...updated[mainIndex][key][label],
-                          value: e.target.value
+                          value: e.target.value,
                         };
                         return { ...prev, arrayFields: updated };
                       });

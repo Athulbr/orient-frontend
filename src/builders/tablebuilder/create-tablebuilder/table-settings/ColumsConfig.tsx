@@ -37,11 +37,7 @@ const ColumnConfig: React.FC<ColumnConfigProps> = ({ column, columnIndex, onUpda
         >
           <ChevronDown size={18} />
         </button>
-        <button
-          className="cursor-pointer rounded-3xl text-red-500 hover:bg-red-100"
-          onClick={() => onRemove(columnIndex)}
-          aria-label="Remove column"
-        >
+        <button className="cursor-pointer rounded-3xl text-red-500 hover:bg-red-100" onClick={() => onRemove(columnIndex)} aria-label="Remove column">
           <XCircle size={18} />
         </button>
       </div>
@@ -120,28 +116,13 @@ const ColumnConfig: React.FC<ColumnConfigProps> = ({ column, columnIndex, onUpda
         )}
 
         {column.customUI && (
-          <TextFieldTB
-            label="Custom UI Key"
-            type="text"
-            value={column.customUiKey}
-            onChange={e => handleChange('customUiKey', e.target.value)}
-          />
+          <TextFieldTB label="Custom UI Key" type="text" value={column.customUiKey} onChange={e => handleChange('customUiKey', e.target.value)} />
         )}
         {column.editButton && column.customUI && (
-          <TextFieldTB
-            label="Edit Url"
-            type="text"
-            value={column.editUrl}
-            onChange={e => handleChange('editUrl', e.target.value)}
-          />
+          <TextFieldTB label="Edit Url" type="text" value={column.editUrl} onChange={e => handleChange('editUrl', e.target.value)} />
         )}
         {column.deleteButton && column.customUI && (
-          <TextFieldTB
-            label="Delete Url"
-            type="text"
-            value={column.deleteUrl}
-            onChange={e => handleChange('deleteUrl', e.target.value)}
-          />
+          <TextFieldTB label="Delete Url" type="text" value={column.deleteUrl} onChange={e => handleChange('deleteUrl', e.target.value)} />
         )}
 
         <div className="flex justify-center md:col-span-2">

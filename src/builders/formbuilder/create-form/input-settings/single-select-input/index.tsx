@@ -25,7 +25,7 @@ export const SingleSelectInput: React.FC<SingleSelectPropsIF> = ({ index, keyNam
   const selectedValue = field?.config?.[keyName]; // Safely access the selected value
 
   const handleOptionClick = (option: string) => {
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const updatedFields = [...prevFields];
       const currentField = updatedFields[index];
 
@@ -66,7 +66,7 @@ export const SingleSelectInput: React.FC<SingleSelectPropsIF> = ({ index, keyNam
       </label>
       <div
         className={style.selectInput} // Add an active class if dropdown is open
-        onClick={() => setIsOpen((prev) => !prev)} // Toggle dropdown
+        onClick={() => setIsOpen(prev => !prev)} // Toggle dropdown
       >
         {options.get(keyName)?.length ? String(selectedValue) || 'Select an option' : 'No Option'}
         <span>
@@ -75,7 +75,7 @@ export const SingleSelectInput: React.FC<SingleSelectPropsIF> = ({ index, keyNam
       </div>
       {isOpen && options.get(keyName) && (
         <ul className={style.optionsList}>
-          {options.get(keyName)?.map((option) => (
+          {options.get(keyName)?.map(option => (
             <li
               key={option}
               className={`${style.optionItem} ${selectedValue === option ? style.selectedOption : ''}`} // Highlight selected option

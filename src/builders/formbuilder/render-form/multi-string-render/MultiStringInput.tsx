@@ -57,7 +57,7 @@ export const CustomMultiString: React.FC<CustomSelectProps> = ({ value, focus, o
         <input
           ref={inputRef}
           placeholder={placeholder}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={e => setInput(e.target.value)}
           value={input}
           className={styles.inputField}
           onFocus={onFocus}

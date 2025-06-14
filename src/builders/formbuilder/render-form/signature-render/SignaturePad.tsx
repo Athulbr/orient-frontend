@@ -16,14 +16,7 @@ interface SignaturePadProps {
   onClose: () => void;
 }
 
-export const SignaturePad: React.FC<SignaturePadProps> = ({
-  value,
-  onChange,
-  width = 400,
-  height = 200,
-  onBlur,
-  onClose,
-}) => {
+export const SignaturePad: React.FC<SignaturePadProps> = ({ value, onChange, width = 400, height = 200, onBlur, onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPoint, setLastPoint] = useState<Point | null>(null);
@@ -137,18 +130,8 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
         onTouchEnd={handleEnd}
       />
       <div className={styles.buttonBox}>
-        <Button
-          variant="secondary"
-          label="Clear Signature"
-          type="button"
-          onClick={handleClear}
-        />
-        <Button
-          variant="primary"
-          label="Done"
-          type="button"
-          onClick={onClose}
-        />
+        <Button variant="secondary" label="Clear Signature" type="button" onClick={handleClear} />
+        <Button variant="primary" label="Done" type="button" onClick={onClose} />
       </div>
     </div>
   );

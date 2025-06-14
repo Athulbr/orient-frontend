@@ -9,7 +9,7 @@ export const formatFieldLabel = (fieldId: string): string => {
     .join(' ');
 };
 
-export let convertPdfToImages = async (file: File): Promise<string[]> => {
+export const convertPdfToImages = async (file: File): Promise<string[]> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument(arrayBuffer);
@@ -33,7 +33,7 @@ export let convertPdfToImages = async (file: File): Promise<string[]> => {
   }
 };
 
-let renderPageToImage = async (pdf: any, pageNumber: number): Promise<string> => {
+const renderPageToImage = async (pdf: any, pageNumber: number): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
       const page = await pdf.getPage(pageNumber);

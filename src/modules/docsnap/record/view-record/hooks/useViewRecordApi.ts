@@ -25,7 +25,7 @@ export const useViewRecordApi = () => {
 
   const getAndConvertDocumentToImage = async (pdfFileName: string) => {
     const s3Response = await getS3File(pdfFileName);
-    let imageData = s3Response?.data?.Body?.data;
+    const imageData = s3Response?.data?.Body?.data;
     if (!imageData) {
       toast.error('S3 document not found');
       return;
@@ -93,14 +93,12 @@ export const useViewRecordApi = () => {
       ],
     }));
 
-
     const requestBody = {
       query: message,
       botName: state.record?.pdfFileName,
     };
 
     const response: any = await httpRequest('POST', `https://dev.makez.ai/chatbot/query`, requestBody);
-
 
     setState(prev => ({
       ...prev,
@@ -118,13 +116,12 @@ export const useViewRecordApi = () => {
 
   const updateRecordApiById = async () => {
     try {
-
       const payload = {
         document: state.record.document,
         extractedData: state.record.extractedData,
         metadata: state.record.metadata,
-        updatedData: { ...state.topLevelFields, ...state.objectFields, line_items: state.arrayFields[0] }
-      }
+        updatedData: { ...state.topLevelFields, ...state.objectFields, line_items: state.arrayFields[0] },
+      };
 
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
       const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);

@@ -33,7 +33,7 @@ const CustomMultiSelect: React.FC<CustomMultiSelectProps> = ({ options, onBlur, 
 
   const handleOptionClick = (optionValue: string) => {
     if (selectedValues.includes(optionValue)) {
-      onChange(selectedValues.filter((val) => val !== optionValue));
+      onChange(selectedValues.filter(val => val !== optionValue));
     } else {
       onChange([...selectedValues, optionValue]);
     }
@@ -45,8 +45,8 @@ const CustomMultiSelect: React.FC<CustomMultiSelectProps> = ({ options, onBlur, 
         <span className={selectedValues.length > 0 ? styles.value : styles.placeholder}>
           {selectedValues.length > 0
             ? options
-                .filter((opt) => selectedValues.includes(opt.value))
-                .map((opt) => opt.label)
+                .filter(opt => selectedValues.includes(opt.value))
+                .map(opt => opt.label)
                 .join(', ')
             : placeholder}
         </span>
@@ -55,13 +55,14 @@ const CustomMultiSelect: React.FC<CustomMultiSelectProps> = ({ options, onBlur, 
 
       {isOpen && (
         <div className={styles.optionsContainer}>
-          {options.map((option) => (
+          {options.map(option => (
             <div
               key={option.value}
               onClick={() => handleOptionClick(option.value)}
               className={`${styles.option} ${selectedValues.includes(option.value) ? styles.optionSelected : ''}`}
             >
-              <input type='checkbox' checked={selectedValues.includes(option.value)} />{option.label}
+              <input type="checkbox" checked={selectedValues.includes(option.value)} />
+              {option.label}
             </div>
           ))}
         </div>

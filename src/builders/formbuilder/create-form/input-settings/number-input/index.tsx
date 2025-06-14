@@ -14,7 +14,7 @@ export const NumberInput: React.FC<NumberInputPropsIF> = ({ index, keyName }) =>
   const inKbInputs = ['minimumSize', 'maximumSize'];
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const updatedFields = [...prevFields];
       // @ts-ignore
       updatedFields[index].config[keyName] = e.target.value;
@@ -28,13 +28,7 @@ export const NumberInput: React.FC<NumberInputPropsIF> = ({ index, keyName }) =>
         {keyName.replace(/([A-Z])/g, ' $1')}
         {inKbInputs.includes(keyName) && <span>(in KB)</span>}
       </label>
-      <input
-        className={style.textInput}
-        type="number"
-        id={keyName}
-        value={`${fields[index]?.config?.[keyName]}`}
-        onChange={handleCheckboxChange}
-      />
+      <input className={style.textInput} type="number" id={keyName} value={`${fields[index]?.config?.[keyName]}`} onChange={handleCheckboxChange} />
     </div>
   );
 };

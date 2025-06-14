@@ -12,7 +12,7 @@ export const TimeInput: React.FC<TimeInputPropsIF> = ({ index, keyName }) => {
   const { fields, setFields } = useFormBuilder();
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const uptimedFields = [...prevFields];
       // @ts-ignore
       uptimedFields[index].config[keyName] = e.target.value;

@@ -15,7 +15,7 @@ const RadioInput: React.FC<RadioInputPropsIF> = ({ index, keyName }) => {
   const initialValue = fields[index]?.config?.[keyName];
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const updatedFields = [...prevFields];
       // @ts-ignore
       updatedFields[index].config[keyName] = e.target.value;

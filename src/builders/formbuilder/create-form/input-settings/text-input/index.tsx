@@ -11,18 +11,10 @@ interface textInputPropsIF {
 export const TextInput: React.FC<textInputPropsIF> = ({ index, keyName }) => {
   const { fields, setFields } = useFormBuilder();
 
-  const commaSeperatedInputs = [
-    'exceptDomains',
-    'onlyDomains',
-    'allowedSpecialCharacters',
-    'options',
-    'rows',
-    'colums',
-    'minimumSize',
-  ];
+  const commaSeperatedInputs = ['exceptDomains', 'onlyDomains', 'allowedSpecialCharacters', 'options', 'rows', 'colums', 'minimumSize'];
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const updatedFields = [...prevFields];
       // @ts-ignore
       updatedFields[index].config[keyName] = e.target.value;
@@ -36,13 +28,7 @@ export const TextInput: React.FC<textInputPropsIF> = ({ index, keyName }) => {
         {keyName.replace(/([A-Z])/g, ' $1')}
         {commaSeperatedInputs.includes(keyName) && <span>(Comma Seperated)</span>}
       </label>
-      <input
-        className={style.textInput}
-        type="text"
-        id={keyName}
-        value={`${fields[index]?.config?.[keyName]}`}
-        onChange={handleCheckboxChange}
-      />
+      <input className={style.textInput} type="text" id={keyName} value={`${fields[index]?.config?.[keyName]}`} onChange={handleCheckboxChange} />
     </div>
   );
 };

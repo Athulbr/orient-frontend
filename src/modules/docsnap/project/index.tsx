@@ -18,9 +18,9 @@ const initialState = {
   showCreateDialog: false,
   loading: false,
   id: '',
-  refresh:1,
-  project:null,
-  loadingProject:false
+  refresh: 1,
+  project: null,
+  loadingProject: false,
 };
 
 const ListProjectPage: React.FC = () => {

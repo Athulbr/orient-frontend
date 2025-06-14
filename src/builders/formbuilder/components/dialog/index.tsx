@@ -30,7 +30,7 @@ export const Dialog: React.FC<DialogProps> = ({
         onClose();
       }
     },
-    [onClose],
+    [onClose]
   );
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export const Dialog: React.FC<DialogProps> = ({
   return (
     <div
       className={`${styles.overlay} ${isOpen ? styles.overlayVisible : ''}`}
-      onClick={(e) => {
+      onClick={e => {
         if (e.target === e.currentTarget) onClose();
       }}
     >

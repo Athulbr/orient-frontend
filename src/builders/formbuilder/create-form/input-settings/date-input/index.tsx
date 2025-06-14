@@ -12,7 +12,7 @@ export const DateInput: React.FC<DateInputPropsIF> = ({ index, keyName }) => {
   const { fields, setFields } = useFormBuilder();
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const updatedFields = [...prevFields];
       // @ts-ignore
       updatedFields[index].config[keyName] = e.target.value;
@@ -26,13 +26,7 @@ export const DateInput: React.FC<DateInputPropsIF> = ({ index, keyName }) => {
         {keyName.replace(/([A-Z])/g, ' $1')}
         <span>(DD-MM-YYYY)</span>
       </label>
-      <input
-        className={style.textInput}
-        type="date"
-        id={keyName}
-        value={`${fields[index]?.config?.[keyName]}`}
-        onChange={handleCheckboxChange}
-      />
+      <input className={style.textInput} type="date" id={keyName} value={`${fields[index]?.config?.[keyName]}`} onChange={handleCheckboxChange} />
     </div>
   );
 };

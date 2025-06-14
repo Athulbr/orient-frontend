@@ -20,12 +20,7 @@ interface Position {
   y: number;
 }
 
-export const Chatbot: React.FC<ChatbotPropsIF> = ({
-  hideChatbot,
-  messages,
-  handleSendPrompt,
-  chatLoading,
-}) => {
+export const Chatbot: React.FC<ChatbotPropsIF> = ({ hideChatbot, messages, handleSendPrompt, chatLoading }) => {
   const { setFields } = useFormBuilder();
   const [showScrollButton, setShowScrollButton] = useState(false);
 
@@ -128,20 +123,11 @@ export const Chatbot: React.FC<ChatbotPropsIF> = ({
 
       <div ref={messageContainerRef} className={styles.messageContainer}>
         {messages.map(message => (
-          <div
-            key={message.id}
-            className={`${styles.message} ${message.isUser ? styles.userMessage : styles.botMessage}`}
-          >
-            <div
-              className={`${styles.avatar} ${message.isUser ? styles.userAvatar : styles.botAvatar}`}
-            >
+          <div key={message.id} className={`${styles.message} ${message.isUser ? styles.userMessage : styles.botMessage}`}>
+            <div className={`${styles.avatar} ${message.isUser ? styles.userAvatar : styles.botAvatar}`}>
               {message.isUser ? <User size={16} /> : <Bot size={16} />}
             </div>
-            <div
-              className={`${styles.messageContent} ${message.isUser ? styles.userMessageContent : styles.botMessageContent}`}
-            >
-              {message.text}
-            </div>
+            <div className={`${styles.messageContent} ${message.isUser ? styles.userMessageContent : styles.botMessageContent}`}>{message.text}</div>
           </div>
         ))}
 
@@ -170,11 +156,7 @@ export const Chatbot: React.FC<ChatbotPropsIF> = ({
             placeholder="Type your message..."
             className={styles.input}
           />
-          <button
-            onClick={handleSend}
-            className={styles.sendButton}
-            disabled={!input.trim()}
-          >
+          <button onClick={handleSend} className={styles.sendButton} disabled={!input.trim()}>
             <Send size={20} />
           </button>
         </div>

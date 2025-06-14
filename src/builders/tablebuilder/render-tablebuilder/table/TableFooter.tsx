@@ -63,9 +63,8 @@ const PaginationComponent = () => {
   const { total, page, pageRows } = state;
   const { pagination } = settings;
 
-  
   const totalPages = Math.ceil(total / pageRows);
-  
+
   const setPage = (pageNumber: number) => {
     setState(prev => ({ ...prev, page: pageNumber }));
     getDataFromApi({ page: pageNumber });
@@ -92,7 +91,11 @@ type PaginationButtonProps = {
 };
 
 const PaginationButton: React.FC<PaginationButtonProps> = ({ onClick, disabled, icon }) => (
-  <button className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-white disabled:hover:cursor-default" onClick={onClick} disabled={disabled}>
+  <button
+    className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50 disabled:hover:cursor-default disabled:hover:bg-white"
+    onClick={onClick}
+    disabled={disabled}
+  >
     {icon}
   </button>
 );

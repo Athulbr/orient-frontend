@@ -32,5 +32,14 @@ export const ListProjectComponent: React.FC = () => {
   const customUI = {
     status: StatusCustomUI,
   };
-  return <UseTablebuilder name="List Project Table" fluidHeight refresh={state.refresh} customFunctions={customFunctions} customUI={customUI} actionButtons={actionButtons} />;
+  return (
+    <UseTablebuilder
+      name="List Project Table"
+      fluidHeight
+      refresh={state.refresh}
+      customFunctions={customFunctions}
+      customUI={customUI}
+      actionButtons={actionButtons}
+    />
+  );
 };

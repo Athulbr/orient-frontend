@@ -32,7 +32,7 @@ export const TableSettings: React.FC<PropsIF> = () => {
 
   return (
     <div className="flex w-120 resize-x flex-col overflow-y-auto [&::-webkit-scrollbar]:w-1">
-      <div className="sticky top-0 left-0 z-1 flex items-center justify-between bg-white pb-2 ">
+      <div className="sticky top-0 left-0 z-1 flex items-center justify-between bg-white pb-2">
         <div className="flex items-start gap-2 text-xl text-gray-800">
           <BackButton onClick={() => navigate(-1)} />
           Table Builder
@@ -93,7 +93,7 @@ const accordionItems = [
     title: 'Page Size Settings',
     component: <PageSizeSection />,
   },
- 
+
   {
     id: 6,
     title: 'Filter Configuration',

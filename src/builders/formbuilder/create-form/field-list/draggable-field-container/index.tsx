@@ -28,7 +28,7 @@ const DraggableFieldContainer: React.FC<PropsIF> = ({ index, dragItem, dragOverI
       onDragStart={() => (dragItem.current = index)}
       onDragEnter={() => (dragOverItem.current = index)}
       onDragEnd={handleSort}
-      onDragOver={(e) => e.preventDefault()}
+      onDragOver={e => e.preventDefault()}
     >
       {children}
     </div>

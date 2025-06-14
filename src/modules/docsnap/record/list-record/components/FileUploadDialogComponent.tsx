@@ -94,7 +94,6 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
         setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
         updateRefresh();
       }
-
     });
     eventSource.onerror = (error: any) => {
       console.error('SSE connection error:', error);

@@ -28,23 +28,9 @@ export const FilterConfigSection: React.FC = () => {
             totalFilters={settings.filters.length}
             onMoveUp={() => moveFilter(filterIndex, filterIndex - 1)}
             onMoveDown={() => moveFilter(filterIndex, filterIndex + 1)}
-            onRemoveFilter={() => 
-              updateFilters(filters => filters.filter((_, index) => index !== filterIndex))
-            }
-            onFilterKeyChange={newKey =>
-              updateFilters(filters => 
-                filters.map((f, index) => 
-                  index === filterIndex ? { ...f, key: newKey } : f
-                )
-              )
-            }
-            onAddOption={() =>
-              updateFilters(filters =>
-                filters.map((f, index) =>
-                  index === filterIndex ? { ...f, options: [...f.options, ''] } : f
-                )
-              )
-            }
+            onRemoveFilter={() => updateFilters(filters => filters.filter((_, index) => index !== filterIndex))}
+            onFilterKeyChange={newKey => updateFilters(filters => filters.map((f, index) => (index === filterIndex ? { ...f, key: newKey } : f)))}
+            onAddOption={() => updateFilters(filters => filters.map((f, index) => (index === filterIndex ? { ...f, options: [...f.options, ''] } : f)))}
             onUpdateOption={(optionIndex, value) =>
               updateFilters(filters =>
                 filters.map((f, index) =>
@@ -72,11 +58,7 @@ export const FilterConfigSection: React.FC = () => {
           />
         ))}
 
-        <AddFilterButton 
-          onClick={() => 
-            updateFilters(filters => [...filters, { key: '', options: [''] }])
-          } 
-        />
+        <AddFilterButton onClick={() => updateFilters(filters => [...filters, { key: '', options: [''] }])} />
       </div>
     </div>
   );
@@ -100,24 +82,24 @@ interface FilterItemProps {
   onRemoveOption: (optionIndex: number) => void;
 }
 
-const FilterItem: React.FC<FilterItemProps> = ({ 
-  filter, 
+const FilterItem: React.FC<FilterItemProps> = ({
+  filter,
   filterIndex,
   totalFilters,
   onMoveUp,
   onMoveDown,
-  onRemoveFilter, 
-  onFilterKeyChange, 
-  onAddOption, 
-  onUpdateOption, 
-  onRemoveOption 
+  onRemoveFilter,
+  onFilterKeyChange,
+  onAddOption,
+  onUpdateOption,
+  onRemoveOption,
 }) => {
   return (
     <div className="relative rounded-lg border p-4">
       <div className="absolute top-2 right-2 flex items-center gap-1">
-        <div className="flex items-center gap-1 mr-2">
+        <div className="mr-2 flex items-center gap-1">
           <button
-            className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={onMoveUp}
             disabled={filterIndex === 0}
             aria-label="Move up"
@@ -125,7 +107,7 @@ const FilterItem: React.FC<FilterItemProps> = ({
             <ChevronUp size={16} className="text-gray-600" />
           </button>
           <button
-            className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={onMoveDown}
             disabled={filterIndex === totalFilters - 1}
             aria-label="Move down"
@@ -133,23 +115,14 @@ const FilterItem: React.FC<FilterItemProps> = ({
             <ChevronDown size={16} className="text-gray-600" />
           </button>
         </div>
-        <button 
-          className="cursor-pointer rounded-3xl text-red-500 hover:bg-red-100" 
-          onClick={onRemoveFilter} 
-          aria-label="Remove filter"
-        >
+        <button className="cursor-pointer rounded-3xl text-red-500 hover:bg-red-100" onClick={onRemoveFilter} aria-label="Remove filter">
           <XCircle size={18} />
         </button>
       </div>
 
       <div className="space-y-5">
         <FilterKeyInput value={filter.key} onChange={onFilterKeyChange} />
-        <FilterOptions 
-          options={filter.options} 
-          onAddOption={onAddOption} 
-          onUpdateOption={onUpdateOption} 
-          onRemoveOption={onRemoveOption} 
-        />
+        <FilterOptions options={filter.options} onAddOption={onAddOption} onUpdateOption={onUpdateOption} onRemoveOption={onRemoveOption} />
       </div>
     </div>
   );

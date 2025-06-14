@@ -19,7 +19,10 @@ export const useSignupPageApi = () => {
     const emailError = validateEmail(state.email);
     const passwordError = validatePassword(state.password);
     const confirmPasswordError = validateConfirmPassword(state.password, state.confirmPassword);
-    setState(prev => ({ ...prev, fieldError: { firstName: firstNameError, lastName:lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError } }));
+    setState(prev => ({
+      ...prev,
+      fieldError: { firstName: firstNameError, lastName: lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError },
+    }));
   }, [state.email, state.password, state.firstName, state.lastName, state.confirmPassword]);
 
   // ============================= signup With Email And Password ==================================
@@ -31,7 +34,10 @@ export const useSignupPageApi = () => {
     const passwordError = validatePassword(state.password);
     const confirmPasswordError = validateConfirmPassword(state.password, state.confirmPassword);
     if (emailError || passwordError) {
-      setState(prev => ({ ...prev, fieldError: { firstName: firstNameError, lastName: lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError } }));
+      setState(prev => ({
+        ...prev,
+        fieldError: { firstName: firstNameError, lastName: lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError },
+      }));
       return;
     }
     setState(prev => ({ ...prev, loading: true }));
@@ -42,9 +48,9 @@ export const useSignupPageApi = () => {
         email: state.email,
         password: state.password,
         confirmPassword: state.confirmPassword,
-      }
+      };
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/signup`, requestBody);
-      if (res?.success)setState(prev => ({ ...prev, showOtpVerificationDialog:true }))
+      if (res?.success) setState(prev => ({ ...prev, showOtpVerificationDialog: true }));
     } catch (error: any) {
       console.error('error:===========', error.message);
       if (error.message === 'User already exists') return setState(prev => ({ ...prev, authError: 'User already exists' }));
@@ -94,15 +100,16 @@ export const useSignupPageApi = () => {
   // ============================= Resend OTP ==================================
   const resendOtpApi = async () => {
     try {
-      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/resend/otp`, { email:state.email });
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/resend/otp`, { email: state.email });
       return res;
     } catch (error) {
       console.error('Error verifying OTP:', error);
-  }}
+    }
+  };
   // ============================= verify OTP ==================================
   const verifyOtpAPI = async (otp: string) => {
     try {
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/trial/verify`, { email:state.email, verificationCode:otp });
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/trial/verify`, { email: state.email, verificationCode: otp });
       if (res.success) {
         setState(prev => ({ ...prev, showOtpVerificationDialog: false }));
         toast.success('OTP verified successfully');
@@ -110,7 +117,8 @@ export const useSignupPageApi = () => {
       }
     } catch (error) {
       console.error('Error verifying OTP:', error);
-  }}
+    }
+  };
 
   // ============================= Return ==================================
   return { signupWithEmailAndPassword, signupWithGoogle, resendOtpApi, verifyOtpAPI };

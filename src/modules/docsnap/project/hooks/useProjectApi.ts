@@ -4,16 +4,16 @@ import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../utils/httpRequest';
 
 export const useProjectApi = () => {
-  const { state,setState } = useProjectState();
+  const { state, setState } = useProjectState();
   const toast = useToastStore();
 
   // ============================= CREATE PROJECT ==================================
 
-  const getProjectApi = async (id:string) => {
+  const getProjectApi = async (id: string) => {
     try {
       setState(prev => ({ ...prev, loadingProject: true }));
-      const res:any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/project/${id}`);
-      setState(prev => ({ ...prev, loadingProject: false,project: res.data }));
+      const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/project/${id}`);
+      setState(prev => ({ ...prev, loadingProject: false, project: res.data }));
       toast.success('Project fetched successfully');
       return true;
     } catch (error) {
@@ -43,7 +43,7 @@ export const useProjectApi = () => {
       toast.error('Failed to update Project');
     }
   };
-  const deleteProjectApi = async (id:string) => {
+  const deleteProjectApi = async (id: string) => {
     try {
       const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/project/delete/${id}`);
       setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));

@@ -16,24 +16,14 @@ interface SelectProps {
   disabled?: boolean;
 }
 
-export const SingleSelect: React.FC<SelectProps> = ({
-  value,
-  options,
-  onValueChange,
-  placeholder = 'Select an option',
-  className = '',
-  disabled = false,
-}) => {
+export const SingleSelect: React.FC<SelectProps> = ({ value, options, onValueChange, placeholder = 'Select an option', className = '', disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        selectRef.current &&
-        !selectRef.current.contains(event.target as Node)
-      ) {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -46,17 +36,9 @@ export const SingleSelect: React.FC<SelectProps> = ({
 
   return (
     <div ref={selectRef} className={`relative ${className}`}>
-      <Button
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        disabled={disabled}
-        outlined
-      >
+      <Button onClick={() => !disabled && setIsOpen(!isOpen)} aria-haspopup="listbox" aria-expanded={isOpen} disabled={disabled} outlined>
         <span className="truncate">{selectedOption?.label || placeholder}</span>
-        <ChevronDown
-          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
+        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
 
       {isOpen && (

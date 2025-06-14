@@ -14,7 +14,7 @@ export const BooleanInput: React.FC<BooleanInputPropsIF> = ({ index, keyName }) 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
 
-    setFields((prevFields) => {
+    setFields(prevFields => {
       const updatedFields = [...prevFields];
       // @ts-ignore
       updatedFields[index].config[keyName] = isChecked;
@@ -26,13 +26,7 @@ export const BooleanInput: React.FC<BooleanInputPropsIF> = ({ index, keyName }) 
 
   return (
     <div className={style.checkboxContainer}>
-      <input
-        className={style.checkboxInput}
-        type="checkbox"
-        id={keyName}
-        checked={isChecked}
-        onChange={handleCheckboxChange}
-      />
+      <input className={style.checkboxInput} type="checkbox" id={keyName} checked={isChecked} onChange={handleCheckboxChange} />
       <label htmlFor={keyName} className={style.checkboxLabel}>
         {keyName.replace(/([A-Z])/g, ' $1')}
       </label>

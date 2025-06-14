@@ -14,11 +14,9 @@ export const RecordStatusCustomUI = (row: any) => {
       eventSource.addEventListener('task_update', (event: any) => {
         const data = JSON.parse(event.data);
         setData(data);
-if(data.status === "PENDING"){
-  eventSource.close();
-
-}        
-  
+        if (data.status === 'PENDING') {
+          eventSource.close();
+        }
       });
       eventSource.onerror = (error: any) => {
         eventSource.close();
@@ -31,10 +29,10 @@ if(data.status === "PENDING"){
     return <div className="text-xs font-semibold text-green-700">Complete</div>;
   }
   if (!streamUrl) {
-    return <div className="text-red-400 font-semibold">Failed</div>;
+    return <div className="font-semibold text-red-400">Failed</div>;
   }
-  if (data?.status === "PENDING") {
-    return <div className="text-red-400 font-semibold">Failed</div>;
+  if (data?.status === 'PENDING') {
+    return <div className="font-semibold text-red-400">Failed</div>;
   }
 
   return (

@@ -51,7 +51,7 @@ const OTPVerification: React.FC = ({}) => {
     setOtp(newOtp);
 
     // Move to next input
-        if (value && index < 3) {
+    if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -81,8 +81,7 @@ const OTPVerification: React.FC = ({}) => {
   const handleSubmit = async () => {
     const otpString = otp.join('');
     if (otpString.length === 4) {
-       verifyOtpAPI(otpString);
-      
+      verifyOtpAPI(otpString);
     }
   };
 
@@ -103,10 +102,7 @@ const OTPVerification: React.FC = ({}) => {
   const canSubmit = isComplete && !isExpired;
 
   return (
-    <DialogComponent
-      isOpen={true}
-      className="w-full max-w-md p-4"
-    >
+    <DialogComponent isOpen={true} className="w-full max-w-md p-4">
       <div className="relative mb-8 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg">
           <Shield className="h-8 w-8 text-white" />
@@ -150,7 +146,6 @@ const OTPVerification: React.FC = ({}) => {
         </div>
       </div>
 
-
       {/* Action Buttons */}
       <div className="flex w-full gap-2 px-1">
         <Button onClick={closeDialog} className="flex-1">
@@ -179,7 +174,6 @@ const OTPVerification: React.FC = ({}) => {
           ))}
         </div>
       </div>
-
     </DialogComponent>
   );
 };

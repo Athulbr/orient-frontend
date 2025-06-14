@@ -147,7 +147,7 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
           <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />
         </span>
       )}
-        {settings.deleteButton && (
+      {settings.deleteButton && (
         <span title="Delete" className="p-1">
           <Trash onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={16} />
         </span>

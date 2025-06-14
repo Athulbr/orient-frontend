@@ -11,13 +11,7 @@ interface DatePickerProps {
   disabled?: boolean;
 }
 
-export const DatePicker: React.FC<DatePickerProps> = ({
-  from,
-  to,
-  onSubmit,
-  className = '',
-  disabled = false,
-}) => {
+export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, className = '', disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
@@ -34,10 +28,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        pickerRef.current &&
-        !pickerRef.current.contains(event.target as Node)
-      ) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -105,39 +96,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return days;
   };
 
-  const days = getMonthDays(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth()
-  );
+  const days = getMonthDays(currentMonth.getFullYear(), currentMonth.getMonth());
   const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-  const isDaySelected = (day: Date) =>
-    (tempFrom && isSameDay(tempFrom, day)) || (tempTo && isSameDay(tempTo, day));
+  const isDaySelected = (day: Date) => (tempFrom && isSameDay(tempFrom, day)) || (tempTo && isSameDay(tempTo, day));
 
   const isDayInRange = (day: Date) => {
     if (!tempFrom) return false;
     if (tempTo) return isAfter(day, tempFrom) && isBefore(day, tempTo);
-    if (hoverDate && isAfter(hoverDate, tempFrom))
-      return isAfter(day, tempFrom) && isBefore(day, hoverDate);
+    if (hoverDate && isAfter(hoverDate, tempFrom)) return isAfter(day, tempFrom) && isBefore(day, hoverDate);
     return false;
   };
 
-  const isCurrentMonth = (day: Date) =>
-    day.getMonth() === currentMonth.getMonth();
+  const isCurrentMonth = (day: Date) => day.getMonth() === currentMonth.getMonth();
 
   const previousMonth = () => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1));
@@ -149,18 +121,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   return (
     <div ref={pickerRef} className={`relative inline-block ${className}`}>
-      <Button
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        outlined
-      >
+      <Button onClick={() => !disabled && setIsOpen(!isOpen)} outlined>
         <Calendar className="h-3.5 w-3.5" />
-        <span>
-          {from && to
-            ? `${format(from, 'MMM d')} - ${format(to, 'MMM d')}`
-            : from
-              ? `From ${format(from, 'MMM d')}`
-              : 'Date Range'}
-        </span>
+        <span>{from && to ? `${format(from, 'MMM d')} - ${format(to, 'MMM d')}` : from ? `From ${format(from, 'MMM d')}` : 'Date Range'}</span>
       </Button>
 
       {isOpen && (
@@ -168,11 +131,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           <div className="border-b p-3">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-medium">Date Range</h3>
-              <button
-                type="button"
-                onClick={handleClear}
-                className="text-muted-foreground cursor-pointer border px-2 py-1 text-xs hover:text-gray-500"
-              >
+              <button type="button" onClick={handleClear} className="text-muted-foreground cursor-pointer border px-2 py-1 text-xs hover:text-gray-500">
                 Clear
               </button>
             </div>
@@ -189,59 +148,24 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
           <div className="p-3">
             <div className="mb-4 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={previousMonth}
-                className="rounded-full p-1 hover:bg-gray-200"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10 12L6 8L10 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+              <button type="button" onClick={previousMonth} className="rounded-full p-1 hover:bg-gray-200">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
               <div className="font-medium">
                 {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </div>
-              <button
-                type="button"
-                onClick={nextMonth}
-                className="hover:bg-primary rounded-full p-1"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M6 12L10 8L6 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+              <button type="button" onClick={nextMonth} className="hover:bg-primary rounded-full p-1">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             </div>
 
             <div className="mb-1 grid grid-cols-7 gap-1">
               {weekdays.map(day => (
-                <div
-                  key={day}
-                  className="text-muted-foreground py-1 text-center text-xs font-medium"
-                >
+                <div key={day} className="text-muted-foreground py-1 text-center text-xs font-medium">
                   {day}
                 </div>
               ))}
@@ -265,11 +189,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </div>
 
           <div className="border-t p-3">
-            <Button
-              onClick={handleSubmit}
-              className="w-full"
-              disabled={!tempFrom || !tempTo}
-            >
+            <Button onClick={handleSubmit} className="w-full" disabled={!tempFrom || !tempTo}>
               Apply
             </Button>
           </div>

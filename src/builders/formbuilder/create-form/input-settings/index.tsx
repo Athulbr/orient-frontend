@@ -15,7 +15,7 @@ const FieldSettingsComponent: React.FC<PropsIF> = ({ index }) => {
   return (
     <div className={style.settingsContainer}>
       <div className={style.settingsInnerContainer}>
-        {(Object.keys(config) as (keyof FieldConfigIF)[]).map((keyName) => {
+        {(Object.keys(config) as (keyof FieldConfigIF)[]).map(keyName => {
           if (keyName === 'dynamicKey') return null;
           if (keyName === 'apiEndpoint') return null;
           const Component = settingTypes.get(keyName as string);
