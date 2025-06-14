@@ -1,7 +1,8 @@
 import Spinner from '../../../../components/Spinner';
+import { ImageViewerHeader } from './components/ImageViewerHeader';
 import { ImageMagnifier } from './components/Magnifier';
 import { useViewRecordState } from './hooks/viewRecordContext';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface DocumentPreviewComponentIF {
   test?: string;
@@ -12,7 +13,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const { state, setState } = useViewRecordState();
   const bboxRef = useRef<Record<string, HTMLDivElement | null>>({});
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
-
+  const [zoomLevel, setZoomLevel] = useState(1);
   const updateWirePosition = () => {
     const fieldEl = bboxRef.current[1234];
     const containerBox = containerRef.current?.getBoundingClientRect();
@@ -63,12 +64,17 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     };
   }, [containerRef]);
 
+  useEffect(() => {
+    updateWirePosition();
+  }, [zoomLevel]);
+
   const bbox = state.bbox;
 
   return (
-    <div className="flex-1 overflow-auto bg-red-100" ref={imageContainerRef}>
+    <div className="flex-1 overflow-auto" ref={imageContainerRef}>
+      <ImageViewerHeader name={state.record?.name} zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
       {state.images.map((image, index) => (
-        <div className="relative bg-amber-300" style={{ transform: `scale(${1})` }}>
+        <div className="relative bg-amber-300" style={{ transform: `scale(${zoomLevel})` }}>
           <img className="h-full w-full" src={image} alt="PDF" />
           {bbox && state.tabIndex === 0 && !state.loadingS3File && index === state.pageNumber - 1 && (
             <div
