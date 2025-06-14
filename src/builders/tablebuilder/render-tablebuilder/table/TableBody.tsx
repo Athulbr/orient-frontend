@@ -71,7 +71,6 @@ export const TableBody: FC = () => {
           )}
           {columns.map((column, index) => {
             if (column.hidden) return null;
-            console.log('column:===========', column);
             return (
               <td key={column.key as string} className="px-1 py-4 whitespace-nowrap">
                 <div
