@@ -22,7 +22,7 @@ export const InputField = ({ label, errorMessage, onMouseAction, description, re
   const [commentDialog, setCommentDialog] = useState(false);
 
   return (
-    <div className={`group ${description ? 'w-full' : 'w-1/2'} relative min-w-0 rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.(bbox)}>
+    <div className={`group relative w-full min-w-0 rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.(bbox)}>
       {label && (
         <label className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
           {label}
@@ -37,7 +37,14 @@ export const InputField = ({ label, errorMessage, onMouseAction, description, re
         {description ? (
           <textarea rows={3} ref={ref} className="min-w-0 flex-1 resize-none px-2 text-sm text-gray-700 focus:outline-none" value={value} {...props} />
         ) : (
-          <input ref={ref} className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none" value={value} onChange={onchange} {...props} />
+          <input
+            onFocus={() => onMouseAction?.(bbox)}
+            ref={ref}
+            className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none"
+            value={value}
+            onChange={onchange}
+            {...props}
+          />
         )}
         <div
           onClick={() => setCommentDialog(true)}

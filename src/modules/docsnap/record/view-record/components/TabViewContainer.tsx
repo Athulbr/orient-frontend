@@ -15,7 +15,7 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
   const { updateRecordApiById } = useViewRecordApi();
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-auto rounded-lg border bg-[#f9fafb]">
+    <div className="flex max-w-100 flex-1 flex-col overflow-y-auto border bg-[#f9fafb]">
       <TabNavComponent className="sticky top-0 left-0 z-11 bg-[#f9fafb]" onChange={tabIndex => setState(prev => ({ ...prev, tabIndex }))} showExportButton />
       <div className="w-full border-b"></div>
       <div className="flex flex-1 flex-col">

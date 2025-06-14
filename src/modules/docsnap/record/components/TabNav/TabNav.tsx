@@ -76,9 +76,9 @@ export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, c
         ))}
       </div>
       <div className="flex flex-1 justify-end gap-2">
-        <Button small outlined>
+        {/* <Button small outlined>
           Request&nbsp;New&nbsp;Field
-        </Button>
+        </Button> */}
         <ExportButton showExportButton={showExportButton} />
       </div>
     </nav>
