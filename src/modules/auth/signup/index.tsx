@@ -15,6 +15,7 @@ export interface SignupPageStateIF {
   password: string;
   confirmPassword: string;
   loading: boolean;
+  oAuthLoading: boolean;
   authError: string;
   fieldError: {
     firstName: string;
@@ -33,6 +34,7 @@ const initialState = {
   password: '',
   confirmPassword: '',
   loading: false,
+  oAuthLoading: false,
   authError: '',
   fieldError: {
     firstName: '',

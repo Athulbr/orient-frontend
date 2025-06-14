@@ -8,20 +8,17 @@ import { debounce, throttle } from '../utils/SerachLimit';
 import { ActiveFilter } from '../utils/interface';
 import { getFiltersObject } from '../utils/getFiltersObject';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
+import { Button } from '../../../../components/Button';
 
 export function TableToolbar() {
   const { injectedData } = useTablebuilderState();
 
   return (
-    <div className="mb-3 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4">
+    <div className="mb-3 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4 p-1">
       {injectedData.actionButtons?.map((button, index) => (
-        <button
-          key={index}
-          className="flex cursor-pointer items-center gap-1 rounded border px-3 py-2 text-sm transition-colors hover:bg-gray-100"
-          onClick={button.action}
-        >
+        <Button key={index} outlined onClick={button.action}>
           {button.label}
-        </button>
+        </Button>
       ))}
       <SearchInput />
       <ClearFilterButton />
@@ -140,7 +137,7 @@ function DateRangePicker() {
   );
 
   if (!settings.dateRange.showDateRangeInput) return null;
-  return <DatePicker from={startDate} to={endDate} onChange={onChangeDateRange} />;
+  return <DatePicker from={startDate} to={endDate} onSubmit={onChangeDateRange} />;
 }
 // ============================================================================================================================================
 
@@ -207,9 +204,11 @@ function SearchInput() {
 
   if (!search.showSearchInput) return null;
 
+  const activeClasses = 'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1';
+
   return (
     <SearchField
-      className="w-full max-w-150 flex-1"
+      className={`w-full max-w-150 flex-1 ${activeClasses}`}
       placeholder={search.placeholder}
       value={searchValue}
       onChange={e => handleSearchChange(e.target.value)}
@@ -323,12 +322,13 @@ const ClearFilterButton = () => {
   if (!settings.clearFilters.showClearFiltersButton) return null;
 
   return (
-    <button
+    <Button
       className="flex cursor-pointer items-center gap-1 rounded border px-3 py-2 text-sm transition-colors hover:bg-gray-100"
       onClick={clearActiveFilters}
+      outlined
     >
       <X className="h-3.5 w-3.5" />
       Clear
-    </button>
+    </Button>
   );
 };

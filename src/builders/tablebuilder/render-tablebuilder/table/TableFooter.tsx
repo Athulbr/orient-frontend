@@ -92,7 +92,7 @@ type PaginationButtonProps = {
 };
 
 const PaginationButton: React.FC<PaginationButtonProps> = ({ onClick, disabled, icon }) => (
-  <button className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50" onClick={onClick} disabled={disabled}>
+  <button className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-white disabled:hover:cursor-default" onClick={onClick} disabled={disabled}>
     {icon}
   </button>
 );

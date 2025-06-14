@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { format, isSameDay, isAfter, isBefore, startOfDay } from 'date-fns';
+import { Button } from '../../../../components/Button';
 
 interface DatePickerProps {
   from: Date | null;
   to: Date | null;
-  onChange: (from: Date | null, to: Date | null) => void;
+  onSubmit: (from: Date | null, to: Date | null) => void;
   className?: string;
   disabled?: boolean;
 }
@@ -13,14 +14,22 @@ interface DatePickerProps {
 export const DatePicker: React.FC<DatePickerProps> = ({
   from,
   to,
-  onChange,
+  onSubmit,
   className = '',
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
+  const [tempFrom, setTempFrom] = useState<Date | null>(from);
+  const [tempTo, setTempTo] = useState<Date | null>(to);
   const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Update temporary dates when props change
+  useEffect(() => {
+    setTempFrom(from);
+    setTempTo(to);
+  }, [from, to]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,19 +49,26 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const handleDayClick = (date: Date) => {
     const normalizedDate = startOfDay(date);
 
-    if (!from) {
-      onChange(normalizedDate, null);
-    } else if (!to && isAfter(normalizedDate, from)) {
-      onChange(from, normalizedDate);
-      setIsOpen(false);
+    if (!tempFrom) {
+      setTempFrom(normalizedDate);
+    } else if (!tempTo && isAfter(normalizedDate, tempFrom)) {
+      setTempTo(normalizedDate);
     } else {
-      onChange(normalizedDate, null);
+      setTempFrom(normalizedDate);
+      setTempTo(null);
     }
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(null, null);
+    setTempFrom(null);
+    setTempTo(null);
+    onSubmit(null, null);
+    setIsOpen(false);
+  };
+
+  const handleSubmit = () => {
+    onSubmit(tempFrom, tempTo);
     setIsOpen(false);
   };
 
@@ -110,13 +126,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   ];
 
   const isDaySelected = (day: Date) =>
-    (from && isSameDay(from, day)) || (to && isSameDay(to, day));
+    (tempFrom && isSameDay(tempFrom, day)) || (tempTo && isSameDay(tempTo, day));
 
   const isDayInRange = (day: Date) => {
-    if (!from) return false;
-    if (to) return isAfter(day, from) && isBefore(day, to);
-    if (hoverDate && isAfter(hoverDate, from))
-      return isAfter(day, from) && isBefore(day, hoverDate);
+    if (!tempFrom) return false;
+    if (tempTo) return isAfter(day, tempFrom) && isBefore(day, tempTo);
+    if (hoverDate && isAfter(hoverDate, tempFrom))
+      return isAfter(day, tempFrom) && isBefore(day, hoverDate);
     return false;
   };
 
@@ -133,10 +149,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   return (
     <div ref={pickerRef} className={`relative inline-block ${className}`}>
-      <button
-        type="button"
+      <Button
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`flex h-10 items-center gap-2 rounded-md border bg-white px-3 py-2 text-sm ${isOpen ? 'border-primary ring-primary/20 ring-2' : 'border-input'} ${from || to ? 'bg-primary/5' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'} min-w-[140px] transition-all duration-200`}
+        outlined
       >
         <Calendar className="h-3.5 w-3.5" />
         <span>
@@ -146,7 +161,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               ? `From ${format(from, 'MMM d')}`
               : 'Date Range'}
         </span>
-      </button>
+      </Button>
 
       {isOpen && (
         <div className="border-input absolute z-50 mt-1 w-[300px] overflow-hidden rounded-md border bg-white shadow-lg">
@@ -162,11 +177,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               </button>
             </div>
             <div className="text-muted-foreground text-xs">
-              {!from && !to
+              {!tempFrom && !tempTo
                 ? 'Select start date first'
-                : !to
+                : !tempTo
                   ? 'Now select end date'
-                  : `${format(`${from}`, 'PPP')} - ${format(to, 'PPP')}`}
+                  : tempFrom && tempTo
+                    ? `${format(tempFrom, 'PPP')} - ${format(tempTo, 'PPP')}`
+                    : ''}
             </div>
           </div>
 
@@ -236,7 +253,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   key={i}
                   type="button"
                   onClick={() => handleDayClick(day)}
-                  onMouseEnter={() => from && !to && setHoverDate(day)}
+                  onMouseEnter={() => tempFrom && !tempTo && setHoverDate(day)}
                   onMouseLeave={() => setHoverDate(null)}
                   // disabled={isAfter(day, new Date())}
                   className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${isCurrentMonth(day) ? 'text-gray-600' : 'text-muted-foreground opacity-50'} ${isDaySelected(day) ? 'bg-primary hover:bg-primary/90 text-white' : ''} ${isDayInRange(day) ? 'bg-primary/20 hover:bg-primary/30' : 'hover:bg-gray-2'} 'cursor-pointer' transition-colors`}
@@ -245,6 +262,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="border-t p-3">
+            <Button
+              onClick={handleSubmit}
+              className="w-full"
+              disabled={!tempFrom || !tempTo}
+            >
+              Apply
+            </Button>
           </div>
         </div>
       )}

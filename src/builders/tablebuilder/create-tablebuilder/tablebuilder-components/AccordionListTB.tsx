@@ -21,7 +21,7 @@ export interface AccordionItemProps {
 
 export const AccordionListTB: React.FC<AccordionListComponent> = ({ items, className = '' }) => {
   return (
-    <div className={`flex w-full flex-col gap-4 ${className}`}>
+    <div className={`flex w-full flex-col gap-4 border p-2 overflow-y-auto ${className}`}>
       {items.map((item, index) => (
         <AccordionItem key={item.id} item={item} index={index} />
       ))}
@@ -45,7 +45,7 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ item, index }) => {
   };
 
   return (
-    <div className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+    <div className=" rounded-md border border-gray-200 bg-white shadow-sm">
       <button
         className="focus:ring-opacity-50 flex w-full items-center justify-between bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 focus:ring-2 focus:ring-blue-50 focus:outline-none"
         onClick={toggleAccordion}

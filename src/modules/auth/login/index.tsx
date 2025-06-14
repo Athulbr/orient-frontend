@@ -11,6 +11,7 @@ export interface LoginPageStateIF {
   email: string;
   password: string;
   loading: boolean;
+  oAuthLoading: boolean;
   authError: string;
   fieldError: {
     email: string;
@@ -22,6 +23,7 @@ const initialState = {
   email: '',
   password: '',
   loading: false,
+  oAuthLoading: false,
   authError: '',
   fieldError: {
     email: '',

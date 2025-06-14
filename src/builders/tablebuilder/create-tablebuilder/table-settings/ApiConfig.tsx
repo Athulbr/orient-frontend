@@ -10,7 +10,6 @@ export const ApiConfigSection: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <CheckboxGroupTB name="API Config Options">
         <CheckboxTB
           id="APIConfig"
           label="Get URL from environment"
@@ -18,7 +17,6 @@ export const ApiConfigSection: React.FC = () => {
           onChange={e => setSettings(prev => ({ ...prev, api: { ...prev.api, getUrlFromEnv: e.target.checked } }))}
           icon={FileInput}
         />
-      </CheckboxGroupTB>
 
       {api.getUrlFromEnv && (
         <TextFieldTB

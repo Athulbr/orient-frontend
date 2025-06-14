@@ -32,10 +32,10 @@ export const TableSettings: React.FC<PropsIF> = () => {
 
   return (
     <div className="flex w-120 resize-x flex-col overflow-y-auto [&::-webkit-scrollbar]:w-1">
-      <div className="sticky top-0 left-0 z-1 flex items-center justify-between bg-white pb-2">
+      <div className="sticky top-0 left-0 z-1 flex items-center justify-between bg-white pb-2 ">
         <div className="flex items-start gap-2 text-xl text-gray-800">
           <BackButton onClick={() => navigate(-1)} />
-          Tablebuilder
+          Table Builder
         </div>
         <div className="flex gap-2">
           {!id && (
@@ -75,33 +75,34 @@ const accordionItems = [
   },
   {
     id: 2,
+    title: 'API Configuration',
+    component: <ApiConfigSection />,
+  },
+  {
+    id: 3,
     title: 'Search Settings',
     component: <SearchSection />,
   },
   {
-    id: 3,
+    id: 4,
     title: 'Date Range Settings',
     component: <DateRangeSection />,
   },
   {
-    id: 4,
+    id: 5,
     title: 'Page Size Settings',
     component: <PageSizeSection />,
   },
+ 
   {
-    id: 5,
+    id: 6,
     title: 'Filter Configuration',
     component: <FilterConfigSection />,
   },
   {
-    id: 6,
+    id: 7,
     title: 'Column Configuration',
     component: <ColumnConfigSection />,
-  },
-  {
-    id: 7,
-    title: 'API Configuration',
-    component: <ApiConfigSection />,
   },
   {
     id: 8,

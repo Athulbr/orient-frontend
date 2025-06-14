@@ -3,8 +3,6 @@ import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { dataMapper } from '../utils/DataMapper';
 import { Edit, Trash } from 'lucide-react';
 import { formatDate } from '../utils/formatDate';
-import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
-import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useAlertStore } from '../../../../components/alert/AlertStore';
 
 export const TableBody: FC = () => {
@@ -73,16 +71,17 @@ export const TableBody: FC = () => {
           )}
           {columns.map((column, index) => {
             if (column.hidden) return null;
+            console.log('column:===========', column);
             return (
               <td key={column.key as string} className="px-1 py-4 whitespace-nowrap">
                 <div
                   className={`text-xs text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${loading ? "relative after:absolute after:top-0 after:left-0 after:w-full after:rounded-xs after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
                 >
-                  {columns[index].dateUI ? (
-                    <div>{formatDate(row.updatedAt)}</div>
-                  ) : columns[index].editButton || columns[index].deleteButton ? (
-                    <ActionButtons settings={columns[index]} row={row} />
-                  ) : columns[index].customUI ? (
+                  {column.dateUI ? (
+                    <div>{formatDate(row[column.key])}</div>
+                  ) : column.editButton || column.deleteButton ? (
+                    <ActionButtons settings={column} row={row} />
+                  ) : column.customUI ? (
                     getCustomUI(column.customUiKey, row)
                   ) : (
                     (dataMapper(row, column.key.split(',')) as React.ReactNode)
@@ -143,8 +142,16 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
 
   return (
     <div className="ml-2 flex gap-4">
-      {settings.editButton && <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />}
-      {settings.deleteButton && <Trash onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={16} />}
+      {settings.editButton && (
+        <span title="Edit" className="p-1">
+          <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />
+        </span>
+      )}
+        {settings.deleteButton && (
+        <span title="Delete" className="p-1">
+          <Trash onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={16} />
+        </span>
+      )}
     </div>
   );
 };

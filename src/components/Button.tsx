@@ -121,7 +121,7 @@ export const Button = ({
 
   const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
 
-  const activeClasses = 'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2';
+  const activeClasses = 'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1';
 
   return (
     <button

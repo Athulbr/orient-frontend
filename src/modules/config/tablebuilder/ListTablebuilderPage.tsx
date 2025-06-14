@@ -19,7 +19,7 @@ const ListTablebuilderPage: React.FC<ListTablebuilderPageIF> = () => {
     },
   ];
   const customFunctions = {
-    rowClickHandler: (row: Record<string, string>) => {
+    editClickHandler: (row: Record<string, string>) => {
       navigate(`/config/tablebuilder/update/${row._id}`);
     },
   };

@@ -58,7 +58,7 @@ export const useSignupPageApi = () => {
   const signupWithGoogle = useGoogleLogin({
     onSuccess: async (response: any) => {
       try {
-        setState(prev => ({ ...prev, loading: true, authError: '' }));
+        setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
         const user = await httpRequest('GET', 'https://www.googleapis.com/oauth2/v3/userinfo', {}, response.access_token);
         const ssoRegistration = {
@@ -82,12 +82,12 @@ export const useSignupPageApi = () => {
         console.error('Google signup error:', error);
         setState(prev => ({ ...prev, authError: 'Failed to signup with Google. Please try again.' }));
       } finally {
-        setState(prev => ({ ...prev, loading: false }));
+        setState(prev => ({ ...prev, oAuthLoading: false }));
       }
     },
     onError: error => {
       console.error('Google Signup Failed:', error);
-      setState(prev => ({ ...prev, loading: false, authError: 'Failed to connect to Google. Please try again.' }));
+      setState(prev => ({ ...prev, oAuthLoading: false, authError: 'Failed to connect to Google. Please try again.' }));
     },
   });
 

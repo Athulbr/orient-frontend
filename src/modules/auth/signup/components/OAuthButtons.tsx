@@ -1,17 +1,19 @@
 import { FC } from 'react';
 import GoogleIcon from '../../../../assets/svg-icons/GoogleIcon';
 import { useSignupPageApi } from '../hooks/useSignupPageApi';
+import Spinner from '../../../../components/Spinner';
+import { useSignupPageState } from '../hooks/SignupPageStateProvider';
 
 export const OAuthButtons: FC = () => {
   const { signupWithGoogle } = useSignupPageApi();
-
+  const { state } = useSignupPageState();
   return (
     <section className="mt-8 w-full">
       <button
         onClick={() => signupWithGoogle()}
         className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-1 p-2 text-sm text-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <GoogleIcon /> Google
+        <GoogleIcon /> Google {state.oAuthLoading && <Spinner size={16} />}
       </button>
     </section>
   );

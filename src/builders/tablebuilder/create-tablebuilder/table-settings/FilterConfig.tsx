@@ -1,8 +1,21 @@
-import { XCircle, Key, Trash, PlusCircle, Filter } from 'lucide-react';
+import { XCircle, Key, Trash, PlusCircle, Filter, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTablebuilderSettings } from '../hooks/useTablebuilderSettingsContext';
 
 export const FilterConfigSection: React.FC = () => {
   const { settings, setSettings } = useTablebuilderSettings();
+
+  const updateFilters = (updater: (filters: FilterType[]) => FilterType[]) => {
+    setSettings(prev => ({ ...prev, filters: updater(prev.filters) }));
+  };
+
+  const moveFilter = (fromIndex: number, toIndex: number) => {
+    updateFilters(filters => {
+      const newFilters = [...filters];
+      const [movedFilter] = newFilters.splice(fromIndex, 1);
+      newFilters.splice(toIndex, 0, movedFilter);
+      return newFilters;
+    });
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -12,54 +25,58 @@ export const FilterConfigSection: React.FC = () => {
             key={filterIndex}
             filter={filter}
             filterIndex={filterIndex}
-            onRemoveFilter={() =>
-              setSettings(prev => ({
-                ...prev,
-                filters: prev.filters.filter((_, index) => index !== filterIndex),
-              }))
+            totalFilters={settings.filters.length}
+            onMoveUp={() => moveFilter(filterIndex, filterIndex - 1)}
+            onMoveDown={() => moveFilter(filterIndex, filterIndex + 1)}
+            onRemoveFilter={() => 
+              updateFilters(filters => filters.filter((_, index) => index !== filterIndex))
             }
             onFilterKeyChange={newKey =>
-              setSettings(prev => ({
-                ...prev,
-                filters: prev.filters.map((f, index) => (index === filterIndex ? { ...f, key: newKey } : f)),
-              }))
+              updateFilters(filters => 
+                filters.map((f, index) => 
+                  index === filterIndex ? { ...f, key: newKey } : f
+                )
+              )
             }
             onAddOption={() =>
-              setSettings(prev => ({
-                ...prev,
-                filters: prev.filters.map((f, index) => (index === filterIndex ? { ...f, options: [...f.options, ''] } : f)),
-              }))
+              updateFilters(filters =>
+                filters.map((f, index) =>
+                  index === filterIndex ? { ...f, options: [...f.options, ''] } : f
+                )
+              )
             }
             onUpdateOption={(optionIndex, value) =>
-              setSettings(prev => ({
-                ...prev,
-                filters: prev.filters.map((f, index) =>
+              updateFilters(filters =>
+                filters.map((f, index) =>
                   index === filterIndex
                     ? {
                         ...f,
                         options: f.options.map((o, i) => (i === optionIndex ? value : o)),
                       }
                     : f
-                ),
-              }))
+                )
+              )
             }
             onRemoveOption={optionIndex =>
-              setSettings(prev => ({
-                ...prev,
-                filters: prev.filters.map((f, index) =>
+              updateFilters(filters =>
+                filters.map((f, index) =>
                   index === filterIndex
                     ? {
                         ...f,
                         options: f.options.filter((_, i) => i !== optionIndex),
                       }
                     : f
-                ),
-              }))
+                )
+              )
             }
           />
         ))}
 
-        <AddFilterButton onClick={() => setSettings(prev => ({ ...prev, filters: [...prev.filters, { key: '', options: [''] }] }))} />
+        <AddFilterButton 
+          onClick={() => 
+            updateFilters(filters => [...filters, { key: '', options: [''] }])
+          } 
+        />
       </div>
     </div>
   );
@@ -70,10 +87,12 @@ interface FilterType {
   options: string[];
 }
 
-// Extracted components for better readability and maintenance
 interface FilterItemProps {
   filter: FilterType;
   filterIndex: number;
+  totalFilters: number;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   onRemoveFilter: () => void;
   onFilterKeyChange: (newKey: string) => void;
   onAddOption: () => void;
@@ -81,17 +100,56 @@ interface FilterItemProps {
   onRemoveOption: (optionIndex: number) => void;
 }
 
-const FilterItem: React.FC<FilterItemProps> = ({ filter, onRemoveFilter, onFilterKeyChange, onAddOption, onUpdateOption, onRemoveOption }) => {
+const FilterItem: React.FC<FilterItemProps> = ({ 
+  filter, 
+  filterIndex,
+  totalFilters,
+  onMoveUp,
+  onMoveDown,
+  onRemoveFilter, 
+  onFilterKeyChange, 
+  onAddOption, 
+  onUpdateOption, 
+  onRemoveOption 
+}) => {
   return (
     <div className="relative rounded-lg border p-4">
-      <button className="absolute top-2 right-2 cursor-pointer rounded-3xl text-red-500 hover:bg-red-100" onClick={onRemoveFilter} aria-label="Remove filter">
-        <XCircle size={18} />
-      </button>
+      <div className="absolute top-2 right-2 flex items-center gap-1">
+        <div className="flex items-center gap-1 mr-2">
+          <button
+            className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onMoveUp}
+            disabled={filterIndex === 0}
+            aria-label="Move up"
+          >
+            <ChevronUp size={16} className="text-gray-600" />
+          </button>
+          <button
+            className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onMoveDown}
+            disabled={filterIndex === totalFilters - 1}
+            aria-label="Move down"
+          >
+            <ChevronDown size={16} className="text-gray-600" />
+          </button>
+        </div>
+        <button 
+          className="cursor-pointer rounded-3xl text-red-500 hover:bg-red-100" 
+          onClick={onRemoveFilter} 
+          aria-label="Remove filter"
+        >
+          <XCircle size={18} />
+        </button>
+      </div>
 
       <div className="space-y-5">
-        <FilterKeyInput value={filter.key} onChange={newKey => onFilterKeyChange(newKey)} />
-
-        <FilterOptions options={filter.options} onAddOption={onAddOption} onUpdateOption={onUpdateOption} onRemoveOption={onRemoveOption} />
+        <FilterKeyInput value={filter.key} onChange={onFilterKeyChange} />
+        <FilterOptions 
+          options={filter.options} 
+          onAddOption={onAddOption} 
+          onUpdateOption={onUpdateOption} 
+          onRemoveOption={onRemoveOption} 
+        />
       </div>
     </div>
   );

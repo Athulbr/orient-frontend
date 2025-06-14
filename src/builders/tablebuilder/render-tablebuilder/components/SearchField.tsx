@@ -16,7 +16,7 @@ export const SearchField: React.FC<SearchFieldPropsIF> = ({
   return (
     <div className="relative max-w-90 min-w-60 flex-1">
       <input
-        className={`border-input bg-background h-10 w-full rounded-md border px-3 py-2 text-sm ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} focus:ring-primary/20 focus:border-primary transition-colors duration-200 focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        className={`border-input bg-background h-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''}  transition-colors duration-200 focus:ring-2  disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
         {...props}
       />
 

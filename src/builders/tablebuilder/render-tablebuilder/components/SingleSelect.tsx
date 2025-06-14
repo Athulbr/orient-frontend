@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Button } from '../../../../components/Button';
 
 export interface SelectOption {
   value: string;
@@ -44,23 +45,22 @@ export const SingleSelect: React.FC<SelectProps> = ({
   const selectedOption = options.find(option => option.value === value);
 
   return (
-    <div ref={selectRef} className={`relative w-[160px] ${className}`}>
-      <button
-        type="button"
+    <div ref={selectRef} className={`relative ${className}`}>
+      <Button
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm ${isOpen ? 'border-primary ring-primary/20 ring-2' : 'border-input'} ${value && value !== 'all' ? 'bg-primary/5' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'} h-10 transition-all duration-200`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         disabled={disabled}
+        outlined
       >
         <span className="truncate">{selectedOption?.label || placeholder}</span>
         <ChevronDown
           className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
-      </button>
+      </Button>
 
       {isOpen && (
-        <div className="border-input absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-white shadow-lg">
+        <div className="border-input absolute z-50 mt-1 min-w-full overflow-hidden rounded-md border bg-white shadow-lg">
           <ul className="max-h-60 overflow-auto py-1" role="listbox">
             {options.map(option => (
               <li
