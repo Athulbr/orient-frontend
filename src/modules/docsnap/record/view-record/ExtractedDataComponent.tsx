@@ -4,7 +4,7 @@ import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
 import { RenderTopLevelFields } from './render-field-components/RenderTopLevelFields';
 import { TableViewDialog } from './render-field-components/TableViewDialog';
-import { LoadingDataSpinner } from './components/Loaders';
+import { LoadingDataSpinner, ProgressLoader } from './components/Loaders';
 import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
 import { Button } from '../../../../components/Button';
@@ -106,7 +106,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
     }
   }, [state.record]);
 
-  // if (!state.record?.extractedData) return <ProgressLoader progress={data?.progress || 0} currentStep={data?.current_step || ''} />;
+  if (!state.record?.extractedData) return <ProgressLoader progress={data?.progress || 0} currentStep={data?.current_step || ''} />;
   if (state.loadingData) return <LoadingDataSpinner />;
 
   return (

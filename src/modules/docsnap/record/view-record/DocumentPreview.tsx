@@ -3,7 +3,7 @@ import { useViewRecordState } from './hooks/viewRecordContext';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
-import { Loader } from './components/Loader';
+import Spinner from '../../../../components/Spinner';
 
 interface DocumentPreviewComponentIF {
   containerRef: any;
@@ -22,7 +22,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const bboxRef = useRef<Record<string, HTMLDivElement | null>>({});
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -101,12 +100,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   useEffect(() => {
     updateWirePosition();
   }, [zoomLevel]);
-
-  const handleImageLoad = () => setIsLoading(false);
-  const handleImageError = () => {
-    setIsLoading(false);
-    console.error('Failed to load image');
-  };
 
   const handleFieldHover = (hoveredFieldId: string, bbox: any, pageNumber: number) => {
     if (bbox && !isScrolling) {
@@ -218,13 +211,26 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const subKey = state.hoveredFieldId?.split(':')[1] as string;
   const subSubKey = (state.hoveredFieldId?.split(':')[2] as string) || '';
 
+  if (state.loadingS3File) {
+    return (
+      <div className="flex h-[100vh] w-full flex-col">
+        <ImageViewerHeader name={state.record?.name} zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
+
+        <div className="flex h-[100vh] w-full flex-1 flex-col items-center justify-center">
+          <Spinner />
+          <span className="text-sm text-gray-500">Loading document...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-auto" ref={imageContainerRef}>
       <ImageViewerHeader name={state.record?.name} zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
       {state.images.map((image, index) => (
         <div className="relative bg-amber-300" key={index} style={{ transform: `scale(${zoomLevel - 0.1})` }}>
-          {isLoading && <Loader />}
-          <img className="h-full w-full" src={image} alt={`Document page ${index + 1}`} onLoad={handleImageLoad} onError={handleImageError} loading="lazy" />
+          <img className="h-full w-full" src={image} alt={`Document page ${index + 1}`} loading="lazy" />
+
           {Object.entries(state.topLevelFields).map(([key, field], i: number) => {
             const bbox = field.bbox;
             if (!bbox || field.page !== index + 1) return null;
