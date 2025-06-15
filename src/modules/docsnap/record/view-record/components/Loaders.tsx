@@ -8,7 +8,7 @@ interface ProgressLoaderProps {
 
 export const ProgressLoader: FC<ProgressLoaderProps> = ({ progress, currentStep }) => {
   return (
-    <div title="progress-loader" className="flex h-full w-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center gap-1">
         <div className="relative">
           <svg height={90} width={90} className="-rotate-90 transform">
@@ -42,7 +42,7 @@ export const ProgressLoader: FC<ProgressLoaderProps> = ({ progress, currentStep 
 
 export const LoadingDataSpinner: FC = () => {
   return (
-    <div title="loading-data" className="flex flex-1 items-center justify-center gap-2 bg-white">
+    <div className="flex flex-1 items-center justify-center gap-2 bg-white">
       <Spinner /> Loading Data...
     </div>
   );

@@ -15,7 +15,6 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({ hoveredField
 
   return (
     <div
-      title="hoveredField-card"
       className="absolute rounded-lg border border-gray-200 bg-gray-800 p-4 shadow-lg"
       style={{
         left: `${bbox.x_min * 100 - 1}%`,

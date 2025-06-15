@@ -1,14 +1,18 @@
 import { Download } from 'lucide-react';
 import BackButton from '../../../../../components/BackButton';
 import { useNavigate } from 'react-router-dom';
+import { MakezLogoHeader } from '../../../../../assets/svg-icons/MakezLogoHeader';
+import { MakezLogoBlack } from '../../../../../assets/svg-icons/MakezLogoBlack';
 
 export const ImageViewerHeader = ({ name, zoomLevel, setZoomLevel }: { name: string; zoomLevel: number; setZoomLevel: (zoomLevel: number) => void }) => {
   const navigate = useNavigate();
   return (
-    <div title="header" className="sticky top-0 z-30 flex h-15 w-full items-center justify-between border border-gray-200 bg-gray-100 px-6 shadow-sm">
-      {/* <div className="flex items-center justify-between"> */}
+    <div className="sticky top-0 z-30 flex h-15 w-full items-center justify-between border border-gray-200 bg-gray-100 px-4 shadow-sm">
       <div className="flex items-center gap-4">
         <BackButton onClick={() => navigate(-1)} />
+        <MakezLogoBlack />
+      </div>
+      <div className="flex items-center gap-4">
         <h2 className="text-lg font-semibold text-gray-800">{name}</h2>
         <div className="h-6 w-px bg-gray-300"></div>
         <div className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5">
@@ -25,7 +29,7 @@ export const ImageViewerHeader = ({ name, zoomLevel, setZoomLevel }: { name: str
           </button>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3" title="Download">
         <Download size={20} className="cursor-pointer text-gray-500" />
       </div>
       {/* </div> */}

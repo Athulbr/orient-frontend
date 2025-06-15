@@ -179,7 +179,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
             const hoveredFieldId = `topLevelFields:${key}`;
             return (
               <div
-                title="extracted-text-box"
                 tabIndex={0}
                 key={`${key}_${i}_${field.confidence}`}
                 className="absolute rounded bg-[#b9ff2d33]"
@@ -189,7 +188,10 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
                   height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                 }}
-                onMouseEnter={() => handleFieldHover(hoveredFieldId, bbox, index + 1)}
+                onMouseEnter={() => {
+                  handleFieldHover(hoveredFieldId, bbox, index + 1);
+                  setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1 }));
+                }}
               />
             );
           })}

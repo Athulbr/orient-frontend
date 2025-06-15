@@ -4,18 +4,23 @@ import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
 import { RenderTopLevelFields } from './render-field-components/RenderTopLevelFields';
 import { TableViewDialog } from './render-field-components/TableViewDialog';
-import { ProgressLoader, LoadingDataSpinner } from './components/Loaders';
+import { LoadingDataSpinner } from './components/Loaders';
+import ExtractedDataFooter from './components/ExtractedDataFooter';
+import { ExportButton } from './components/ExportButton';
+import { Button } from '../../../../components/Button';
 
 interface ExtractedDataComponentProps {
-  containerRef: React.RefObject<HTMLElement>;
-  lastHoveredFieldRef: React.MutableRefObject<[string, any, number] | null>;
+  containerRef: any;
+  lastHoveredFieldRef: any;
 }
 
 const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, lastHoveredFieldRef }) => {
   const { state, setState } = useViewRecordState();
+
   const [data, setData] = useState<{ progress?: number; current_step?: string }>({});
 
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const extractedDataContainerRef = useRef<HTMLDivElement | null>(null);
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isScrollingRef = useRef<boolean>(false);
@@ -40,6 +45,13 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
         y2,
       },
     }));
+  };
+
+  const scrollToView = (fieldId: string) => {
+    const fieldEl = fieldRefs.current[fieldId];
+    if (!fieldEl) return;
+
+    fieldEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   useEffect(() => {
@@ -73,6 +85,12 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
   }, [state.hoveredFieldId]);
 
   useEffect(() => {
+    if (state.hoveredFieldId && state.scrollToViewField > 1) {
+      scrollToView(state.hoveredFieldId);
+    }
+  }, [state.scrollToViewField]);
+
+  useEffect(() => {
     if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
       const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
       const eventSource = new EventSource(
@@ -88,15 +106,24 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
     }
   }, [state.record]);
 
-  if (!state.record?.extractedData) return <ProgressLoader progress={data?.progress || 0} currentStep={data?.current_step || ''} />;
+  // if (!state.record?.extractedData) return <ProgressLoader progress={data?.progress || 0} currentStep={data?.current_step || ''} />;
   if (state.loadingData) return <LoadingDataSpinner />;
 
   return (
-    <div className="flex flex-col gap-y-2 p-2">
-      <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-      <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-      <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-      <TableViewDialog refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+    <div className="flex flex-col overflow-hidden">
+      <div className="flex justify-end gap-2 border-b p-2">
+        <Button small outlined>
+          Request New Field
+        </Button>
+        <ExportButton />
+      </div>
+      <div ref={extractedDataContainerRef} className="flex flex-1 flex-col overflow-y-auto px-2 pt-2">
+        <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+        <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+        <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+        <TableViewDialog refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+      </div>
+      <ExtractedDataFooter />
     </div>
   );
 };

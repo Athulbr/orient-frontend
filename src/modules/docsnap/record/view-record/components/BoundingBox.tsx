@@ -1,3 +1,5 @@
+import { useViewRecordState } from '../hooks/viewRecordContext';
+
 interface BoundingBoxProps {
   bbox: {
     x_min: number;
@@ -9,9 +11,10 @@ interface BoundingBoxProps {
 }
 
 export const BoundingBox: React.FC<BoundingBoxProps> = ({ bbox, onRef }) => {
+  const { setState } = useViewRecordState();
+
   return (
     <div
-      title="bbox"
       ref={onRef}
       className="absolute border-2 border-[#FFA901]"
       style={{
@@ -20,6 +23,9 @@ export const BoundingBox: React.FC<BoundingBoxProps> = ({ bbox, onRef }) => {
         width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
         height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
       }}
+      // onClick={() => {
+      //   setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1 }));
+      // }}
     />
   );
 };

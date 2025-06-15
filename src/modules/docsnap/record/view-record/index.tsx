@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PageContainer from '../../../../components/PageContainer';
 import PageNameComponent from '../../../../components/PageName';
 import { DocumentPreviewComponent } from './DocumentPreview';
@@ -7,6 +7,9 @@ import { TabViewContainer } from './components/TabViewContainer';
 import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
 import { AnnotationLine } from './components/AnnotationLine';
+import { useParams } from 'react-router-dom';
+import { useViewRecordApi } from './hooks/useViewRecordApi';
+import { useViewRecordGlobalStore } from './hooks/useViewRecordGlobalStore';
 
 interface WirePoints {
   x1: number;
@@ -46,6 +49,7 @@ export interface ViewRecordStateIF {
   messages: Message[];
   chatLoading: boolean;
   tableViewDialog: boolean;
+  scrollToViewField: number;
 }
 const initialState = {
   showCreateDialog: false,
@@ -67,6 +71,7 @@ const initialState = {
   messages: [],
   chatLoading: false,
   tableViewDialog: false,
+  scrollToViewField: 1,
 };
 
 const ViewRecordPage: React.FC = () => {

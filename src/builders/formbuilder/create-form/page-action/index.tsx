@@ -149,7 +149,6 @@ const PageActionComponent: React.FC = () => {
       <Dialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        title="Example Dialog"
         primaryButtonText="Create"
         secondaryButtonText="Cancel"
         onPrimaryClick={handleConfirm}
