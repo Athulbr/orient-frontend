@@ -72,13 +72,14 @@ const initialState = {
 const ViewRecordPage: React.FC = () => {
   const [state, setState] = useState<ViewRecordStateIF>(initialState);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const lastHoveredFieldRef = useRef<any[] | null>(null);
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
       <div className="absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white" ref={containerRef}>
-        <DocumentPreviewComponent containerRef={containerRef} />
+        <DocumentPreviewComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
         <TabViewContainer>
-          <ExtractedDataComponent containerRef={containerRef} />
+          <ExtractedDataComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
           <DocumentBotComponent />
         </TabViewContainer>
         <AnnotationLine />
