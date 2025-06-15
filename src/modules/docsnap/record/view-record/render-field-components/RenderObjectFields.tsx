@@ -17,7 +17,6 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
               {Object.entries(valueMain).map(([subKey, value], i) => {
                 const fieldId = `objectFields:${key}:${subKey}`;
                 const onChange = (e: any) => {
-                  console.log('e:===========', e.target.value);
                   setState(prev => {
                     const updated = prev.objectFields;
                     updated[key][subKey] = { ...updated[key][subKey], value: e.target.value };
@@ -30,6 +29,19 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                     label={formatFieldLabel(subKey)}
                     value={value.value}
                     confidence={`${value.confidence * 100}`}
+                    checked={value.checked}
+                    checkClickHandler={() => {
+                      setState(prev => ({
+                        ...prev,
+                        objectFields: {
+                          ...prev.objectFields,
+                          [key]: {
+                            ...prev.objectFields[key],
+                            [subKey]: { ...prev.objectFields[key][subKey], checked: !prev.objectFields[key][subKey].checked },
+                          },
+                        },
+                      }));
+                    }}
                     // @ts-ignore
                     ref={el => (fieldRefs.current[fieldId] = el)}
                     onMouseAction={() => {

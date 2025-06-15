@@ -1,6 +1,6 @@
 import { ImageViewerHeader } from './components/ImageViewerHeader';
 import { useViewRecordState } from './hooks/viewRecordContext';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
 import { Loader } from './components/Loader';
@@ -138,19 +138,58 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         return newState;
       });
     }
+    if (keysArray?.length === 3) {
+      const [fieldType, fieldKey, subFieldKey] = keysArray;
+      setState(prev => {
+        const newState = { ...prev };
+        if (fieldType === 'objectFields') {
+          newState.objectFields = {
+            ...prev.objectFields,
+            [fieldKey]: {
+              ...prev.objectFields[fieldKey],
+              [subFieldKey]: {
+                ...prev.objectFields[fieldKey][subFieldKey],
+                value,
+              },
+            },
+          };
+        }
+        return newState;
+      });
+    }
   };
 
   const handleCheckToggle = () => {
-    setState(prev => ({
-      ...prev,
-      topLevelFields: {
-        ...prev.topLevelFields,
-        [state.hoveredFieldId?.split(':')[1] as string]: {
-          ...prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string],
-          checked: !prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string].checked,
+    const hoveredFieldId = state.hoveredFieldId;
+    const keysArray = hoveredFieldId?.split(':');
+    if (keysArray?.length === 2) {
+      setState(prev => ({
+        ...prev,
+        topLevelFields: {
+          ...prev.topLevelFields,
+          [state.hoveredFieldId?.split(':')[1] as string]: {
+            ...prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string],
+            checked: !prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string].checked,
+          },
         },
-      },
-    }));
+      }));
+    }
+    if (keysArray?.length === 3) {
+      const [fieldType, fieldKey, subFieldKey] = keysArray;
+      setState(prev => ({
+        ...prev,
+        objectFields: {
+          ...prev.objectFields,
+          [fieldKey]: {
+            ...prev.objectFields[fieldKey],
+            [subFieldKey]: {
+              ...prev.objectFields[fieldKey][subFieldKey],
+              checked: !prev.objectFields[fieldKey][subFieldKey].checked,
+            },
+          },
+        },
+      }));
+    }
   };
 
   const getHoveredField = () => {
@@ -161,10 +200,23 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
       if (fieldType === 'topLevelFields') {
         return state.topLevelFields[fieldKey] || null;
       }
+
+      return null;
+    }
+    if (keysArray?.length === 3) {
+      const [fieldType, fieldKey, subFieldKey] = keysArray;
+
+      if (fieldType === 'objectFields') {
+        return state.objectFields[fieldKey]?.[subFieldKey] || null;
+      }
       return null;
     }
     return null;
   };
+  const arrayLength = state.hoveredFieldId?.split(':').length;
+  const mainKey = state.hoveredFieldId?.split(':')[0] as string;
+  const subKey = state.hoveredFieldId?.split(':')[1] as string;
+  const subSubKey = (state.hoveredFieldId?.split(':')[2] as string) || '';
 
   return (
     <div className="flex-1 overflow-auto" ref={imageContainerRef}>
@@ -195,16 +247,17 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               />
             );
           })}
-          {/* {Object.entries(state.objectFields).map(([key, mainValue], mainIndex) => {
+          {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
             return (
-              <>
-                {Object.values(mainValue).map((field: any, i: number) => {
+              <Fragment key={`${mainKey}_${mainIndex}`}>
+                {Object.entries(mainValue).map(([key, field]: any, i: number) => {
                   const bbox = field.bbox;
                   if (!bbox || field.page !== index + 1) return null;
-                  const hoveredFieldId = `objectFields:${key}:${field.key}`;
+                  const hoveredFieldId = `objectFields:${mainKey}:${key}`;
+                  // console.log(hoveredFieldId);
                   return (
                     <div
-                      key={`${hoveredFieldId}_${i}`}
+                      key={`${hoveredFieldId}_${i}_${field.confidence}_${field.page}_${mainKey}_${key}`}
                       className="absolute rounded bg-[#b9ff2d33]"
                       style={{
                         left: `${bbox.x_min * 100 - 0.4}%`,
@@ -213,20 +266,15 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                       }}
                       onMouseEnter={() => {
-                        lastHoveredFieldRef.current = [hoveredFieldId, bbox, index + 1];
-                        setState(prev => ({
-                          ...prev,
-                          hoveredFieldId,
-                          pageNumber: index + 1,
-                          bbox: bbox,
-                        }));
+                        handleFieldHover(hoveredFieldId, bbox, index + 1);
+                        setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1 }));
                       }}
                     />
                   );
                 })}
-              </>
+              </Fragment>
             );
-          })} */}
+          })}
           {state.bbox && state.tabIndex === 0 && !state.loadingS3File && index === state.pageNumber - 1 && (
             <>
               <BoundingBox
@@ -242,7 +290,8 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   bbox={state.bbox}
                   onValueChange={handleValueChange}
                   onCheckToggle={handleCheckToggle}
-                  isChecked={state.topLevelFields[state.hoveredFieldId?.split(':')[1] as string]?.checked || false}
+                  // @ts-ignore
+                  isChecked={arrayLength === 3 ? state[mainKey]?.[subKey]?.[subSubKey]?.checked || false : state[mainKey]?.[subKey]?.checked || false}
                 />
               )}
             </>

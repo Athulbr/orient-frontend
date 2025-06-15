@@ -117,7 +117,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
         </Button>
         <ExportButton />
       </div>
-      <div ref={extractedDataContainerRef} className="flex flex-1 flex-col overflow-y-auto px-2 pt-2">
+      <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pt-2">
         <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
         <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
         <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
