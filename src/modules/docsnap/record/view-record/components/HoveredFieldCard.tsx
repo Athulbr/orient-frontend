@@ -18,7 +18,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
   onValueChange,
   onCheckToggle,
   isChecked,
-  arrayLength,
+  arrayLength = 2,
 }) => {
   const activeClasses = 'focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1';
 
