@@ -1,9 +1,11 @@
 import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { useUserState } from './hooks/userContext';
+import { useUserApiService } from './hooks/useUserApiService';
 
 export const ListUserComponent: React.FC = () => {
-  const { setState } = useUserState();
+  const { state, setState } = useUserState();
+  const { deleteUserApiRequest } = useUserApiService();
   const actionButtons = [
     {
       label: 'Create User',
@@ -17,11 +19,30 @@ export const ListUserComponent: React.FC = () => {
       setState(prev => ({ ...prev, showCreateDialog: true, id: row._id }));
     },
     deleteClickHandler: (row: any) => {
-      alert(`${row.name} Deleted`);
+      deleteUserApiRequest(row._id);
     },
   };
   const customUI = {
-    status: StatusCustomUI,
+    name: UserNameCustomUI,
+    status: UserStatusCustomUI,
   };
-  return <UseTablebuilder name="list user" fluidHeight customFunctions={customFunctions} customUI={customUI} actionButtons={actionButtons} />;
+  return (
+    <UseTablebuilder name="list user" refresh={state.refresh} fluidHeight customFunctions={customFunctions} customUI={customUI} actionButtons={actionButtons} />
+  );
+};
+
+const UserNameCustomUI = (row: any) => {
+  return (
+    <div className="">
+      {row.data.firstName} {row.data.lastName}
+    </div>
+  );
+};
+
+export const UserStatusCustomUI = ({ data }: { data: any }) => {
+  return (
+    <div className={`inline rounded-md px-2 py-1 text-xs capitalize ${data?.active === true ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-400'}`}>
+      {data.active ? 'Active' : 'Inactive'}
+    </div>
+  );
 };
