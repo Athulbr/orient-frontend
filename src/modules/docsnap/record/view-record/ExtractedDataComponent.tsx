@@ -106,6 +106,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
     }
   }, [state.record]);
 
+  if (!state.record) return <LoadingDataSpinner />;
   if (!state.record?.extractedData) return <ProgressLoader progress={data?.progress || 0} currentStep={data?.current_step || ''} />;
   if (state.loadingData) return <LoadingDataSpinner />;
 

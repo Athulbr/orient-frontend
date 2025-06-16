@@ -23,7 +23,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({ hoveredField
       }}
     >
       <div className="flex items-center justify-between gap-2 pl-1 font-semibold text-white">
-        {formatFieldLabel(hoveredFieldId?.split(':')[1] || '')}
+        {formatFieldLabel(hoveredFieldId?.split(':')[2] || '')}
         <MessageSquareMore className="cursor-pointer hover:text-sky-500" size={18} />
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 text-lg text-white">

@@ -127,7 +127,7 @@ export const RenderProjectComponent: React.FC<ListProjectComponentIF> = () => {
                         </div>
                       ))
                     ) : (
-                      <div className="flex h-25 w-40 items-center justify-center text-sm text-gray-500">No documents found</div>
+                      <div className="flex w-40 items-center justify-center text-sm text-gray-500">No documents found</div>
                     )}
                   </div>
                 )}

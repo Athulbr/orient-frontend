@@ -11,9 +11,8 @@ const AppConfigMenuPage: React.FC<AppConfigMenuPageIF> = () => {
   const navigate = useNavigate();
   return (
     <PageContainer>
-      <PageNameComponent name="App Configuration" />
+      <PageNameComponent name="Workspace Configuration" />
       <section className="mt-5 flex flex-col gap-4 p-2">
-        <span className="pl-2 text-sm">Utils</span>
         <div className="flex flex-wrap gap-6">
           {utils.map(item => (
             <div

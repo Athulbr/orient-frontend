@@ -104,7 +104,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
 
   const handleFieldHover = (hoveredFieldId: string, bbox: any, pageNumber: number) => {
     if (bbox && !isScrolling) {
-      lastHoveredFieldRef.current = [null, bbox, pageNumber];
+      lastHoveredFieldRef.current = [hoveredFieldId, bbox, pageNumber];
       setState(prev => ({
         ...prev,
         bbox: bbox,
