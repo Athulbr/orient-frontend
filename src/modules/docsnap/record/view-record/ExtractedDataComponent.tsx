@@ -68,6 +68,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
             ...prev,
             hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}`,
             pageNumber: lastHoveredFieldRef.current?.[2] || 0,
+            bbox: lastHoveredFieldRef.current?.[1] || null,
           }));
           updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
         }

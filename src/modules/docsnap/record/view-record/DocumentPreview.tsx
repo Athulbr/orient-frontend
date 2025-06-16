@@ -51,8 +51,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   };
 
   useEffect(() => {
-    if (!state.bbox?.x_max) return;
-
     updateWirePosition();
 
     const container = imageContainerRef.current;
@@ -70,7 +68,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
       top: container.scrollTop + scrollAmount,
       behavior: 'smooth',
     });
-  }, [state.bbox?.x_max]);
+  }, [state.hoveredFieldId]);
 
   useEffect(() => {
     const container = imageContainerRef.current;
@@ -100,7 +98,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
 
   useEffect(() => {
     updateWirePosition();
-  }, [zoomLevel]);
+  }, [zoomLevel, state.bbox?.y_min]);
 
   const handleFieldHover = (hoveredFieldId: string, bbox: any, pageNumber: number) => {
     if (bbox && !isScrolling) {
