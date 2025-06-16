@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
 import Spinner from '../../../../components/Spinner';
+import { LoadingDataSpinner } from './components/Loaders';
 
 interface DocumentPreviewComponentIF {
   containerRef: any;
@@ -217,8 +218,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         <ImageViewerHeader name={state.record?.name} zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
 
         <div className="flex h-[100vh] w-full flex-1 flex-col items-center justify-center">
-          <Spinner />
-          <span className="text-sm text-gray-500">Loading document...</span>
+          <LoadingDataSpinner text="Loading Document..." />
         </div>
       </div>
     );

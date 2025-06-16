@@ -40,10 +40,10 @@ export const ProgressLoader: FC<ProgressLoaderProps> = ({ progress, currentStep 
   );
 };
 
-export const LoadingDataSpinner: FC = () => {
+export const LoadingDataSpinner: FC<{ text?: string }> = ({ text = 'Loading Data...' }) => {
   return (
-    <div className="flex flex-1 items-center justify-center gap-2 bg-white">
-      <Spinner /> Loading Data...
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-white">
+      <Spinner /> {text}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { CircleCheck, Trash } from 'lucide-react';
+import { CircleCheck, MessageSquareMore, Trash } from 'lucide-react';
 import { formatFieldLabel } from '../utils';
 
 interface HoveredFieldCardProps {
@@ -15,16 +15,16 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({ hoveredField
 
   return (
     <div
-      className="absolute rounded-lg border border-gray-200 bg-gray-800 p-4 shadow-lg"
+      className="absolute flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-800 p-4 shadow-lg"
       style={{
         left: `${bbox.x_min * 100 - 1}%`,
         top: `${bbox.y_max * 100 + 1}%`,
         minWidth: '220px',
       }}
     >
-      <div className="flex justify-between gap-2 pl-1 font-semibold text-white">
+      <div className="flex items-center justify-between gap-2 pl-1 font-semibold text-white">
         {formatFieldLabel(hoveredFieldId?.split(':')[1] || '')}
-        <Trash className="cursor-pointer hover:text-red-500" size={18} />
+        <MessageSquareMore className="cursor-pointer hover:text-sky-500" size={18} />
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 text-lg text-white">
         <textarea
