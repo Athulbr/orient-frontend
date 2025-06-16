@@ -294,6 +294,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   bbox={state.bbox}
                   onValueChange={handleValueChange}
                   onCheckToggle={handleCheckToggle}
+                  arrayLength={arrayLength}
                   // @ts-ignore
                   isChecked={arrayLength === 3 ? state[mainKey]?.[subKey]?.[subSubKey]?.checked || false : state[mainKey]?.[subKey]?.checked || false}
                 />

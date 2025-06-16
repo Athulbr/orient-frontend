@@ -8,9 +8,18 @@ interface HoveredFieldCardProps {
   onValueChange: (value: string) => void;
   onCheckToggle: () => void;
   isChecked: boolean;
+  arrayLength: number;
 }
 
-export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({ hoveredField, hoveredFieldId, bbox, onValueChange, onCheckToggle, isChecked }) => {
+export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
+  hoveredField,
+  hoveredFieldId,
+  bbox,
+  onValueChange,
+  onCheckToggle,
+  isChecked,
+  arrayLength,
+}) => {
   const activeClasses = 'focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1';
 
   return (
@@ -23,7 +32,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({ hoveredField
       }}
     >
       <div className="flex items-center justify-between gap-2 pl-1 font-semibold text-white">
-        {formatFieldLabel(hoveredFieldId?.split(':')[2] || '')}
+        {arrayLength === 3 ? formatFieldLabel(hoveredFieldId?.split(':')[2] || '') : formatFieldLabel(hoveredFieldId?.split(':')[1] || '')}
         <MessageSquareMore className="cursor-pointer hover:text-sky-500" size={18} />
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 text-lg text-white">
