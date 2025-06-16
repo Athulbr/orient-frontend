@@ -111,7 +111,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
 
   return (
     <div className="flex flex-col overflow-hidden">
-      <div className="flex justify-end gap-2 border-b p-2">
+      <div className="z-20 flex justify-end gap-2 border-b bg-gray-50 p-2">
         <Button small outlined>
           Request New Field
         </Button>

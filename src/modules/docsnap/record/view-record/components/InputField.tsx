@@ -1,4 +1,4 @@
-import { FC, RefObject, useState } from 'react';
+import { FC, RefObject, useId, useState } from 'react';
 import { CircleCheck, MessageSquareMore } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { useEffect, useRef } from 'react';
@@ -33,11 +33,12 @@ export const InputField = ({
   ...props
 }: InputFieldProps) => {
   const [commentDialog, setCommentDialog] = useState(false);
+  const id = useId();
 
   return (
     <div className={`group relative w-full min-w-0 rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.()}>
       {label && (
-        <label className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
+        <label htmlFor={id} className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
           {label}
           <ValidateSkuButton label={label} value={value} />
           {confidence && <ConfidenceScore confidence={confidence} />}
@@ -55,6 +56,7 @@ export const InputField = ({
             className="min-w-0 flex-1 resize-none px-2 text-sm text-gray-700 focus:outline-none"
             value={value ? value : ''}
             {...props}
+            id={id}
           />
         ) : (
           <input
@@ -64,6 +66,7 @@ export const InputField = ({
             value={value ? value : ''}
             onChange={onchange}
             {...props}
+            id={id}
           />
         )}
         <CircleCheck onClick={checkClickHandler} className={`mr-1 cursor-pointer ${checked ? 'text-green-500' : 'text-gray-300'}`} size={16} />
