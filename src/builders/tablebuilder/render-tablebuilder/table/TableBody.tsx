@@ -4,6 +4,7 @@ import { dataMapper } from '../utils/DataMapper';
 import { Edit, Trash } from 'lucide-react';
 import { formatDate } from '../utils/formatDate';
 import { useAlertStore } from '../../../../components/alert/AlertStore';
+import Tooltip from '../../../../components/Tooltip';
 
 export const TableBody: FC = () => {
   const { injectedData, settings, state, setState } = useTablebuilderState();
@@ -71,7 +72,6 @@ export const TableBody: FC = () => {
           )}
           {columns.map((column, index) => {
             if (column.hidden) return null;
-            console.log('column:===========', column);
             return (
               <td key={column.key as string} className="px-1 py-4 whitespace-nowrap">
                 <div
@@ -143,14 +143,14 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
   return (
     <div className="ml-2 flex gap-4">
       {settings.editButton && (
-        <span title="Edit" className="p-1">
+        <Tooltip text="Edit" position="bottom">
           <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />
-        </span>
+        </Tooltip>
       )}
       {settings.deleteButton && (
-        <span title="Delete" className="p-1">
+        <Tooltip text="Delete" position="bottom">
           <Trash onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={16} />
-        </span>
+        </Tooltip>
       )}
     </div>
   );

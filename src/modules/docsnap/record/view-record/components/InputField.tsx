@@ -1,5 +1,5 @@
-import { FC, RefObject, useState } from 'react';
-import { MessageSquareMore } from 'lucide-react';
+import { FC, RefObject, useId, useState } from 'react';
+import { CircleCheck, MessageSquareMore } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { useEffect, useRef } from 'react';
 import { CommentDialog } from './CommentDialog';
@@ -11,20 +11,34 @@ interface InputFieldProps {
   label?: string;
   confidence?: string;
   errorMessage?: string;
-  onMouseAction?: (bbox: any) => void;
+  onMouseAction?: () => void;
   onchange: (bbox: any) => void;
   ref?: RefObject<any>;
   value: string;
-  bbox: string;
+  checked?: boolean;
+  checkClickHandler?: () => void;
 }
 
-export const InputField = ({ label, errorMessage, onMouseAction, description, ref, confidence, value, bbox, onchange, ...props }: InputFieldProps) => {
+export const InputField = ({
+  label,
+  errorMessage,
+  onMouseAction,
+  description,
+  ref,
+  confidence,
+  value,
+  onchange,
+  checked,
+  checkClickHandler,
+  ...props
+}: InputFieldProps) => {
   const [commentDialog, setCommentDialog] = useState(false);
+  const id = useId();
 
   return (
-    <div className={`group ${description ? 'w-full' : 'w-1/2'} relative min-w-0 rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.(bbox)}>
+    <div className={`group relative w-full min-w-0 rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.()}>
       {label && (
-        <label className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
+        <label htmlFor={id} className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
           {label}
           <ValidateSkuButton label={label} value={value} />
           {confidence && <ConfidenceScore confidence={confidence} />}
@@ -32,13 +46,30 @@ export const InputField = ({ label, errorMessage, onMouseAction, description, re
       )}
 
       <div
-        className={`flex ${description ? 'h-18' : 'h-9'} w-full items-center justify-between overflow-hidden rounded-sm border border-gray-300 bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
+        className={`flex ${description ? 'h-18' : 'h-9'} w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border-2 border-green-500' : 'border-gray-300'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
       >
         {description ? (
-          <textarea rows={3} ref={ref} className="min-w-0 flex-1 resize-none px-2 text-sm text-gray-700 focus:outline-none" value={value} {...props} />
+          <textarea
+            rows={3}
+            onChange={onchange}
+            ref={ref}
+            className="min-w-0 flex-1 resize-none px-2 text-sm text-gray-700 focus:outline-none"
+            value={value ? value : ''}
+            {...props}
+            id={id}
+          />
         ) : (
-          <input ref={ref} className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none" value={value} onChange={onchange} {...props} />
+          <input
+            onFocus={() => onMouseAction?.()}
+            ref={ref}
+            className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none"
+            value={value ? value : ''}
+            onChange={onchange}
+            {...props}
+            id={id}
+          />
         )}
+        <CircleCheck onClick={checkClickHandler} className={`mr-1 cursor-pointer ${checked ? 'text-green-500' : 'text-gray-300'}`} size={16} />
         <div
           onClick={() => setCommentDialog(true)}
           className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-200 hover:bg-gray-100"

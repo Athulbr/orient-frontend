@@ -13,7 +13,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
     <>
       {state.arrayFields.map((item, mainIndex) => {
         return (
-          <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:border-yellow-300">
+          <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:border-blue-300">
             <label className="flex justify-between p-4 text-lg font-bold capitalize">
               {formatFieldLabel(state.tableNames[mainIndex])}
               <span
@@ -25,7 +25,7 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
             </label>
             <div className="flex flex-col gap-y-4 rounded-lg bg-white p-2">
               {Object.entries(item).map(([key, subItem], rowIndex) => (
-                <div key={rowIndex} className="flex flex-wrap gap-y-1 rounded-lg border bg-white hover:border-yellow-500">
+                <div key={rowIndex} className="flex flex-wrap gap-y-1 rounded-lg border bg-white hover:border-blue-400">
                   <label className="text-md flex w-full items-center justify-between px-4 py-2 font-bold text-gray-600">
                     Row {rowIndex + 1} <Trash className="cursor-pointer hover:text-red-500" size={18} />
                   </label>
@@ -51,13 +51,12 @@ export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs
                         confidence={`${value.confidence * 100}`}
                         // @ts-ignore
                         ref={el => (fieldRefs.current[fieldId] = el)}
-                        bbox={value.bbox}
-                        onMouseAction={bbox => {
-                          if (bbox) {
-                            lastHoveredFieldRef.current = [fieldId, bbox, value.page];
+                        onMouseAction={() => {
+                          if (value.bbox) {
+                            lastHoveredFieldRef.current = [fieldId, value.bbox, value.page];
                             if (!isScrollingRef.current) {
                               setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
-                              updateWire(fieldId, bbox);
+                              updateWire(fieldId, value.bbox);
                             }
                           }
                         }}

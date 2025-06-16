@@ -19,7 +19,7 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
   return (
     <div className="flex flex-wrap gap-y-1">
       {Object.entries(state.topLevelFields).map(([key, value], i) => {
-        const fieldId = `${key}_${i}_TopLevel`;
+        const fieldId = `topLevelFields:${key}`;
         const confidence = Number((value.confidence * 100).toFixed(2));
         let confColor: string = confidence > 90 ? 'green' : confidence > 80 ? 'orange' : 'red';
         if (isNaN(confidence)) {
@@ -38,17 +38,23 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
             label={formatFieldLabel(key)}
             value={value.value}
             confidence={`${value.confidence * 100}`}
+            checked={value.checked}
+            checkClickHandler={() => {
+              // console.log('checkClickHandler', key, value.checked);
+              setState(prev => {
+                const updated = prev.topLevelFields;
+                updated[key] = { ...updated[key], checked: value.checked ? false : true };
+                return { ...prev, topLevelFields: updated };
+              });
+            }}
             // @ts-ignore
             ref={el => (fieldRefs.current[fieldId] = el)}
-            bbox={value.bbox}
-            onMouseAction={bbox => {
-              // fieldRefs.current[fieldId].focus();
-
-              if (bbox) {
-                lastHoveredFieldRef.current = [fieldId, bbox, value.page];
+            onMouseAction={() => {
+              if (value.bbox) {
+                lastHoveredFieldRef.current = [fieldId, value.bbox, value.page];
                 if (!isScrollingRef.current) {
                   setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
-                  updateWire(fieldId, bbox);
+                  updateWire(fieldId, value.bbox);
                 }
               }
             }}

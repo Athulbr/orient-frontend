@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PageContainer from '../../../../components/PageContainer';
 import PageNameComponent from '../../../../components/PageName';
 import { DocumentPreviewComponent } from './DocumentPreview';
@@ -7,6 +7,9 @@ import { TabViewContainer } from './components/TabViewContainer';
 import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
 import { AnnotationLine } from './components/AnnotationLine';
+import { useParams } from 'react-router-dom';
+import { useViewRecordApi } from './hooks/useViewRecordApi';
+import { useViewRecordGlobalStore } from './hooks/useViewRecordGlobalStore';
 
 interface WirePoints {
   x1: number;
@@ -46,6 +49,7 @@ export interface ViewRecordStateIF {
   messages: Message[];
   chatLoading: boolean;
   tableViewDialog: boolean;
+  scrollToViewField: number;
 }
 const initialState = {
   showCreateDialog: false,
@@ -67,27 +71,24 @@ const initialState = {
   messages: [],
   chatLoading: false,
   tableViewDialog: false,
+  scrollToViewField: 1,
 };
 
 const ViewRecordPage: React.FC = () => {
   const [state, setState] = useState<ViewRecordStateIF>(initialState);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const lastHoveredFieldRef = useRef<any[] | null>(null);
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
-      <PageContainer className="gap-2">
-        <PageNameComponent name="View Record" showBackButton>
-          <div className="pt-1 pl-15 text-xs text-gray-500">Docsnap&nbsp;&nbsp;/&nbsp;&nbsp;{'-'}&nbsp;&nbsp;/&nbsp;&nbsp;New Document</div>
-        </PageNameComponent>
-        <div className="relative flex flex-1 overflow-y-auto" ref={containerRef}>
-          <DocumentPreviewComponent containerRef={containerRef} />
-          <TabViewContainer>
-            <ExtractedDataComponent containerRef={containerRef} />
-            <DocumentBotComponent />
-          </TabViewContainer>
-          <AnnotationLine />
-        </div>
-      </PageContainer>
+      <div className="absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white" ref={containerRef}>
+        <DocumentPreviewComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
+        <TabViewContainer>
+          <ExtractedDataComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
+          <DocumentBotComponent />
+        </TabViewContainer>
+        <AnnotationLine />
+      </div>
     </ViewRecordStateProvider>
   );
 };

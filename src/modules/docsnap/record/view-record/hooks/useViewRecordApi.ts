@@ -13,13 +13,7 @@ export const useViewRecordApi = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToastStore();
-  const { refresh } = useViewRecordGlobalStore();
   const { getS3File } = useS3DocumentsStore();
-
-  useEffect(() => {
-    if (!id) return;
-    getRecordApiById(id);
-  }, [id, refresh]);
 
   // ============================= Get Record By Id ==================================
 

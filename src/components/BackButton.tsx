@@ -1,10 +1,12 @@
 import { ArrowLeft } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 interface BackButtonIF {
   onClick: () => void;
+  tooltipText?: string;
 }
 
-const BackButton: React.FC<BackButtonIF> = ({ onClick }) => {
+const BackButton: React.FC<BackButtonIF> = ({ onClick, tooltipText = 'Go back' }) => {
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -13,15 +15,17 @@ const BackButton: React.FC<BackButtonIF> = ({ onClick }) => {
   };
 
   return (
-    <span
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
-      className="flex h-8 w-10 cursor-pointer items-center justify-center rounded-lg border bg-gray-50 hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
-    >
-      <ArrowLeft role="img" size={20} />
-    </span>
+    <Tooltip text={tooltipText} position="bottom">
+      <span
+        role="button"
+        tabIndex={0}
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+        className="flex h-8 w-10 cursor-pointer items-center justify-center rounded-lg border bg-gray-50 hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
+      >
+        <ArrowLeft role="img" size={20} />
+      </span>
+    </Tooltip>
   );
 };
 

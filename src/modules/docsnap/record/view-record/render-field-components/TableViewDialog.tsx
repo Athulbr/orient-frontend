@@ -77,7 +77,6 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
               />
               {x_min && x_max && (
                 <div
-                  title="bbox"
                   className="pointer-events-none absolute border-2 border-[#FFA901]"
                   style={{
                     left: `${(x_min - 0) * 100 - 0.2}%`,
@@ -117,7 +116,8 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
                           // @ts-ignore
                           ref={el => (fieldRefs.current[fieldId] = el)}
                           bbox={value.bbox}
-                          onMouseAction={bbox => {
+                          onMouseAction={() => {
+                            const bbox = value.bbox;
                             if (bbox) {
                               lastHoveredFieldRef.current = [fieldId, bbox, value.page];
                               if (!isScrollingRef.current) {

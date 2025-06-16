@@ -40,7 +40,7 @@ export const SignatureRender: React.FC<InputFieldRenderPropsIF> = ({ index, fiel
       <div onClick={() => setIsOpen(true)} className={style.signatureLabel}>
         <span className={style.signatureLabelButton}>{value ? 'Update Signarure' : 'Add Signarure'}</span> {value && <img height={40} width={80} src={value} />}
       </div>
-      <Dialog title="Add Signature" isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <Dialog isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <SignaturePad value={value} onChange={handleChange} onBlur={handleBlur} onClose={() => setIsOpen(false)} />
       </Dialog>
     </InputWrapper>

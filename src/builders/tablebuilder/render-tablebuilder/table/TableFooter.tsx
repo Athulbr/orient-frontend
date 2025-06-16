@@ -4,6 +4,7 @@ import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { useEffect, useState } from 'react';
 import { Button } from '../../../../components/Button';
+import Tooltip from '../../../../components/Tooltip';
 
 export function TableFooter() {
   return (
@@ -72,14 +73,23 @@ const PaginationComponent = () => {
   if (!pagination.showPaginaion || total === 0) return null;
 
   return (
-    <div className="relative mt-2 flex items-center gap-2">
-      <PaginationButton onClick={() => setPage(1)} disabled={page === 1} icon={<ChevronsLeft className="h-4 w-4" />} />
-      <PaginationButton onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} icon={<ChevronLeft className="h-4 w-4" />} />
+    <div className="relative mt-2 mr-2 flex items-center gap-2">
+      <Tooltip text="First" position="top">
+        <PaginationButton onClick={() => setPage(1)} disabled={page === 1} icon={<ChevronsLeft className="h-4 w-4" />} />
+      </Tooltip>
+      <Tooltip text="Prev" position="top">
+        <PaginationButton onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} icon={<ChevronLeft className="h-4 w-4" />} />
+      </Tooltip>
+
       <span className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
         Page {page} of {totalPages}
       </span>
-      <PaginationButton onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} icon={<ChevronRight className="h-4 w-4" />} />
-      <PaginationButton onClick={() => setPage(totalPages)} disabled={page >= totalPages} icon={<ChevronsRight className="h-4 w-4" />} />
+      <Tooltip text="Next" position="top">
+        <PaginationButton onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} icon={<ChevronRight className="h-4 w-4" />} />
+      </Tooltip>
+      <Tooltip text="Last" position="top">
+        <PaginationButton onClick={() => setPage(totalPages)} disabled={page >= totalPages} icon={<ChevronsRight className="h-4 w-4" />} />
+      </Tooltip>
     </div>
   );
 };

@@ -22,9 +22,9 @@ export const ChatInput = ({ sendMessage }: ChatInputProps) => {
   };
 
   return (
-    <div className="sticky bottom-[49px] left-0 border-t border-gray-300 bg-white p-4">
+    <div className="border-t border-gray-300 bg-white p-4">
       <div className="flex w-full items-center border border-gray-300">
-        <div className="mx-2 flex h-10 w-10 cursor-pointer items-center justify-center">
+        <div className="mx-2 flex h-10 w-10 cursor-pointer items-center justify-center border-r">
           <Plus size={20} />
         </div>
         <input

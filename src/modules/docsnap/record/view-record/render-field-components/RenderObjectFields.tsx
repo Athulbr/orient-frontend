@@ -11,13 +11,12 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
     <>
       {Object.entries(state.objectFields).map(([key, valueMain], mainIndex) => {
         return (
-          <div key={key} className="flex flex-col rounded-lg border bg-white hover:border-amber-400">
+          <div key={key} className="flex flex-col rounded-lg border bg-white hover:border-blue-400">
             <label className="p-4 text-lg font-bold capitalize">{formatFieldLabel(key)}</label>
             <div className="flex flex-wrap gap-y-1">
               {Object.entries(valueMain).map(([subKey, value], i) => {
-                const fieldId = `${valueMain.value}_${value}_${mainIndex}_${i}_${subKey}_${key === subKey ? 'test' : '2'}`;
+                const fieldId = `objectFields:${key}:${subKey}`;
                 const onChange = (e: any) => {
-                  console.log('e:===========', e.target.value);
                   setState(prev => {
                     const updated = prev.objectFields;
                     updated[key][subKey] = { ...updated[key][subKey], value: e.target.value };
@@ -30,15 +29,27 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                     label={formatFieldLabel(subKey)}
                     value={value.value}
                     confidence={`${value.confidence * 100}`}
+                    checked={value.checked}
+                    checkClickHandler={() => {
+                      setState(prev => ({
+                        ...prev,
+                        objectFields: {
+                          ...prev.objectFields,
+                          [key]: {
+                            ...prev.objectFields[key],
+                            [subKey]: { ...prev.objectFields[key][subKey], checked: !prev.objectFields[key][subKey].checked },
+                          },
+                        },
+                      }));
+                    }}
                     // @ts-ignore
                     ref={el => (fieldRefs.current[fieldId] = el)}
-                    bbox={value.bbox}
-                    onMouseAction={bbox => {
-                      if (bbox) {
-                        lastHoveredFieldRef.current = [fieldId, bbox, value.page];
+                    onMouseAction={() => {
+                      if (value.bbox) {
+                        lastHoveredFieldRef.current = [fieldId, value.bbox, value.page];
                         if (!isScrollingRef.current) {
                           setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
-                          updateWire(fieldId, bbox);
+                          updateWire(fieldId, value.bbox);
                         }
                       }
                     }}

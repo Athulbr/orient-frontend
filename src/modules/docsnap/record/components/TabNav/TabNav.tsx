@@ -1,16 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect, FC } from 'react';
 import styles from './TabNav.module.css';
-import { Button } from '../../../../../components/Button';
-import { useViewRecordState } from '../../view-record/hooks/viewRecordContext';
-import { Dropdown } from '../../../../../components/Dropdown';
 export interface TabNavProps {
   defaultActiveTab?: number;
   className?: string;
   onChange?: (index: number) => void;
-  showExportButton?: boolean;
 }
 
-export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange, showExportButton }) => {
+export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange }) => {
   // State for tracking active tab
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
 
@@ -75,47 +71,6 @@ export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, c
           </button>
         ))}
       </div>
-      <div className="flex flex-1 justify-end gap-2">
-        <Button small outlined>
-          Request&nbsp;New&nbsp;Field
-        </Button>
-        <ExportButton showExportButton={showExportButton} />
-      </div>
     </nav>
-  );
-};
-
-interface ExportButtonPropsIF {
-  showExportButton?: boolean;
-}
-
-const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton }) => {
-  const { state } = useViewRecordState();
-  const arrays: any = {};
-  state.tableNames.forEach((item, index) => {
-    arrays[item] = state.arrayFields[index];
-  });
-  const extractedData = {
-    ...state.topLevelFields,
-    ...state.objectFields,
-    ...arrays,
-  };
-  const downloadJSONFile = () => {
-    const jsonString = JSON.stringify(extractedData);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `test.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-  if (!showExportButton) return;
-  return (
-    <Dropdown onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
-      <Button small outlined>
-        Export
-      </Button>
-    </Dropdown>
   );
 };
