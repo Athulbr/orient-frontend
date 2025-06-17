@@ -6,6 +6,7 @@ import { Button } from '../../../components/Button';
 import { Copy, Edit, Plus, Save, Trash } from 'lucide-react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import { PromptFieldIF } from '.';
+import { useToastStore } from '../../../components/toast/ToastStore';
 
 const array = ['1', '2', '3', '4', '1', '2', '3', '4', '1', '2', '3', '4'];
 
@@ -55,13 +56,21 @@ const DocumentPreviewComponent = () => {
 };
 const ActionButtons = () => {
   const { state, setState } = useDocumentState();
+  const toast = useToastStore();
 
   return (
     <div className="sticky top-0 flex justify-between bg-white p-2 pt-1">
       <Button outlined startIcon={<Plus size={18} />} onClick={() => setState(prev => ({ ...prev, showAddFieldDialog: true }))}>
         Add Field
       </Button>
-      <Button outlined startIcon={<Save size={18} />}>
+      <Button
+        outlined
+        startIcon={<Save size={18} />}
+        onClick={() => {
+          if (state.fields.length > 0) setState(prev => ({ ...prev, showCreateDialog: true }));
+          else toast.error('Please add at least one field to the document');
+        }}
+      >
         Save
       </Button>
     </div>

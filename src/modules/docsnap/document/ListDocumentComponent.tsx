@@ -7,7 +7,7 @@ import { useDocumentsApi } from './hooks/useDocumentApi';
 export const ListDocumentComponent: React.FC = () => {
   const { id } = useParams();
   const { setState } = useDocumentState();
-  const { getDocumentByIdApi } = useDocumentsApi();
+  const { getDocumentByIdApi, deleteDocumentApi } = useDocumentsApi();
   const actionButtons = [
     {
       label: 'Create Document',
@@ -22,7 +22,7 @@ export const ListDocumentComponent: React.FC = () => {
       getDocumentByIdApi(row._id);
     },
     deleteClickHandler: (row: any) => {
-      alert(`${row.name} Deleted`);
+      deleteDocumentApi(row._id);
     },
   };
   const customUI = {

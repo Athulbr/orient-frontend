@@ -5,6 +5,7 @@ import { DocumentStateProvider } from './hooks/documentContext';
 import CreateDocumentComponent from './CreateDocumentComponent';
 import { ListDocumentComponent } from './ListDocumentComponent';
 import { id } from 'date-fns/locale';
+import CreateDocComponent from './hooks/CreateDocComponent';
 const sampleFields = [
   {
     name: 'PO number',
@@ -389,25 +390,31 @@ export interface PromptFieldIF {
 
 export interface DocumentStateIF {
   showCreatePage: boolean;
+  showCreateDialog: boolean;
   loading: boolean;
   id: string;
+  document: any | null;
   projectId: string;
   showAddFieldDialog: boolean;
   showAddSubFieldDialog: boolean;
   fields: PromptFieldIF[];
   editFieldData: Record<string, any> | null;
   editFieldIndex: number | null;
+  refresh: number;
 }
-const initialState = {
+const initialState: DocumentStateIF = {
   showCreatePage: false,
+  showCreateDialog: false,
   loading: false,
   id: '',
+  document: null,
   projectId: '',
   showAddFieldDialog: false,
   showAddSubFieldDialog: false,
   fields: [],
   editFieldData: null,
   editFieldIndex: null,
+  refresh: 0,
 };
 
 const ListDocumentPage: React.FC = () => {
@@ -416,7 +423,10 @@ const ListDocumentPage: React.FC = () => {
   return (
     <DocumentStateProvider value={{ state, setState }}>
       {state.showCreatePage ? (
-        <CreateDocumentComponent />
+        <>
+          <CreateDocumentComponent />
+          <CreateDocComponent />
+        </>
       ) : (
         <PageContainer className="gap-2">
           <PageNameComponent name="Document List" showBackButton />
