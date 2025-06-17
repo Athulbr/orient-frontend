@@ -8,7 +8,7 @@ interface HoveredFieldCardProps {
   onValueChange: (value: string) => void;
   onCheckToggle: () => void;
   isChecked: boolean;
-  arrayLength: number;
+  arrayLength: number | undefined;
 }
 
 export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({

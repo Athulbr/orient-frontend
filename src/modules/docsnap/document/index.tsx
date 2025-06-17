@@ -402,16 +402,19 @@ export interface DocumentStateIF {
   editFieldIndex: number | null;
   refresh: number;
 }
-const initialState = {
+const initialState: DocumentStateIF = {
   showCreatePage: false,
+  showCreateDialog: false,
   loading: false,
   id: '',
+  document: null,
   projectId: '',
   showAddFieldDialog: false,
   showAddSubFieldDialog: false,
   fields: [],
   editFieldData: null,
   editFieldIndex: null,
+  refresh: 0,
 };
 
 const ListDocumentPage: React.FC = () => {
