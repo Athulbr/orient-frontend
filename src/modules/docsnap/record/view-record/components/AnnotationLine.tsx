@@ -6,11 +6,22 @@ export const AnnotationLine = () => {
 
   if (!wire || state.tabIndex !== 0 || state.loadingS3File) return null;
 
+  // Calculate the horizontal segment end points
+  const startHorizontalX = wire.x1 + 50;
+  const startHorizontalY = wire.y1;
+  const endHorizontalX = wire.x2 - 50;
+  const endHorizontalY = wire.y2;
+
   return (
     <svg className="pointer-events-none absolute top-0 left-0 z-10 flex h-full w-full">
-      <line x1={wire.x1} y1={wire.y1} x2={wire.x2} y2={wire.y2} stroke="#FFA901" strokeWidth={2} strokeDasharray={4} />
-      <circle cx={wire.x1} cy={wire.y1} r={4} fill="#FFA901" />
-      <circle cx={wire.x2} cy={wire.y2} r={4} fill="#FFA901" />
+      <path
+        d={`M ${wire.x1} ${wire.y1} L ${startHorizontalX} ${startHorizontalY} L ${endHorizontalX} ${endHorizontalY} L ${wire.x2} ${wire.y2}`}
+        stroke="blue"
+        strokeWidth={2}
+        fill="none"
+      />
+      <circle cx={wire.x1} cy={wire.y1} r={4} fill="blue" />
+      <circle cx={wire.x2} cy={wire.y2} r={4} fill="blue" />
     </svg>
   );
 };

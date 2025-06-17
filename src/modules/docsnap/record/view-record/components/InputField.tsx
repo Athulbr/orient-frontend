@@ -1,5 +1,5 @@
 import { FC, RefObject, useId, useState } from 'react';
-import { CircleCheck, MessageSquareMore } from 'lucide-react';
+import { CircleCheck, Eye, MessageSquareMore } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { useEffect, useRef } from 'react';
 import { CommentDialog } from './CommentDialog';
@@ -46,7 +46,7 @@ export const InputField = ({
       )}
 
       <div
-        className={`flex ${description ? 'h-18' : 'h-9'} w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border-2 border-green-500' : 'border-gray-300'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
+        className={`flex ${description ? 'h-18' : 'h-9'} w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-300'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
       >
         {description ? (
           <textarea
@@ -69,7 +69,13 @@ export const InputField = ({
             id={id}
           />
         )}
-        <CircleCheck onClick={checkClickHandler} className={`mr-1 cursor-pointer ${checked ? 'text-green-500' : 'text-gray-300'}`} size={16} />
+        <div className="mr-1">
+          {checked ? (
+            <CircleCheck onClick={checkClickHandler} className="text-green-500" size={16} />
+          ) : (
+            <Eye onClick={checkClickHandler} className="text-orange-400" size={16} />
+          )}
+        </div>
         <div
           onClick={() => setCommentDialog(true)}
           className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-200 hover:bg-gray-100"

@@ -151,7 +151,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     }
   };
 
-  const handleCheckToggle = () => {
+  const handleCheckToggle = (checked?: boolean) => {
     const hoveredFieldId = state.hoveredFieldId;
     const keysArray = hoveredFieldId?.split(':');
     if (keysArray?.length === 2) {
@@ -161,7 +161,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
           ...prev.topLevelFields,
           [state.hoveredFieldId?.split(':')[1] as string]: {
             ...prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string],
-            checked: !prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string].checked,
+            checked: checked ? true : !prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string].checked,
           },
         },
       }));

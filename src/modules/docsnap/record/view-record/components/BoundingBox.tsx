@@ -16,7 +16,7 @@ export const BoundingBox: React.FC<BoundingBoxProps> = ({ bbox, onRef }) => {
   return (
     <div
       ref={onRef}
-      className="absolute border-2 border-[#FFA901]"
+      className="absolute border-2 border-blue-600"
       style={{
         left: `${bbox.x_min * 100 - 0.4}%`,
         top: `${bbox.y_min * 100 - 0.4}%`,
