@@ -47,11 +47,11 @@ export const useProjectApi = () => {
     try {
       const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/project/delete/${id}`);
       setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
-      toast.success('Project updated successfully');
+      toast.success('Project deleted successfully');
       return true;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to update Project');
+      toast.error('Failed to delete Project');
     }
   };
 
