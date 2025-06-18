@@ -26,7 +26,11 @@ export const RecordStatusCustomUI = (row: any) => {
   }, [streamUrl]);
 
   if (row?.data?.extractedData) {
-    return <div className="text-xs font-semibold text-green-700">Complete</div>;
+    return (
+      <div className="w-fit cursor-pointer rounded-lg border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-500 hover:bg-blue-100 hover:text-blue-700">
+        Review
+      </div>
+    );
   }
   if (!streamUrl) {
     return <div className="font-semibold text-red-400">Failed</div>;

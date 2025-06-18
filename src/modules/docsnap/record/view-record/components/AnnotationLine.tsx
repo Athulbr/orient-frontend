@@ -16,12 +16,12 @@ export const AnnotationLine = () => {
     <svg className="pointer-events-none absolute top-0 left-0 z-10 flex h-full w-full">
       <path
         d={`M ${wire.x1} ${wire.y1} L ${startHorizontalX} ${startHorizontalY} L ${endHorizontalX} ${endHorizontalY} L ${wire.x2} ${wire.y2}`}
-        stroke="blue"
+        stroke="rgb(13 109 214)"
         strokeWidth={2}
         fill="none"
       />
-      <circle cx={wire.x1} cy={wire.y1} r={4} fill="blue" />
-      <circle cx={wire.x2} cy={wire.y2} r={4} fill="blue" />
+      <circle cx={wire.x1} cy={wire.y1} r={4} fill="rgb(13 109 214)" />
+      <circle cx={wire.x2} cy={wire.y2} r={4} fill="rgb(13 109 214)" />
     </svg>
   );
 };

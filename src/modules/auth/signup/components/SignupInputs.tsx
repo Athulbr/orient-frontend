@@ -24,22 +24,24 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
 
   return (
     <div className="mt-4 flex flex-col gap-2">
-      <MuiTextField
-        errorMessage={state.fieldError.firstName}
-        label="First Name"
-        value={state.firstName}
-        onChange={e => setState(prev => ({ ...prev, firstName: e.target.value }))}
-        className="-webkit-text-fill-color: #fff"
-        onKeyDown={handleKeyDown}
-      />
-      <MuiTextField
-        errorMessage={state.fieldError.lastName}
-        label="Last Name"
-        value={state.lastName}
-        onChange={e => setState(prev => ({ ...prev, lastName: e.target.value }))}
-        className="-webkit-text-fill-color: #fff"
-        onKeyDown={handleKeyDown}
-      />
+      <div className="flex items-center gap-4">
+        <MuiTextField
+          errorMessage={state.fieldError.firstName}
+          label="First Name"
+          value={state.firstName}
+          onChange={e => setState(prev => ({ ...prev, firstName: e.target.value }))}
+          className="-webkit-text-fill-color: #fff"
+          onKeyDown={handleKeyDown}
+        />
+        <MuiTextField
+          errorMessage={state.fieldError.lastName}
+          label="Last Name"
+          value={state.lastName}
+          onChange={e => setState(prev => ({ ...prev, lastName: e.target.value }))}
+          className="-webkit-text-fill-color: #fff"
+          onKeyDown={handleKeyDown}
+        />
+      </div>
       <MuiTextField
         errorMessage={state.fieldError.email}
         label="Email"
@@ -64,12 +66,23 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
       />
       <p
         tabIndex={0}
-        onClick={() => navigate('/auth/forgot-password')}
-        className="w-fit cursor-pointer pl-1 text-[12px] text-gray-400 hover:text-gray-700 active:border-gray-400 active:outline-gray-400"
+        // onClick={() => navigate('/auth/forgot-password')}
+        className="flex w-fit items-center gap-2 p-2 text-[12px] text-gray-400 hover:text-gray-700 active:border-gray-400 active:outline-gray-400"
       >
-        Forgot Password?
+        <input
+          checked={state.termsOfService}
+          onChange={e => setState(prev => ({ ...prev, termsOfService: e.target.checked }))}
+          type="checkbox"
+          id="checkbox"
+          className="cursor-pointer"
+        />
+        <label htmlFor="checkbox" className="cursor-pointer text-gray-400">
+          I agree to the
+        </label>
+        <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Terms of Service</span> and
+        <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Privacy Policy</span>
       </p>
-      <Button onClick={signupWithEmailAndPassword} className="mt-2" disabled={state.loading}>
+      <Button disabled={!state.termsOfService || state.loading} onClick={signupWithEmailAndPassword} className="mt-2">
         {state.loading && <Spinner size={16} />} {state.loading ? 'SIGNING UP...' : 'SIGN UP'}
       </Button>
     </div>

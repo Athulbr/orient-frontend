@@ -19,7 +19,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         Cancel
       </Button>
       <Button onClick={() => updateRecordApiById} outlined small>
-        Update
+        Confirm
       </Button>
       <Button onClick={handleSubmit} outlined small>
         Submit

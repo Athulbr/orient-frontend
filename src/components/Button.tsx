@@ -119,7 +119,7 @@ export const Button = ({
     ? 'bg-white border-1 border-gray-300 text-sm text-gray-800 hover:bg-gray-100'
     : 'bg-black text-white border border-black text-sm hover:bg-gray-800 hover:text-gray-200';
 
-  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
+  const disabledClasses = disabled ? 'opacity-50 cursor-default' : 'cursor-pointer';
 
   const activeClasses = 'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1';
 

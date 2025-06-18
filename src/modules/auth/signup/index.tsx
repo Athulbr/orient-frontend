@@ -26,6 +26,7 @@ export interface SignupPageStateIF {
   };
   isSubmitClicked: boolean;
   showOtpVerificationDialog: boolean;
+  termsOfService: boolean;
 }
 const initialState = {
   firstName: '',
@@ -45,13 +46,14 @@ const initialState = {
   },
   isSubmitClicked: false,
   showOtpVerificationDialog: false,
+  termsOfService: false,
 };
 const SignupPage: FC = () => {
   const [state, setState] = useState<SignupPageStateIF>(initialState);
 
   return (
     <SignupPageStateProvider value={{ state, setState }}>
-      <div className="h-auto w-3/5 max-w-90 min-w-82">
+      <div className="h-auto w-3/5 max-w-90 min-w-90">
         <WelComeText />
         <AuthErrorComponent />
         <SignupInputs />

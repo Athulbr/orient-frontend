@@ -13,7 +13,7 @@ export const ChatContainer: React.FC<ChatContainerIF> = ({ children, showButtons
         <div className="flex flex-col items-center gap-0.5">
           <div className="mb-1 flex h-[74px] w-[74px] items-center justify-center rounded-md bg-gray-300 text-[60px] font-bold text-white">P</div>
           <div className="font-medium">Chat with Document</div>
-          <div className="text-[12px] font-normal text-gray-400">Powered by makez.ai Promate</div>
+          <div className="text-[12px] font-normal text-gray-400">Powered by makez.ai</div>
           <div className="text-center text-sm font-normal text-gray-400">
             A responsive assistant that expertly locates, extracts, and distills important content from your documents in real-time.
           </div>
