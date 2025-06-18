@@ -66,11 +66,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
     >
       <div className="flex items-center justify-between gap-2 pl-1 font-semibold">
         {getFieldLabel()}
-        <XCircle
-          onClick={() => setState(prev => ({ ...prev, hoveredFieldId: null, bbox: null, wire: null }))}
-          className="cursor-pointer text-gray-400 hover:text-red-500"
-          size={22}
-        />
+        <XCircle onClick={() => setState(prev => ({ ...prev, hoveredFieldId: null }))} className="cursor-pointer text-gray-400 hover:text-red-500" size={22} />
       </div>
       <div className="flex items-center justify-between gap-2 text-lg">
         <textarea

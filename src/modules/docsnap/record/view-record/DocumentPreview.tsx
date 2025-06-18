@@ -28,11 +28,12 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
 
   const updateWirePosition = () => {
     try {
-      const fieldEl = bboxRef.current[1234];
-      const containerBox = containerRef.current?.getBoundingClientRect();
-      if (!fieldEl || !containerBox) return;
+      const boxEl = bboxRef.current[1234];
 
-      const stBox = fieldEl.getBoundingClientRect();
+      const containerBox = containerRef.current?.getBoundingClientRect();
+      if (!boxEl || !containerBox) return;
+
+      const stBox = boxEl.getBoundingClientRect();
       const x1 = stBox.left - containerBox.left + stBox.width;
       const y1 = stBox.top + stBox.height / 2 - containerBox.top;
 
