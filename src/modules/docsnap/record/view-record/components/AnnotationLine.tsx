@@ -4,7 +4,7 @@ export const AnnotationLine = () => {
   const { state } = useViewRecordState();
   const wire = state.wire;
 
-  if (!wire || state.tabIndex !== 0 || state.loadingS3File) return null;
+  if (!wire || state.tabIndex !== 0 || state.loadingS3File || state.bbox === null) return null;
 
   // Calculate the horizontal segment end points
   const startHorizontalX = wire.x1 + 50;

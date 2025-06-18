@@ -153,20 +153,20 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
 
   const handleCheckToggle = (checked?: boolean) => {
     const hoveredFieldId = state.hoveredFieldId;
-    const keysArray = hoveredFieldId?.split(':');
-    if (keysArray?.length === 2) {
+    const keysArray = hoveredFieldId?.split(':') ?? [];
+    if (keysArray.length === 2) {
+      const [fieldType, fieldKey] = keysArray;
       setState(prev => ({
         ...prev,
         topLevelFields: {
           ...prev.topLevelFields,
-          [state.hoveredFieldId?.split(':')[1] as string]: {
-            ...prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string],
-            checked: checked ? true : !prev.topLevelFields[state.hoveredFieldId?.split(':')[1] as string].checked,
+          [fieldKey]: {
+            ...prev.topLevelFields[fieldKey],
+            checked: Boolean(checked),
           },
         },
       }));
-    }
-    if (keysArray?.length === 3) {
+    } else if (keysArray.length === 3) {
       const [fieldType, fieldKey, subFieldKey] = keysArray;
       setState(prev => ({
         ...prev,
@@ -176,7 +176,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
             ...prev.objectFields[fieldKey],
             [subFieldKey]: {
               ...prev.objectFields[fieldKey][subFieldKey],
-              checked: !prev.objectFields[fieldKey][subFieldKey].checked,
+              checked: Boolean(checked),
             },
           },
         },
@@ -237,7 +237,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               <div
                 tabIndex={0}
                 key={`${key}_${i}_${field.confidence}`}
-                className="absolute rounded bg-[#b9ff2d33]"
+                className="absolute rounded bg-[#dfea3f33]"
                 style={{
                   left: `${bbox.x_min * 100 - 0.4}%`,
                   top: `${bbox.y_min * 100 - 0.4}%`,
@@ -262,7 +262,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   return (
                     <div
                       key={`${hoveredFieldId}_${i}_${field.confidence}_${field.page}_${mainKey}_${key}`}
-                      className="absolute rounded bg-[#b9ff2d33]"
+                      className="absolute rounded bg-[#dfea3f33]"
                       style={{
                         left: `${bbox.x_min * 100 - 0.4}%`,
                         top: `${bbox.y_min * 100 - 0.4}%`,

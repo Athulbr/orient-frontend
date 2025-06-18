@@ -71,9 +71,9 @@ export const InputField = ({
         )}
         <div className="mr-1">
           {checked ? (
-            <CircleCheck onClick={checkClickHandler} className="text-green-500" size={16} />
+            <CircleCheck onClick={checkClickHandler} className="cursor-pointer text-green-500 hover:text-green-600" size={16} />
           ) : (
-            <Eye onClick={checkClickHandler} className="text-orange-400" size={16} />
+            <Eye onClick={checkClickHandler} className="cursor-pointer text-orange-400 hover:text-orange-500" size={16} />
           )}
         </div>
         <div

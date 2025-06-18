@@ -1,6 +1,7 @@
 import { CircleCheck, Eye, XCircle } from 'lucide-react';
 import { formatFieldLabel } from '../utils';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useViewRecordState } from '../hooks/viewRecordContext';
 
 interface BoundingBox {
   x_min: number;
@@ -31,11 +32,10 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
   arrayLength = 2,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  const { state, setState } = useViewRecordState();
   useEffect(() => {
     onCheckToggle(true);
-    return () => onCheckToggle(false);
-  }, [onCheckToggle]);
+  }, [state.hoveredFieldId]);
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
@@ -66,9 +66,13 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
     >
       <div className="flex items-center justify-between gap-2 pl-1 font-semibold">
         {getFieldLabel()}
-        <XCircle className="cursor-pointer text-gray-400 hover:text-red-500" size={22} />
+        <XCircle
+          onClick={() => setState(prev => ({ ...prev, hoveredFieldId: null, bbox: null, wire: null }))}
+          className="cursor-pointer text-gray-400 hover:text-red-500"
+          size={22}
+        />
       </div>
-      <div className="flex items-start justify-between gap-2 text-lg">
+      <div className="flex items-center justify-between gap-2 text-lg">
         <textarea
           ref={textareaRef}
           onChange={e => {
@@ -86,7 +90,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
           style={{ minHeight: '24px' }}
           rows={1}
         />
-        <div className="w-6 pt-2">
+        <div className="w-6">
           {isChecked ? (
             <CircleCheck onClick={() => onCheckToggle()} className="cursor-pointer text-green-500 hover:text-green-600" size={24} />
           ) : (

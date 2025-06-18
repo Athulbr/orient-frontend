@@ -72,7 +72,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
           }));
           updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
         }
-      }, 500);
+      }, 200);
     };
     const container = containerRef.current;
     container?.addEventListener('scroll', handleScroll);

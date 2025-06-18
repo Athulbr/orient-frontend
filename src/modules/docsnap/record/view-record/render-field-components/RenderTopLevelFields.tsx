@@ -40,7 +40,6 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
             confidence={`${value.confidence * 100}`}
             checked={value.checked}
             checkClickHandler={() => {
-              // console.log('checkClickHandler', key, value.checked);
               setState(prev => {
                 const updated = prev.topLevelFields;
                 updated[key] = { ...updated[key], checked: value.checked ? false : true };

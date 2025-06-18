@@ -141,7 +141,7 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
   };
 
   return (
-    <div className="ml-2 flex gap-4">
+    <div className={`ml-2 flex gap-4 ${settings.editButton ? 'ml-2' : 'ml-6'}`}>
       {settings.editButton && (
         <Tooltip text="Edit" position="bottom">
           <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />
