@@ -50,6 +50,7 @@ export interface ViewRecordStateIF {
   chatLoading: boolean;
   tableViewDialog: boolean;
   scrollToViewField: number;
+  selectedTableName: string;
 }
 const initialState = {
   showCreateDialog: false,
@@ -72,6 +73,7 @@ const initialState = {
   chatLoading: false,
   tableViewDialog: false,
   scrollToViewField: 1,
+  selectedTableName: '',
 };
 
 const ViewRecordPage: React.FC = () => {

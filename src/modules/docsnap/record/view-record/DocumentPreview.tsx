@@ -238,7 +238,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               <div
                 tabIndex={0}
                 key={`${key}_${i}_${field.confidence}`}
-                className="absolute rounded bg-[#dfea3f33]"
+                className={`${field.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
                 style={{
                   left: `${bbox.x_min * 100 - 0.4}%`,
                   top: `${bbox.y_min * 100 - 0.4}%`,
@@ -263,7 +263,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   return (
                     <div
                       key={`${hoveredFieldId}_${i}_${field.confidence}_${field.page}_${mainKey}_${key}`}
-                      className="absolute rounded bg-[#dfea3f33]"
+                      className={`${field.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
                       style={{
                         left: `${bbox.x_min * 100 - 0.4}%`,
                         top: `${bbox.y_min * 100 - 0.4}%`,

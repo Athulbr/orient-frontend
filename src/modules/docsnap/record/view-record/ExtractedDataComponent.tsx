@@ -8,6 +8,7 @@ import { LoadingDataSpinner, ProgressLoader } from './components/Loaders';
 import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
 import { Button } from '../../../../components/Button';
+import { TableNames } from './render-field-components/TableNames';
 
 interface ExtractedDataComponentProps {
   containerRef: any;
@@ -119,11 +120,12 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
         </Button>
         <ExportButton />
       </div>
-      <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pt-2">
+      <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pt-3 pb-50">
         <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
         <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-        <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-        <TableViewDialog refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+        {/* <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} /> */}
+        <TableNames refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+        {/* <TableViewDialog refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} /> */}
       </div>
       <ExtractedDataFooter />
     </div>
