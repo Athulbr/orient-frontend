@@ -83,13 +83,14 @@ const ViewRecordPage: React.FC = () => {
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
-      <div className="absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white" ref={containerRef}>
+      <div className="absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white pb-70" ref={containerRef}>
         <DocumentPreviewComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
         <TabViewContainer>
           <ExtractedDataComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
           <DocumentBotComponent />
         </TabViewContainer>
         <AnnotationLine />
+        <div className="absolute bottom-0 left-0 h-70 w-full bg-blue-50"></div>
       </div>
     </ViewRecordStateProvider>
   );
