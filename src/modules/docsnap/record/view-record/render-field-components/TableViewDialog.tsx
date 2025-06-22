@@ -7,7 +7,7 @@ import { RenderTopLevelFieldsIF } from './RenderTopLevelFields';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { AnnotationLine } from '../components/AnnotationLine';
 
-export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }) => {
+export const TableViewDialogDelete: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }) => {
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
   const bboxRef = useRef<Record<string, HTMLDivElement | null>>({});
@@ -138,7 +138,6 @@ export const TableViewDialog: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }
           );
         })}
       </div>
-      <AnnotationLine />
     </DialogComponent>
   );
 };

@@ -50,9 +50,9 @@ export interface ViewRecordStateIF {
   messages: Message[];
   chatLoading: boolean;
   tableViewDialog: boolean;
-  hideWire: boolean;
   scrollToViewField: number;
   selectedTableName: string;
+  hoveredOnArrayField: boolean;
 }
 const initialState = {
   showCreateDialog: false,
@@ -74,9 +74,9 @@ const initialState = {
   messages: [],
   chatLoading: false,
   tableViewDialog: false,
-  hideWire: false,
   scrollToViewField: 1,
   selectedTableName: '',
+  hoveredOnArrayField: false,
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -87,15 +87,14 @@ const ViewRecordPage: React.FC = () => {
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
-      <div className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[30vh]' : 'pb-0'}`} ref={containerRef}>
+      <div className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[40vh]' : 'pb-0'}`} ref={containerRef}>
         <DocumentPreviewComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} />
         <TabViewContainer>
           <ExtractedDataComponent containerRef={containerRef} lastHoveredFieldRef={lastHoveredFieldRef} fieldRefs={fieldRefs} />
           <DocumentBotComponent />
         </TabViewContainer>
-        <AnnotationLine />
         {state.selectedTableName && (
-          <div className="absolute bottom-0 left-0 z-1 h-[30vh] w-full overflow-hidden border-t border-blue-200 bg-gray-50 p-2">
+          <div className="absolute bottom-0 left-0 z-1 flex h-[40vh] w-full flex-col overflow-hidden border-t border-blue-200 bg-gray-50 p-2">
             <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, lastHoveredFieldRef, containerRef }} updateWire={() => {}} />
           </div>
         )}

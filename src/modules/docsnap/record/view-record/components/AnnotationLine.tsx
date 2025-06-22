@@ -1,16 +1,26 @@
 import { useViewRecordState } from '../hooks/viewRecordContext';
 
-export const AnnotationLine = () => {
+export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
   const { state } = useViewRecordState();
   const wire = state.wire;
 
-  if (!wire || state.tabIndex !== 0 || state.loadingS3File || state.bbox === null || state.selectedTableName) return null;
+  if (!wire || state.tabIndex !== 0 || state.loadingS3File || state.bbox === null || !bboxRef || !state.hoveredFieldId) return null;
 
   // Calculate the horizontal segment end points
-  const startHorizontalX = wire.x1 + 50;
-  const startHorizontalY = wire.y1;
-  const endHorizontalX = wire.x2 - 50;
-  const endHorizontalY = wire.y2;
+  let startHorizontalX = wire.x1 + 50;
+  let startHorizontalY = wire.y1;
+  let endHorizontalX = wire.x2 - 50;
+  let endHorizontalY = wire.y2;
+
+  const box = bboxRef.current[1234]?.getBoundingClientRect();
+  if (state.hoveredOnArrayField) {
+    wire.x1 = box?.left + box?.width / 2;
+    wire.y1 = box?.top + box?.height;
+    startHorizontalX = wire.x1;
+    startHorizontalY = wire.y1;
+    endHorizontalX = wire.x2;
+    endHorizontalY = wire.y2 - 100;
+  }
 
   return (
     <svg className="pointer-events-none absolute top-0 left-0 z-10 flex h-full w-full">

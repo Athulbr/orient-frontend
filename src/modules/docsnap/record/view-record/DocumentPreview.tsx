@@ -5,6 +5,7 @@ import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
 import Spinner from '../../../../components/Spinner';
 import { LoadingDataSpinner } from './components/Loaders';
+import { AnnotationLine } from './components/AnnotationLine';
 
 interface DocumentPreviewComponentIF {
   containerRef: any;
@@ -247,7 +248,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                 }}
                 onMouseEnter={() => {
                   handleFieldHover(hoveredFieldId, bbox, index + 1);
-                  setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1 }));
+                  setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false }));
                 }}
               />
             );
@@ -272,7 +273,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                       }}
                       onMouseEnter={() => {
                         handleFieldHover(hoveredFieldId, bbox, index + 1);
-                        setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1 }));
+                        setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false }));
                       }}
                     />
                   );
@@ -304,6 +305,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
           )}
         </div>
       ))}
+      <AnnotationLine bboxRef={bboxRef} />
     </div>
   );
 };

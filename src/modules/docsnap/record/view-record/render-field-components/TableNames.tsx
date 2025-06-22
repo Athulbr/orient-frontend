@@ -24,9 +24,9 @@ export const TableNames: FC = () => {
               >
                 {formatFieldLabel(name)}
                 {expandedTable === name ? (
-                  <ChevronRight size={20} className="cursor-pointer text-gray-500 hover:text-blue-500" />
-                ) : (
                   <ChevronDown size={20} className="cursor-pointer text-gray-500 hover:text-blue-500" />
+                ) : (
+                  <ChevronRight size={20} className="cursor-pointer text-gray-500 hover:text-blue-500" />
                 )}
               </button>
             ))}

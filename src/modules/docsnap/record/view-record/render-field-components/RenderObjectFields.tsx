@@ -48,7 +48,12 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                       if (value.bbox) {
                         lastHoveredFieldRef.current = [fieldId, value.bbox, value.page];
                         if (!isScrollingRef.current) {
-                          setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
+                          setState(prev => ({
+                            ...prev,
+                            hoveredFieldId: fieldId,
+                            pageNumber: value.page ? value.page : prev.pageNumber,
+                            hoveredOnArrayField: false,
+                          }));
                           updateWire(fieldId, value.bbox);
                         }
                       }

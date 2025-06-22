@@ -3,7 +3,6 @@ import { useViewRecordState } from './hooks/viewRecordContext';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
 import { RenderTopLevelFields } from './render-field-components/RenderTopLevelFields';
-import { TableViewDialog } from './render-field-components/TableViewDialog';
 import { LoadingDataSpinner, ProgressLoader } from './components/Loaders';
 import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
@@ -33,8 +32,13 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
     if (!fieldEl || !containerBox) return;
 
     const fieldBox = fieldEl.getBoundingClientRect();
-    const x2 = fieldBox.left - containerBox.left;
-    const y2 = fieldBox.top + fieldBox.height / 2 - containerBox.top;
+    let x2 = fieldBox.left - containerBox.left;
+    let y2 = fieldBox.top + fieldBox.height / 2 - containerBox.top;
+
+    if (state.hoveredOnArrayField) {
+      x2 = fieldBox.left - containerBox.left + fieldBox.width / 2;
+      y2 = fieldBox.top;
+    }
 
     setState(prev => ({
       ...prev,
