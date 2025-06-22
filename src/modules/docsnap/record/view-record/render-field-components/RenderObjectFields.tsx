@@ -11,9 +11,9 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
     <>
       {Object.entries(state.objectFields).map(([key, valueMain], mainIndex) => {
         return (
-          <div key={key} className="flex flex-col rounded-lg border bg-white hover:border-blue-400">
-            <label className="p-4 text-lg font-bold capitalize">{formatFieldLabel(key)}</label>
-            <div className="flex flex-wrap gap-y-1">
+          <div key={key} className="flex flex-col rounded-lg border bg-white p-1 hover:border-blue-400">
+            <label className="p-3 text-lg font-bold capitalize">{formatFieldLabel(key)}</label>
+            <div className="flex flex-wrap gap-y-2">
               {Object.entries(valueMain).map(([subKey, value], i) => {
                 const fieldId = `objectFields:${key}:${subKey}`;
                 const onChange = (e: any) => {
@@ -30,14 +30,14 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                     value={value.value}
                     confidence={`${value.confidence * 100}`}
                     checked={value.checked}
-                    checkClickHandler={() => {
+                    checkClickHandler={(checked: boolean) => {
                       setState(prev => ({
                         ...prev,
                         objectFields: {
                           ...prev.objectFields,
                           [key]: {
                             ...prev.objectFields[key],
-                            [subKey]: { ...prev.objectFields[key][subKey], checked: !prev.objectFields[key][subKey].checked },
+                            [subKey]: { ...prev.objectFields[key][subKey], checked: checked },
                           },
                         },
                       }));

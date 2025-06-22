@@ -13,6 +13,10 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     console.log('Submit clicked');
   };
 
+  const { state } = useViewRecordState();
+
+  if (state.selectedTableName) return null;
+
   return (
     <div className="flex items-center justify-end gap-2 border-t bg-white p-2">
       <Button onClick={() => navigate(-1)} outlined small>

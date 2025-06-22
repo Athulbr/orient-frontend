@@ -1,72 +1,101 @@
-import { Table, Trash } from 'lucide-react';
-import { FC, useState } from 'react';
+import { Trash, XCircle } from 'lucide-react';
+import { FC } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { RenderTopLevelFieldsIF } from './RenderTopLevelFields';
 
-export const RenderArrayFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }) => {
+export const RenderArrayFields: FC<any> = ({ refs }) => {
   const { state, setState } = useViewRecordState();
-  const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
+  const { fieldRefs, isScrollingRef, lastHoveredFieldRef, containerRef } = refs;
+
+  const updateWire = (fieldId: string, bbox: any) => {
+    if (!fieldId || !bbox) return;
+    const fieldEl = fieldRefs.current[fieldId];
+    const containerBox = containerRef.current?.getBoundingClientRect();
+    if (!fieldEl || !containerBox) return;
+
+    const fieldBox = fieldEl.getBoundingClientRect();
+    const x2 = fieldBox.left - containerBox.left;
+    const y2 = fieldBox.top + fieldBox.height / 2 - containerBox.top;
+
+    setState(prev => ({
+      ...prev,
+      bbox,
+      wire: {
+        x1: prev?.wire?.x1 || 0,
+        y1: prev?.wire?.y1 || 0,
+        x2,
+        y2,
+      },
+    }));
+  };
 
   return (
     <>
       {state.arrayFields.map((item, mainIndex) => {
-        return (
-          <div key={mainIndex} className="flex flex-col rounded-lg border bg-white hover:border-blue-300">
-            <label className="flex justify-between p-4 text-lg font-bold capitalize">
-              {formatFieldLabel(state.tableNames[mainIndex])}
-              <span
-                onClick={() => setState(prev => ({ ...prev, tableViewDialog: true }))}
-                className="flex cursor-pointer items-center gap-1 text-sm font-normal text-sky-500 hover:text-sky-600"
-              >
-                <Table size={16} strokeWidth={1} /> View in table
-              </span>
-            </label>
-            <div className="flex flex-col gap-y-4 rounded-lg bg-white p-2">
-              {Object.entries(item).map(([key, subItem], rowIndex) => (
-                <div key={rowIndex} className="flex flex-wrap gap-y-1 rounded-lg border bg-white hover:border-blue-400">
-                  <label className="text-md flex w-full items-center justify-between px-4 py-2 font-bold text-gray-600">
-                    Row {rowIndex + 1} <Trash className="cursor-pointer hover:text-red-500" size={18} />
-                  </label>
+        // Get all unique labels (column names) from the first subItem
+        const firstRow = Object.values(item)[0] || {};
+        const labels = Object.keys(firstRow);
 
-                  {Object.entries(subItem).map(([label, value], i) => {
-                    const fieldId = `${label}_${rowIndex}_${mainIndex}_${i}`;
-                    if (value === null) return;
-                    const onChange = (e: any) => {
-                      setState(prev => {
-                        const updated = [...prev.arrayFields];
-                        updated[mainIndex][key][label] = {
-                          ...updated[mainIndex][key][label],
-                          value: e.target.value,
-                        };
-                        return { ...prev, arrayFields: updated };
-                      });
-                    };
-                    return (
-                      <InputField
-                        key={fieldId}
-                        label={formatFieldLabel(label)}
-                        value={value.value}
-                        confidence={`${value.confidence * 100}`}
-                        // @ts-ignore
-                        ref={el => (fieldRefs.current[fieldId] = el)}
-                        onMouseAction={() => {
-                          if (value.bbox) {
-                            lastHoveredFieldRef.current = [fieldId, value.bbox, value.page];
-                            if (!isScrollingRef.current) {
-                              setState(prev => ({ ...prev, hoveredFieldId: fieldId, pageNumber: value.page ? value.page : prev.pageNumber }));
-                              updateWire(fieldId, value.bbox);
-                            }
-                          }
-                        }}
-                        onChange={onChange}
-                        description={label === 'description'}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
+        return (
+          <div key={mainIndex} className="mb-4 flex flex-col rounded-lg border bg-white p-4 hover:border-blue-400">
+            <label className="mb-2 flex justify-between text-lg font-bold capitalize">
+              {formatFieldLabel(state.tableNames[mainIndex])}
+              <XCircle onClick={() => setState(prev => ({ ...prev, selectedTableName: '' }))} className="cursor-pointer text-gray-500 hover:text-red-500" />
+            </label>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse">
+                <thead>
+                  <tr>
+                    {labels.map((label, i) => (
+                      <th key={i} className="border bg-gray-50 px-4 py-2 text-left font-semibold">
+                        {formatFieldLabel(label)}
+                      </th>
+                    ))}
+                    <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(item).map(([key, subItem], rowIndex) => (
+                    <tr key={rowIndex} className="bg-white">
+                      {labels.map((label, i) => {
+                        const value = subItem[label];
+                        const fieldId = `${label}_${rowIndex}_${mainIndex}_${i}`;
+                        if (!value) return <td key={i} className="border px-4 py-2" />;
+                        return (
+                          <td key={i} className="h-full border">
+                            <textarea
+                              className={`h-full min-w-0 p-2 px-4 ${label === 'Description' ? 'w-100' : 'w-full'}`}
+                              value={value.value}
+                              // @ts-ignore
+                              ref={el => (fieldRefs.current[fieldId] = el)}
+                              onMouseEnter={() => {
+                                const bbox = value.bbox;
+                                if (bbox) {
+                                  lastHoveredFieldRef.current = [fieldId, bbox, value.page];
+                                  if (!isScrollingRef.current) {
+                                    setState(prev => ({
+                                      ...prev,
+                                      hoveredFieldId: fieldId,
+                                      pageNumber: value.page ? value.page : prev.pageNumber,
+                                      hideWire: true,
+                                    }));
+                                    updateWire(fieldId, value.bbox);
+                                  }
+                                }
+                              }}
+                            />
+                          </td>
+                        );
+                      })}
+                      <td className="h-full border py-2 pl-9">
+                        <Trash size={20} className="cursor-pointer text-gray-500 hover:text-red-500" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         );

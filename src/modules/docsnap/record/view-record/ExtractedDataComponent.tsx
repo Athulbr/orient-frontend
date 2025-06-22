@@ -13,14 +13,14 @@ import { TableNames } from './render-field-components/TableNames';
 interface ExtractedDataComponentProps {
   containerRef: any;
   lastHoveredFieldRef: any;
+  fieldRefs: any;
 }
 
-const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, lastHoveredFieldRef }) => {
+const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, lastHoveredFieldRef, fieldRefs }) => {
   const { state, setState } = useViewRecordState();
 
   const [data, setData] = useState<{ progress?: number; current_step?: string }>({});
 
-  const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const extractedDataContainerRef = useRef<HTMLDivElement | null>(null);
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -93,6 +93,15 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
   }, [state.scrollToViewField]);
 
   useEffect(() => {
+    if (state.selectedTableName && extractedDataContainerRef.current) {
+      extractedDataContainerRef.current.scrollTo({
+        top: extractedDataContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [state.selectedTableName]);
+
+  useEffect(() => {
     if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
       const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
       const eventSource = new EventSource(
@@ -123,9 +132,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
       <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pt-3 pb-50">
         <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
         <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-        {/* <RenderArrayFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} /> */}
-        <TableNames refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-        {/* <TableViewDialog refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} /> */}
+        <TableNames />
       </div>
       <ExtractedDataFooter />
     </div>

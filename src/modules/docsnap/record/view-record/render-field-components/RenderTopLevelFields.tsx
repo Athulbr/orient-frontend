@@ -17,7 +17,7 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
 
   return (
-    <div className="flex flex-wrap gap-y-1">
+    <div className="flex flex-wrap gap-y-2">
       {Object.entries(state.topLevelFields).map(([key, value], i) => {
         const fieldId = `topLevelFields:${key}`;
         const confidence = Number((value.confidence * 100).toFixed(2));
@@ -39,10 +39,10 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
             value={value.value}
             confidence={`${value.confidence * 100}`}
             checked={value.checked}
-            checkClickHandler={() => {
+            checkClickHandler={(checked: boolean) => {
               setState(prev => {
                 const updated = prev.topLevelFields;
-                updated[key] = { ...updated[key], checked: value.checked ? false : true };
+                updated[key] = { ...updated[key], checked: checked };
                 return { ...prev, topLevelFields: updated };
               });
             }}

@@ -1,5 +1,5 @@
 import { FC, RefObject, useId, useState } from 'react';
-import { CircleCheck, Eye, MessageSquareMore } from 'lucide-react';
+import { CircleCheck, Eye, MessageSquareMore, MessageSquareText } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { useEffect, useRef } from 'react';
 import { CommentDialog } from './CommentDialog';
@@ -7,7 +7,6 @@ import { ValidateSkuButton } from './ValidateSkuButton';
 import { ConfidenceScore } from './ConfidenceScore';
 
 interface InputFieldProps {
-  description?: boolean;
   label?: string;
   confidence?: string;
   errorMessage?: string;
@@ -16,27 +15,15 @@ interface InputFieldProps {
   ref?: RefObject<any>;
   value: string;
   checked?: boolean;
-  checkClickHandler?: () => void;
+  checkClickHandler?: (checked: boolean) => void;
 }
 
-export const InputField = ({
-  label,
-  errorMessage,
-  onMouseAction,
-  description,
-  ref,
-  confidence,
-  value,
-  onchange,
-  checked,
-  checkClickHandler,
-  ...props
-}: InputFieldProps) => {
+export const InputField = ({ label, errorMessage, onMouseAction, ref, confidence, value, onchange, checked, checkClickHandler, ...props }: InputFieldProps) => {
   const [commentDialog, setCommentDialog] = useState(false);
   const id = useId();
 
   return (
-    <div className={`group relative w-full min-w-0 rounded-lg p-2 pt-1`} onMouseEnter={() => onMouseAction?.()}>
+    <div className={`group relative w-full min-w-0 rounded-sm p-2 pt-1`} onMouseEnter={() => onMouseAction?.()}>
       {label && (
         <label htmlFor={id} className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
           {label}
@@ -46,41 +33,34 @@ export const InputField = ({
       )}
 
       <div
-        className={`flex ${description ? 'h-18' : 'h-9'} w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-300'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
+        className={`flex h-9.5 w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-400'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
       >
-        {description ? (
-          <textarea
-            rows={3}
-            onChange={onchange}
-            ref={ref}
-            className="min-w-0 flex-1 resize-none px-2 text-sm text-gray-700 focus:outline-none"
-            value={value ? value : ''}
-            {...props}
-            id={id}
-          />
-        ) : (
-          <input
-            onFocus={() => onMouseAction?.()}
-            ref={ref}
-            className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none"
-            value={value ? value : ''}
-            onChange={onchange}
-            {...props}
-            id={id}
-          />
-        )}
+        <input
+          onFocus={() => onMouseAction?.()}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              checkClickHandler?.(true);
+            }
+          }}
+          ref={ref}
+          className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none"
+          value={value ? value : ''}
+          onChange={onchange}
+          {...props}
+          id={id}
+        />
         <div className="mr-1">
           {checked ? (
-            <CircleCheck onClick={checkClickHandler} className="cursor-pointer text-green-500 hover:text-green-600" size={16} />
+            <CircleCheck onClick={e => checkClickHandler?.(true)} className="cursor-pointer text-green-500 hover:text-green-600" size={16} />
           ) : (
-            <Eye onClick={checkClickHandler} className="cursor-pointer text-orange-400 hover:text-orange-500" size={16} />
+            <Eye onClick={e => checkClickHandler?.(false)} className="cursor-pointer text-orange-400 hover:text-orange-500" size={16} />
           )}
         </div>
         <div
           onClick={() => setCommentDialog(true)}
-          className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-200 hover:bg-gray-100"
+          className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-300 hover:bg-gray-100"
         >
-          <MessageSquareMore size={16} className="text-gray-600" strokeWidth={1.3} />
+          <MessageSquareText size={16} className="text-gray-800" strokeWidth={1.3} />
         </div>
       </div>
 

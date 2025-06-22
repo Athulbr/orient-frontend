@@ -75,12 +75,12 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
             onValueChange(e.target.value);
             adjustTextareaHeight();
           }}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              onCheckToggle(true);
-            }
-          }}
+          // onKeyDown={e => {
+          //   if (e.key === 'Enter' && !e.shiftKey) {
+          //     e.preventDefault();
+          //     onCheckToggle(true);
+          //   }
+          // }}
           value={hoveredField.value}
           className="w-full resize-none overflow-hidden rounded-md border border-gray-300 bg-white p-2 text-xl outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 focus:outline-none"
           style={{ minHeight: '24px' }}
