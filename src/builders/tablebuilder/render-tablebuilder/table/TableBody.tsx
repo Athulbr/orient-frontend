@@ -1,7 +1,7 @@
 import React, { FC, JSX, ReactNode, useCallback, useEffect } from 'react';
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { dataMapper } from '../utils/DataMapper';
-import { Edit, Trash } from 'lucide-react';
+import { Edit, Trash, Trash2 } from 'lucide-react';
 import { formatDate } from '../utils/formatDate';
 import { useAlertStore } from '../../../../components/alert/AlertStore';
 import Tooltip from '../../../../components/Tooltip';
@@ -144,12 +144,12 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
     <div className={`ml-2 flex gap-4 ${settings.editButton ? 'ml-2' : 'ml-6'}`}>
       {settings.editButton && (
         <Tooltip text="Edit" position="bottom">
-          <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={16} />
+          <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={18} />
         </Tooltip>
       )}
       {settings.deleteButton && (
         <Tooltip text="Delete" position="bottom">
-          <Trash onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={16} />
+          <Trash2 onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={18} />
         </Tooltip>
       )}
     </div>

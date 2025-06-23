@@ -3,10 +3,11 @@ import PageNameComponent from '../../../components/PageName';
 import { useDocumentState } from './hooks/documentContext';
 import pdfLocation from '../../../assets/temp/PO_Private_00114126882.pdf';
 import { Button } from '../../../components/Button';
-import { Copy, Edit, Plus, Save, Trash } from 'lucide-react';
+import { Copy, Edit, Plus, Save, Trash, Trash2 } from 'lucide-react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import { PromptFieldIF } from '.';
 import { useToastStore } from '../../../components/toast/ToastStore';
+import CreateDocComponent from './components/CreateDocComponent';
 
 const array = ['1', '2', '3', '4', '1', '2', '3', '4', '1', '2', '3', '4'];
 
@@ -41,6 +42,7 @@ const CreateDocumentComponent: React.FC = ({}) => {
         onSubmit={onSubmitHandler}
         existingData={state.editFieldData || null}
       />
+      <CreateDocComponent />
     </PageContainer>
   );
 };
@@ -106,7 +108,7 @@ const FieldListComponent = () => {
                 className={iconClassName}
                 size={18}
               />
-              <Trash className={iconClassName} size={18} />
+              <Trash2 className={iconClassName} size={18} />
             </div>
           </div>
           <div className="text-sm">

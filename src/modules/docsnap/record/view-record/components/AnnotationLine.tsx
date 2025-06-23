@@ -17,9 +17,9 @@ export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
     wire.x1 = box?.left + box?.width / 2;
     wire.y1 = box?.top + box?.height;
     startHorizontalX = wire.x1;
-    startHorizontalY = wire.y1;
+    startHorizontalY = wire.y1 + 50;
     endHorizontalX = wire.x2;
-    endHorizontalY = wire.y2 - 100;
+    endHorizontalY = wire.y2 - 60;
   }
 
   return (

@@ -6,18 +6,22 @@ export const validateEmail = (email: string) => {
 };
 export const validatePassword = (password: string) => {
   if (!password.trim()) return 'Password is required';
+  if (password.trim().length < 6) return 'Password must be at least 6 characters';
   return '';
 };
 export const validateConfirmPassword = (password: string, confirmPassword: string) => {
   if (!confirmPassword.trim()) return 'Confirm Password is required';
+  if (password.trim().length < 6) return 'Password must be at least 6 characters';
   if (password !== confirmPassword) return 'Password and Confirm Password do not match';
   return '';
 };
 export const validateFirstName = (password: string) => {
-  if (!password) return 'Name is required';
+  if (!password.trim()) return 'Name is required';
+  if (!/^[a-zA-Z ]+$/.test(password)) return 'Invalid firstname';
   return '';
 };
 export const validateLastName = (password: string) => {
-  if (!password) return 'Name is required';
+  if (!password.trim()) return 'Name is required';
+  if (!/^[a-zA-Z ]+$/.test(password)) return 'Invalid lastname';
   return '';
 };

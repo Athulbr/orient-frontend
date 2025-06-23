@@ -1,4 +1,4 @@
-import { Trash } from 'lucide-react';
+import { Trash, Trash2 } from 'lucide-react';
 import { formatDate } from '../utils/formatDate';
 
 export const StatusCustomUI = ({ data }: { data: any }) => {
@@ -25,7 +25,7 @@ export const DeleteCustomUI = ({}: { data: any }) => {
   };
   return (
     <div>
-      <Trash onClick={handleDelete} className="ml-4 cursor-pointer hover:text-red-500" size={16} />
+      <Trash2 onClick={handleDelete} className="ml-4 cursor-pointer hover:text-red-500" size={16} />
     </div>
   );
 };

@@ -78,7 +78,7 @@ const FieldListComponent: React.FC = () => {
                 <div className={style.fieldAction}>
                   <Settings size={20} className={style.icon} onClick={() => setShowSettings(showSettings === index ? -1 : index)} />
                   <Copy size={20} className={style.icon} onClick={() => duplicateField(field, index)} />
-                  <Trash size={20} className={style.icon} onClick={() => removeField(index)} />
+                  <Trash2 size={20} className={style.icon} onClick={() => removeField(index)} />
                 </div>
               </div>
             </div>

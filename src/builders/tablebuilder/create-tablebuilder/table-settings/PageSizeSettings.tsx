@@ -1,7 +1,7 @@
 import { useTablebuilderSettings } from '../hooks/useTablebuilderSettingsContext';
 import { CheckboxTB } from '../tablebuilder-components/CheckboxTB';
 import { CheckboxGroupTB } from '../tablebuilder-components/CheckboxGroupTB';
-import { ArrowDownUp, CalendarRange, Check, ListFilter, PlusCircle, Trash } from 'lucide-react';
+import { ArrowDownUp, CalendarRange, Check, ListFilter, PlusCircle, Trash, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 export const PageSizeSection: React.FC = () => {
@@ -103,7 +103,7 @@ export const PageSizeSection: React.FC = () => {
                 </div>
               )}
               <button className="cursor-pointer rounded p-1 text-red-500 hover:bg-red-100" onClick={() => handleDeleteOption(i)}>
-                <Trash size={14} />
+                <Trash2 size={14} />
               </button>
             </div>
           ))}

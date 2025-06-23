@@ -9,7 +9,7 @@ interface ButtonPropsIF extends ButtonHTMLAttributes<HTMLButtonElement> {
   endIcon?: ReactNode;
   className?: string;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disableRipple?: boolean;
   ref?: React.RefObject<HTMLButtonElement>;
 }
@@ -110,7 +110,7 @@ export const Button = ({
     }
 
     // Call the provided onClick handler
-    if (onClick) onClick();
+    if (onClick) onClick(e);
   };
 
   const sizeClasses = small ? 'h-8 px-3 text-sm' : large ? 'h-12 px-6 text-lg' : 'h-10 px-4';

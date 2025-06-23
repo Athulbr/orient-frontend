@@ -1,4 +1,4 @@
-import { XCircle, Key, Trash, PlusCircle, Filter, ChevronUp, ChevronDown } from 'lucide-react';
+import { XCircle, Key, Trash, PlusCircle, Filter, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import { useTablebuilderSettings } from '../hooks/useTablebuilderSettingsContext';
 
 export const FilterConfigSection: React.FC = () => {
@@ -172,7 +172,7 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({ options, onAddOption, onU
               placeholder="Option value"
             />
             <button className="cursor-pointer rounded p-1 text-red-500 hover:bg-red-100" onClick={() => onRemoveOption(optionIndex)} aria-label="Remove option">
-              <Trash size={16} />
+              <Trash2 size={16} />
             </button>
           </div>
         ))}
