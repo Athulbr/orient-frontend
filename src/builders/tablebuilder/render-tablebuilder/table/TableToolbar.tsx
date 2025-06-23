@@ -315,6 +315,7 @@ const ClearFilterButton = () => {
       endDate: null,
       sorts: [],
       page: 1, // Reset to page 1
+      selectedIds: [],
     }));
     getDataFromApi({}, true);
   }, [setState, getDataFromApi]);

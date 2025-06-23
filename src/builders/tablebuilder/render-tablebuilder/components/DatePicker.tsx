@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, X } from 'lucide-react';
-import { format, isSameDay, isAfter, isBefore, startOfDay } from 'date-fns';
+import { format, isSameDay, isAfter, isBefore, startOfDay, isWithinInterval, setHours } from 'date-fns';
 import { Button } from '../../../../components/Button';
 
 interface DatePickerProps {
@@ -38,14 +38,15 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
   }, []);
 
   const handleDayClick = (date: Date) => {
-    const normalizedDate = startOfDay(date);
+    // Set selected date to 12:00 (noon)
+    const normalizedDate = setHours(startOfDay(date), 23);
 
     if (!tempFrom) {
-      setTempFrom(normalizedDate);
+      setTempFrom(date);
     } else if (!tempTo && isAfter(normalizedDate, tempFrom)) {
       setTempTo(normalizedDate);
     } else {
-      setTempFrom(normalizedDate);
+      setTempFrom(date);
       setTempTo(null);
     }
   };
@@ -86,10 +87,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
       days.push(day);
     }
 
-    // Add next month days to fill the last week
-    const remainingDays = 7 - (days.length % 7 || 7);
-    for (let i = 1; i <= remainingDays; i++) {
-      const day = new Date(year, month + 1, i);
+    // Add next month days to fill the last week (ensure 6 rows = 42 days)
+    while (days.length < 42) {
+      const day = new Date(year, month, daysInMonth + (days.length - (firstDayOfWeek + daysInMonth)) + 1);
       days.push(day);
     }
 
@@ -104,8 +104,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
 
   const isDayInRange = (day: Date) => {
     if (!tempFrom) return false;
-    if (tempTo) return isAfter(day, tempFrom) && isBefore(day, tempTo);
-    if (hoverDate && isAfter(hoverDate, tempFrom)) return isAfter(day, tempFrom) && isBefore(day, hoverDate);
+    if (tempTo) {
+      return isWithinInterval(day, { start: tempFrom, end: tempTo });
+    }
+    if (hoverDate && isAfter(hoverDate, tempFrom)) {
+      return isWithinInterval(day, { start: tempFrom, end: hoverDate });
+    }
     return false;
   };
 

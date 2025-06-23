@@ -27,6 +27,7 @@ export const MuiPasswordTextField: React.FC<MuiPasswordTextFieldIF> = ({ label, 
           ref={inputRef}
           autoComplete="new-password"
           role="textbox"
+          aria-label="Password"
         />
         <span
           onClick={() => inputRef.current?.focus()}
