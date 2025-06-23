@@ -85,7 +85,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
               <div className="flex items-center gap-10">
                 <div className="flex gap-2">
                   <Button id="Comment" outlined onClick={() => setCommentDialog(true)}>
-                    Comment
+                    Add Comment
                   </Button>
                   <Button id="Add New Field" outlined onClick={addLineItem}>
                     Add Line Item

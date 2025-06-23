@@ -56,6 +56,7 @@ export const InputField = ({ label, errorMessage, onMouseAction, ref, confidence
             <Eye onClick={e => checkClickHandler?.(false)} className="cursor-pointer text-orange-400 hover:text-orange-500" size={16} />
           )}
         </div>
+
         <div
           onClick={() => setCommentDialog(true)}
           className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-300 hover:bg-gray-100"
