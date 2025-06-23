@@ -1,14 +1,16 @@
 import { Trash, XCircle } from 'lucide-react';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { RenderTopLevelFieldsIF } from './RenderTopLevelFields';
 import { Button } from '../../../../../components/Button';
+import { CommentDialog } from '../components/CommentDialog';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef, containerRef } = refs;
+  const [commentDialog, setCommentDialog] = useState(false);
 
   const updateWire = (fieldId: string, bbox: any) => {
     if (!fieldId || !bbox) return;
@@ -39,7 +41,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         const firstRow = Object.values(item)[0] || {};
         const labels = Object.keys(firstRow);
 
-        const addNewField = () => {
+        const addLineItem = () => {
           // Get the column names from the first row to create the same structure
           const firstRow = Object.values(item)[0] || {};
           const columnNames = Object.keys(firstRow);
@@ -51,28 +53,42 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
           });
 
           const newArrayFields = [...state.arrayFields];
-          newArrayFields[mainIndex] = { ...newArrayFields[mainIndex], newRow };
+          console.log('newArrayFields:===========', newArrayFields);
+          // Calculate the next index by getting the current number of entries
+          const currentEntries = Object.keys(newArrayFields[mainIndex]);
+          const nextIndex = currentEntries.length;
+          newArrayFields[mainIndex] = { ...newArrayFields[mainIndex], [`${nextIndex}`]: newRow };
 
           setState(prev => {
             return { ...prev, arrayFields: newArrayFields };
           });
         };
 
-        const addComment = () => {
-          console.log('addComment');
+        const deleteLineItem = (mainIndex: number, rowIndex: number) => {
+          const newArrayFields = [...state.arrayFields];
+          const currentItem = newArrayFields[mainIndex];
+
+          // Convert the object to entries, filter out the row to delete, and convert back to object
+          const entries = Object.entries(currentItem);
+          const filteredEntries = entries.filter((_, index) => index !== rowIndex);
+          const newItem = Object.fromEntries(filteredEntries);
+
+          newArrayFields[mainIndex] = newItem;
+
+          setState(prev => ({ ...prev, arrayFields: newArrayFields }));
         };
 
         return (
-          <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 hover:border-blue-400">
+          <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
             <label className="mb-2 flex justify-between text-lg font-bold capitalize">
               {formatFieldLabel(state.tableNames[mainIndex])}
-              <div className="flex gap-10">
+              <div className="flex items-center gap-10">
                 <div className="flex gap-2">
-                  <Button id="Add New Field" outlined onClick={addNewField}>
-                    Add New Field
-                  </Button>
-                  <Button id="Comment" outlined onClick={addComment}>
+                  <Button id="Comment" outlined onClick={() => setCommentDialog(true)}>
                     Comment
+                  </Button>
+                  <Button id="Add New Field" outlined onClick={addLineItem}>
+                    Add Line Item
                   </Button>
                 </div>
                 <XCircle onClick={() => setState(prev => ({ ...prev, selectedTableName: '' }))} className="cursor-pointer text-gray-500 hover:text-red-500" />
@@ -107,6 +123,16 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                               value={value.value}
                               // @ts-ignore
                               ref={el => (fieldRefs.current[fieldId] = el)}
+                              onChange={(e: any) => {
+                                setState(prev => {
+                                  const updated = [...prev.arrayFields];
+                                  updated[mainIndex][key][label] = {
+                                    ...updated[mainIndex][key][label],
+                                    value: e.target.value,
+                                  };
+                                  return { ...prev, arrayFields: updated };
+                                });
+                              }}
                               onMouseEnter={() => {
                                 const bbox = value.bbox;
                                 if (bbox) {
@@ -127,7 +153,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                         );
                       })}
                       <td className="h-full border py-2 pl-9">
-                        <Trash size={20} className="cursor-pointer text-gray-500 hover:text-red-500" />
+                        <Trash onClick={() => deleteLineItem(mainIndex, rowIndex)} size={20} className="cursor-pointer text-gray-500 hover:text-red-500" />
                       </td>
                     </tr>
                   ))}
@@ -137,6 +163,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
           </div>
         );
       })}
+      <CommentDialog isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
     </>
   );
 };

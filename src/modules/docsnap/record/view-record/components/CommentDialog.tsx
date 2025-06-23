@@ -1,6 +1,7 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import { Button } from '../../../../../components/Button';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { ButtonBox } from '../../../../../components/ButtonBox';
 
 interface CommentDialogPropsIF {
   closeDialog: () => void;
@@ -42,7 +43,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
   return (
     <div
       ref={dialogRef}
-      className="absolute top-16 right-2 z-10 flex w-[calc(100%-10px)] flex-col items-end gap-2 rounded-lg border bg-white px-4 py-2 text-lg shadow-xl"
+      className="absolute top-17 right-2 z-10 flex w-[calc(100%-10px)] max-w-md flex-col items-end gap-2 rounded-lg border bg-white px-4 py-2 text-lg shadow-xl"
     >
       <header className="w-full font-bold text-gray-600">Add Comment</header>
       <textarea
@@ -52,9 +53,14 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
         rows={3}
         placeholder="Add your comment here..."
       />
-      <Button onClick={onClickHandler} disabled={!comment} small className="w-fit" outlined>
-        {loading ? 'Saving...' : 'Save'}
-      </Button>
+      <ButtonBox>
+        <Button onClick={closeDialog} small outlined>
+          Close
+        </Button>
+        <Button onClick={onClickHandler} disabled={!comment} small className="w-fit" outlined>
+          {loading ? 'Saving...' : 'Save'}
+        </Button>
+      </ButtonBox>
     </div>
   );
 };
