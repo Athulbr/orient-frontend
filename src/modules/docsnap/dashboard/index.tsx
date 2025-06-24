@@ -37,7 +37,7 @@ const DashboardPage: React.FC<DashboardPageIF> = () => {
   const navigate = useNavigate();
   const customFunctions = {
     rowClickHandler: (row: any) => {
-      //   navigate(`/docsnap/record/view/${row._id}`);
+      navigate(`/docsnap/record/view/${row._id}`);
     },
     deleteClickHandler: (row: any) => {},
   };
