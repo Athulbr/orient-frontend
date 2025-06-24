@@ -19,7 +19,7 @@ export const navItems: NavItemType[] = [
   {
     name: 'DocSnap',
     icon: React.createElement(FileText, { strokeWidth: 1.5, size: 32, color: '#f3f4f6' }),
-    path: '/docsnap/record/list',
+    path: '/',
     key: 'docsnap',
   },
   //   {

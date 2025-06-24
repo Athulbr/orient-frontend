@@ -14,7 +14,7 @@ export function TableToolbar() {
   const { injectedData } = useTablebuilderState();
 
   return (
-    <div className="mb-3 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4 p-1">
+    <div className="mb-2 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4 p-1">
       {injectedData.actionButtons?.map((button, index) => (
         <Button key={index} outlined onClick={button.action}>
           {button.label}

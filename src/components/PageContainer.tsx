@@ -6,7 +6,7 @@ interface PageContainerIF {
 }
 
 const PageContainer: React.FC<PageContainerIF> = ({ className = '', children }) => {
-  return <div className={`flex flex-1 flex-col overflow-y-auto p-6 ${className}`.trim()}>{children}</div>;
+  return <div className={`flex flex-1 flex-col overflow-y-auto p-6 ${className}`}>{children}</div>;
 };
 
 export default PageContainer;

@@ -186,7 +186,6 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
   return (
     <td className="border p-1">
       <textarea
-        title="textarea"
         id={fieldId}
         aria-label={fieldId}
         rows={1}

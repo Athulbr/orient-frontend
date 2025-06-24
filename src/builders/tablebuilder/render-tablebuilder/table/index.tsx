@@ -39,11 +39,9 @@ const Table: React.FC<TableIF> = ({ refresh = 1 }) => {
 
   return (
     <div className={`bg-background dark:bg-background-dark flex min-w-[770px] flex-1 flex-col ${injectedData.fluidHeight ? 'h-full' : 'h-fit'}`}>
-      <div className="flex gap-4">
-        <TableToolbar />
-      </div>
+      <TableToolbar />
       <div className="h-full overflow-y-auto rounded-lg border">
-        <table className="bg-foreground dark:bg-foreground-dark min-w-full divide-y divide-gray-200">
+        <table className="min-w-full">
           <TableHeader />
           {!state.loading && <TableBody />}
         </table>
