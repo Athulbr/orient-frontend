@@ -232,14 +232,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
           <img className="h-full w-full" src={image} alt={`Document page ${index + 1}`} loading="lazy" />
 
           {Object.entries(state.topLevelFields).map(([key, field], i: number) => {
-            const bbox = field.bbox;
-            if (!bbox || field.page !== index + 1) return null;
+            const bbox = field?.bbox;
+            if (!bbox || field?.page !== index + 1) return null;
             const hoveredFieldId = `topLevelFields:${key}`;
             return (
               <div
                 tabIndex={0}
-                key={`${key}_${i}_${field.confidence}`}
-                className={`${field.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
+                key={`${key}_${i}_${field?.confidence}`}
+                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
                 style={{
                   left: `${bbox.x_min * 100 - 0.4}%`,
                   top: `${bbox.y_min * 100 - 0.4}%`,
@@ -257,14 +257,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
             return (
               <Fragment key={`${mainKey}_${mainIndex}`}>
                 {Object.entries(mainValue).map(([key, field]: any, i: number) => {
-                  const bbox = field.bbox;
-                  if (!bbox || field.page !== index + 1) return null;
+                  const bbox = field?.bbox;
+                  if (!bbox || field?.page !== index + 1) return null;
                   const hoveredFieldId = `objectFields:${mainKey}:${key}`;
                   // console.log(hoveredFieldId);
                   return (
                     <div
-                      key={`${hoveredFieldId}_${i}_${field.confidence}_${field.page}_${mainKey}_${key}`}
-                      className={`${field.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
+                      key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
+                      className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
                       style={{
                         left: `${bbox.x_min * 100 - 0.4}%`,
                         top: `${bbox.y_min * 100 - 0.4}%`,

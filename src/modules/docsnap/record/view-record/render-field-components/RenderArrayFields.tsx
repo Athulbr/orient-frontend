@@ -97,7 +97,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
             <div className="flex-1 overflow-auto">
               <table className="min-w-full border-collapse">
                 <thead>
-                  <tr>
+                  <tr className="sticky top-0 left-0 border">
                     {labels.map((label, i) => (
                       <th key={i} className="border bg-gray-50 px-4 py-2 text-left font-semibold">
                         {formatFieldLabel(label)}
