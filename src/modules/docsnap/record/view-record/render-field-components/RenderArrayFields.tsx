@@ -195,6 +195,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
         ref={el => (fieldRefs.current[fieldId] = el)}
         onChange={onChange}
         onMouseEnter={onMouseEnter}
+        onFocus={onMouseEnter}
       />
     </td>
   );
