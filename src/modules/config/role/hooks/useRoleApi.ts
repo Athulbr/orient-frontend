@@ -18,14 +18,6 @@ export const useRolesApi = () => {
 
   const createRoleApi = async (role: any) => {
     try {
-      const payload = {
-        ...role,
-        fields: state.fields,
-        projectId: state.projectId,
-      };
-      setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/role/create`, payload);
-      setState(prev => ({ ...prev, loading: false, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
       toast.success('Role Created Successfully');
     } catch (error) {
       console.error('error:===========', error);
@@ -35,13 +27,8 @@ export const useRolesApi = () => {
 
   const updateRoleApi = async (role: any) => {
     try {
-      const payload = {
-        ...role,
-        fields: state.fields,
-        projectId: state.projectId,
-      };
       setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/role/update/${state.id}`, payload);
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/role/update/${state.id}`, {});
       setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
       toast.success('Role Updated Successfully');
     } catch (error) {
