@@ -6,6 +6,7 @@ import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
 import FileUploadDialogComponent from './components/FileUploadDialogComponent';
 import { PromptFieldIF } from '../../document';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 interface Project {
   _id: string;
@@ -56,9 +57,9 @@ const ListRecordPage: React.FC = () => {
   const [state, setState] = useState<ListRecordPageStateIF>(initialState);
   return (
     <ListRecordPageStateProvider value={{ state, setState }}>
-      <PageContainer className="gap-2">
-        <PageNameComponent name="DocSnap" />
-        <RenderProjectComponent />
+      <PageContainer className="gap-2 p-6">
+        <PageNameComponent name="List of Records" showBackButton />
+        {/* <RenderProjectComponent /> */}
         <ListRecordComponent />
         <FileUploadDialogComponent />
       </PageContainer>

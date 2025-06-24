@@ -6,6 +6,7 @@ import { ListRoleComponent } from './ListRoleComponent';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { ViewRoleComponent } from './ViewRoleComponent';
 import CreteRoleComponent from './CreateRoleComponent';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export interface RoleStateIF {
   showViewDialog: boolean;
@@ -34,8 +35,10 @@ const ListRolePage: React.FC = () => {
           <ViewRoleComponent />
         </DialogComponent>
       ) : (
-        <PageContainer className="gap-2">
-          <PageNameComponent name="List of Roles" showBackButton />
+        <PageContainer className="gap-2 p-4">
+          <PageNameComponent name="List of Roles">
+            <Breadcrumbs page="listRole" />
+          </PageNameComponent>
           <ListRoleComponent />
         </PageContainer>
       )}

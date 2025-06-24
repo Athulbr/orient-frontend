@@ -22,18 +22,18 @@ export const navItems: NavItemType[] = [
     path: '/',
     key: 'docsnap',
   },
-  //   {
-  //     name: 'Promate',
-  //     icon: React.createElement(Dock, { strokeWidth: 1.5, size: 32, color: '#f3f4f6' }),
-  //     path: '/promate/list',
-  //     key: 'promate',
-  //   },
+  // {
+  //   name: 'Promate',
+  //   icon: React.createElement(Dock, { strokeWidth: 1.5, size: 32, color: '#f3f4f6' }),
+  //   path: '/promate/list',
+  //   key: 'promate',
+  // },
 ];
 
 export const configMenuItem: NavItemType = {
   name: 'Config',
   icon: React.createElement(Settings, { strokeWidth: 1.5, size: 30, color: '#f3f4f6' }),
-  path: '/config',
+  path: '/config/user/list',
   key: 'config',
 };
 

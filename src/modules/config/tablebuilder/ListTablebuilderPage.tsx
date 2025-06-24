@@ -24,8 +24,8 @@ const ListTablebuilderPage: React.FC<ListTablebuilderPageIF> = () => {
     },
   };
   return (
-    <PageContainer className="gap-2">
-      <PageNameComponent name="Tablebuilder List" showBackButton>
+    <PageContainer className="gap-2 p-4">
+      <PageNameComponent name="Tablebuilder List">
         <Breadcrumbs page="listTablebuilder" />
       </PageNameComponent>
       <UseTablebuilder name="list tablebuilder" fluidHeight actionButtons={actionButtons} customFunctions={customFunctions} />

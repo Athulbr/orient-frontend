@@ -414,3 +414,61 @@ export const ViewRoleComponent: React.FC = () => {
     </div>
   );
 };
+
+const allFeatures = [
+  'create:user:own',
+  'create:user:all',
+  'read:user:own',
+  'read:user:all',
+  'update:user:own',
+  'update:user:all',
+  'delete:user:own',
+  'delete:user:all',
+  'docsnap',
+];
+
+const subscriptionLevel1 = [
+  'create:user',
+  'read:user:own',
+  'delete:user:own',
+  'delete:user:all',
+  'delete:user:all',
+  'export',
+  'read:user:own',
+  'delete:user:own',
+  'delete:user:all',
+];
+
+const subscriptionLevel2 = [
+  'create:user:own',
+  'create:user:all',
+  'read:user:own',
+  'delete:user:all',
+  'export',
+  'read:user:own',
+  'delete:user:own',
+  'delete:user:all',
+  'read:user:own',
+  'delete:user:own',
+  'delete:user:all',
+];
+
+const subscriptionLevel3 = [
+  'create:user:own',
+  'create:user:all',
+  'read:user:own',
+  'delete:user:own',
+  'read:user:own',
+  'delete:user:own',
+  'delete:user:all',
+  'delete:user:all',
+  'delete:user:all',
+  'create:user:own',
+  'create:user:all',
+  'read:user:own',
+  'delete:user:own',
+  'delete:user:all',
+  'delete:user:all',
+  'delete:user:all',
+  'export',
+];

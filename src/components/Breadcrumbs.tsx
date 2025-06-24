@@ -9,6 +9,8 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
   const navigate = useNavigate();
   const breadcrumbs: any = {
     listUser: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Users' }],
+    listRole: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Roles' }],
+    listPermission: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Permissions' }],
     listComment: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Comments' }],
     listProject: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Projects' }],
     listFormbuilder: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Formbuilders' }],
@@ -18,7 +20,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
   };
   // Config&nbsp;&nbsp;/&nbsp;&nbsp;Users
   return (
-    <div className={`flex gap-2 pt-1 pl-15 text-xs text-gray-500 ${className}`}>
+    <div className={`flex gap-2 pt-1 text-xs text-gray-500 ${className}`}>
       {breadcrumbs[page].map((item: any, i: number) => {
         return (
           <div

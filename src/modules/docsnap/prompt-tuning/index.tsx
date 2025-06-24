@@ -21,8 +21,8 @@ const UpdatedFieldsListPage: React.FC = () => {
   const tablebuilderFilters = { projectName: selectedRow?.projectName || '', jsonKey: selectedRow?.jsonKey || '' };
 
   return (
-    <PageContainer>
-      <PageNameComponent name="Updated Fields" showBackButton>
+    <PageContainer className="p-4">
+      <PageNameComponent name="Updated Fields">
         <Breadcrumbs page="listUpdatedField" />
       </PageNameComponent>
       <UseTablebuilder name="updated fields" customFunctions={customFunctions} fluidHeight />

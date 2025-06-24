@@ -28,8 +28,8 @@ const ListCommentPage: React.FC<ListCommentPageIF> = () => {
   };
   const customUI = {};
   return (
-    <PageContainer className="gap-4">
-      <PageNameComponent name="Comment List" showBackButton>
+    <PageContainer className="gap-4 p-4">
+      <PageNameComponent name="Comment List">
         <Breadcrumbs page="listComment" />
       </PageNameComponent>
       <UseTablebuilder name="List Comments" customFunctions={customFunctions} fluidHeight customUI={customUI} />
