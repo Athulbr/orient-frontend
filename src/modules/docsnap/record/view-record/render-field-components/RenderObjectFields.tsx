@@ -27,9 +27,9 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                   <InputField
                     key={fieldId}
                     label={formatFieldLabel(subKey)}
-                    value={value.value}
-                    confidence={`${value.confidence * 100}`}
-                    checked={value.checked}
+                    value={value?.value || ''}
+                    confidence={`${value?.confidence * 100}`}
+                    checked={value?.checked}
                     checkClickHandler={(checked: boolean) => {
                       setState(prev => ({
                         ...prev,
@@ -45,16 +45,16 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                     // @ts-ignore
                     ref={el => (fieldRefs.current[fieldId] = el)}
                     onMouseAction={() => {
-                      if (value.bbox) {
-                        lastHoveredFieldRef.current = [fieldId, value.bbox, value.page];
+                      if (value?.bbox) {
+                        lastHoveredFieldRef.current = [fieldId, value?.bbox, value?.page];
                         if (!isScrollingRef.current) {
                           setState(prev => ({
                             ...prev,
                             hoveredFieldId: fieldId,
-                            pageNumber: value.page ? value.page : prev.pageNumber,
+                            pageNumber: value?.page ? value?.page : prev.pageNumber,
                             hoveredOnArrayField: false,
                           }));
-                          updateWire(fieldId, value.bbox);
+                          updateWire(fieldId, value?.bbox);
                         }
                       }
                     }}
