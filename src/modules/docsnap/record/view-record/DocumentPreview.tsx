@@ -3,7 +3,6 @@ import { useViewRecordState } from './hooks/viewRecordContext';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
-import Spinner from '../../../../components/Spinner';
 import { LoadingDataSpinner } from './components/Loaders';
 import { AnnotationLine } from './components/AnnotationLine';
 
