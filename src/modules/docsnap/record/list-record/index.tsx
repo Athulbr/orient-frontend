@@ -59,7 +59,7 @@ const ListRecordPage: React.FC = () => {
     <ListRecordPageStateProvider value={{ state, setState }}>
       <PageContainer className="gap-2 p-6">
         <PageNameComponent name="List of Records" showBackButton />
-        {/* <RenderProjectComponent /> */}
+        <RenderProjectComponent />
         <ListRecordComponent />
         <FileUploadDialogComponent />
       </PageContainer>

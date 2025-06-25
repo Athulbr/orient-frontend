@@ -231,6 +231,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         <div className="relative bg-amber-300" key={index} style={{ transform: `scale(${zoomLevel - 0.1})` }}>
           <img className="h-full w-full" src={image} alt={`Document page ${index + 1}`} loading="lazy" />
 
+          {/* ========================== Top Level Fields ========================== */}
           {Object.entries(state.topLevelFields).map(([key, field], i: number) => {
             const bbox = field?.bbox;
             if (!bbox || field?.page !== index + 1) return null;
@@ -253,6 +254,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               />
             );
           })}
+          {/* ========================== Object Fields ========================== */}
           {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
             return (
               <Fragment key={`${mainKey}_${mainIndex}`}>
@@ -281,14 +283,17 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               </Fragment>
             );
           })}
+          {/* ========================== Bounding Box ========================== */}
           {state.bbox && state.tabIndex === 0 && !state.loadingS3File && index === state.pageNumber - 1 && (
-            <>
+            <div>
               <BoundingBox
                 bbox={state.bbox}
                 onRef={el => {
                   bboxRef.current[1234] = el;
                 }}
               />
+
+              {/* ========================== Hovered Field Card ========================== */}
               {getHoveredField() && (
                 <HoveredFieldCard
                   hoveredField={getHoveredField()}
@@ -301,7 +306,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   isChecked={arrayLength === 3 ? state[mainKey]?.[subKey]?.[subSubKey]?.checked || false : state[mainKey]?.[subKey]?.checked || false}
                 />
               )}
-            </>
+            </div>
           )}
         </div>
       ))}
