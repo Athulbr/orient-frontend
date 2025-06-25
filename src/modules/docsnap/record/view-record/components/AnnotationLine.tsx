@@ -1,8 +1,14 @@
+import { useEffect } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 
 export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
-  const { state } = useViewRecordState();
+  const { state, setState } = useViewRecordState();
   const wire = state.wire;
+  useEffect(() => {
+    if (state.wire?.x2 && state.wire?.x1 === 0 && state.wire?.y1 === 0) {
+      setState(prev => ({ ...prev, hoveredFieldId: null }));
+    }
+  }, [state.hoveredFieldId]);
 
   if (!wire || state.tabIndex !== 0 || state.loadingS3File || state.bbox === null || !bboxRef || !state.hoveredFieldId) return null;
 
@@ -19,7 +25,7 @@ export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
     startHorizontalX = wire.x1;
     startHorizontalY = wire.y1 + 50;
     endHorizontalX = wire.x2;
-    endHorizontalY = wire.y2 - 60;
+    endHorizontalY = wire.y2 - 50;
   }
 
   return (
@@ -30,8 +36,8 @@ export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
         strokeWidth={2}
         fill="none"
       />
-      <circle cx={wire.x1} cy={wire.y1} r={4} fill="rgb(13 109 214)" />
-      <circle cx={wire.x2} cy={wire.y2} r={4} fill="rgb(13 109 214)" />
+      <circle cx={wire.x1} cy={wire.y1} r={3.5} fill="rgb(13 109 214)" />
+      <circle cx={wire.x2} cy={wire.y2} r={3.5} fill="rgb(13 109 214)" />
     </svg>
   );
 };

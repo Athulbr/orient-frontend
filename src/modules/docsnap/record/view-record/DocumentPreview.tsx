@@ -151,6 +151,25 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         return newState;
       });
     }
+    if (keysArray?.length === 4) {
+      const [fieldType, fieldKey, subFieldKey, subSubFieldKey] = keysArray;
+      setState(prev => ({
+        ...prev,
+        arrayFields: prev.arrayFields.map((table, tableIdx) => {
+          if (tableIdx !== Number(fieldKey)) return table;
+          return {
+            ...table,
+            [subFieldKey]: {
+              ...table[subFieldKey],
+              [subSubFieldKey]: {
+                ...table[subFieldKey][subSubFieldKey],
+                value,
+              },
+            },
+          };
+        }),
+      }));
+    }
   };
 
   const handleCheckToggle = (checked?: boolean) => {
@@ -184,6 +203,25 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         },
       }));
     }
+    if (keysArray.length === 4) {
+      const [fieldType, fieldKey, subFieldKey, subSubFieldKey] = keysArray;
+      setState(prev => ({
+        ...prev,
+        arrayFields: prev.arrayFields.map((table, tableIdx) => {
+          if (tableIdx !== Number(fieldKey)) return table;
+          return {
+            ...table,
+            [subFieldKey]: {
+              ...table[subFieldKey],
+              [subSubFieldKey]: {
+                ...table[subFieldKey][subSubFieldKey],
+                checked: Boolean(checked),
+              },
+            },
+          };
+        }),
+      }));
+    }
   };
 
   const getHoveredField = () => {
@@ -199,9 +237,30 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     }
     if (keysArray?.length === 3) {
       const [fieldType, fieldKey, subFieldKey] = keysArray;
-
+      if (fieldType === 'arrayFields') {
+        const tableIndex = Number(fieldKey);
+        const table = state.arrayFields[tableIndex];
+        if (!table) return null;
+        const row = table[subFieldKey];
+        if (!row) return null;
+        return row;
+      }
       if (fieldType === 'objectFields') {
         return state.objectFields[fieldKey]?.[subFieldKey] || null;
+      }
+      return null;
+    }
+    if (keysArray?.length === 4) {
+      const [fieldType, fieldKey, subFieldKey, subSubFieldKey] = keysArray;
+      if (fieldType === 'arrayFields') {
+        const tableIndex = Number(fieldKey);
+        const table = state.arrayFields[tableIndex];
+        if (!table) return null;
+        const row = table[subFieldKey];
+        if (!row) return null;
+        const data = row[subSubFieldKey];
+        if (!data) return null;
+        return data;
       }
       return null;
     }
@@ -211,6 +270,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const mainKey = state.hoveredFieldId?.split(':')[0] as string;
   const subKey = state.hoveredFieldId?.split(':')[1] as string;
   const subSubKey = (state.hoveredFieldId?.split(':')[2] as string) || '';
+  const label = (state.hoveredFieldId?.split(':')[3] as string) || '';
 
   if (state.loadingS3File) {
     return (
@@ -223,7 +283,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
       </div>
     );
   }
-
   return (
     <div className="flex-1 overflow-auto" ref={imageContainerRef}>
       <ImageViewerHeader name={state.record?.name} zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
@@ -249,7 +308,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                 }}
                 onMouseEnter={() => {
                   handleFieldHover(hoveredFieldId, bbox, index + 1);
-                  setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false }));
+                  setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                 }}
               />
             );
@@ -262,7 +321,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   const bbox = field?.bbox;
                   if (!bbox || field?.page !== index + 1) return null;
                   const hoveredFieldId = `objectFields:${mainKey}:${key}`;
-                  // console.log(hoveredFieldId);
                   return (
                     <div
                       key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
@@ -275,12 +333,51 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                       }}
                       onMouseEnter={() => {
                         handleFieldHover(hoveredFieldId, bbox, index + 1);
-                        setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false }));
+                        setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                       }}
                     />
                   );
                 })}
               </Fragment>
+            );
+          })}
+          {/* ========================== Array Fields ========================== */}
+          {state.arrayFields.map((table, mainIndex) => {
+            return (
+              <div key={`${mainIndex}`}>
+                {Object.entries(table).map(([mainKey, row]: any, i: number) => {
+                  return (
+                    <div key={`${mainKey}_${i}`}>
+                      {Object.entries(row).map(([key, field]: any, i: number) => {
+                        const bbox = field?.bbox;
+                        if (!bbox || field?.page !== index + 1) return null;
+                        const hoveredFieldId = `arrayFields:${mainIndex}:${mainKey}:${key}`;
+                        return (
+                          <div
+                            key={`${mainKey}_${i}`}
+                            className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
+                            style={{
+                              left: `${bbox.x_min * 100 - 0.4}%`,
+                              top: `${bbox.y_min * 100 - 0.4}%`,
+                              width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
+                              height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
+                            }}
+                            onMouseEnter={() => {
+                              handleFieldHover(hoveredFieldId, bbox, index + 1);
+                              setState(prev => ({
+                                ...prev,
+                                scrollToViewField: prev.scrollToViewField + 1,
+                                hoveredOnArrayField: true,
+                                selectedTableName: state.tableNames[mainIndex],
+                              }));
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
             );
           })}
           {/* ========================== Bounding Box ========================== */}
@@ -302,8 +399,16 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   onValueChange={handleValueChange}
                   onCheckToggle={handleCheckToggle}
                   arrayLength={arrayLength}
-                  // @ts-ignore
-                  isChecked={arrayLength === 3 ? state[mainKey]?.[subKey]?.[subSubKey]?.checked || false : state[mainKey]?.[subKey]?.checked || false}
+                  isChecked={
+                    arrayLength === 4
+                      ? state.arrayFields[Number(subKey)]?.[subSubKey]?.[label]?.checked || false
+                      : arrayLength === 3
+                        ? // @ts-ignore
+                          state[mainKey]?.[subKey]?.[subSubKey]?.checked || false
+                        : // @ts-ignore
+                          state[mainKey]?.[subKey]?.checked || false
+                  }
+                  // isChecked={arrayLength === 3 ? state[mainKey]?.[subKey]?.[subSubKey]?.checked || false : state[mainKey]?.[subKey]?.checked || false}
                 />
               )}
             </div>

@@ -20,7 +20,6 @@ import ListProjectPage from '../../../modules/docsnap/project';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
-  console.log('window.location.pathname:===========', window.location.pathname.split('/')[2]);
   return (
     <PageContainer className="p-6">
       <PageNameComponent customGoBackFunction={() => navigate('/')} name="Workspace Settings" showBackButton />

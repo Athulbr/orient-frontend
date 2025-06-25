@@ -4,7 +4,6 @@ import { Button } from '../../../../components/Button';
 import { DialogComponent } from '../../../../components/DialogComponent';
 import { useSignupPageState } from '../hooks/SignupPageStateProvider';
 import { useSignupPageApi } from '../hooks/useSignupPageApi';
-import { useToastStore } from '../../../../components/toast/ToastStore';
 
 const OTPVerification: React.FC = ({}) => {
   const delayTime = 150;
@@ -13,10 +12,8 @@ const OTPVerification: React.FC = ({}) => {
   const [timeLeft, setTimeLeft] = useState(delayTime);
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const { state, setState } = useSignupPageState();
+  const { setState } = useSignupPageState();
   const { resendOtpApi, verifyOtpAPI } = useSignupPageApi();
-  const toast = useToastStore();
-  console.log('isExpired', isExpired);
 
   const closeDialog = () => {
     setState(prev => ({ ...prev, showOtpVerificationDialog: false }));

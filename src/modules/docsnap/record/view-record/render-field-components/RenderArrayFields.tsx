@@ -1,18 +1,16 @@
-import { Trash, Trash2, XCircle } from 'lucide-react';
-import { FC, useEffect, useRef, useState } from 'react';
-import { InputField } from '../components/InputField';
+import { Trash2, XCircle } from 'lucide-react';
+import { FC, useEffect, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
-import { RenderTopLevelFieldsIF } from './RenderTopLevelFields';
 import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
-import { TextAreaComponent } from '../../../../../components/Textarea';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
   const { state, setState } = useViewRecordState();
   const { fieldRefs, isScrollingRef, lastHoveredFieldRef, containerRef } = refs;
   const [commentDialog, setCommentDialog] = useState(false);
-
+  const toast = useToastStore();
   const updateWire = (fieldId: string, bbox: any) => {
     if (!fieldId || !bbox) return;
     const fieldEl = fieldRefs.current[fieldId];
@@ -38,8 +36,12 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
   const addLineItem = () => {
     // Get the column names from the first row to create the same structure
     const firstRow = Object.values(state.arrayFields[0])[0] || {};
-    const columnNames = Object.keys(firstRow);
 
+    const columnNames = Object.keys(firstRow);
+    if (columnNames.length === 0) {
+      toast.error('Table must have at least one row to add a new row');
+      return;
+    }
     // Create a new row object with the same column structure
     const newRow: { [key: string]: { value: string } } = {};
     columnNames.forEach(columnName => {
@@ -111,12 +113,13 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     <tr key={rowIndex} className="bg-white">
                       {labels.map((label, i) => {
                         const value = subItem[label];
-                        const fieldId = `${label}_${rowIndex}_${mainIndex}_${i}`;
+
+                        const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
                         return (
                           <ArrayFieldTextarea
                             key={i}
                             value={value}
-                            fieldId={fieldId}
+                            fieldId={hoveredFieldId}
                             label={label}
                             fieldRefs={fieldRefs}
                             onChange={(e: any) => {
@@ -132,15 +135,15 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                             onMouseEnter={() => {
                               const bbox = value?.bbox;
                               if (bbox) {
-                                lastHoveredFieldRef.current = [fieldId, bbox, value.page];
+                                lastHoveredFieldRef.current = [hoveredFieldId, bbox, value.page];
                                 if (!isScrollingRef.current) {
                                   setState(prev => ({
                                     ...prev,
-                                    hoveredFieldId: fieldId,
+                                    hoveredFieldId: hoveredFieldId,
                                     pageNumber: value.page ? value.page : prev.pageNumber,
                                     hoveredOnArrayField: true,
                                   }));
-                                  updateWire(fieldId, value.bbox);
+                                  updateWire(hoveredFieldId, value.bbox);
                                 }
                               }
                             }}
@@ -177,19 +180,20 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     if (!textarea) return;
 
     textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight + 2}px`;
+    textarea.style.height = `${textarea.scrollHeight + 4}px`;
   };
 
   useEffect(() => {
     adjustTextareaHeight();
-  }, [value]);
+  }, [value?.value]);
   return (
     <td className="border p-1">
       <textarea
+        data-gramm="false"
         id={fieldId}
         aria-label={fieldId}
         rows={1}
-        className={`min-w-0 rounded-md border p-2 px-4 outline-none hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
+        className={`min-w-0 rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
         value={value?.value || ''}
         // @ts-ignore
         ref={el => (fieldRefs.current[fieldId] = el)}
