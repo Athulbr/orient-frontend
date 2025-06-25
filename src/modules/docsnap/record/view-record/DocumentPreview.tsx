@@ -306,6 +306,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                 }}
                 onMouseEnter={() => {
+                  if (isScrolling) return;
                   handleFieldHover(hoveredFieldId, bbox, index + 1);
                   setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                 }}
@@ -331,6 +332,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                       }}
                       onMouseEnter={() => {
+                        if (isScrolling) return;
                         handleFieldHover(hoveredFieldId, bbox, index + 1);
                         setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                       }}
@@ -362,6 +364,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                               height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                             }}
                             onMouseEnter={() => {
+                              if (isScrolling) return;
                               handleFieldHover(hoveredFieldId, bbox, index + 1);
                               setState(prev => ({
                                 ...prev,

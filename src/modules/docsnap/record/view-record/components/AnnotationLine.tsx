@@ -4,11 +4,11 @@ import { useViewRecordState } from '../hooks/viewRecordContext';
 export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
   const { state, setState } = useViewRecordState();
   const wire = state.wire;
-  useEffect(() => {
-    if (state.wire?.x2 && state.wire?.x1 === 0 && state.wire?.y1 === 0) {
-      setState(prev => ({ ...prev, hoveredFieldId: null }));
-    }
-  }, [state.hoveredFieldId]);
+  // useEffect(() => {
+  //   if (state.wire?.x2 && state.wire?.x1 === 0 && state.wire?.y1 === 0) {
+  //     setState(prev => ({ ...prev, hoveredFieldId: null }));
+  //   }
+  // }, [state.hoveredFieldId]);
 
   if (!wire || state.tabIndex !== 0 || state.loadingS3File || state.bbox === null || !bboxRef || !state.hoveredFieldId) return null;
 
