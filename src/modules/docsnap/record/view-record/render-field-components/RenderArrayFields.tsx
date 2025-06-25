@@ -101,7 +101,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 <thead>
                   <tr className="sticky top-0 left-0 border">
                     {labels.map((label, i) => (
-                      <th key={i} className="border bg-gray-50 px-4 py-2 text-left font-semibold">
+                      <th key={i} className="border bg-gray-50 px-4 py-3 text-left font-semibold">
                         {formatFieldLabel(label)}
                       </th>
                     ))}
