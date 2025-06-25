@@ -67,7 +67,7 @@ export const useViewRecordApi = () => {
       }
       setState(prev => ({ ...prev, topLevelFields, record: res.data, objectFields, arrayFields, tableNames, loadingData: false }));
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to get Record');
     } finally {
       setState(prev => ({ ...prev, loadingData: false }));
@@ -122,7 +122,7 @@ export const useViewRecordApi = () => {
       toast.success('Record updated successfully');
       navigate('/');
     } catch (error) {
-      console.log('error:===========', error);
+      console.error('error:===========', error);
       toast.error('Failed to update Record');
     } finally {
       setState(prev => ({ ...prev, loadingData: false }));

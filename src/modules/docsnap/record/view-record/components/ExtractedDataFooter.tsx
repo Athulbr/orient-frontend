@@ -11,9 +11,7 @@ interface ExtractedDataFooterIF {
 const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
   const navigate = useNavigate();
   const { updateRecordApiById } = useViewRecordApi();
-  const handleSubmit = () => {
-    console.log('Submit clicked');
-  };
+  const handleSubmit = () => {};
 
   const { state } = useViewRecordState();
 

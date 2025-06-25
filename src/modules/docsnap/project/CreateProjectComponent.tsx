@@ -5,7 +5,6 @@ import { useProjectApi } from './hooks/useProjectApi';
 const CreateProjectComponent: React.FC = ({}) => {
   const { state, setState } = useProjectState();
   const { createProjectApi, updateProjectApi } = useProjectApi();
-  console.log(state.project);
   return (
     <UseFormbuilder
       isOpen={state.showCreateDialog}

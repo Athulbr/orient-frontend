@@ -51,7 +51,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
 
   const getFieldLabel = () => {
     const parts = hoveredFieldId.split(':');
-    const index = arrayLength === 3 ? 2 : 1;
+    const index = arrayLength === 4 ? 3 : arrayLength === 3 ? 2 : 1;
     return formatFieldLabel(parts[index] || '');
   };
 
@@ -70,17 +70,12 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
       </div>
       <div className="flex items-center justify-between gap-2 text-lg">
         <textarea
+          data-gramm="false"
           ref={textareaRef}
           onChange={e => {
             onValueChange(e.target.value);
             adjustTextareaHeight();
           }}
-          // onKeyDown={e => {
-          //   if (e.key === 'Enter' && !e.shiftKey) {
-          //     e.preventDefault();
-          //     onCheckToggle(true);
-          //   }
-          // }}
           value={hoveredField.value}
           className="w-full resize-none overflow-hidden rounded-md border border-gray-300 bg-white p-2 text-xl outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 focus:outline-none"
           style={{ minHeight: '24px' }}
@@ -90,7 +85,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
           {isChecked ? (
             <CircleCheck onClick={() => onCheckToggle()} className="cursor-pointer text-green-500 hover:text-green-600" size={24} />
           ) : (
-            <Eye onClick={() => onCheckToggle()} className="cursor-pointer text-orange-400 hover:text-orange-500" size={24} />
+            <Eye onClick={() => onCheckToggle(true)} className="cursor-pointer text-orange-400 hover:text-orange-500" size={24} />
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Bell, CircleHelp, CircleUser, LogIn, Menu, MoonStar, Search, Settings, Sun, X } from 'lucide-react';
+import { CircleUser, Menu } from 'lucide-react';
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';

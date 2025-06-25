@@ -1,15 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import PageContainer from '../../../../components/PageContainer';
-import PageNameComponent from '../../../../components/PageName';
+import { useRef, useState } from 'react';
 import { DocumentPreviewComponent } from './DocumentPreview';
 import { ViewRecordStateProvider } from './hooks/viewRecordContext';
 import { TabViewContainer } from './components/TabViewContainer';
 import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
-import { AnnotationLine } from './components/AnnotationLine';
-import { useParams } from 'react-router-dom';
-import { useViewRecordApi } from './hooks/useViewRecordApi';
-import { useViewRecordGlobalStore } from './hooks/useViewRecordGlobalStore';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 
 interface WirePoints {
@@ -84,8 +78,6 @@ const ViewRecordPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const lastHoveredFieldRef = useRef<any[] | null>(null);
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  console.log('state.arrayFields:===========', state.arrayFields);
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>

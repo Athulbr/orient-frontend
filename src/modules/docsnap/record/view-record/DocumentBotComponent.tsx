@@ -1,4 +1,3 @@
-import { useNavigate } from 'storybook/internal/router';
 import { Button } from '../../../../components/Button';
 import { ChatContainer } from './components/ChatContainer';
 import { ChatInput } from './components/ChatInput';

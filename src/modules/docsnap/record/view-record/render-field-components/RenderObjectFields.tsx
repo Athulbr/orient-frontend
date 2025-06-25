@@ -53,6 +53,7 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                             hoveredFieldId: fieldId,
                             pageNumber: value?.page ? value?.page : prev.pageNumber,
                             hoveredOnArrayField: false,
+                            selectedTableName: '',
                           }));
                           updateWire(fieldId, value?.bbox);
                         }

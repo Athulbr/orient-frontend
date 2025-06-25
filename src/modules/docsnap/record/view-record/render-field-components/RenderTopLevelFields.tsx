@@ -52,7 +52,13 @@ export const RenderTopLevelFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, r
               if (value?.bbox) {
                 lastHoveredFieldRef.current = [fieldId, value?.bbox, value?.page];
                 if (!isScrollingRef.current) {
-                  setState(prev => ({ ...prev, hoveredOnArrayField: false, hoveredFieldId: fieldId, pageNumber: value?.page ? value?.page : prev.pageNumber }));
+                  setState(prev => ({
+                    ...prev,
+                    hoveredOnArrayField: false,
+                    hoveredFieldId: fieldId,
+                    pageNumber: value?.page ? value?.page : prev.pageNumber,
+                    selectedTableName: '',
+                  }));
                   updateWire(fieldId, value?.bbox);
                 }
               }
