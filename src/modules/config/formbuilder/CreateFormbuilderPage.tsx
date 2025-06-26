@@ -6,7 +6,7 @@ interface CreateFormbuilderPageIF {
 
 const CreateFormbuilderPage: React.FC<CreateFormbuilderPageIF> = () => {
   return (
-    <div className="flex-1 overflow-y-auto p-2">
+    <div className="absolute top-0 left-0 h-[100vh] w-[100vw]">
       <CreateFormbuilder />
     </div>
   );

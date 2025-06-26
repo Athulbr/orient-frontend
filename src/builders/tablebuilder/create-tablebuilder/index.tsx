@@ -22,7 +22,7 @@ export const CreateTablebuilder: React.FC<PropsIF> = ({ update }) => {
 
   return (
     <TablebuilderSettingsProvider value={{ settings, setSettings, builder, setBuilder }}>
-      <div className="flex w-full gap-2 divide-gray-200 overflow-y-auto p-6 pb-4">
+      <div className="absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 divide-gray-200 overflow-y-auto bg-white p-4">
         <TableSettings />
         <RenderTablebuilder settings={settings} fluidHeight customUI={customUI} />
       </div>

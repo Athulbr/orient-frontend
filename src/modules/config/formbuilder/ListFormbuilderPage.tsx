@@ -47,7 +47,7 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
     status: StatusCustomUI,
   };
   return (
-    <PageContainer className="gap-2 p-4">
+    <PageContainer className="gap-2">
       <PageNameComponent name="Formbuilder List">
         <Breadcrumbs page="listFormbuilder" />
       </PageNameComponent>

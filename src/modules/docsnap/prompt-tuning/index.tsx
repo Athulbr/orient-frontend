@@ -21,7 +21,7 @@ const UpdatedFieldsListPage: React.FC = () => {
   const tablebuilderFilters = { projectName: selectedRow?.projectName || '', jsonKey: selectedRow?.jsonKey || '' };
 
   return (
-    <PageContainer className="p-4">
+    <PageContainer className="">
       <PageNameComponent name="Updated Fields">
         <Breadcrumbs page="listUpdatedField" />
       </PageNameComponent>

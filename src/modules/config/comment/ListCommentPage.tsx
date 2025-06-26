@@ -28,7 +28,7 @@ const ListCommentPage: React.FC<ListCommentPageIF> = () => {
   };
   const customUI = {};
   return (
-    <PageContainer className="gap-4 p-4">
+    <PageContainer className="gap-4">
       <PageNameComponent name="Comment List">
         <Breadcrumbs page="listComment" />
       </PageNameComponent>

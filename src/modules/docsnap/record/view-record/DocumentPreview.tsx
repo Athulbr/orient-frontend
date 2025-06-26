@@ -410,7 +410,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         : // @ts-ignore
                           state[mainKey]?.[subKey]?.checked || false
                   }
-                  // isChecked={arrayLength === 3 ? state[mainKey]?.[subKey]?.[subSubKey]?.checked || false : state[mainKey]?.[subKey]?.checked || false}
                 />
               )}
             </div>

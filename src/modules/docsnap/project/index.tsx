@@ -28,7 +28,7 @@ const ListProjectPage: React.FC = () => {
 
   return (
     <ProjectStateProvider value={{ state, setState }}>
-      <PageContainer className="gap-4 p-4">
+      <PageContainer className="gap-4">
         <PageNameComponent name="Project List">
           <Breadcrumbs page="listProject" />
         </PageNameComponent>

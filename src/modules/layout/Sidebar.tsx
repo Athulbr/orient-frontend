@@ -17,10 +17,10 @@ const DesktopSidebar = () => {
   };
 
   return (
-    <div className={`hidden h-full flex-col bg-[#001529] transition-all duration-300 ease-in-out md:flex`}>
-      <div className="flex h-16 w-16 items-center justify-center transition-transform hover:scale-110 active:scale-90" tabIndex={0}>
+    <div className={`hidden h-full w-16 flex-col bg-[#001529] transition-all duration-300 ease-in-out md:flex`}>
+      {/* <div className="flex h-16 w-16 items-center justify-center transition-transform hover:scale-110 active:scale-90" tabIndex={0}>
         <Menu onClick={toggleExpandedSidebar} className="cursor-pointer" color="white" size={30} />
-      </div>
+      </div> */}
       <section
         className={`flex flex-col items-center gap-5 pt-6 transition-all duration-800 ease-out ${
           expandedSidebar ? 'absolute top-16 left-0 z-2 h-[calc(100vh-64px)] w-45 bg-[#001529e3]' : 'h-full'

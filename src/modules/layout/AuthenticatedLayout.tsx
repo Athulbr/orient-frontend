@@ -10,10 +10,10 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
   const [showSidebar, setShowSidebar] = useState(false);
 
   return (
-    <div className="flex h-full w-screen">
-      <SidebarComponent showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
-      <div className="flex h-screen w-full flex-col overflow-y-auto">
-        <HeaderComponent showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
+    <div className="flex h-full w-screen flex-col">
+      <HeaderComponent showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
+      <div className="flex h-screen w-full overflow-y-auto">
+        <SidebarComponent showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
         {children}
       </div>
     </div>

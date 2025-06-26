@@ -7,16 +7,17 @@ interface PageNameComponentIF {
   name: string;
   customGoBackFunction?: () => void;
   children?: ReactElement;
+  className?: string;
 }
 
-const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name, customGoBackFunction, children }) => {
+const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name, customGoBackFunction, children, className }) => {
   const navigate = useNavigate();
 
   const onClickHandler = () => {
     customGoBackFunction ? customGoBackFunction() : navigate(-1);
   };
   return (
-    <div className="">
+    <div className={className}>
       <div className="flex items-center gap-4 text-xl">
         {showBackButton && <BackButton onClick={onClickHandler} />} {name}
       </div>

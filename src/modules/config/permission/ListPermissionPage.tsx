@@ -28,7 +28,7 @@ const ListPermissionPage: React.FC<ListPermissionPageIF> = () => {
     status: StatusCustomUI,
   };
   return (
-    <PageContainer className="gap-4 p-4">
+    <PageContainer className="gap-4">
       <PageNameComponent name="Permission List">
         <Breadcrumbs page="listPermission" />
       </PageNameComponent>

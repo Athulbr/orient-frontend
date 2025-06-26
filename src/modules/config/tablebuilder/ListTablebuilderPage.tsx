@@ -24,7 +24,7 @@ const ListTablebuilderPage: React.FC<ListTablebuilderPageIF> = () => {
     },
   };
   return (
-    <PageContainer className="gap-2 p-4">
+    <PageContainer className="gap-2">
       <PageNameComponent name="Tablebuilder List">
         <Breadcrumbs page="listTablebuilder" />
       </PageNameComponent>

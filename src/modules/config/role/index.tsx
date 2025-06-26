@@ -35,7 +35,7 @@ const ListRolePage: React.FC = () => {
           <ViewRoleComponent />
         </DialogComponent>
       ) : (
-        <PageContainer className="gap-2 p-4">
+        <PageContainer className="gap-2">
           <PageNameComponent name="List of Roles">
             <Breadcrumbs page="listRole" />
           </PageNameComponent>
