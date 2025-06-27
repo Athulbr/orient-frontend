@@ -103,8 +103,8 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
         aria-labelledby="dialog-title"
       >
         {name && (
-          <div className="flex items-center justify-between border-b border-gray-200 p-4">
-            <h2 id="dialog-title" className="text-2xl font-bold text-gray-900">
+          <div className="flex items-center justify-between border-b border-gray-200 p-4 pl-6">
+            <h2 id="dialog-title" className="text-2xl font-semibold text-gray-900">
               {name}
             </h2>
             <button

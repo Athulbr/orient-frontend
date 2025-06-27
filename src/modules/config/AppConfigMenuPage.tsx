@@ -13,7 +13,7 @@ const WorkspaceSettingsPage: React.FC<WorkspaceSettingsPageIF> = () => {
   const [active, setActive] = useState('user');
   return (
     <PageContainer>
-      <PageNameComponent name="Workspace Settings" showBackButton />
+      <PageNameComponent name="Settings" showBackButton />
       <div className="mt-2 flex h-full w-full border-y border-r">
         <div className="h-full w-64 border-x border-b">
           {utils.map(item => (

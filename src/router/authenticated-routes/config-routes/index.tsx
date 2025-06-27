@@ -22,7 +22,7 @@ const ConfigRoutes = () => {
   const navigate = useNavigate();
   return (
     <PageContainer className="py-6">
-      <PageNameComponent className="p-4 pt-0" customGoBackFunction={() => navigate('/')} name="Workspace Settings" showBackButton />
+      <PageNameComponent className="p-4 pt-0" customGoBackFunction={() => navigate('/')} name="Settings" showBackButton />
       <div className="mt-2 flex w-full flex-1 overflow-hidden">
         <div className="w-64 border">
           {utils.map(item => (
