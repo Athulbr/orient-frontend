@@ -38,10 +38,11 @@ export const NavItem: FC<NavItemProps> = ({ item, onClick, expandedSidebar, isMo
     <div
       tabIndex={0}
       onClick={onClick}
-      className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md bg-[#28313A] transition-all duration-200 hover:bg-[#34404c]"
+      className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-[#34404c]"
     >
-      {item.icon}
-      {item.name && <span className="text-[8px] text-gray-100">{item.name}</span>}
+      {/* {item.icon}  */}
+      {item.key === 'docsnap' ? <div className="text-[40px] font-bold text-white">D</div> : item.icon}
+      {/* {item.name && <span className="text-[8px] text-gray-100">{item.name}</span>} */}
     </div>
   );
 };

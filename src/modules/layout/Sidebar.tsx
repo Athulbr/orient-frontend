@@ -17,7 +17,7 @@ const DesktopSidebar = () => {
   };
 
   return (
-    <div className={`hidden h-full w-16 flex-col bg-[#001529] transition-all duration-300 ease-in-out md:flex`}>
+    <div className={`hidden h-full w-16 flex-col bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
       {/* <div className="flex h-16 w-16 items-center justify-center transition-transform hover:scale-110 active:scale-90" tabIndex={0}>
         <Menu onClick={toggleExpandedSidebar} className="cursor-pointer" color="white" size={30} />
       </div> */}

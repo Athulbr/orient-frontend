@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
 @import 'tailwindcss';
 @import './utils/animation.css';
 
@@ -13,6 +15,8 @@
   --color-warning: #ffcd29;
   --color-error: #dc2626;
   --color-info: #2563eb;
+
+  --font-roboto: 'DM Sans', sans-serif;
 }
 
 /* For default border color (--color-gray-200) */
@@ -23,6 +27,7 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
+    font-family: var(--font-roboto);
   }
 }
 

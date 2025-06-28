@@ -1,6 +1,5 @@
 import { ArrowRightIcon, ChevronRight, Plus, Search, ThumbsUp, Clock, CheckCircle, AlertCircle, Upload, CircleChevronRight, MoreVertical } from 'lucide-react';
 import { Button } from '../../../components/Button';
-import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { ButtonBox } from '../../../components/ButtonBox';
 import { RecordStatusCustomUI } from '../record/list-record/components/RecordStatusCustomUI';
 import { DashboardStateProvider, useDashboardState } from './hooks/dashboardContext';
@@ -45,31 +44,211 @@ const DashboardPage: React.FC<DashboardPageIF> = () => {
     recordStatus: RecordStatusCustomUI,
   };
 
+  // Dummy data for the table
+  const dummyTableData = [
+    {
+      name: 'PO_Private_001',
+      documentType: 'Driving License',
+      extractedBy: 'Alex Parker',
+      status: 'Processed',
+      completedOn: 'Jun 22, 2025, 01:55 PM',
+    },
+    {
+      name: 'PO_Private_456',
+      documentType: 'Invoice',
+      extractedBy: 'Jamie Lee',
+      status: 'Processed',
+      completedOn: 'Jun 22, 2025, 02:09 PM',
+    },
+    {
+      name: 'PO_VA_saalfield',
+      documentType: 'Purchase Order',
+      extractedBy: 'Brandon Michael Herr',
+      status: 'Processed',
+      completedOn: 'Jun 19, 2025, 01:18 PM',
+    },
+    {
+      name: 'FAX_20241015_1',
+      documentType: 'Insurance',
+      extractedBy: 'Morgan Thompson',
+      status: 'In Progress',
+      completedOn: 'Jun 15, 2025, 06:27 AM',
+    },
+    {
+      name: 'FAX_20241015_2',
+      documentType: 'ID',
+      extractedBy: 'Casey Davis',
+      status: 'Review',
+      completedOn: 'Jun 12, 2025, 01:10 PM',
+    },
+    {
+      name: 'PO_VA_saalfield2',
+      documentType: 'Medical Reports',
+      extractedBy: 'Tyler Johnson',
+      status: 'Review',
+      completedOn: 'Jun 12, 2025, 01:10 PM',
+    },
+    {
+      name: 'PO_Private_002',
+      documentType: 'Driving License',
+      extractedBy: 'Ashley Nicole Mitchel',
+      status: 'Processed',
+      completedOn: 'Jun 11, 2025, 06:09 AM',
+    },
+    {
+      name: 'PO_Private_457',
+      documentType: 'Invoice',
+      extractedBy: 'Jordan Scott',
+      status: 'Invalid',
+      completedOn: 'Jun 9, 2025, 03:14 PM',
+    },
+    {
+      name: 'INV_2025_001',
+      documentType: 'Invoice',
+      extractedBy: 'Sarah Wilson',
+      status: 'Processed',
+      completedOn: 'Jun 8, 2025, 11:30 AM',
+    },
+    {
+      name: 'DL_CA_12345',
+      documentType: 'Driving License',
+      extractedBy: 'Michael Chen',
+      status: 'In Progress',
+      completedOn: 'Jun 7, 2025, 09:15 AM',
+    },
+    {
+      name: 'INS_POL_789',
+      documentType: 'Insurance',
+      extractedBy: 'Emily Rodriguez',
+      status: 'Review',
+      completedOn: 'Jun 6, 2025, 04:45 PM',
+    },
+    {
+      name: 'PO_TECH_2025',
+      documentType: 'Purchase Order',
+      extractedBy: 'David Kim',
+      status: 'Processed',
+      completedOn: 'Jun 5, 2025, 02:20 PM',
+    },
+    {
+      name: 'REC_GROCERY_001',
+      documentType: 'Receipt',
+      extractedBy: 'Lisa Anderson',
+      status: 'Invalid',
+      completedOn: 'Jun 4, 2025, 07:30 AM',
+    },
+    {
+      name: 'ID_PASSPORT_456',
+      documentType: 'ID',
+      extractedBy: 'Robert Taylor',
+      status: 'Processed',
+      completedOn: 'Jun 3, 2025, 01:55 PM',
+    },
+    {
+      name: 'MED_REPORT_789',
+      documentType: 'Medical Reports',
+      extractedBy: 'Jennifer Brown',
+      status: 'In Progress',
+      completedOn: 'Jun 2, 2025, 10:10 AM',
+    },
+    {
+      name: 'INV_FREELANCE_2025',
+      documentType: 'Invoice',
+      extractedBy: 'Christopher Lee',
+      status: 'Review',
+      completedOn: 'Jun 1, 2025, 03:25 PM',
+    },
+    {
+      name: 'DL_NY_67890',
+      documentType: 'Driving License',
+      extractedBy: 'Amanda Garcia',
+      status: 'Processed',
+      completedOn: 'May 31, 2025, 08:40 AM',
+    },
+    {
+      name: 'INS_AUTO_456',
+      documentType: 'Insurance',
+      extractedBy: 'Kevin Martinez',
+      status: 'Invalid',
+      completedOn: 'May 30, 2025, 12:15 PM',
+    },
+  ];
+
+  // Status badge component
+  const StatusBadge = ({ status }: { status: string }) => {
+    let color = '';
+    let icon = null;
+    switch (status) {
+      case 'Processed':
+        color = 'bg-green-100 text-green-700 border-green-300';
+        icon = <ThumbsUp size={14} className="mr-2 text-green-500" />;
+        break;
+      case 'In Progress':
+        color = 'bg-yellow-100 text-yellow-700 border-yellow-300';
+        icon = <Clock size={14} className="mr-2 text-yellow-500" />;
+        break;
+      case 'Review':
+        color = 'bg-blue-100 text-blue-700 border-blue-300';
+        icon = <CheckCircle size={14} className="mr-2 text-blue-500" />;
+        break;
+      case 'Invalid':
+        color = 'bg-red-100 text-red-700 border-red-300';
+        icon = <AlertCircle size={14} className="mr-2 text-red-500" />;
+        break;
+      default:
+        color = 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+    return (
+      <span className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium ${color}`}>
+        {icon}
+        {status}
+      </span>
+    );
+  };
+
   return (
     <DashboardStateProvider value={{ state, setState }}>
-      <div className="flex flex-1 flex-col gap-4 overflow-hidden px-1 py-2 lg:px-6 lg:py-6">
+      <div className="flex flex-1 flex-col gap-y-4 overflow-hidden bg-[#F4F7FE] px-3 pt-2 lg:px-6 lg:pt-5 2xl:pb-4">
         <DashboardHeaderComponent />
         <div className="h-full flex-1 overflow-y-auto p-1">
           <div className="flex h-full min-h-400 flex-1 flex-col gap-6 overflow-y-auto lg:min-h-192">
             <div className="flex w-full flex-1 flex-col gap-6 overflow-hidden lg:flex-row">
-              <div className="h-auto flex-1 overflow-y-hidden rounded-2xl border bg-white px-1 lg:h-full lg:flex-1 lg:px-4">
+              <div className="flex h-auto flex-1 flex-col gap-y-4 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 shadow-xs lg:h-full lg:flex-1 lg:px-4">
                 <div className="flex items-center justify-between px-2 pt-4">
-                  <h5 className="font-semibold">Recent Files</h5>
+                  <h5 className="text-gray-800">Recent Files</h5>
                   <span
                     onClick={() => navigate('/docsnap/record/list')}
-                    className="flex cursor-pointer items-center gap-2 text-sm text-sky-500 hover:text-sky-600"
+                    className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
                   >
-                    View All <ChevronRight size={14} className="text-gray-500" />
+                    View All <ChevronRight size={14} className="text-sky-600" />
                   </span>
                 </div>
-                <UseTablebuilder
-                  customUI={customUI}
-                  externalFilters={{ deleted: false }}
-                  fluidHeight
-                  refresh={1}
-                  name="Recent Files Table"
-                  customFunctions={customFunctions}
-                />
+                <div className="h-full overflow-y-auto">
+                  <table className="min-w-full">
+                    <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
+                      <tr>
+                        <th className="px-3 py-4 text-left text-sm font-bold text-gray-800">Name</th>
+                        <th className="px-3 py-4 text-left text-sm font-bold text-gray-800">Document Type</th>
+                        <th className="px-3 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
+                        <th className="px-3 py-4 text-left text-sm font-bold text-gray-800">Status</th>
+                        <th className="px-3 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {dummyTableData.map((row, idx) => (
+                        <tr key={idx} className="cursor-pointer">
+                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
+                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
+                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap">
+                            <StatusBadge status={row.status} />
+                          </td>
+                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.completedOn}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               <StatusCardComponent />
             </div>
@@ -115,10 +294,10 @@ export const TemplateCardComponent = ({
   onUpload?: () => void;
 }) => {
   return (
-    <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm transition hover:shadow-md">
+    <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 shadow-sm transition hover:shadow-md">
       {/* Title and Menu Row */}
       <div className="mb-2 flex w-full items-start justify-between">
-        <div className="text-lg font-semibold text-gray-800">{name}</div>
+        <div className="text font-semibold text-gray-800">{name}</div>
         <button className="cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
           <MoreVertical size={18} />
         </button>
@@ -151,8 +330,8 @@ export const TemplateCardComponent = ({
 const DashboardHeaderComponent: FC = () => {
   const { state, setState } = useDashboardState();
   return (
-    <section className="flex w-full items-center justify-between gap-4 px-2">
-      <div className="flex-1 text-xl font-semibold lg:text-2xl">Welcome to Makez.ai, John</div>
+    <section className="flex w-full items-center justify-between gap-y-4 px-3">
+      <div className="flex-1 text-xl lg:text-2xl">Welcome to Makez.ai, John</div>
       {/* <div className="flex max-w-100 flex-1 items-center rounded-md border pl-3">
         <Search className="text-gray-500" size={20} />
         <input className="h-10 flex-1 px-4 text-sm outline-none" placeholder="Search" />
@@ -227,69 +406,30 @@ const CreateTemplateComponent = () => {
 };
 
 const StatusCardComponent = () => {
-  // Example data (replace with real data as needed)
-  const totalDocuments = 2341;
-  const statusItems = [
-    {
-      label: 'Processed Documents',
-      count: 350,
-      icon: (
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-          <ThumbsUp className="text-[#53c31c]" size={28} />
-        </span>
-      ),
-    },
-    {
-      label: 'In Progress',
-      count: 910,
-      icon: (
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-          <Clock className="text-yellow-500" size={28} />
-        </span>
-      ),
-    },
-    {
-      label: 'Ready to Review',
-      count: 660,
-      icon: (
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-          <CheckCircle className="text-blue-500" size={28} />
-        </span>
-      ),
-    },
-    {
-      label: 'Invalid Files',
-      count: 421,
-      icon: (
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-          <AlertCircle className="text-red-500" size={28} />
-        </span>
-      ),
-    },
-  ];
+  const totalDocuments = 2461;
 
   return (
-    // <div className="flex h-full flex-col gap-4 rounded-2xl border bg-red-200 p-5 shadow-sm">
-    <div className="flex h-fit w-full flex-col gap-4 rounded-2xl border bg-white p-5 shadow-sm lg:h-full lg:w-100">
-      <div className="mb-2 flex items-center justify-between">
-        <div className="text-lg font-semibold">Quick Summary</div>
-        <a href="#" className="flex items-center gap-1 text-sm text-sky-500 hover:underline">
+    // <div className="flex h-full flex-col gap-y-4 px-3 rounded-2xl border bg-red-200 p-5 shadow-sm">
+    <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 shadow-xs lg:order-1 lg:h-full lg:w-100">
+      <div className="flex items-center justify-between">
+        <div className="text-gray-800">Quick Summary</div>
+        {/* <a href="#" className="flex items-center gap-1 text-sm text-sky-500 hover:underline">
           See More <ChevronRight size={16} />
-        </a>
+        </a> */}
       </div>
-      <div className="mb-2 flex items-center justify-between rounded-xl border bg-white p-4">
-        <div className="text-4xl font-bold">{totalDocuments}</div>
-        <div className="text-base text-gray-500">Total Documents</div>
+      <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-3 py-4">
+        <div className="text-[24px]">{totalDocuments}</div>
+        <div className="text-sm font-light text-gray-500">Total Documents</div>
       </div>
       {/* <div className="border-b" /> */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-y-4">
         {statusItems.map((item, idx) => (
-          <div key={item.label} className="flex h-20 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition hover:shadow">
+          <div key={item.label} className="flex h-17 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition hover:shadow">
             <div className="flex items-center gap-3">
               {item.icon}
               <div className="flex flex-col">
-                <span className="text-sm text-gray-500">{item.label}</span>
-                <span className="text-2xl font-semibold text-gray-700">{item.count}</span>
+                <span className="text-[12px] font-light text-gray-500">{item.label}</span>
+                <span className="font-semibold text-gray-700">{item.count}</span>
               </div>
             </div>
             <ChevronRight className="text-sky-500" size={22} />
@@ -299,3 +439,51 @@ const StatusCardComponent = () => {
     </div>
   );
 };
+
+const statusItems = [
+  {
+    label: 'Processed Documents',
+    count: 350,
+    icon: (
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+        <ThumbsUp className="text-[#53c31c]" size={28} />
+      </span>
+    ),
+  },
+  {
+    label: 'In Progress',
+    count: 910,
+    icon: (
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
+        <Clock className="text-yellow-500" size={28} />
+      </span>
+    ),
+  },
+  {
+    label: 'Ready to Review',
+    count: 660,
+    icon: (
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+        <CheckCircle className="text-blue-500" size={28} />
+      </span>
+    ),
+  },
+  {
+    label: 'Invalid Files',
+    count: 421,
+    icon: (
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+        <AlertCircle className="text-red-500" size={28} />
+      </span>
+    ),
+  },
+  {
+    label: 'Failed Files',
+    count: 120,
+    icon: (
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+        <AlertCircle className="text-red-500" size={28} />
+      </span>
+    ),
+  },
+];
