@@ -2,21 +2,12 @@
 
 @import 'tailwindcss';
 @import './utils/animation.css';
+@import './utils/color-palette.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #1677ff;
-  --color-primary-dark: #2563eb;
-  --color-primary-light: #2563eb;
-  --color-secondary: white;
-
-  --color-success: #16a34a;
-  --color-warning: #ffcd29;
-  --color-error: #dc2626;
-  --color-info: #2563eb;
-
-  --font-roboto: 'DM Sans', sans-serif;
+  --font-dmsans: 'DM Sans', sans-serif;
 }
 
 /* For default border color (--color-gray-200) */
@@ -27,7 +18,7 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
-    font-family: var(--font-roboto);
+    font-family: var(--font-dmsans);
   }
 }
 

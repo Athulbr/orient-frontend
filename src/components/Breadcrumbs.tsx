@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { cn } from '../utils/twMerge';
 
 interface BreadcrumbsIF {
   page: string;
@@ -27,13 +28,13 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
 
   // Config&nbsp;&nbsp;/&nbsp;&nbsp;Users
   return (
-    <div className={`flex gap-2 pt-1 text-xs text-gray-500 ${className}`}>
+    <div className={cn('flex gap-2 pt-1 text-xs text-gray-500', className)}>
       {breadcrumbs[page].map((item: any, i: number) => {
         return (
           <div
             onClick={item.path ? () => navigate(item.path) : () => {}}
             key={i}
-            className={`${item.path ? 'cursor-pointer hover:text-blue-400' : 'cursor-default'}`}
+            className={cn(item.path ? 'cursor-pointer hover:text-blue-400' : 'cursor-default', className)}
           >
             {item.text}
           </div>

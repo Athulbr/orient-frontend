@@ -1,4 +1,5 @@
 import { Loader } from 'lucide-react';
+import { cn } from '../utils/twMerge';
 
 interface SpinnerIF {
   className?: string;
@@ -6,7 +7,7 @@ interface SpinnerIF {
 }
 
 const Spinner: React.FC<SpinnerIF> = ({ className, size }) => {
-  return <Loader role="img" size={size} className={`animate-spin ${className}`} />;
+  return <Loader role="img" size={size} className={cn('animate-spin', className)} />;
 };
 
 export default Spinner;

@@ -1,12 +1,14 @@
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { cn } from '../utils/twMerge';
 
 interface DropdownMenuPropsIF {
   children: ReactNode;
   options: string[];
   onChange: (option: string) => void;
+  className?: string;
 }
 
-export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onChange }) => {
+export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onChange, className }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -44,7 +46,7 @@ export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onC
   }, [isOpen, handleClickOutside]);
 
   return (
-    <div ref={dropdownRef} className="relative inline-block text-left">
+    <div ref={dropdownRef} className={cn('relative inline-block text-left', className)}>
       <div
         onClick={toggleDropdown}
         className="cursor-pointer"

@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { cn } from '../utils/twMerge';
 
 interface PageContainerIF {
   className?: string;
@@ -6,7 +7,7 @@ interface PageContainerIF {
 }
 
 const PageContainer: React.FC<PageContainerIF> = ({ className = '', children }) => {
-  return <div className={`flex flex-1 flex-col overflow-y-auto ${className}`}>{children}</div>;
+  return <div className={cn('flex flex-1 flex-col overflow-y-auto', className)}>{children}</div>;
 };
 
 export default PageContainer;

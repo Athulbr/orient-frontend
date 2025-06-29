@@ -47,7 +47,7 @@ export const LoginInputs: React.FC<LoginInputsIF> = () => {
       >
         Forgot Password?
       </p>
-      <Button onClick={loginWithEmailAndPassword} className="mt-2" disabled={state.loading}>
+      <Button onClick={loginWithEmailAndPassword} className="bg-foreground-900 mt-2" disabled={state.loading}>
         {state.loading && <Spinner size={16} />} {state.loading ? 'SIGNING IN...' : 'SIGN IN'}
       </Button>
     </div>

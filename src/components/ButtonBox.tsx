@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../utils/twMerge';
 
 export const ButtonBox: React.FC<ButtonBoxPropsIF> = ({ start = false, end = true, center = false, className = '', children }) => {
   const getAlignment = () => {
@@ -8,7 +9,7 @@ export const ButtonBox: React.FC<ButtonBoxPropsIF> = ({ start = false, end = tru
   };
 
   return (
-    <div role="group" className={`flex flex-wrap items-center gap-3 ${getAlignment()} ${className}`}>
+    <div role="group" className={cn(`flex flex-wrap items-center gap-3 ${getAlignment()} ${className}`)}>
       {children}
     </div>
   );

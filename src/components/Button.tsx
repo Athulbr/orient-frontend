@@ -1,4 +1,5 @@
 import { ReactNode, useState, useEffect, useRef, ButtonHTMLAttributes } from 'react';
+import { cn } from '../utils/twMerge';
 
 interface ButtonPropsIF extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
@@ -117,7 +118,7 @@ export const Button = ({
 
   const colorClasses = outlined
     ? 'bg-white border-1 border-gray-300 text-sm text-gray-800 hover:bg-gray-100'
-    : 'bg-primary text-white border border-colorPrimary text-sm hover:bg-colorPrimary hover:text-gray-200';
+    : 'bg-primary-500 text-white border text-sm hover:bg-colorPrimary hover:text-gray-200';
 
   const disabledClasses = disabled ? 'opacity-50 cursor-default' : 'cursor-pointer';
 
@@ -126,7 +127,14 @@ export const Button = ({
   return (
     <button
       ref={buttonRef}
-      className={`relative flex items-center justify-center gap-2 overflow-hidden rounded-md font-light transition-colors duration-200 ${sizeClasses} ${colorClasses} ${disabledClasses} ${activeClasses} ${className} `}
+      className={cn(
+        'relative flex items-center justify-center gap-2 overflow-hidden rounded-md font-light transition-colors duration-200',
+        sizeClasses,
+        colorClasses,
+        disabledClasses,
+        activeClasses,
+        className
+      )}
       disabled={disabled}
       onClick={handleClick}
       {...rest}

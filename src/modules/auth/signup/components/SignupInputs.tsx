@@ -82,7 +82,7 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
         <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Terms of Service</span> and
         <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Privacy Policy</span>
       </p>
-      <Button disabled={!state.termsOfService || state.loading} onClick={signupWithEmailAndPassword} className="mt-2">
+      <Button disabled={!state.termsOfService || state.loading} onClick={signupWithEmailAndPassword} className="bg-foreground-800 mt-2">
         {state.loading && <Spinner size={16} />} {state.loading ? 'SIGNING UP...' : 'SIGN UP'}
       </Button>
     </div>
