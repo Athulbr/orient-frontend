@@ -1,0 +1,47 @@
+import { useNavigate } from 'react-router-dom';
+import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
+import PageContainer from '../../../components/PageContainer';
+import PageNameComponent from '../../../components/PageName';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import { useState } from 'react';
+import { TablebuilderStateProvider } from './hooks/tablebuilderContext';
+import ListTablebuilderComponent from './ListTablebuilderComponent';
+import CreateTablebuilderPage from './CreateTablebuilderPage';
+
+export interface TablebuilderStateIF {
+  refresh: number;
+  id: string;
+  tablebuilder: any;
+  createDialog: boolean;
+}
+const tablebuilderInitialState: TablebuilderStateIF = {
+  refresh: 1,
+  id: '',
+  tablebuilder: null,
+  createDialog: false,
+};
+
+const ListTablebuilderPage: React.FC = () => {
+  const [state, setState] = useState<TablebuilderStateIF>(tablebuilderInitialState);
+
+  if (state.createDialog) {
+    return (
+      <TablebuilderStateProvider value={{ state, setState }}>
+        {state.id ? <CreateTablebuilderPage update={true} id={state.id} /> : <CreateTablebuilderPage update={false} />}
+      </TablebuilderStateProvider>
+    );
+  }
+
+  return (
+    <TablebuilderStateProvider value={{ state, setState }}>
+      <PageContainer className="gap-2">
+        <PageNameComponent name="Tablebuilder List">
+          <Breadcrumbs page="listTablebuilder" />
+        </PageNameComponent>
+        <ListTablebuilderComponent />
+      </PageContainer>
+    </TablebuilderStateProvider>
+  );
+};
+
+export default ListTablebuilderPage;

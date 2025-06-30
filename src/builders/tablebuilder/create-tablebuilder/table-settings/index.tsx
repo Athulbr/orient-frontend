@@ -10,15 +10,14 @@ import { PageSizeSection } from './PageSizeSettings';
 import { SearchSection } from './SearchSettings';
 import { TablebuilderBot } from './TablebuilderBot';
 import { useFetchCreateTB } from '../hooks/useFetchCreateTB';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../../components/BackButton';
 import Spinner from '../../../../components/Spinner';
 import { useTablebuilderSettings } from '../hooks/useTablebuilderSettingsContext';
 interface PropsIF {
-  test?: boolean;
+  id?: string;
 }
-export const TableSettings: React.FC<PropsIF> = () => {
-  const { id } = useParams();
+export const TableSettings: React.FC<PropsIF> = ({ id }) => {
   const navigate = useNavigate();
 
   const { getTablebuilderByIdApi, createTablebuilderApi, updateTablebuilderApi } = useFetchCreateTB();
@@ -27,7 +26,7 @@ export const TableSettings: React.FC<PropsIF> = () => {
 
   useEffect(() => {
     if (!id) return;
-    getTablebuilderByIdApi();
+    getTablebuilderByIdApi(id);
   }, [id]);
 
   return (
@@ -47,7 +46,7 @@ export const TableSettings: React.FC<PropsIF> = () => {
             </div>
           )}
           <div
-            onClick={id ? updateTablebuilderApi : createTablebuilderApi}
+            onClick={() => (id ? updateTablebuilderApi(id) : createTablebuilderApi())}
             className="flex h-10 cursor-pointer items-center rounded-md border px-4 text-sm text-gray-800 hover:border hover:bg-gray-100"
           >
             {builder.loading && <Spinner size={20} />}

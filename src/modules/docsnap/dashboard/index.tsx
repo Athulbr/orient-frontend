@@ -3,7 +3,7 @@ import { Button } from '../../../components/Button';
 import { ButtonBox } from '../../../components/ButtonBox';
 import { RecordStatusCustomUI } from '../record/list-record/components/RecordStatusCustomUI';
 import { DashboardStateProvider, useDashboardState } from './hooks/dashboardContext';
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,6 +43,12 @@ const DashboardPage: React.FC<DashboardPageIF> = () => {
   const customUI = {
     recordStatus: RecordStatusCustomUI,
   };
+
+  useEffect(() => {
+    const tablebuilder = window?.sessionStorage?.getItem('tablebuilder');
+    const data = tablebuilder ? JSON.parse(tablebuilder) : null;
+    console.log('data:===========', data);
+  }, []);
 
   // Dummy data for the table
   const dummyTableData = [

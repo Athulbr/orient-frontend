@@ -34,9 +34,12 @@ export const useLoginPageApi = () => {
         window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
         window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
         toast.success('Logged in successfully');
-        setTimeout(() => {
-          window?.location?.replace('/');
-        }, 500);
+        const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 });
+        const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
+        window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(tablebuilderesponse?.data));
+        window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
+
+        window?.location?.replace('/');
       } else {
         setState(prev => ({ ...prev, authError: 'Login failed. Please check your credentials.' }));
       }

@@ -18,7 +18,6 @@ import {
   CalendarCheck,
 } from 'lucide-react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import TablebuilderRoutes from './TablebuilderRoutes';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import UpdatedFieldsListPage from '../../../modules/docsnap/prompt-tuning';
 import { NotFoundPage } from '../../not-found-routes/GlobalNotFoundPage';
@@ -32,13 +31,14 @@ import ListProjectPage from '../../../modules/docsnap/project';
 import ListModulePage from '../../../modules/config/module';
 import ListFeaturePage from '../../../modules/config/feature';
 import ListSubscriptionModelPage from '../../../modules/config/subscriptionModel';
+import ListTablebuilderPage from '../../../modules/config/tablebuilder';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
   return (
     <PageContainer className="py-6">
       <PageNameComponent className="p-4 pt-0" customGoBackFunction={() => navigate('/')} name="Settings" showBackButton />
-      <div className="mt-2 flex w-full flex-1 overflow-hidden">
+      <div className="flex w-full flex-1 overflow-hidden">
         <NavigationComponent />
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto pr-6 pl-4">
           <Suspense fallback={<FullScreenLoader />}>
@@ -48,7 +48,7 @@ const ConfigRoutes = () => {
               <Route path="/feature/list" element={<ListFeaturePage />} />
               <Route path="/module/list" element={<ListModulePage />} />
               <Route path="/formbuilder/*" element={<FormbuilderRoutes />} />
-              <Route path="/tablebuilder/*" element={<TablebuilderRoutes />} />
+              <Route path="/tablebuilder/list" element={<ListTablebuilderPage />} />
               <Route path="/project/list" element={<ListProjectPage />} />
               <Route path="/prompt-tuning" element={<UpdatedFieldsListPage />} />
               <Route path="/user/*" element={<UserRoutes />} />
