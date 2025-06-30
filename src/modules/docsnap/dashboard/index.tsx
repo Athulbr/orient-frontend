@@ -213,7 +213,7 @@ const DashboardPage: React.FC<DashboardPageIF> = () => {
         <div className="h-full flex-1 overflow-y-auto p-1">
           <div className="mb-4 flex h-full min-h-400 flex-1 flex-col gap-6 overflow-y-auto lg:min-h-192 2xl:mb-0">
             <div className="flex w-full flex-1 flex-col gap-6 overflow-hidden lg:flex-row">
-              <div className="flex h-auto flex-1 flex-col gap-y-4 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 shadow-xs lg:h-full lg:flex-1 lg:px-4">
+              <div className="flex h-auto flex-1 flex-col gap-y-4 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
                 <div className="flex items-center justify-between px-2 pt-4">
                   <h5 className="text-gray-800">Recent Files</h5>
                   <span
@@ -294,7 +294,7 @@ export const TemplateCardComponent = ({
   onUpload?: () => void;
 }) => {
   return (
-    <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 shadow-sm transition hover:shadow-md">
+    <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition">
       {/* Title and Menu Row */}
       <div className="mb-2 flex w-full items-start justify-between">
         <div className="text font-semibold text-gray-800">{name}</div>
@@ -410,7 +410,7 @@ const StatusCardComponent = () => {
 
   return (
     // <div className="flex h-full flex-col gap-y-4 px-3 rounded-2xl border bg-red-200 p-5 shadow-sm">
-    <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 shadow-xs lg:order-1 lg:h-full lg:w-100">
+    <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 lg:order-1 lg:h-full lg:w-100">
       <div className="flex items-center justify-between">
         <div className="text-gray-800">Quick Summary</div>
         {/* <a href="#" className="flex items-center gap-1 text-sm text-sky-500 hover:underline">
@@ -424,7 +424,7 @@ const StatusCardComponent = () => {
       {/* <div className="border-b" /> */}
       <div className="flex flex-col gap-y-4">
         {statusItems.map((item, idx) => (
-          <div key={item.label} className="flex h-17 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition hover:shadow">
+          <div key={item.label} className="flex h-17 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition">
             <div className="flex items-center gap-3">
               {item.icon}
               <div className="flex flex-col">
@@ -451,20 +451,20 @@ const statusItems = [
     ),
   },
   {
-    label: 'In Progress',
-    count: 910,
-    icon: (
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-        <Clock className="text-yellow-500" size={28} />
-      </span>
-    ),
-  },
-  {
     label: 'Ready to Review',
     count: 660,
     icon: (
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
         <CheckCircle className="text-blue-500" size={28} />
+      </span>
+    ),
+  },
+  {
+    label: 'In Progress',
+    count: 910,
+    icon: (
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
+        <Clock className="text-yellow-500" size={28} />
       </span>
     ),
   },

@@ -11,16 +11,17 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
   let breadcrumbs: any = {};
   try {
     breadcrumbs = {
-      listUser: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Users' }],
-      listRole: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Roles' }],
-      listPermission: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Permission' }],
-      listComment: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Comments' }],
-      listProject: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Projects' }],
-      listFormbuilder: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Formbuilders' }],
-      listTablebuilder: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Tablebuilders' }],
-      listUpdatedField: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Updated Fields' }],
-      listModule: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Modules' }],
-      listFeature: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Features' }],
+      listUser: [{ text: 'Settings' }, { text: '/' }, { text: 'Users' }],
+      listRole: [{ text: 'Settings' }, { text: '/' }, { text: 'Roles' }],
+      listPermission: [{ text: 'Settings' }, { text: '/' }, { text: 'Permission' }],
+      listComment: [{ text: 'Settings' }, { text: '/' }, { text: 'Comments' }],
+      listProject: [{ text: 'Settings' }, { text: '/' }, { text: 'Projects' }],
+      listFormbuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Formbuilders' }],
+      listTablebuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Tablebuilders' }],
+      listUpdatedField: [{ text: 'Settings' }, { text: '/' }, { text: 'Updated Fields' }],
+      listModule: [{ text: 'Settings' }, { text: '/' }, { text: 'Modules' }],
+      listFeature: [{ text: 'Settings' }, { text: '/' }, { text: 'Features' }],
+      listSubscriptionModel: [{ text: 'Settings' }, { text: '/' }, { text: 'Subscription Models' }],
       viewRecord: [{ text: 'Docsnap', path: '/docsnap/record/list' }, { text: '/' }, { text: 'View Record' }],
       listTemplate: [{ text: 'Docsnap', path: '/docsnap/template/list' }, { text: '/' }, { text: 'Templates' }],
     };
@@ -28,7 +29,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
     console.error('error:===========', error);
   }
 
-  // Config&nbsp;&nbsp;/&nbsp;&nbsp;Users
+  // Settings&nbsp;&nbsp;/&nbsp;&nbsp;Users
   return (
     <div className={cn('flex gap-2 pt-1 text-xs text-gray-500', className)}>
       {breadcrumbs[page].map((item: any, i: number) => {

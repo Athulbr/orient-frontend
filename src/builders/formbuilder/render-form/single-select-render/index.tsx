@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FieldConfigIF, InputFieldRenderPropsIF } from '../../interface';
 import { InputWrapper } from '../input-wrapper';
 import CustomSelect from './SelectInput';
+import httpRequest from '../../../../utils/httpRequest';
 
 export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, setFields, inputWrapperClassName }) => {
   const field = fields[index];
   const { config, value, errorMessage } = field;
   const [focus, setFocus] = useState(false);
+  const [optionList, setOptionList] = useState([]);
+  const [apiError, setApiError] = useState('');
+
+  useEffect(() => {
+    if (config.optionSourceType === 'from API') {
+      const getOptions = async () => {
+        try {
+          const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}${config.apiEndpoint}`);
+          setOptionList(res.data);
+        } catch (error) {
+          setApiError('Failed to fetch options');
+        }
+      };
+      getOptions();
+    }
+  }, [config.optionSourceType]);
 
   const handleBlur = () => {
     setFields(prev => {
@@ -25,11 +42,13 @@ export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, f
     });
   };
 
-  const options = config.optionSourceType === 'static' ? config.options : dynamicOptions;
+  let options = config.optionSourceType === 'static' ? config.options : [];
+
+  console.log('apiError:===========', apiError);
 
   return (
-    <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={errorMessage || ''}>
-      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={value} options={options || []} />
+    <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={apiError || errorMessage || ''}>
+      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={value} options={optionList || options || []} />
     </InputWrapper>
   );
 };
@@ -39,26 +58,3 @@ export const validateSingleSelect = (value: string, config: FieldConfigIF): stri
 
   return '';
 };
-
-const dynamicOptions = [
-  { value: 'apple', label: 'Apple' },
-  { value: 'banana', label: 'Banana' },
-  { value: 'orange', label: 'Orange' },
-  { value: 'grape', label: 'Grape' },
-  { value: 'mango', label: 'Mango' },
-  { value: 'pineapple', label: 'Pineapple' },
-  { value: 'strawberry', label: 'Strawberry' },
-  { value: 'blueberry', label: 'Blueberry' },
-  { value: 'raspberry', label: 'Raspberry' },
-  { value: 'blackberry', label: 'Blackberry' },
-  { value: 'kiwi', label: 'Kiwi' },
-  { value: 'peach', label: 'Peach' },
-  { value: 'plum', label: 'Plum' },
-  { value: 'cherry', label: 'Cherry' },
-  { value: 'lemon', label: 'Lemon' },
-  { value: 'lime', label: 'Lime' },
-  { value: 'coconut', label: 'Coconut' },
-  { value: 'papaya', label: 'Papaya' },
-  { value: 'guava', label: 'Guava' },
-  { value: 'dragonfruit', label: 'Dragon Fruit' },
-];
