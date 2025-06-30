@@ -237,13 +237,13 @@ const DashboardPage: React.FC<DashboardPageIF> = () => {
                     <tbody className="divide-y divide-gray-100 bg-white">
                       {dummyTableData.map((row, idx) => (
                         <tr key={idx} className="cursor-pointer">
-                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
-                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
-                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
-                          <td className="px-3 py-4 text-sm whitespace-nowrap">
+                          <td className="max-w-75 min-w-50 px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
+                          <td className="max-w-75 min-w-50 px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
+                          <td className="max-w-75 min-w-50 px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                          <td className="max-w-75 min-w-50 px-3 py-4 text-sm whitespace-nowrap">
                             <StatusBadge status={row.status} />
                           </td>
-                          <td className="px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.completedOn}</td>
+                          <td className="max-w-75 min-w-50 px-3 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.completedOn}</td>
                         </tr>
                       ))}
                     </tbody>

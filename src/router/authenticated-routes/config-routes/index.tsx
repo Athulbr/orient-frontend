@@ -1,22 +1,20 @@
-import { Suspense, lazy, useState } from 'react';
-import { BookText, Cog, Component, ListOrdered, MessageSquareText, Sheet, SquareTerminal, UserRoundCheck, Users } from 'lucide-react';
-
+import { Suspense } from 'react';
+import { Book, BookText, Component, ListOrdered, MessageSquareText, Sheet, SquareTerminal, Star, UserRoundCheck, Users } from 'lucide-react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import TablebuilderRoutes from './TablebuilderRoutes';
-import RoleRoutes from './RoleRoutes';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import UpdatedFieldsListPage from '../../../modules/docsnap/prompt-tuning';
 import { NotFoundPage } from '../../not-found-routes/GlobalNotFoundPage';
 import FormbuilderRoutes from './FormbuilderRoutes';
-import PermissionRoutes from './PermissionRoutes';
 import UserRoutes from '../UserRoutes';
 import ListCommentPage from '../../../modules/config/comment/ListCommentPage';
-import AppConfigMenuPage from '../../../modules/config/AppConfigMenuPage';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import ListRolePage from '../../../modules/config/role';
 import ListPermissionPage from '../../../modules/config/permission/ListPermissionPage';
 import ListProjectPage from '../../../modules/docsnap/project';
+import ListModulePage from '../../../modules/config/module';
+import ListFeaturePage from '../../../modules/config/feature';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
@@ -40,6 +38,8 @@ const ConfigRoutes = () => {
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
               <Route path="/role/list" element={<ListRolePage />} />
+              <Route path="/feature/list" element={<ListFeaturePage />} />
+              <Route path="/module/list" element={<ListModulePage />} />
               <Route path="/permission/list" element={<ListPermissionPage />} />
               <Route path="/formbuilder/*" element={<FormbuilderRoutes />} />
               <Route path="/tablebuilder/*" element={<TablebuilderRoutes />} />
@@ -73,16 +73,22 @@ const utils = [
     key: 'project',
   },
   {
+    name: 'Modules',
+    icon: Book,
+    path: '/config/module/list',
+    key: 'module',
+  },
+  {
+    name: 'Features',
+    icon: Star,
+    path: '/config/feature/list',
+    key: 'feature',
+  },
+  {
     name: 'Roles',
     icon: UserRoundCheck,
     path: '/config/role/list',
     key: 'role',
-  },
-  {
-    name: 'Permissions',
-    icon: Component,
-    path: '/config/permission/list',
-    key: 'permission',
   },
   {
     name: 'Formbuilder',

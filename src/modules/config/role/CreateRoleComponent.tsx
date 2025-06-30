@@ -1,5 +1,6 @@
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import { useRoleState } from './hooks/roleContext';
+import { useRolesApi } from './hooks/useRoleApi';
 
 interface CreteRoleComponentIF {
   test?: string;
@@ -7,14 +8,16 @@ interface CreteRoleComponentIF {
 
 const CreteRoleComponent: React.FC<CreteRoleComponentIF> = () => {
   const { state, setState } = useRoleState();
+  const { createRoleApi, updateRoleApi } = useRolesApi();
   return (
     <UseFormbuilder
       isOpen={state.showCreateDialog}
-      title="Create Role"
+      title={state.role ? 'Update Role' : 'Create Role'}
       name="Create Role Form"
       className="w-130"
-      onSubmit={e => alert('CreateRole Submit')}
-      closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '' }))}
+      existingData={state.role || {}}
+      onSubmit={e => (state.role ? updateRoleApi(e) : createRoleApi(e))}
+      closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', role: null }))}
     />
   );
 };

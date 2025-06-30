@@ -22,7 +22,7 @@ const initialState: RoleStateIF = {
   loading: false,
   id: '',
   role: null,
-  refresh: 0,
+  refresh: 1,
 };
 
 const ListRolePage: React.FC = () => {

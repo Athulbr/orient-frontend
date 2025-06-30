@@ -16,8 +16,10 @@ export const useRolesApi = () => {
 
   // ============================= CREATE ==================================
 
-  const createRoleApi = async (role: any) => {
+  const createRoleApi = async (payload: any) => {
     try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/role/create`, payload);
+      setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
       toast.success('Role Created Successfully');
     } catch (error) {
       console.error('error:===========', error);
@@ -28,7 +30,7 @@ export const useRolesApi = () => {
   const updateRoleApi = async (role: any) => {
     try {
       setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/role/update/${state.id}`, {});
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/role/update/${state.id}`, role);
       setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
       toast.success('Role Updated Successfully');
     } catch (error) {
@@ -40,7 +42,7 @@ export const useRolesApi = () => {
   const getRoleByIdApi = async (id: string) => {
     try {
       setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/role/${id}`);
+      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/role/${id}`);
       toast.success('Role fetched successfully');
       setState(prev => ({ ...prev, loading: false, role: res.data, fields: res.data.fields }));
     } catch (error) {
@@ -51,7 +53,7 @@ export const useRolesApi = () => {
 
   const deleteRoleApi = async (id: string) => {
     try {
-      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/role/delete/${id}`);
+      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/role/delete/${id}`);
       setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
       toast.success('Role deleted successfully');
       return true;

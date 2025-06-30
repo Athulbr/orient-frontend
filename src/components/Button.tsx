@@ -128,7 +128,7 @@ export const Button = ({
     <button
       ref={buttonRef}
       className={cn(
-        'relative flex items-center justify-center gap-2 overflow-hidden rounded-md font-light transition-colors duration-200',
+        'relative flex items-center justify-center gap-2 overflow-hidden rounded-md border font-light transition-colors duration-200',
         sizeClasses,
         colorClasses,
         disabledClasses,

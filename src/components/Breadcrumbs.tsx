@@ -19,6 +19,8 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
       listFormbuilder: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Formbuilders' }],
       listTablebuilder: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Tablebuilders' }],
       listUpdatedField: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Updated Fields' }],
+      listModule: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Modules' }],
+      listFeature: [{ text: 'Config', path: '/config' }, { text: '/' }, { text: 'Features' }],
       viewRecord: [{ text: 'Docsnap', path: '/docsnap/record/list' }, { text: '/' }, { text: 'View Record' }],
       listTemplate: [{ text: 'Docsnap', path: '/docsnap/template/list' }, { text: '/' }, { text: 'Templates' }],
     };
