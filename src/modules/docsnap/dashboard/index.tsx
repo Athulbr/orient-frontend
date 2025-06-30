@@ -417,14 +417,14 @@ const StatusCardComponent = () => {
           See More <ChevronRight size={16} />
         </a> */}
       </div>
-      <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-3 py-4">
+      <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-6">
         <div className="text-[24px]">{totalDocuments}</div>
         <div className="text-sm font-light text-gray-500">Total Documents</div>
       </div>
       {/* <div className="border-b" /> */}
-      <div className="flex flex-col gap-y-4">
+      <div className="flex h-full flex-col gap-y-4">
         {statusItems.map((item, idx) => (
-          <div key={item.label} className="flex h-17 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition">
+          <div key={item.label} className="flex min-h-17 flex-1 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition">
             <div className="flex items-center gap-3">
               {item.icon}
               <div className="flex flex-col">
