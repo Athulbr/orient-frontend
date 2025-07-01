@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useListTemplatePageApi } from '../hooks/useTemplateApi';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
-  const { createTemplateApi } = useListTemplatePageApi();
   const [selectedTemplateName, setSelectedTemplateName] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +15,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
       setError('Template name already exists');
     } else {
       setState({ ...state, showCreateTemplateDialog: false });
-      createTemplateApi(selectedTemplate);
+      // createTemplateApi(selectedTemplate);
     }
   };
 

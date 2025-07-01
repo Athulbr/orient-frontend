@@ -16,8 +16,6 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
   const navigate = useNavigate();
   const { getTemplatesApi } = useDashboardApi();
 
-  console.log('state.templates:===========', state.templates);
-
   useEffect(() => {
     getTemplatesApi();
   }, []);

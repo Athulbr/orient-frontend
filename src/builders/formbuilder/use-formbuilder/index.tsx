@@ -21,8 +21,6 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
     columns: 1,
   });
 
-  console.log('fields:===========', fields);
-
   const getFormbuilder = async () => {
     // const formbuilder = window?.sessionStorage?.getItem('formbuilder');
     // if (formbuilder) {
@@ -31,7 +29,6 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
     //   if (formData.fields.length) {
     //     setFields(formData.fields);
     //     setSettings(formData.settings);
-    //     console.log('formData', formData.fields);
     //     return;
     //   }
     // }

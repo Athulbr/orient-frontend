@@ -49,7 +49,6 @@ const DashboardPage: React.FC<DashboardPageIF> = () => {
   useEffect(() => {
     const tablebuilder = window?.sessionStorage?.getItem('tablebuilder');
     const data = tablebuilder ? JSON.parse(tablebuilder) : null;
-    console.log('data:===========', data);
   }, []);
 
   // Dummy data for the table

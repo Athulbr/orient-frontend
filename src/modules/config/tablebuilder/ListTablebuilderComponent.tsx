@@ -20,7 +20,6 @@ const ListTablebuilderComponent: React.FC<ListTablebuilderComponentIF> = () => {
       setState(prev => ({ ...prev, id: row._id, createDialog: true }));
     },
     deleteClickHandler: (row: Record<string, string>) => {
-      console.log('row:===========', row);
     },
   };
   return <UseTablebuilder name="list tablebuilder" fluidHeight actionButtons={actionButtons} customFunctions={customFunctions} />;
