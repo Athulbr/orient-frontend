@@ -3,7 +3,6 @@ import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TemplateStateProvider } from './hooks/templateContext';
-import { TemplateCardComponent } from '../dashboard';
 
 export interface TemplateStateIF {
   showCreateDialog: boolean;
@@ -32,12 +31,13 @@ const ListTemplatePage: React.FC = () => {
           <Breadcrumbs page="listTemplate" className="pl-14" />
         </PageNameComponent>
         <div className="flex w-full flex-wrap gap-4">
-          <TemplateCardComponent name="Driving Licence" />
+          {/* <TemplateCardComponent name="Driving Licence" />
           <TemplateCardComponent name="Invoice" />
           <TemplateCardComponent name="Purchase Order" />
           <TemplateCardComponent name="Insurance" />
           <TemplateCardComponent name="Receipt" />
-          <TemplateCardComponent name="ID Card" />
+          <TemplateCardComponent name="ID Card" /> */}
+          TODO: Import TemplateCardComponent
         </div>
       </PageContainer>
     </TemplateStateProvider>

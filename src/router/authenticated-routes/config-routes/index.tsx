@@ -32,6 +32,7 @@ import ListModulePage from '../../../modules/config/module';
 import ListFeaturePage from '../../../modules/config/feature';
 import ListSubscriptionModelPage from '../../../modules/config/subscriptionModel';
 import ListTablebuilderPage from '../../../modules/config/tablebuilder';
+import ListTenantPage from '../../../modules/config/tenant';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ const ConfigRoutes = () => {
               <Route path="/role/list" element={<ListRolePage />} />
               <Route path="/subscription-model/list" element={<ListSubscriptionModelPage />} />
               <Route path="/feature/list" element={<ListFeaturePage />} />
+              <Route path="/tenant/list" element={<ListTenantPage />} />
               <Route path="/module/list" element={<ListModulePage />} />
               <Route path="/formbuilder/*" element={<FormbuilderRoutes />} />
               <Route path="/tablebuilder/list" element={<ListTablebuilderPage />} />
@@ -150,6 +152,12 @@ const settings = [
     name: 'Billing & Subscriptions',
     icon: Receipt,
     items: [
+      {
+        name: 'Tenants',
+        icon: CalendarCheck,
+        path: '/config/tenant/list',
+        key: 'tenant',
+      },
       {
         name: 'Subscription Models',
         icon: CalendarCheck,
