@@ -10,9 +10,9 @@ export const useDashboardApi = () => {
 
   const getRecordsApi = async () => {
     try {
-      setState(prev => ({ ...prev, loadingRecord: true }));
+      setState(prev => ({ ...prev, loadingRecords: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 15, filters: { deleted: false } });
-      setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
+      setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
       return true;
     } catch (error) {
       console.error('error:===========', error);
@@ -21,7 +21,7 @@ export const useDashboardApi = () => {
   };
   const getTemplatesApi = async () => {
     try {
-      setState(prev => ({ ...prev, loadingTemplate: true }));
+      setState(prev => ({ ...prev, loadingTemplates: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, { pageSize: 15, filters: { deleted: false } });
       setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
       return true;

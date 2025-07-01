@@ -3,22 +3,29 @@ import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
 import { StatusCardComponent } from './components/StatusCard';
-import { useNavigate } from 'react-router-dom';
 import { TemplateCardsComponent } from './components/TemplateCards';
+import { CreateTemplateComponent } from '../docsnap/template/components/CreateTemplateComponent';
 
 export interface DashboardStateIF {
+  totalRecords: number;
   records: any[];
   templates: any[];
+  loadingRecords: boolean;
+  loadingTemplates: boolean;
+  showCreateTemplateDialog: boolean;
 }
 
 const initialState = {
+  totalRecords: 0,
   records: [],
+  loadingRecords: false,
   templates: [],
+  loadingTemplates: false,
+  showCreateTemplateDialog: false,
 };
 
 const DashboardPage: FC = () => {
   const [state, setState] = useState<DashboardStateIF>(initialState);
-  const navigate = useNavigate();
 
   return (
     <DashboardStateProvider value={{ state, setState }}>
@@ -34,6 +41,7 @@ const DashboardPage: FC = () => {
           </div>
         </div>
       </div>
+      <CreateTemplateComponent state={state} setState={setState} />
     </DashboardStateProvider>
   );
 };

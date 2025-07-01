@@ -22,9 +22,9 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
       listModule: [{ text: 'Settings' }, { text: '/' }, { text: 'Modules' }],
       listFeature: [{ text: 'Settings' }, { text: '/' }, { text: 'Features' }],
       listTenant: [{ text: 'Settings' }, { text: '/' }, { text: 'Tenants' }],
+      listTemplate: [{ text: 'Settings' }, { text: '/' }, { text: 'Templates' }],
       listSubscriptionModel: [{ text: 'Settings' }, { text: '/' }, { text: 'Subscription Models' }],
       viewRecord: [{ text: 'Docsnap', path: '/docsnap/record/list' }, { text: '/' }, { text: 'View Record' }],
-      listTemplate: [{ text: 'Docsnap', path: '/docsnap/template/list' }, { text: '/' }, { text: 'Templates' }],
     };
   } catch (error) {
     console.error('error:===========', error);
@@ -37,7 +37,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
           <div
             onClick={item.path ? () => navigate(item.path) : () => {}}
             key={i}
-            className={cn(item.path ? 'cursor-pointer hover:text-blue-400' : 'cursor-default', className)}
+            className={cn(item.path ? 'cursor-pointer hover:text-blue-400' : 'cursor-default')}
           >
             {item.text}
           </div>

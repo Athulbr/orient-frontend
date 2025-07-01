@@ -1,7 +1,8 @@
-import { ChevronRight, ThumbsUp, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { ChevronRight, ThumbsUp, CheckCircle, Clock, AlertCircle, FileWarning } from 'lucide-react';
+import { useDashboardState } from '../hooks/dashboardContext';
 
 export const StatusCardComponent = () => {
-  const totalDocuments = 2461;
+  const { state } = useDashboardState();
 
   return (
     // <div className="flex h-full flex-col gap-y-4 px-3 rounded-2xl border bg-red-200 p-5 shadow-sm">
@@ -13,7 +14,11 @@ export const StatusCardComponent = () => {
         </a> */}
       </div>
       <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-6">
-        <div className="text-[24px]">{totalDocuments}</div>
+        {state.loadingRecords || !state.totalRecords ? (
+          <div className="h-[30px] w-18 animate-pulse rounded bg-gray-200" />
+        ) : (
+          <div className="text-[24px]">{state.totalRecords}</div>
+        )}
         <div className="text-sm font-light text-gray-500">Total Documents</div>
       </div>
       {/* <div className="border-b" /> */}
@@ -68,7 +73,7 @@ const statusItems = [
     count: 421,
     icon: (
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-        <AlertCircle className="text-red-500" size={28} />
+        <FileWarning className="text-red-500" size={28} />
       </span>
     ),
   },

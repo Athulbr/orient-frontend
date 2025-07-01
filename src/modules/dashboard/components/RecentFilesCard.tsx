@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useDashboardApi } from '../hooks/useDashboardApi';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { formatDate } from '../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
+import FullScreenLoader from '../../../components/FullScreenLoader';
 
 const RecentFilesCardComponent: React.FC = () => {
   const { state, setState } = useDashboardState();
@@ -15,6 +16,7 @@ const RecentFilesCardComponent: React.FC = () => {
   useEffect(() => {
     getRecordsApi();
   }, []);
+
   return (
     <div className="flex h-auto flex-1 flex-col gap-y-4 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
       <div className="flex items-center justify-between px-2 pt-4">
@@ -26,32 +28,36 @@ const RecentFilesCardComponent: React.FC = () => {
           View All <ChevronRight size={14} className="text-sky-600" />
         </span>
       </div>
-      <div className="h-full overflow-y-auto">
-        <table className="min-w-full">
-          <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
-            <tr>
-              <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
-              <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Type</th>
-              <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
-              <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
-              <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {state.records.map((row, idx) => (
-              <tr key={idx} className="cursor-pointer">
-                <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
-                <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
-                <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
-                <td className="max-w-75 min-w-50 px-5 py-4 text-sm whitespace-nowrap">
-                  <StatusBadge status={'Review'} />
-                </td>
-                <td className="max-w-75 min-w-50 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">{formatDate(row.updatedAt)}</td>
+      {state.loadingRecords ? (
+        <FullScreenLoader />
+      ) : (
+        <div className="h-full overflow-y-auto">
+          <table className="min-w-full">
+            <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
+              <tr>
+                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
+                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Type</th>
+                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
+                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
+                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-100 bg-white">
+              {state.records.map((row, idx) => (
+                <tr key={idx} className="cursor-pointer">
+                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
+                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
+                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm whitespace-nowrap">
+                    <StatusBadge status={'Review'} />
+                  </td>
+                  <td className="max-w-75 min-w-50 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">{formatDate(row.updatedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
