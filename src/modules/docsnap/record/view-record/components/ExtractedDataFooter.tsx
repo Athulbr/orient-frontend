@@ -6,15 +6,20 @@ import { Forward, RefreshCcw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
 import httpRequest from '../../../../../utils/httpRequest';
+import { useState } from 'react';
 interface ExtractedDataFooterIF {
   test?: string;
 }
 
 const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
   const navigate = useNavigate();
-  const { updateRecordApiById } = useViewRecordApi();
+  const { setState } = useViewRecordState();
+  const { updateRecordApiById, updateExtractedData, getRecordApiById } = useViewRecordApi();
   const handleSubmit = () => {};
+  const [reExtracting, setReExtracting] = useState<boolean>(false);
+
   const handleReExtract = async () => {
+    setReExtracting(true);
     const convertedJson = convertJSON(state.record?.fields || []);
 
     const requestBody: Record<string, any> = {
@@ -28,8 +33,20 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
       model_id: 'gpt-4o',
       use_latest: false,
     };
-    if (state.record?.enableOcr) requestBody.ocr_engine = 'doctr';
+    requestBody.ocr_engine = 'doctr';
     const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+    const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+    eventSource.addEventListener('task_update', async (event: any) => {
+      const data = JSON.parse(event.data);
+      if (data.current_step === 'Complete') {
+        eventSource.close();
+        await updateExtractedData(data?.result?.extracted_data || {});
+        setReExtracting(false);
+        await getRecordApiById(state.record?._id);
+      }
+    });
   };
 
   const { state } = useViewRecordState();
@@ -45,14 +62,14 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
       </Tooltip>
       <Tooltip text="Re Extract">
         <Button onClick={handleReExtract} small outlined>
-          <RefreshCcw size={18} className="text-gray-500" />
+          <RefreshCcw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
         </Button>
       </Tooltip>
       <Button onClick={() => navigate(-1)} outlined small>
         Cancel
       </Button>
       <Tooltip text="Save Updated Data">
-        <Button onClick={() => updateRecordApiById} outlined small>
+        <Button onClick={() => updateRecordApiById()} outlined small>
           Save
         </Button>
       </Tooltip>

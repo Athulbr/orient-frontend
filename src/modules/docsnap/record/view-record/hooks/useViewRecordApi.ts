@@ -128,8 +128,20 @@ export const useViewRecordApi = () => {
       setState(prev => ({ ...prev, loadingData: false }));
     }
   };
+  const updateExtractedData = async (extractedData: any) => {
+    try {
+      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, { extractedData });
+      toast.success('Record updated successfully');
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to update Record');
+    } finally {
+      setState(prev => ({ ...prev, loadingData: false }));
+    }
+  };
 
-  return { getRecordApiById, sendMessage, updateRecordApiById };
+  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData };
 };
 
 const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {

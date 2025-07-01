@@ -11,7 +11,7 @@ export const useDashboardApi = () => {
   const getRecordsApi = async () => {
     try {
       setState(prev => ({ ...prev, loadingRecords: true }));
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 15, filters: { deleted: false } });
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 10, filters: { deleted: false } });
       setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
       return true;
     } catch (error) {

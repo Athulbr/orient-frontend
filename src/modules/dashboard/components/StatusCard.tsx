@@ -27,9 +27,18 @@ export const StatusCardComponent = () => {
           <div key={item.label} className="flex min-h-17 flex-1 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition">
             <div className="flex items-center gap-3">
               {item.icon}
-              <div className="flex flex-col">
-                <span className="text-[12px] font-light text-gray-500">{item.label}</span>
-                <span className="font-semibold text-gray-700">{item.count}</span>
+              <div className="flex flex-col gap-1">
+                {state.loadingRecords || !state.totalRecords ? (
+                  <>
+                    <div className="h-[15px] w-30 animate-pulse rounded bg-gray-200" />
+                    <div className="h-[16px] w-10 animate-pulse rounded bg-gray-200" />
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[12px] font-light text-gray-500">{item.label}</span>
+                    <span className="font-semibold text-gray-700">{item.count}</span>
+                  </>
+                )}
               </div>
             </div>
             <ChevronRight className="text-sky-500" size={22} />
