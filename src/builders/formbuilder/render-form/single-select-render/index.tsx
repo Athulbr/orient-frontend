@@ -42,13 +42,11 @@ export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, f
     });
   };
 
-  let options = config.optionSourceType === 'static' ? config.options : [];
-
-  console.log('apiError:===========', apiError);
+  let options = config.optionSourceType === 'from code' ? [] : config.options;
 
   return (
     <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={apiError || errorMessage || ''}>
-      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={value} options={optionList || options || []} />
+      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={value} options={(optionList.length && optionList) || options || []} />
     </InputWrapper>
   );
 };

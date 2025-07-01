@@ -21,15 +21,15 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
       listUpdatedField: [{ text: 'Settings' }, { text: '/' }, { text: 'Updated Fields' }],
       listModule: [{ text: 'Settings' }, { text: '/' }, { text: 'Modules' }],
       listFeature: [{ text: 'Settings' }, { text: '/' }, { text: 'Features' }],
+      listTenant: [{ text: 'Settings' }, { text: '/' }, { text: 'Tenants' }],
+      listTemplate: [{ text: 'Settings' }, { text: '/' }, { text: 'Templates' }],
       listSubscriptionModel: [{ text: 'Settings' }, { text: '/' }, { text: 'Subscription Models' }],
       viewRecord: [{ text: 'Docsnap', path: '/docsnap/record/list' }, { text: '/' }, { text: 'View Record' }],
-      listTemplate: [{ text: 'Docsnap', path: '/docsnap/template/list' }, { text: '/' }, { text: 'Templates' }],
     };
   } catch (error) {
     console.error('error:===========', error);
   }
 
-  // Settings&nbsp;&nbsp;/&nbsp;&nbsp;Users
   return (
     <div className={cn('flex gap-2 pt-1 text-xs text-gray-500', className)}>
       {breadcrumbs[page].map((item: any, i: number) => {
@@ -37,7 +37,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
           <div
             onClick={item.path ? () => navigate(item.path) : () => {}}
             key={i}
-            className={cn(item.path ? 'cursor-pointer hover:text-blue-400' : 'cursor-default', className)}
+            className={cn(item.path ? 'cursor-pointer hover:text-blue-400' : 'cursor-default')}
           >
             {item.text}
           </div>

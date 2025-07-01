@@ -25,6 +25,16 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
 }) => {
   const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
   useEffect(() => {
+    const tablebuilder = window?.sessionStorage?.getItem('tablebuilder');
+    if (tablebuilder) {
+      const data = JSON.parse(tablebuilder);
+      const tableData = data.find((item: any) => item.name === name);
+      if (tableData) {
+        console.info('Retreived tablebuilder data from cache');
+        setSettings(tableData.settings);
+        return;
+      }
+    }
     const getTableSettings = async () => {
       try {
         const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/name`, { name });

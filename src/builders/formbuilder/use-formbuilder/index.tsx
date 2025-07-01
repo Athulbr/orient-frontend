@@ -18,10 +18,23 @@ interface UseFormbuilderIF {
 export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData = null, className, title, loading }) => {
   const [fields, setFields] = useState<FieldIF[]>([]);
   const [settings, setSettings] = useState({
-    columns: 2,
+    columns: 1,
   });
 
+  console.log('fields:===========', fields);
+
   const getFormbuilder = async () => {
+    // const formbuilder = window?.sessionStorage?.getItem('formbuilder');
+    // if (formbuilder) {
+    //   const data = JSON.parse(formbuilder);
+    //   const formData = data.find((item: any) => item.name === name);
+    //   if (formData.fields.length) {
+    //     setFields(formData.fields);
+    //     setSettings(formData.settings);
+    //     console.log('formData', formData.fields);
+    //     return;
+    //   }
+    // }
     const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/name`, { name });
     setFields(res.data.fields);
     setSettings(res.data.settings);

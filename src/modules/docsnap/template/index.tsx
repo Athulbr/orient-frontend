@@ -3,23 +3,21 @@ import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TemplateStateProvider } from './hooks/templateContext';
-import { TemplateCardComponent } from '../dashboard';
+import ListTemplateComponent from './ListTemplateComponent';
+import PageActionsComponent from './components/PageActionsComponent';
+import { CreateTemplateComponent } from './components/CreateTemplateComponent';
 
 export interface TemplateStateIF {
-  showCreateDialog: boolean;
-  loading: boolean;
   id: string;
-  refresh: number;
-  template: any | null;
-  loadingTemplate: boolean;
+  templates: any[];
+  loadingTemplates: boolean;
+  showCreateTemplateDialog: boolean;
 }
 const initialState = {
-  showCreateDialog: false,
-  loading: false,
   id: '',
-  refresh: 1,
-  template: null,
-  loadingTemplate: false,
+  templates: [],
+  loadingTemplates: false,
+  showCreateTemplateDialog: false,
 };
 
 const ListTemplatePage: React.FC = () => {
@@ -30,16 +28,11 @@ const ListTemplatePage: React.FC = () => {
       <PageContainer className="gap-4 p-6">
         <PageNameComponent name="List of Templates" showBackButton>
           <Breadcrumbs page="listTemplate" className="pl-14" />
+          <PageActionsComponent />
         </PageNameComponent>
-        <div className="flex w-full flex-wrap gap-4">
-          <TemplateCardComponent name="Driving Licence" />
-          <TemplateCardComponent name="Invoice" />
-          <TemplateCardComponent name="Purchase Order" />
-          <TemplateCardComponent name="Insurance" />
-          <TemplateCardComponent name="Receipt" />
-          <TemplateCardComponent name="ID Card" />
-        </div>
+        <ListTemplateComponent />
       </PageContainer>
+      <CreateTemplateComponent state={state} setState={setState} />
     </TemplateStateProvider>
   );
 };

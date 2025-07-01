@@ -8,9 +8,10 @@ import { TablebuilderSettingsIF } from '../render-tablebuilder/interface';
 
 interface PropsIF {
   update?: boolean;
+  id?: string;
 }
 
-export const CreateTablebuilder: React.FC<PropsIF> = ({ update }) => {
+export const CreateTablebuilder: React.FC<PropsIF> = ({ update, id }) => {
   const [settings, setSettings] = useState<TablebuilderSettingsIF>(update ? emptyInitialData : filledInitialData);
   const [builder, setBuilder] = useState<BuilderIF>({ name: '', loading: false });
 
@@ -23,7 +24,7 @@ export const CreateTablebuilder: React.FC<PropsIF> = ({ update }) => {
   return (
     <TablebuilderSettingsProvider value={{ settings, setSettings, builder, setBuilder }}>
       <div className="absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 divide-gray-200 overflow-y-auto bg-white p-4">
-        <TableSettings />
+        <TableSettings id={id} />
         <RenderTablebuilder settings={settings} fluidHeight customUI={customUI} />
       </div>
     </TablebuilderSettingsProvider>

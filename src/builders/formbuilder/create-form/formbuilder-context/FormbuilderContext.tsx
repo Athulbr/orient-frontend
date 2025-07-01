@@ -17,7 +17,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [showSettings, setShowSettings] = useState(-1);
   const [fields, setFields] = useState<FieldIF[]>([]);
   const [formSettings, setFormSettings] = useState<FormSettingsIF>({
-    columns: 2,
+    columns: 1,
   });
   const [formbuilderName, setFormbuilderName] = useState('');
   const toast = useToastStore();

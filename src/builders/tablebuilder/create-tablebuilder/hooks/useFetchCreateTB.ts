@@ -5,7 +5,6 @@ import { useToastStore } from '../../../../components/toast/ToastStore';
 
 export const useFetchCreateTB = () => {
   const { settings, setSettings, builder, setBuilder } = useTablebuilderSettings();
-  const { id } = useParams();
   const toast = useToastStore();
 
   // ============================= CREATE ==================================
@@ -30,7 +29,7 @@ export const useFetchCreateTB = () => {
 
   // ============================== UPDATE =================================
 
-  const updateTablebuilderApi = async () => {
+  const updateTablebuilderApi = async (id: string) => {
     setBuilder(prev => ({ ...prev, loading: true }));
     try {
       const res = await httpRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/${id}`, {
@@ -49,7 +48,7 @@ export const useFetchCreateTB = () => {
 
   // ============================= GET ==================================
 
-  const getTablebuilderByIdApi = async () => {
+  const getTablebuilderByIdApi = async (id: string) => {
     try {
       const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/${id}`);
       setSettings(res.data.settings);
