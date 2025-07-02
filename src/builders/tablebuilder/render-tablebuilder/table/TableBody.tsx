@@ -44,7 +44,7 @@ export const TableBody: FC = () => {
   const rowClickHandler = (e: React.MouseEvent<HTMLTableRowElement>, row: Record<string, string>) => {
     e.stopPropagation();
     if (customFunctions['rowClickHandler']) {
-      customFunctions['rowClickHandler'](row);
+      customFunctions['rowClickHandler'](row, data);
     }
   };
   const rowCheckHandler = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {

@@ -13,9 +13,9 @@ export const useDashboardApi = () => {
       setState(prev => ({ ...prev, loadingRecords: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 10, filters: { deleted: false } });
       setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
+      window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
       return true;
     } catch (error) {
-      console.error('error:===========', error);
       toast.error('Failed to fetch record');
     }
   };
@@ -26,7 +26,6 @@ export const useDashboardApi = () => {
       setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
       return true;
     } catch (error) {
-      console.error('error:===========', error);
       toast.error('Failed to fetch template');
     }
   };

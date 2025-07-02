@@ -68,15 +68,15 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
       isScrollingRef.current = true;
       scrollTimerRef.current = setTimeout(() => {
         isScrollingRef.current = false;
-        if (lastHoveredFieldRef.current !== null) {
-          setState(prev => ({
-            ...prev,
-            hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}`,
-            pageNumber: lastHoveredFieldRef.current?.[2] || 0,
-            bbox: lastHoveredFieldRef.current?.[1] || null,
-          }));
-          updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
-        }
+        // if (lastHoveredFieldRef.current !== null) {
+        //   setState(prev => ({
+        //     ...prev,
+        //     hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}`,
+        //     pageNumber: lastHoveredFieldRef.current?.[2] || 0,
+        //     bbox: lastHoveredFieldRef.current?.[1] || null,
+        //   }));
+        //   updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
+        // }
       }, 100);
     };
     const container = containerRef.current;

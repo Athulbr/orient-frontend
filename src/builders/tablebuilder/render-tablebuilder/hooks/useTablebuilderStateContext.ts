@@ -4,7 +4,7 @@ import { TablebuilderSettingsIF, TablebuilderStateIF } from '../interface';
 interface InjectedDataIF {
   customUI: Record<string, ({ data }: { data: any }) => JSX.Element>;
   externalFilters: Record<string, string>;
-  customFunctions: Record<string, (data: any) => void>;
+  customFunctions: Record<string, (row: any, data?: any) => void>;
   fluidHeight?: boolean;
   actionButtons?: { label: string; action: () => void }[];
 }

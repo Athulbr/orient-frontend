@@ -198,7 +198,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
         // @ts-ignore
         ref={el => (fieldRefs.current[fieldId] = el)}
         onChange={onChange}
-        onMouseEnter={onMouseEnter}
+        onClick={onMouseEnter}
         onFocus={onMouseEnter}
       />
     </td>

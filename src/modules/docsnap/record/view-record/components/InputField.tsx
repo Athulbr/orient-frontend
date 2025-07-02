@@ -23,7 +23,7 @@ export const InputField = ({ label, errorMessage, onMouseAction, ref, confidence
   const id = useId();
 
   return (
-    <div className={`group relative w-full min-w-0 rounded-sm p-2 pt-1`} onMouseEnter={() => onMouseAction?.()}>
+    <div className={`group relative w-full min-w-0 rounded-sm p-2 pt-1`} onClick={() => onMouseAction?.()}>
       {label && (
         <label htmlFor={id} className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
           {label}

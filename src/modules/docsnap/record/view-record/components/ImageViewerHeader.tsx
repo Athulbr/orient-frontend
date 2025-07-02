@@ -47,7 +47,7 @@ export const ImageViewerHeader = ({ name, zoomLevel, setZoomLevel, onDownload }:
   return (
     <div className="sticky top-0 z-30 flex h-15 w-full items-center justify-between border border-gray-200 bg-gray-100 px-4 shadow-sm">
       <div className="flex items-center gap-4">
-        <BackButton onClick={() => navigate(-1)} />
+        <BackButton onClick={() => navigate('/docsnap/record/list')} />
         <MakezLogoBlack />
       </div>
       <div className="flex items-center gap-4">

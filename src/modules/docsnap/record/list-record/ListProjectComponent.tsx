@@ -1,12 +1,6 @@
-import { FileSpreadsheet, Package } from 'lucide-react';
-import { DialogComponent } from '../../../../components/DialogComponent';
-import DragAndDropFileInput from './components/DragAndDropFileInput';
 import React, { useState, useEffect } from 'react';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../utils/httpRequest';
-import httpUploadRequest from '../../../../utils/httpUploadRequest';
-import { convertJSON } from './utils/convertJSON';
-import { FileUploadAnimationComponent } from './components/FileUploadAnimationComponent';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import Spinner from '../../../../components/Spinner';
 import PageNameComponent from '../../../../components/PageName';

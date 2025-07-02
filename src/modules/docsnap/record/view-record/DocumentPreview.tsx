@@ -298,14 +298,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               <div
                 tabIndex={0}
                 key={`${key}_${i}_${field?.confidence}`}
-                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
+                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded hover:border-2 hover:border-blue-600`}
                 style={{
                   left: `${bbox.x_min * 100 - 0.4}%`,
                   top: `${bbox.y_min * 100 - 0.4}%`,
                   width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
                   height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                 }}
-                onMouseEnter={() => {
+                onClick={() => {
                   if (isScrolling) return;
                   handleFieldHover(hoveredFieldId, bbox, index + 1);
                   setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
@@ -324,14 +324,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   return (
                     <div
                       key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
-                      className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
+                      className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded hover:border-2 hover:border-blue-600`}
                       style={{
                         left: `${bbox.x_min * 100 - 0.4}%`,
                         top: `${bbox.y_min * 100 - 0.4}%`,
                         width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
                         height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                       }}
-                      onMouseEnter={() => {
+                      onClick={() => {
                         if (isScrolling) return;
                         handleFieldHover(hoveredFieldId, bbox, index + 1);
                         setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
@@ -356,14 +356,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         return (
                           <div
                             key={`${mainKey}_${i}`}
-                            className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded`}
+                            className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded hover:border-2 hover:border-blue-600`}
                             style={{
                               left: `${bbox.x_min * 100 - 0.4}%`,
                               top: `${bbox.y_min * 100 - 0.4}%`,
                               width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
                               height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                             }}
-                            onMouseEnter={() => {
+                            onClick={() => {
                               if (isScrolling) return;
                               handleFieldHover(hoveredFieldId, bbox, index + 1);
                               setState(prev => ({

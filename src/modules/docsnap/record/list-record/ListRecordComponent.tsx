@@ -10,8 +10,9 @@ export const ListRecordComponent: React.FC = () => {
   const { deleteRecordApi } = useListRecordApi();
 
   const customFunctions = {
-    rowClickHandler: (row: any) => {
+    rowClickHandler: (row: any, data: any) => {
       navigate(`/docsnap/record/view/${row._id}`);
+      window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
     },
     deleteClickHandler: (row: any) => {
       deleteRecordApi(row._id);

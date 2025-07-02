@@ -51,12 +51,20 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
 
   const { state } = useViewRecordState();
 
+  const skipToNextDocumentHandler = () => {
+    const recordIdList = window?.sessionStorage?.getItem('recordIdList') as string;
+    const recordIdListArray = JSON.parse(recordIdList);
+    const index = recordIdListArray.indexOf(state.record?._id);
+    if (index === -1) return;
+    navigate(`/docsnap/record/view/${recordIdListArray[index + 1]}`);
+  };
+
   if (state.selectedTableName) return null;
 
   return (
     <div className="flex items-center justify-end gap-2 border-t bg-white p-2">
       <Tooltip text="Skip to Next Document">
-        <Button small outlined>
+        <Button small outlined onClick={skipToNextDocumentHandler}>
           <SkipForward size={18} className="text-gray-500" />
         </Button>
       </Tooltip>
