@@ -44,18 +44,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="pl-1 text-sm font-light text-gray-600" htmlFor="templateName">
-              Template Name
-            </label>
-            <input
-              name="templateName"
-              className={`min-h-10 flex-1 rounded-md border px-4 text-sm outline-none ${error ? 'border-red-500' : ''}`}
-              value={selectedTemplateName}
-              onChange={e => setSelectedTemplateName(e.target.value)}
-            />
-            {error && <p className="pl-1 text-sm text-red-500">{error}</p>}
-          </div>
+
           <div className="flex h-full w-full flex-wrap gap-4">
             {state.templates
               .filter((template: { name: string }) => template.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -72,6 +61,18 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
                   <CircleChevronRight size={14} className="text-gray-500" />
                 </div>
               ))}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="pl-1 text-sm font-light text-gray-600" htmlFor="templateName">
+              Template Name
+            </label>
+            <input
+              name="templateName"
+              className={`min-h-10 flex-1 rounded-md border px-4 text-sm outline-none ${error ? 'border-red-500' : ''}`}
+              value={selectedTemplateName}
+              onChange={e => setSelectedTemplateName(e.target.value)}
+            />
+            {error && <p className="pl-1 text-sm text-red-500">{error}</p>}
           </div>
         </div>
       </div>
