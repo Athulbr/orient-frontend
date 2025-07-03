@@ -25,7 +25,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
         templateId: selectedTemplate._id,
       };
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
-      setState({ ...state, showCreateTemplateDialog: false });
+      setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
     }
   };
 

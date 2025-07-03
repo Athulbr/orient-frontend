@@ -7,6 +7,7 @@ interface DocsnapStoreIF {
   extractionQueue: any[];
   clearExtractionQueue: () => void;
   addToExtraction: (files: FileList, template: any) => Promise<any>;
+  trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
 
 export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
@@ -17,6 +18,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
       try {
         set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }] });
         const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+        get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
         set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
         const convertedJson = convertJSON(template?.fields || []);
         const requestBody: Record<string, any> = {
@@ -48,5 +50,57 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item)) });
       }
     });
+  },
+  trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
+    try {
+      const response = await fetch(`https://dev.makez.ai/chatbot/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: [
+            {
+              name: s3fileName,
+              fileType: 'application/pdf',
+              url: s3Url,
+              active: true,
+            },
+          ],
+          botName: s3fileName || 'Testbot',
+        }),
+      });
+
+      // Check if the response is ok
+      if (!response.ok) {
+        return null;
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        return null;
+      }
+
+      const decoder = new TextDecoder();
+      let hasError = false;
+
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+
+          if (done) {
+            if (!hasError) {
+            }
+            break;
+          }
+        }
+      } catch (streamError) {
+        console.error('Stream reading error:', streamError);
+        hasError = true;
+      } finally {
+        reader.releaseLock();
+      }
+    } catch (error) {
+      console.error('Training error:', error);
+      return null;
+    }
   },
 }));

@@ -13,7 +13,7 @@ export const StatusCardComponent = () => {
           See More <ChevronRight size={16} />
         </a> */}
       </div>
-      <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-6">
+      <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-[17px]">
         {state.loadingRecords || !state.totalRecords ? (
           <>
             <div className="h-7 w-18 animate-pulse rounded bg-gray-200" />

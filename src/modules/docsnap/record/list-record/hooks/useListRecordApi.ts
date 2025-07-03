@@ -98,14 +98,12 @@ export const useListRecordApi = () => {
         }
       } catch (streamError) {
         console.error('Stream reading error:', streamError);
-        toast.error('Error reading training response');
         hasError = true;
       } finally {
         reader.releaseLock();
       }
     } catch (error) {
       console.error('Training error:', error);
-      toast.error('Failed to train Document Bot');
       return null;
     }
   };

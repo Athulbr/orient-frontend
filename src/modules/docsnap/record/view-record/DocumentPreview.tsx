@@ -312,7 +312,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                 }}
               >
-                <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 min-w-full -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                   {formatFieldLabel(key)}
                 </div>{' '}
               </div>
@@ -342,7 +342,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                       }}
                     >
-                      <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 min-w-full -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                         {formatFieldLabel(key)}
                       </div>
                     </div>
@@ -383,7 +383,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                               }));
                             }}
                           >
-                            <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 min-w-full -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                            <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                               {formatFieldLabel(key)}
                             </div>
                           </div>

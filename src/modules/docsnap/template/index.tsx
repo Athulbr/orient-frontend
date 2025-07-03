@@ -8,7 +8,6 @@ import PageActionsComponent from './components/PageActionsComponent';
 import { CreateTemplateComponent } from './CreateTemplateComponent';
 import { UploadDocumentComponent } from '../upload-document';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
-import { cn } from '../../../utils/twMerge';
 
 export interface TemplateStateIF {
   id: string;
@@ -17,6 +16,7 @@ export interface TemplateStateIF {
   showCreateTemplateDialog: boolean;
   showUploadDocumentDialog: boolean;
   selectedTemplate: any;
+  refresh: number;
 }
 const initialState = {
   id: '',
@@ -25,6 +25,7 @@ const initialState = {
   showCreateTemplateDialog: false,
   showUploadDocumentDialog: false,
   selectedTemplate: null,
+  refresh: 1,
 };
 
 const ListTemplatePage: React.FC = () => {

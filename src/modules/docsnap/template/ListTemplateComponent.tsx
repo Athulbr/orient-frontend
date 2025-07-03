@@ -10,6 +10,10 @@ const ListTemplateComponent: React.FC = () => {
   useEffect(() => {
     getTemplatesApi();
   }, []);
+  useEffect(() => {
+    if (state.refresh === 1) return;
+    getTemplatesApi();
+  }, [state.refresh]);
   if (state.loadingTemplates) {
     return (
       <div className="flex w-full flex-wrap gap-4">
