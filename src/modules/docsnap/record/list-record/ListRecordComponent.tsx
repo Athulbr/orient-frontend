@@ -3,11 +3,20 @@ import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tableb
 import { RecordStatusCustomUI } from './components/RecordStatusCustomUI';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import { useListRecordApi } from './hooks/useListRecordApi';
+import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
+import { useEffect } from 'react';
 
 export const ListRecordComponent: React.FC = () => {
-  const { state } = useListRecordPageState();
+  const { state, setState } = useListRecordPageState();
   const navigate = useNavigate();
   const { deleteRecordApi } = useListRecordApi();
+
+  const { refreshRecord } = useDocsnapStore();
+
+  useEffect(() => {
+    if (refreshRecord === 10) return;
+    setState(prev => ({ ...prev, refresh: refreshRecord }));
+  }, [refreshRecord]);
 
   const customFunctions = {
     rowClickHandler: (row: any, data: any) => {

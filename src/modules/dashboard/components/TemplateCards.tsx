@@ -20,6 +20,9 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
   useEffect(() => {
     getTemplatesApi();
   }, []);
+  useEffect(() => {
+    if (state.refresh > 1) getTemplatesApi();
+  }, [state.refresh]);
   return (
     <div className="relative">
       <div

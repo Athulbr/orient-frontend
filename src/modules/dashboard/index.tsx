@@ -16,6 +16,7 @@ export interface DashboardStateIF {
   showCreateTemplateDialog: boolean;
   showUploadDocumentDialog: boolean;
   selectedTemplate: any;
+  refresh: number;
 }
 
 const initialState = {
@@ -27,6 +28,7 @@ const initialState = {
   showCreateTemplateDialog: false,
   showUploadDocumentDialog: false,
   selectedTemplate: null,
+  refresh: 1,
 };
 
 const DashboardPage: FC = () => {

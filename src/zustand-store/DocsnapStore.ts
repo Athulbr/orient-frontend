@@ -4,6 +4,7 @@ import httpRequest from '../utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 
 interface DocsnapStoreIF {
+  refreshRecord: number;
   extractionQueue: any[];
   clearExtractionQueue: () => void;
   addToExtraction: (files: FileList, template: any) => Promise<any>;
@@ -11,6 +12,7 @@ interface DocsnapStoreIF {
 }
 
 export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
+  refreshRecord: 1,
   extractionQueue: [],
   clearExtractionQueue: () => set({ extractionQueue: [] }),
   addToExtraction: async (files: FileList, template: any) => {
@@ -36,6 +38,18 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
         set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
 
+        const createReqObject = {
+          metadata: res,
+          extractedData: null,
+          pdfFileName: s3Response?.data?.fileName,
+          name: s3Response?.data?.fileName,
+          document: template._id,
+          documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf',
+        };
+
+        const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+        set({ refreshRecord: get().refreshRecord + 1 });
+
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
         const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
@@ -44,6 +58,15 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
           set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item)) });
           if (data.current_step === 'Complete') {
             eventSource.close();
+            const requestBody = {
+              extractedData: data?.result?.extracted_data || {},
+            };
+            const res = await httpRequest(
+              'PATCH',
+              `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+              requestBody
+            );
+            set({ refreshRecord: get().refreshRecord + 1 });
           }
         });
       } catch (error) {
