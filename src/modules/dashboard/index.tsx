@@ -5,6 +5,7 @@ import RecentFilesCardComponent from './components/RecentFilesCard';
 import { StatusCardComponent } from './components/StatusCard';
 import { TemplateCardsComponent } from './components/TemplateCards';
 import { CreateTemplateComponent } from '../docsnap/template/CreateTemplateComponent';
+import { UploadDocumentComponent } from '../docsnap/upload-document';
 
 export interface DashboardStateIF {
   totalRecords: number;
@@ -13,6 +14,8 @@ export interface DashboardStateIF {
   loadingRecords: boolean;
   loadingTemplates: boolean;
   showCreateTemplateDialog: boolean;
+  showUploadDocumentDialog: boolean;
+  selectedTemplate: any;
 }
 
 const initialState = {
@@ -22,6 +25,8 @@ const initialState = {
   templates: [],
   loadingTemplates: false,
   showCreateTemplateDialog: false,
+  showUploadDocumentDialog: false,
+  selectedTemplate: null,
 };
 
 const DashboardPage: FC = () => {
@@ -42,6 +47,9 @@ const DashboardPage: FC = () => {
         </div>
       </div>
       <CreateTemplateComponent state={state} setState={setState} />
+      {state.showUploadDocumentDialog && (
+        <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+      )}
     </DashboardStateProvider>
   );
 };

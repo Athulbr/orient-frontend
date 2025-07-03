@@ -15,24 +15,24 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
   const getStatusUI = (status: string) => {
     switch (status) {
       case 'Uploading':
-        return <p className="rounded bg-yellow-100 px-2 py-1 text-sm text-yellow-500">Uploading</p>;
+        return <p className="rounded bg-amber-100 px-2 py-1 text-sm text-amber-500">Uploading</p>;
       case 'Running OCR':
         return (
           <div className="flex flex-col text-xs">
-            <span className="text-yellow-500">Running OCR</span>
-            <div className="flex items-center gap-2">
-              <ProgressBar value={40} color="warning" />
-              <span className="text-yellow-500">40%</span>
+            <span className="text-amber-500">Running OCR</span>
+            <div className="flex items-center gap-3">
+              <ProgressBar value={40} />
+              <span className="text-[10px] text-amber-500">40%</span>
             </div>
           </div>
         );
       case 'OCR Processing':
         return (
           <div className="flex flex-col text-xs">
-            <span className="text-yellow-500">OCR Processing</span>
-            <div className="flex items-center gap-2">
-              <ProgressBar value={70} color="warning" className="min-w-20" />
-              <span className="text-yellow-500">70%</span>
+            <span className="text-amber-500">OCR Processing</span>
+            <div className="flex items-center gap-3">
+              <ProgressBar value={70} className="min-w-20" />
+              <span className="text-[10px] text-amber-500">70%</span>
             </div>
           </div>
         );
@@ -41,7 +41,7 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
       case 'failed':
         return <CircleAlert className="text-red-500" />;
       default:
-        return <p className="rounded bg-yellow-100 px-2 py-1 text-sm text-yellow-500">Processing</p>;
+        return <p className="rounded bg-amber-100 px-2 py-1 text-sm text-amber-500">Processing</p>;
     }
   };
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { TemplateCardComponent } from '../../dashboard/components/TemplateCards';
 import { useTemplateState } from './hooks/templateContext';
 import { useListTemplatePageApi } from './hooks/useTemplateApi';
+import { TemplateCardComponent } from './components/TemplateCard';
 
 const ListTemplateComponent: React.FC = () => {
   const { state, setState } = useTemplateState();
