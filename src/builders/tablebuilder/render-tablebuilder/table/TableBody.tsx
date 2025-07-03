@@ -75,7 +75,7 @@ export const TableBody: FC = () => {
             return (
               <td key={column.key as string} className="px-1 py-4">
                 <div
-                  className={`max-w-[200px] min-w-[100px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${loading ? "relative after:absolute after:top-0 after:left-0 after:w-full after:rounded-xs after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
+                  className={`max-w-[200px] min-w-[100px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative after:absolute after:top-0 after:left-0 after:w-full after:rounded-xs after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
                 >
                   {column.dateUI ? (
                     <div>{formatDate(row[column.key])}</div>

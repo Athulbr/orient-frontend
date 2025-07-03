@@ -43,9 +43,9 @@ const Table: React.FC<TableIF> = ({ refresh = 1 }) => {
       <div className="h-full overflow-y-auto rounded-lg border">
         <table className="min-w-full table-fixed">
           <TableHeader />
-          {!state.loading && <TableBody />}
+          {state.loading && state.data.length === 0 ? null : <TableBody />}
         </table>
-        {state.loading && <FullScreenLoader />}
+        {state.loading && state.data.length === 0 && <FullScreenLoader />}
       </div>
       <TableFooter />
     </div>
