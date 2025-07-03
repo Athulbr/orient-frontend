@@ -29,7 +29,8 @@ const ListTemplateComponent: React.FC = () => {
         <TemplateCardComponent
           onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
           key={idx}
-          name={template.name}
+          template={template}
+          refreshPage={() => setState({ ...state, refresh: state.refresh + 1 })}
         />
       ))}
     </div>

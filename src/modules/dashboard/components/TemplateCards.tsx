@@ -40,8 +40,9 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
           {state.templates.map((template, idx) => (
             <TemplateCardComponent
               key={idx}
-              name={template.name}
+              template={template}
               onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
+              refreshPage={() => getTemplatesApi()}
             />
           ))}
         </div>
