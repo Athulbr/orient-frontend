@@ -50,14 +50,14 @@ export const TemplateCardComponent = ({
   uploaded = 0,
   pending = 0,
   approved = 0,
-  onUpload,
+  onClickUpload,
   isLoading = false,
 }: {
   name?: string;
   uploaded?: number;
   pending?: number;
   approved?: number;
-  onUpload?: () => void;
+  onClickUpload?: () => void;
   isLoading?: boolean;
 }) => {
   if (isLoading) {
@@ -104,22 +104,22 @@ export const TemplateCardComponent = ({
       </div>
       {/* Stats Row */}
       <div className="mb-2 flex w-full justify-between">
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-end">
           <span className="text-xs text-gray-500">Uploaded</span>
           <span className="mt-0.5 font-semibold text-gray-600">{uploaded}</span>
         </div>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-end">
           <span className="text-xs text-gray-500">Pending</span>
           <span className="mt-0.5 font-semibold text-gray-600">{pending}</span>
         </div>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-end">
           <span className="text-xs text-gray-500">Approved</span>
           <span className="mt-0.5 font-semibold text-gray-600">{approved}</span>
         </div>
       </div>
       {/* Upload Button Row */}
       <div className="mt-auto flex w-full justify-end">
-        <Button startIcon={<Upload size={16} />} onClick={onUpload} small>
+        <Button startIcon={<Upload size={16} />} onClick={onClickUpload} small>
           Upload
         </Button>
       </div>

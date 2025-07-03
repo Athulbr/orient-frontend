@@ -4,7 +4,7 @@ import { useTemplateState } from './hooks/templateContext';
 import { useListTemplatePageApi } from './hooks/useTemplateApi';
 
 const ListTemplateComponent: React.FC = () => {
-  const { state } = useTemplateState();
+  const { state, setState } = useTemplateState();
   const { getTemplatesApi } = useListTemplatePageApi();
 
   useEffect(() => {
@@ -22,7 +22,11 @@ const ListTemplateComponent: React.FC = () => {
   return (
     <div className="flex w-full flex-wrap gap-4">
       {state.templates.map((template: any, idx: number) => (
-        <TemplateCardComponent key={idx} name={template.name} />
+        <TemplateCardComponent
+          onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
+          key={idx}
+          name={template.name}
+        />
       ))}
     </div>
   );

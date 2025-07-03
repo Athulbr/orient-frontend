@@ -28,7 +28,17 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
       setDragging(false);
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        onFileDrop(files);
+        const validFiles = Array.from(files).filter(file => 
+          file.type.startsWith('application/pdf') || 
+          file.type.startsWith('image/')
+        );
+        if (validFiles.length > 0) {
+          const dataTransfer = new DataTransfer();
+          validFiles.forEach(file => dataTransfer.items.add(file));
+          onFileDrop(dataTransfer.files);
+        } else {
+          alert('Only PDF and image files are allowed');
+        }
       }
     },
     [onFileDrop]
@@ -39,14 +49,26 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      onFileDrop(e.target.files);
+    const files = e.target.files;
+    if (files) {
+      const validFiles = Array.from(files).filter(file => 
+        file.type.startsWith('application/pdf') || 
+        file.type.startsWith('image/')
+      );
+      if (validFiles.length > 0) {
+        const dataTransfer = new DataTransfer();
+        validFiles.forEach(file => dataTransfer.items.add(file));
+        onFileDrop(dataTransfer.files);
+      } else {
+        alert('Only PDF and image files are allowed');
+        e.target.value = ''; // Clear the input
+      }
     }
   };
 
   return (
     <div
-      className={`flex h-full w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 hover:border-sky-300 hover:bg-sky-50 ${dragging ? 'border-blue-500 bg-blue-50' : 'border-dashed border-gray-300'}`}
+      className={`flex h-full w-full flex-1 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 hover:border-sky-300 hover:bg-sky-50 ${dragging ? 'border-blue-500 bg-blue-50' : 'border-dashed border-gray-300'}`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -54,8 +76,11 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
       onClick={handleClick}
     >
       <input accept="application/pdf,image/jpeg,image/png" id="fileInput" type="file" className="hidden" multiple onChange={handleChange} />
-      <FileUp strokeWidth={1.5} size={50} className="text-gray-400" />
-      <p className="text-gray-500">Drag & drop files here or click to select</p>
+      <FileUp strokeWidth={1.5} size={70} className="text-sky-600" />
+      <p className="mt-2 font-semibold text-gray-800">Drag & drop </p>
+      <div className="">
+        or <span className="text-sky-500 underline">Browse </span>
+      </div>
     </div>
   );
 };

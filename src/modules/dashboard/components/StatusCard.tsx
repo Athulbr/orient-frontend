@@ -15,11 +15,16 @@ export const StatusCardComponent = () => {
       </div>
       <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-6">
         {state.loadingRecords || !state.totalRecords ? (
-          <div className="h-[30px] w-18 animate-pulse rounded bg-gray-200" />
+          <>
+            <div className="h-7 w-18 animate-pulse rounded bg-gray-200" />
+            <div className="h-5 w-30 animate-pulse rounded bg-gray-200" />
+          </>
         ) : (
-          <div className="text-[24px]">{state.totalRecords}</div>
+          <>
+            <div className="text-[24px]">{state.totalRecords}</div>
+            <div className="text-sm font-light text-gray-500">Total Documents</div>
+          </>
         )}
-        <div className="text-sm font-light text-gray-500">Total Documents</div>
       </div>
       {/* <div className="border-b" /> */}
       <div className="flex h-full flex-col gap-y-4">

@@ -5,19 +5,26 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TemplateStateProvider } from './hooks/templateContext';
 import ListTemplateComponent from './ListTemplateComponent';
 import PageActionsComponent from './components/PageActionsComponent';
-import { CreateTemplateComponent } from './components/CreateTemplateComponent';
+import { CreateTemplateComponent } from './CreateTemplateComponent';
+import { UploadDocumentComponent } from '../upload-document';
+import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
+import { cn } from '../../../utils/twMerge';
 
 export interface TemplateStateIF {
   id: string;
   templates: any[];
   loadingTemplates: boolean;
   showCreateTemplateDialog: boolean;
+  showUploadDocumentDialog: boolean;
+  selectedTemplate: any;
 }
 const initialState = {
   id: '',
   templates: [],
   loadingTemplates: false,
   showCreateTemplateDialog: false,
+  showUploadDocumentDialog: false,
+  selectedTemplate: null,
 };
 
 const ListTemplatePage: React.FC = () => {
@@ -28,11 +35,15 @@ const ListTemplatePage: React.FC = () => {
       <PageContainer className="gap-4 p-6">
         <PageNameComponent name="List of Templates" showBackButton>
           <Breadcrumbs page="listTemplate" className="pl-14" />
+
           <PageActionsComponent />
         </PageNameComponent>
         <ListTemplateComponent />
       </PageContainer>
       <CreateTemplateComponent state={state} setState={setState} />
+      {state.showUploadDocumentDialog && (
+        <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+      )}
     </TemplateStateProvider>
   );
 };

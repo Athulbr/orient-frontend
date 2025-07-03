@@ -5,6 +5,7 @@ import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
 import { LoadingDataSpinner } from './components/Loaders';
 import { AnnotationLine } from './components/AnnotationLine';
+import { formatFieldLabel } from './utils';
 
 interface DocumentPreviewComponentIF {
   containerRef: any;
@@ -101,7 +102,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     updateWirePosition();
   }, [zoomLevel, state.bbox?.y_min]);
 
-  const handleFieldHover = (hoveredFieldId: string, bbox: any, pageNumber: number) => {
+  const handleFieldClick = (hoveredFieldId: string, bbox: any, pageNumber: number) => {
     if (bbox && !isScrolling) {
       lastHoveredFieldRef.current = [hoveredFieldId, bbox, pageNumber];
       setState(prev => ({
@@ -298,7 +299,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
               <div
                 tabIndex={0}
                 key={`${key}_${i}_${field?.confidence}`}
-                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded hover:border-2 hover:border-blue-600`}
+                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute hover:border-2 hover:border-blue-600`}
                 style={{
                   left: `${bbox.x_min * 100 - 0.4}%`,
                   top: `${bbox.y_min * 100 - 0.4}%`,
@@ -307,10 +308,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                 }}
                 onClick={() => {
                   if (isScrolling) return;
-                  handleFieldHover(hoveredFieldId, bbox, index + 1);
+                  handleFieldClick(hoveredFieldId, bbox, index + 1);
                   setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                 }}
-              />
+              >
+                <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 min-w-full -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                  {formatFieldLabel(key)}
+                </div>{' '}
+              </div>
             );
           })}
           {/* ========================== Object Fields ========================== */}
@@ -324,7 +329,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                   return (
                     <div
                       key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
-                      className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded hover:border-2 hover:border-blue-600`}
+                      className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute hover:border-2 hover:border-blue-600`}
                       style={{
                         left: `${bbox.x_min * 100 - 0.4}%`,
                         top: `${bbox.y_min * 100 - 0.4}%`,
@@ -333,10 +338,14 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                       }}
                       onClick={() => {
                         if (isScrolling) return;
-                        handleFieldHover(hoveredFieldId, bbox, index + 1);
+                        handleFieldClick(hoveredFieldId, bbox, index + 1);
                         setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                       }}
-                    />
+                    >
+                      <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 min-w-full -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        {formatFieldLabel(key)}
+                      </div>
+                    </div>
                   );
                 })}
               </Fragment>
@@ -356,7 +365,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         return (
                           <div
                             key={`${mainKey}_${i}`}
-                            className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} absolute rounded hover:border-2 hover:border-blue-600`}
+                            className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute hover:border-2 hover:border-blue-600`}
                             style={{
                               left: `${bbox.x_min * 100 - 0.4}%`,
                               top: `${bbox.y_min * 100 - 0.4}%`,
@@ -365,7 +374,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                             }}
                             onClick={() => {
                               if (isScrolling) return;
-                              handleFieldHover(hoveredFieldId, bbox, index + 1);
+                              handleFieldClick(hoveredFieldId, bbox, index + 1);
                               setState(prev => ({
                                 ...prev,
                                 scrollToViewField: prev.scrollToViewField + 1,
@@ -373,7 +382,11 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                                 selectedTableName: state.tableNames[mainIndex],
                               }));
                             }}
-                          />
+                          >
+                            <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 min-w-full -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                              {formatFieldLabel(key)}
+                            </div>
+                          </div>
                         );
                       })}
                     </div>

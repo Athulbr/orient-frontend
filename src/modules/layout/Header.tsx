@@ -3,6 +3,7 @@ import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from '../../components/Dropdown';
+import ExtractionFloatingWindow from '../docsnap/upload-document/ExtractionFloatingWindow';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;
@@ -53,6 +54,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
           {/* <MoonStar size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
         </div>
       </div>
+      <ExtractionFloatingWindow />
     </div>
   );
 };

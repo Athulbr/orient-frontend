@@ -6,8 +6,7 @@ import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
 import FileUploadDialogComponent from './components/FileUploadDialogComponent';
 import { PromptFieldIF } from '../../document';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-
+import { useNavigate } from 'react-router-dom';
 interface Project {
   _id: string;
   name: string;
@@ -55,11 +54,12 @@ const initialState = {
 
 const ListRecordPage: React.FC = () => {
   const [state, setState] = useState<ListRecordPageStateIF>(initialState);
+  const navigate = useNavigate();
   return (
     <ListRecordPageStateProvider value={{ state, setState }}>
       <PageContainer className="gap-2 p-6">
-        <PageNameComponent name="List of Records" showBackButton />
-        <RenderProjectComponent />
+        <PageNameComponent name="List of Records" showBackButton customGoBackFunction={() => navigate('/')} />
+        {/* <RenderProjectComponent /> */}
         <ListRecordComponent />
         <FileUploadDialogComponent />
       </PageContainer>
