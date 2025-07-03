@@ -38,6 +38,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
         set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
 
+        set({ refreshRecord: get().refreshRecord + 1 });
+
         const createReqObject = {
           metadata: res,
           extractedData: null,
@@ -66,7 +68,9 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
               `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
               requestBody
             );
-            set({ refreshRecord: get().refreshRecord + 1 });
+            setTimeout(() => {
+              set({ refreshRecord: get().refreshRecord + 1 });
+            }, 2000);
           }
         });
       } catch (error) {

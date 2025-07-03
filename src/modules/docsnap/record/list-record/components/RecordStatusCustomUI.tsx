@@ -33,10 +33,21 @@ export const RecordStatusCustomUI = (row: any) => {
     );
   }
   if (!streamUrl) {
-    return <div className="font-semibold text-red-400">Failed</div>;
+    return <div className="font-semibold text-red-400">Failed1</div>;
   }
   if (data?.status === 'PENDING') {
-    return <div className="font-semibold text-red-400">Failed</div>;
+    return (
+      <div className="w-fit cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
+        Processing
+      </div>
+    );
+  }
+  if (data?.progress === 0) {
+    return (
+      <div className="w-fit cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
+        Processing
+      </div>
+    );
   }
 
   return (
