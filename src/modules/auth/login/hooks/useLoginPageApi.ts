@@ -68,6 +68,7 @@ export const useLoginPageApi = () => {
           firstName: user.given_name,
           lastName: user.family_name,
           email: user.email,
+          sso: true
         };
         const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, ssoRegistration);
         if (res.data?.accessToken) {
