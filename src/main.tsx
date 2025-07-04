@@ -5,16 +5,23 @@ import { App } from './App';
 import { BrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { MsalProvider } from '@azure/msal-react';
-import { msalInstance } from '../src/modules/config/sso/msal-service';
+import { msalInstance, initializeMsal } from '../src/modules/config/sso/msal-service'; // you refactored this earlier
 
-createRoot(document.getElementById('root')!).render(
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string}>
-    <MsalProvider instance={msalInstance}>
-      <BrowserRouter>
-        <StrictMode>
-          <App />
-        </StrictMode>
-      </BrowserRouter>
-    </MsalProvider>
-  </GoogleOAuthProvider>
-);
+const startApp = async () => {
+  await initializeMsal();
+
+  const root = createRoot(document.getElementById('root')!);
+  root.render(
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string}>
+      <MsalProvider instance={msalInstance}>
+        <BrowserRouter>
+          <StrictMode>
+            <App />
+          </StrictMode>
+        </BrowserRouter>
+      </MsalProvider>
+    </GoogleOAuthProvider>
+  );
+};
+
+startApp();

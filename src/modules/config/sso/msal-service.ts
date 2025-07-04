@@ -3,20 +3,25 @@ import { msalConfig } from "./msal-config";
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
-const accounts = msalInstance.getAllAccounts();
+// ✅ Wrap all MSAL setup in an async initializer
+export const initializeMsal = async () => {
+  await msalInstance.initialize();
 
-if (!msalInstance.getActiveAccount() && accounts?.length > 0) {
-  msalInstance.setActiveAccount(accounts[0]);
-}
+  const accounts = msalInstance.getAllAccounts();
 
-msalInstance.addEventCallback((event: EventMessage) => {
+  if (!msalInstance.getActiveAccount() && accounts?.length > 0) {
+    msalInstance.setActiveAccount(accounts[0]);
+  }
+
+  msalInstance.addEventCallback((event: EventMessage) => {
     if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
-        const authenticationResult = event.payload as AuthenticationResult;
-        const account = authenticationResult.account;
-        msalInstance.setActiveAccount(account);
+      const authenticationResult = event.payload as AuthenticationResult;
+      const account = authenticationResult.account;
+      msalInstance.setActiveAccount(account);
     }
-});
+  });
 
-msalInstance.enableAccountStorageEvents();
+  msalInstance.enableAccountStorageEvents();
+};
 
 export { msalInstance };
