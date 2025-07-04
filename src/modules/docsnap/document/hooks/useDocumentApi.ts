@@ -2,13 +2,12 @@ import { useParams } from 'react-router-dom';
 import { useDocumentState } from './documentContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useDocumentsApi = () => {
   const { state, setState } = useDocumentState();
   const { id } = useParams();
   const toast = useToastStore();
-
 
   useEffect(() => {
     if (!id) return;
@@ -19,12 +18,11 @@ export const useDocumentsApi = () => {
 
   const createDocumentApi = async (document: any) => {
     try {
-
       const payload = {
         ...document,
         fields: state.fields,
         projectId: state.projectId,
-      }
+      };
       setState(prev => ({ ...prev, loading: true }));
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/document/create`, payload);
       setState(prev => ({ ...prev, loading: false, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
@@ -41,7 +39,7 @@ export const useDocumentsApi = () => {
         ...document,
         fields: state.fields,
         projectId: state.projectId,
-      }
+      };
       setState(prev => ({ ...prev, loading: true }));
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/document/update/${state.id}`, payload);
       setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
@@ -56,7 +54,7 @@ export const useDocumentsApi = () => {
     try {
       setState(prev => ({ ...prev, loading: true }));
       const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/document/${id}`);
-      toast.success('Document fetched successfully',);
+      toast.success('Document fetched successfully');
       setState(prev => ({ ...prev, loading: false, document: res.data, fields: res.data.fields }));
     } catch (error) {
       console.error('error:===========', error);

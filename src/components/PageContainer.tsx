@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface PageContainerIF {
   className?: string;

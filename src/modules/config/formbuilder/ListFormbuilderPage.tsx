@@ -3,7 +3,7 @@ import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuild
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
-import httpRequest from '../../../utils/httpRequest';
+import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useState } from 'react';
 import Breadcrumbs from '../../../components/Breadcrumbs';

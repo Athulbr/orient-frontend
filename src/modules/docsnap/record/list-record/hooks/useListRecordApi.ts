@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
-import httpRequest from '../../../../../utils/httpRequest';
-import httpUploadRequest from '../../../../../utils/httpUploadRequest';
+import httpRequest from '../../../../../global-utils/httpRequest';
+import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import { useListRecordPageState } from './listRecordPageContext';
 
 export const useListRecordApi = () => {

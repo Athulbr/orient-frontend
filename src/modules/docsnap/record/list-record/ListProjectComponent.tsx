@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import Spinner from '../../../../components/Spinner';
 import PageNameComponent from '../../../../components/PageName';

@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import Tooltip from './Tooltip';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface BackButtonIF {
   onClick: () => void;

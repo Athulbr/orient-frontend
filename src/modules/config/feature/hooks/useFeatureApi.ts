@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useFeatureState } from './featureContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useFeaturesApi = () => {
   const { state, setState } = useFeatureState();

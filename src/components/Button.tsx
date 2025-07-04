@@ -1,5 +1,5 @@
 import { ReactNode, useState, useEffect, useRef, ButtonHTMLAttributes } from 'react';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface ButtonPropsIF extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;

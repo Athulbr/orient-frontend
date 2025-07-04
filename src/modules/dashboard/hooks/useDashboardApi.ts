@@ -1,5 +1,5 @@
 import { useToastStore } from '../../../components/toast/ToastStore';
-import httpRequest from '../../../utils/httpRequest';
+import httpRequest from '../../../global-utils/httpRequest';
 import { useDashboardState } from './dashboardContext';
 
 export const useDashboardApi = () => {

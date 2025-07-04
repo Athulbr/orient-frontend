@@ -5,7 +5,7 @@ import { useViewRecordState } from '../hooks/viewRecordContext';
 import { Forward, RefreshCcw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
-import httpRequest from '../../../../../utils/httpRequest';
+import httpRequest from '../../../../../global-utils/httpRequest';
 import { useState } from 'react';
 interface ExtractedDataFooterIF {
   test?: string;

@@ -1,5 +1,5 @@
 import { Loader } from 'lucide-react';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface FullScreenLoaderIF {
   className?: string;

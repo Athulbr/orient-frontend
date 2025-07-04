@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 export const ButtonBox: React.FC<ButtonBoxPropsIF> = ({ start = false, end = true, center = false, className = '', children }) => {
   const getAlignment = () => {

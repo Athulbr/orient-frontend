@@ -5,9 +5,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TemplateStateProvider } from './hooks/templateContext';
 import ListTemplateComponent from './ListTemplateComponent';
 import PageActionsComponent from './components/PageActionsComponent';
-import { CreateTemplateComponent } from './CreateTemplateComponent';
 import { UploadDocumentComponent } from '../upload-document';
-import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
+import { CreateTemplateComponent } from './components/CreateTemplateDialog';
 
 export interface TemplateStateIF {
   id: string;

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useLoginPageState } from './LoginPageStateProvider';
 import { validateEmail, validatePassword } from '../utils';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useMsal } from '@azure/msal-react';
 import { useEffect } from 'react';
@@ -68,7 +68,7 @@ export const useLoginPageApi = () => {
           firstName: user.given_name,
           lastName: user.family_name,
           email: user.email,
-          sso: true
+          sso: true,
         };
         const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, ssoRegistration);
         if (res.data?.accessToken) {
@@ -98,12 +98,10 @@ export const useLoginPageApi = () => {
   // ============================= login With MSAL ==================================
   const loginWithMSAL = async () => {
     console.log('Login with Microsoft initiated');
-    instance
-      .loginRedirect(loginRequest)
-      .catch((e) => {
-        console.log('Sign In issue---->', e);
-      });
-  }
+    instance.loginRedirect(loginRequest).catch(e => {
+      console.log('Sign In issue---->', e);
+    });
+  };
 
   // ============================= Return ==================================
   return { loginWithEmailAndPassword, loginWithGoogle, loginWithMSAL };

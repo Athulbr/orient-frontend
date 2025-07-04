@@ -1,7 +1,7 @@
 import { MoreVertical, Upload } from 'lucide-react';
 import { Dropdown } from '../../../../components/Dropdown';
 import { Button } from '../../../../components/Button';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 interface PropsIF {
   template?: any;
