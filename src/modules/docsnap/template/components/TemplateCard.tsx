@@ -1,8 +1,9 @@
-import { MoreVertical, Upload } from 'lucide-react';
+import { Edit, MoreVertical, Upload } from 'lucide-react';
 import { Dropdown } from '../../../../components/Dropdown';
 import { Button } from '../../../../components/Button';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import { useNavigate } from 'react-router-dom';
 interface PropsIF {
   template?: any;
   onClickUpload?: () => void;
@@ -12,6 +13,7 @@ interface PropsIF {
 
 export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage }) => {
   const toast = useToastStore();
+  const navigate = useNavigate();
   const handleDropdownOptionChange = async (option: string) => {
     if (option === 'Delete') {
       const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/template/delete/${template._id}`);
@@ -81,8 +83,11 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         </div>
       </div>
       {/* Upload Button Row */}
-      <div className="mt-auto flex w-full justify-end">
-        <Button startIcon={<Upload size={16} />} onClick={onClickUpload} small>
+      <div className="flex w-full justify-between gap-2">
+        <Button outlined startIcon={<Edit size={14} className="text-gray-500" />} onClick={() => navigate(`/docsnap/template/update/${template._id}`)} small>
+          Edit Fields
+        </Button>
+        <Button startIcon={<Upload size={14} />} onClick={onClickUpload} small>
           Upload
         </Button>
       </div>

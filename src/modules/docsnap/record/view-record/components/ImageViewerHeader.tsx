@@ -14,7 +14,7 @@ interface ImageViewerHeaderProps {
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 1.2;
-const ZOOM_STEP = 0.02;
+const ZOOM_STEP = 0.002;
 
 export const ImageViewerHeader = ({ name, zoomLevel, setZoomLevel, onDownload }: ImageViewerHeaderProps) => {
   const navigate = useNavigate();
