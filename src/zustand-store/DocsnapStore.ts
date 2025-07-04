@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import httpUploadRequest from '../utils/httpUploadRequest';
-import httpRequest from '../utils/httpRequest';
+import httpUploadRequest from '../global-utils/httpUploadRequest';
+import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 
 interface DocsnapStoreIF {

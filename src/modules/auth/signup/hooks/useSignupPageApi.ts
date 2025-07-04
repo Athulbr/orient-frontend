@@ -1,7 +1,7 @@
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useSignupPageState } from './SignupPageStateProvider';
 import { validateConfirmPassword, validateEmail, validateFirstName, validateLastName, validatePassword } from '../utils';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';

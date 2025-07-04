@@ -4,8 +4,8 @@ import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
 import { StatusCardComponent } from './components/StatusCard';
 import { TemplateCardsComponent } from './components/TemplateCards';
-import { CreateTemplateComponent } from '../docsnap/template/CreateTemplateComponent';
 import { UploadDocumentComponent } from '../docsnap/upload-document';
+import { CreateTemplateComponent } from '../docsnap/template/components/CreateTemplateDialog';
 
 export interface DashboardStateIF {
   totalRecords: number;

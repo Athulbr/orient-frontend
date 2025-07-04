@@ -5,7 +5,7 @@ import { ButtonBox } from './ButtonBox';
 import { Button } from './Button';
 import FullScreenLoader from './FullScreenLoader';
 import Spinner from './Spinner';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 export interface DialogPropsIF {
   name?: string;

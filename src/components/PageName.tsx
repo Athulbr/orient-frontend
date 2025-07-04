@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import BackButton from './BackButton';
 import { ReactElement } from 'react';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface PageNameComponentIF {
   showBackButton?: boolean;

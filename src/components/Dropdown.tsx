@@ -1,5 +1,5 @@
 import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface DropdownMenuPropsIF {
   children: ReactNode;

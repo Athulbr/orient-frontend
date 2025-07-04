@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useViewRecordState } from './viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
-import httpRequest from '../../../../../utils/httpRequest';
+import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages } from '../utils';
 import { useViewRecordGlobalStore } from './useViewRecordGlobalStore';

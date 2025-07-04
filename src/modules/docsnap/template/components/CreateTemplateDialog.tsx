@@ -1,8 +1,7 @@
 import { Search, CircleChevronRight } from 'lucide-react';
-import { DialogComponent } from '../../../components/DialogComponent';
 import { useState } from 'react';
-import { useListTemplatePageApi } from './hooks/useTemplateApi';
-import httpRequest from '../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
+import { DialogComponent } from '../../../../components/DialogComponent';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
   const [selectedTemplateName, setSelectedTemplateName] = useState('');

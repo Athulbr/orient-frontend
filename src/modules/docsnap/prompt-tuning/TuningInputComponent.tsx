@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { llmModels, llmProviders } from './StaticData';
 import { UpdatedFieldsIF } from './interface';
 import { Loader } from 'lucide-react';
-import httpRequest from '../../../utils/httpRequest';
+import httpRequest from '../../../global-utils/httpRequest';
 import { ButtonBox } from '../../../components/ButtonBox';
 import { SingleSelect } from '../../../components/SingleSelect';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { Button } from '../../../components/Button';
 import { TextAreaComponent } from '../../../components/Textarea';
-import httpUploadRequest from '../../../utils/httpUploadRequest';
+import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import Spinner from '../../../components/Spinner';
 
 // Constants

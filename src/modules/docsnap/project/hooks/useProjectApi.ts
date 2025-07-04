@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useProjectState } from './projectContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useProjectApi = () => {
   const { state, setState } = useProjectState();

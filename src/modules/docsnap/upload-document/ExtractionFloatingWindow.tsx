@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleAlert, CircleX } from 'lucide-react';
-import { cn } from '../../../utils/twMerge';
+import { cn } from '../../../global-utils/twMerge';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import ProgressBar from '../../../components/ProgressBar';
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FieldConfigIF, InputFieldRenderPropsIF } from '../../interface';
 import { InputWrapper } from '../input-wrapper';
 import CustomSelect from './SelectInput';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, setFields, inputWrapperClassName }) => {
   const field = fields[index];

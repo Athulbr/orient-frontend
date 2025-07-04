@@ -1,6 +1,6 @@
 import { useTemplateState } from './templateContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useListTemplatePageApi = () => {
   const { state, setState } = useTemplateState();

@@ -1,8 +1,8 @@
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
-import httpRequest from '../../../../../utils/httpRequest';
-import httpUploadRequest from '../../../../../utils/httpUploadRequest';
+import httpRequest from '../../../../../global-utils/httpRequest';
+import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import { useViewRecordGlobalStore } from '../../view-record/hooks/useViewRecordGlobalStore';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import { useListRecordApi } from '../hooks/useListRecordApi';

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { cn } from '../utils/twMerge';
+import { cn } from '../global-utils/twMerge';
 
 interface BreadcrumbsIF {
   page: string;

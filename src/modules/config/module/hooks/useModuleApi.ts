@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useModuleState } from './moduleContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useModulesApi = () => {
   const { state, setState } = useModuleState();

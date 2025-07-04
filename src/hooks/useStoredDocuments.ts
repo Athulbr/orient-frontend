@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import httpRequest from '../utils/httpRequest';
+import httpRequest from '../global-utils/httpRequest';
 
 interface S3DocumentsStoreIF {
   documents: Record<string, any>;

@@ -3,7 +3,7 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { useNavigate } from 'react-router-dom';
 import { callMsGraph } from '../../../config/sso/graph';
 import { loginRequest } from '../../../config/sso/msal-config';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useLoginPageState } from '../hooks/LoginPageStateProvider';
 const ProfileContent: React.FC<any> = ({ data }) => {

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTablebuilderState } from './useTablebuilderStateContext';
 import { getFiltersObject } from '../utils/getFiltersObject';
 import { QueryParams } from '../interface';
-import httpRequest from '../../../../utils/httpRequest';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useFetchDataFromApi = () => {
   const { state, setState, settings, injectedData } = useTablebuilderState();
