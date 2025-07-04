@@ -17,9 +17,7 @@ export const OAuthButtons: FC = () => {
       <Button className="w-full" outlined onClick={() => loginWithGoogle()} disabled={state.oAuthLoading}>
         <GoogleIcon /> Google {state.oAuthLoading && <Spinner size={16} />}
       </Button>
-      <MicrosoftLogin>
-        <ProfileContent data="auth" />
-      </MicrosoftLogin>
+      <MicrosoftLogin>{/* <ProfileContent data="auth" /> */}</MicrosoftLogin>
       {/* <Button className="w-full" outlined onClick={() => loginWithMSAL()} disabled={state.oAuthLoading}>
         <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
       </Button> */}
