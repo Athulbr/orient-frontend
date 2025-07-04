@@ -27,7 +27,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images }) => {
       </div>
 
       {/* Scrollable Image Viewer */}
-      <div className={`flex h-[80vh] flex-col gap-2 overflow-auto rounded border bg-red-500 py-4 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}>
+      <div className={`flex h-[80vh] flex-col gap-2 overflow-auto rounded border bg-black py-4 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}>
         {images.map((imgSrc, index) => (
           <div
             className="w-fit bg-green-500"
