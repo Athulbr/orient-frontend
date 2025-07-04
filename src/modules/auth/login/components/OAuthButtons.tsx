@@ -9,6 +9,8 @@ import { Button } from '../../../../components/Button';
 export const OAuthButtons: FC = () => {
   const { loginWithGoogle, loginWithMSAL } = useLoginPageApi();
   const { state } = useLoginPageState();
+  // const isAuthenticated = useIsAuthenticated();
+
   return (
     <section className="mt-8 flex w-full gap-4">
       <Button className="w-full" outlined onClick={() => loginWithGoogle()} disabled={state.oAuthLoading}>

@@ -4,6 +4,7 @@ import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from '../../components/Dropdown';
 import ExtractionFloatingWindow from '../docsnap/upload-document/ExtractionFloatingWindow';
+import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 
 interface HeaderComponentIF {
   showSidebar?: boolean;
@@ -13,9 +14,18 @@ interface HeaderComponentIF {
 const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSidebar }) => {
   const toast = useToastStore();
   const navigate = useNavigate();
+  const { instance } = useMsal();
+  const isAuthenticated = useIsAuthenticated();
+
   const firstName = JSON.parse(window?.sessionStorage.getItem(`${'firstName'}`) as string) || 'User';
   const logOut = () => {
     toast.success('Logged out successfully');
+    if (isAuthenticated) {
+      instance.logoutRedirect({
+        postLogoutRedirectUri: import.meta.env.VITE_BASR_URL || 'https://demo.makez.ai',
+      });
+      return;
+    }
     setTimeout(() => {
       window.sessionStorage.clear();
       window?.location?.replace('/');
