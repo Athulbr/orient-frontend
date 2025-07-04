@@ -1,4 +1,4 @@
-import { loginRequest } from './../../../config/sso/msal-config';
+import { loginRequest } from '../sso/msal-config';
 import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useLoginPageState } from './LoginPageStateProvider';

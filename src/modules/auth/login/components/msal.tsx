@@ -1,7 +1,7 @@
 import { useMsal, AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated } from '@azure/msal-react';
 import style from './microsoft-sso.module.css';
 import { useNavigate } from 'react-router-dom';
-import { loginRequest } from '../../../config/sso/msal-config';
+import { loginRequest } from '../sso/msal-config';
 import MSIcon from '../../../../assets/svg-icons/MSIcon';
 
 const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
