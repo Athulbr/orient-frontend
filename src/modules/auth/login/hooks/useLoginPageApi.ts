@@ -1,12 +1,15 @@
+import { loginRequest } from './../../../config/sso/msal-config';
 import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useLoginPageState } from './LoginPageStateProvider';
 import { validateEmail, validatePassword } from '../utils';
 import httpRequest from '../../../../utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useMsal } from '@azure/msal-react';
 import { useEffect } from 'react';
 
 export const useLoginPageApi = () => {
+  const { instance, accounts } = useMsal();
   const { state, setState } = useLoginPageState();
   const toast = useToastStore();
 
@@ -91,6 +94,16 @@ export const useLoginPageApi = () => {
     },
   });
 
+  // ============================= login With MSAL ==================================
+  const loginWithMSAL = async () => {
+    console.log('Login with Microsoft initiated');
+    instance
+      .loginRedirect(loginRequest)
+      .catch((e) => {
+        console.log('Sign In issue---->', e);
+      });
+  }
+
   // ============================= Return ==================================
-  return { loginWithEmailAndPassword, loginWithGoogle };
+  return { loginWithEmailAndPassword, loginWithGoogle, loginWithMSAL };
 };
