@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import PageContainer from '../../../components/PageContainer';
-import PageNameComponent from '../../../components/PageName';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import PageContainer from '../../../../components/PageContainer';
+import PageNameComponent from '../../../../components/PageName';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { TemplateStateProvider } from './hooks/templateContext';
-import ListTemplateComponent from './ListTemplateComponent';
-import PageActionsComponent from './components/PageActionsComponent';
-import { UploadDocumentComponent } from '../upload-document';
+import { UploadDocumentComponent } from '../../upload-document';
 import { CreateTemplateComponent } from './components/CreateTemplateDialog';
+import PageActionsComponent from './components/PageActionsComponent';
+import ListTemplateComponent from './ListTemplateComponent';
 
 export interface TemplateStateIF {
   id: string;

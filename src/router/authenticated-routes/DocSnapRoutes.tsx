@@ -5,8 +5,8 @@ import ListProjectPage from '../../modules/docsnap/project';
 import ListDocumentPage from '../../modules/docsnap/document';
 import ViewRecordPage from '../../modules/docsnap/record/view-record';
 import ListRecordPage from '../../modules/docsnap/record/list-record';
-import ListTemplatePage from '../../modules/docsnap/template';
-import UpdateTemplatePage from '../../modules/docsnap/template/EditTemplate';
+import ListTemplatePage from '../../modules/docsnap/template/list-template';
+import UpdateTemplatePage from '../../modules/docsnap/template/update-template';
 
 const DocSnapRoutes = () => {
   return (

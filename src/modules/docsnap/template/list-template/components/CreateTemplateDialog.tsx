@@ -1,10 +1,12 @@
 import { Search, CircleChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import httpRequest from '../../../../global-utils/httpRequest';
-import { DialogComponent } from '../../../../components/DialogComponent';
+import httpRequest from '../../../../../global-utils/httpRequest';
+import { DialogComponent } from '../../../../../components/DialogComponent';
+import { useNavigate } from 'react-router-dom';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
   const [selectedTemplateName, setSelectedTemplateName] = useState('');
+  const navigate = useNavigate();
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
@@ -24,6 +26,10 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
         templateId: selectedTemplate._id,
       };
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
+      if (state.isDashboard) {
+        navigate('/docsnap/template/list');
+        return;
+      }
       setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
     }
   };

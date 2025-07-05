@@ -1,11 +1,9 @@
-import { ChevronRight, MoreVertical, Upload } from 'lucide-react';
-import { Button } from '../../../components/Button';
+import { ChevronRight } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { useDashboardApi } from '../hooks/useDashboardApi';
-import { Dropdown } from '../../../components/Dropdown';
-import { TemplateCardComponent } from '../../docsnap/template/components/TemplateCard';
+import { TemplateCardComponent } from '../../docsnap/template/list-template/components/TemplateCard';
 
 interface TemplateCardsComponentIF {
   test?: string;
@@ -20,9 +18,7 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
   useEffect(() => {
     getTemplatesApi();
   }, []);
-  useEffect(() => {
-    if (state.refresh > 1) getTemplatesApi();
-  }, [state.refresh]);
+  console.log('state.loadingTemplates:===========', state.loadingTemplates);
   return (
     <div className="relative">
       <div

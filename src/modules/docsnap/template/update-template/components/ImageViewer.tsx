@@ -1,0 +1,101 @@
+import { FC, useState, useRef, useEffect } from 'react';
+import { Download, Expand, Shrink, ZoomIn, ZoomOut } from 'lucide-react';
+
+interface ImageViewerProps {
+  images: string[];
+  name?: string;
+}
+
+export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Name' }) => {
+  const [zoom, setZoom] = useState(100);
+  const [shrinked, setShrinked] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const zoomIn = () => {
+    const newZoom = Math.min(zoom + 10, 200);
+    setZoom(newZoom);
+  };
+
+  const zoomOut = () => {
+    const newZoom = Math.max(zoom - 10, 50);
+    setZoom(newZoom);
+  };
+
+  const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newZoom = Number(e.target.value);
+    setZoom(newZoom);
+  };
+
+  useEffect(() => {
+    if (zoom > 100 && containerRef.current) {
+      const container = containerRef.current;
+      const scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+      container.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth',
+      });
+    }
+  }, [zoom]);
+
+  const download = () => {
+    const link = document.createElement('a');
+    link.href = images[0];
+    link.download = name;
+    link.click();
+  };
+
+  const shrinkExpandHandler = () => {
+    setZoom(shrinked ? 100 : 60);
+    setShrinked(!shrinked);
+  };
+
+  return (
+    <div className="flex h-full w-full flex-col">
+      <div className="flex h-16 items-center justify-between border border-r-0 bg-gray-50 px-4">
+        <span className="max-w-50 truncate text-lg">{name}</span>
+        <div className="flex items-center gap-2 rounded-md border bg-white p-1">
+          <LightIconButton Icon={ZoomOut} onClick={zoomOut} title="Zoom Out" />
+          <input type="range" min="50" max="200" step={0.002} value={zoom} onChange={handleZoomChange} className="w-36 cursor-pointer" />
+          <span className="w-8 text-sm font-light text-gray-500">{zoom.toFixed(0)}%</span>
+          <LightIconButton Icon={ZoomIn} onClick={zoomIn} title="Zoom In" />
+          {shrinked ? (
+            <LightIconButton Icon={Expand} onClick={shrinkExpandHandler} title="Expand" />
+          ) : (
+            <LightIconButton Icon={Shrink} onClick={shrinkExpandHandler} title="Shrink" />
+          )}
+        </div>
+        <LightIconButton Icon={Download} onClick={download} title="Download" />
+      </div>
+
+      <div
+        ref={containerRef}
+        className={`relative flex h-full flex-col gap-6 overflow-auto bg-white pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
+      >
+        {images.map((imgSrc, index) => (
+          <div
+            className="w-fit bg-green-500 shadow-xl shadow-gray-400"
+            style={{
+              width: `${zoom - 10}%`,
+              height: 'auto',
+            }}
+            key={index}
+          >
+            <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
+          </div>
+        ))}
+        <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+      </div>
+    </div>
+  );
+};
+
+export const LightIconButton = ({ onClick, Icon, title }: { onClick: (e: any) => void; Icon: any; title?: string }) => {
+  return (
+    <span className="group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200" onClick={onClick}>
+      <Icon strokeWidth={1} size={18} />
+      <div className="absolute bottom-9 left-1/2 z-100000000000 -translate-x-1/2 transform rounded-md bg-gray-400 px-2 py-0.5 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
+        {title}
+      </div>
+    </span>
+  );
+};

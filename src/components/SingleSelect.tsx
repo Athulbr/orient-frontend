@@ -43,11 +43,11 @@ export const SingleSelect: React.FC<SelectProps> = ({
   const selectedOption = options.find(option => option.value === value);
 
   return (
-    <div ref={selectRef} className={`relative w-full ${className}`}>
+    <div ref={selectRef} className={`relative w-fit ${className}`}>
       {label && <label className="pl-1 text-sm text-gray-500">{label}</label>}
       <button
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`mt-1 flex h-10 w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm transition-all duration-200 ${isOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'} ${value && value !== 'all' ? 'bg-blue-50' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'}`}
+        className={`flex h-10 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-sm transition-all duration-200 ${isOpen ? 'border-blue-400' : 'border-gray-200'} ${value && value !== 'all' ? 'bg-blue-50' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-gray-400 focus:border-blue-400'}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         disabled={disabled}

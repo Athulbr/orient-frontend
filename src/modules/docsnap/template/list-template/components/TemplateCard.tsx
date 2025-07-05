@@ -1,8 +1,8 @@
 import { Edit, MoreVertical, Upload } from 'lucide-react';
-import { Dropdown } from '../../../../components/Dropdown';
-import { Button } from '../../../../components/Button';
-import httpRequest from '../../../../global-utils/httpRequest';
-import { useToastStore } from '../../../../components/toast/ToastStore';
+import { Dropdown } from '../../../../../components/Dropdown';
+import { Button } from '../../../../../components/Button';
+import httpRequest from '../../../../../global-utils/httpRequest';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 interface PropsIF {
   template?: any;
@@ -23,8 +23,6 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       }
     }
   };
-  if (!template) return null;
-  const { name, uploaded, pending, approved } = template;
   if (isLoading) {
     return (
       <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition">
@@ -55,6 +53,8 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       </div>
     );
   }
+  if (!template) return null;
+  const { name, uploaded, pending, approved } = template;
 
   return (
     <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition">

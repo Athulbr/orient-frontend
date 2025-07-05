@@ -1,9 +1,9 @@
-import { useTemplateState } from './templateContext';
-import { useToastStore } from '../../../../components/toast/ToastStore';
-import httpRequest from '../../../../global-utils/httpRequest';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
+import httpRequest from '../../../../../global-utils/httpRequest';
+import { useUpdateTemplateState } from './updateTemplateContext';
 
 export const useListTemplatePageApi = () => {
-  const { state, setState } = useTemplateState();
+  const { state, setState } = useUpdateTemplateState();
   const toast = useToastStore();
 
   // ============================= CREATE TEMPLATE ==================================
@@ -45,7 +45,7 @@ export const useListTemplatePageApi = () => {
   };
   const updateTemplateApi = async (requestBody: any) => {
     try {
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/update/${state.id}`, requestBody);
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/update/`, requestBody);
       setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
       toast.success('Template updated successfully');
       return true;

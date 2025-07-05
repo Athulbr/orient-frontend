@@ -5,7 +5,7 @@ import RecentFilesCardComponent from './components/RecentFilesCard';
 import { StatusCardComponent } from './components/StatusCard';
 import { TemplateCardsComponent } from './components/TemplateCards';
 import { UploadDocumentComponent } from '../docsnap/upload-document';
-import { CreateTemplateComponent } from '../docsnap/template/components/CreateTemplateDialog';
+import { CreateTemplateComponent } from '../docsnap/template/list-template/components/CreateTemplateDialog';
 
 export interface DashboardStateIF {
   totalRecords: number;
@@ -17,10 +17,12 @@ export interface DashboardStateIF {
   showUploadDocumentDialog: boolean;
   selectedTemplate: any;
   refresh: number;
+  isDashboard: boolean;
 }
 
 const initialState = {
   totalRecords: 0,
+  isDashboard: true,
   records: [],
   loadingRecords: false,
   templates: [],

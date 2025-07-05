@@ -1,6 +1,6 @@
 import { Search, Plus } from 'lucide-react';
-import { Button } from '../../../../components/Button';
 import { useTemplateState } from '../hooks/templateContext';
+import { Button } from '../../../../../components/Button';
 
 const PageActionsComponent: React.FC = () => {
   const { state, setState } = useTemplateState();
