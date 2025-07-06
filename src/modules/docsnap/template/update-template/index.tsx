@@ -1,12 +1,14 @@
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import PageNameComponent from '../../../../components/PageName';
-import { FieldsContainer } from './components/FieldsContainer';
+import { FieldsContainer } from './FieldsContainer';
 import { ImageViewer } from './components/ImageViewer';
 import { ResizableContainer } from './components/ResizableContainer';
 import { sampleImages, templateFields } from './components/temp';
 import { UpdateTemplateStateProvider } from './hooks/updateTemplateContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
+import { useParams } from 'react-router-dom';
 
 export interface UpdateTemplateStateIF {
   sectionList: any[];
@@ -28,7 +30,7 @@ const UpdateTemplatePage: React.FC = () => {
           right={<FieldsContainer />}
           initialLeftWidthPercent={60}
           minLeftWidthPercent={40}
-          maxLeftWidthPercent={75}
+          maxLeftWidthPercent={65}
         />
       </PageContainer>
     </UpdateTemplateStateProvider>

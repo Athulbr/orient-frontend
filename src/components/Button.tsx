@@ -111,6 +111,7 @@ export const Button = ({
     }
 
     // Call the provided onClick handler
+    e.stopPropagation();
     if (onClick) onClick(e);
   };
 

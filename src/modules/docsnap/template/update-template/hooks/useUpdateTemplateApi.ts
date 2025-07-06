@@ -2,7 +2,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { useUpdateTemplateState } from './updateTemplateContext';
 
-export const useListTemplatePageApi = () => {
+export const useUpdateTemplatePageApi = () => {
   const { state, setState } = useUpdateTemplateState();
   const toast = useToastStore();
 
@@ -12,7 +12,7 @@ export const useListTemplatePageApi = () => {
     try {
       setState(prev => ({ ...prev, loadingTemplates: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`);
-      setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
+      setState(prev => ({ ...prev }));
       toast.success('Template fetched successfully');
       return true;
     } catch (error) {
@@ -24,7 +24,7 @@ export const useListTemplatePageApi = () => {
     try {
       setState(prev => ({ ...prev, loadingTemplate: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${id}`);
-      setState(prev => ({ ...prev, loadingTemplate: false, templates: res.data }));
+      setState(prev => ({ ...prev, sectionList: res.data?.fields }));
       toast.success('Template fetched successfully');
       return true;
     } catch (error) {

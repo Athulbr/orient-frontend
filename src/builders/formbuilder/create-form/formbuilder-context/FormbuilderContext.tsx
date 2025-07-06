@@ -26,6 +26,9 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
     try {
       setLoading(true);
       const formName = prompt('Enter form name');
+      if (!formName) {
+        return;
+      }
       await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder`, {
         name: formName || 'Form-1',
         fields,
@@ -44,8 +47,12 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
   const updateForm = async () => {
     try {
       setLoading(true);
+      const formName = prompt('Enter form name if you want to update form name');
+      if (!formName && !formbuilderName) {
+        return;
+      }
       await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`, {
-        name: formbuilderName || 'Form-1',
+        name: formName || formbuilderName,
         fields,
         settings: formSettings,
       });

@@ -90,10 +90,14 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
 };
 
 export const LightIconButton = ({ onClick, Icon, title }: { onClick: (e: any) => void; Icon: any; title?: string }) => {
+  const onClickHandler = (e: any) => {
+    e.stopPropagation();
+    onClick(e);
+  };
   return (
-    <span className="group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200" onClick={onClick}>
+    <span className="group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200" onClick={onClickHandler}>
       <Icon strokeWidth={1} size={18} />
-      <div className="absolute bottom-9 left-1/2 z-100000000000 -translate-x-1/2 transform rounded-md bg-gray-400 px-2 py-0.5 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute bottom-9 left-1/2 z-10 -translate-x-1/2 transform rounded-md bg-gray-400 px-2 py-0.5 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
         {title}
       </div>
     </span>

@@ -3,6 +3,7 @@ import { DialogComponent } from '../../../components/DialogComponent';
 import httpRequest from '../../../global-utils/httpRequest';
 import { RenderForm } from '../render-form/RenderForm';
 import { FieldIF } from '../interface';
+import FullScreenLoader from '../../../components/FullScreenLoader';
 
 interface UseFormbuilderIF {
   isOpen?: boolean;
@@ -43,6 +44,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
 
   useEffect(() => {
     if (!existingData) return;
+    console.log('existingData:===========', existingData);
     const fieldsCopy = [...fields];
     const updatedFields: FieldIF[] = fieldsCopy.map((field: FieldIF) => {
       if (field.type === 'checkbox') {
@@ -53,9 +55,9 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
       return field;
     });
     setFields(updatedFields);
-  }, [existingData]);
+  }, [existingData, fields[0]?.label]);
   return (
-    <DialogComponent loading={loading} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
+    <DialogComponent loading={loading || fields.length === 0} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
       <RenderForm fields={fields} submitClickHandler={onSubmit} cancelClickHandler={closeDialog} columns={settings.columns} />
     </DialogComponent>
   );
