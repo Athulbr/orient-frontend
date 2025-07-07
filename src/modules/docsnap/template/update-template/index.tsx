@@ -10,11 +10,13 @@ import { useState } from 'react';
 export interface UpdateTemplateStateIF {
   sectionList: any[];
   loadingS3File: boolean;
+  loadingTemplate: boolean;
   images: any[];
 }
 const initialState: UpdateTemplateStateIF = {
   sectionList: [],
   loadingS3File: false,
+  loadingTemplate: false,
   images: [],
 };
 

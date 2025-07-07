@@ -17,6 +17,7 @@ import { fileTypeFromBuffer } from 'file-type';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { convertPdfToImages } from '../../record/view-record/utils';
 import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
+import FullScreenLoader from '../../../../components/FullScreenLoader';
 
 export const FieldsContainer: React.FC = () => {
   const { state, setState } = useUpdateTemplateState();
@@ -114,19 +115,23 @@ export const FieldsContainer: React.FC = () => {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex h-[64px] w-full items-center border border-l-0 bg-gray-50 pl-5 text-lg text-gray-800">Template Fields</div>
-      <section className="flex h-full flex-col gap-4 overflow-y-auto border-r border-b p-2 pt-3 pb-50">
-        {state.sectionList.map((section, mainIndex) => (
-          <SectionComponent key={mainIndex} section={section} mainIndex={mainIndex} />
-        ))}
-        <div className="flex w-full items-center gap-4 px-2">
-          <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewSection} outlined>
-            Add Section
-          </Button>
-          <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewTable} outlined>
-            Add Table
-          </Button>
-        </div>
-      </section>
+      {state.loadingTemplate ? (
+        <FullScreenLoader text="Loading Template..." />
+      ) : (
+        <section className="flex h-full flex-col gap-4 overflow-y-auto border-r border-b p-2 pt-3 pb-50">
+          {state.sectionList.map((section, mainIndex) => (
+            <SectionComponent key={mainIndex} section={section} mainIndex={mainIndex} />
+          ))}
+          <div className="flex w-full items-center gap-4 px-2">
+            <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewSection} outlined>
+              Add Section
+            </Button>
+            <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewTable} outlined>
+              Add Table
+            </Button>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

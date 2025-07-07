@@ -24,7 +24,7 @@ export const useUpdateTemplatePageApi = () => {
     try {
       setState(prev => ({ ...prev, loadingTemplate: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${id}`);
-      setState(prev => ({ ...prev, sectionList: res.data?.fields }));
+      setState(prev => ({ ...prev, sectionList: res.data?.fields, loadingTemplate: false }));
       toast.success('Template fetched successfully');
       return res.data;
     } catch (error) {
