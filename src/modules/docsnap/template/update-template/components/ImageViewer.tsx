@@ -2,6 +2,7 @@ import { FC, useState, useRef, useEffect } from 'react';
 import { Download, Expand, Shrink, ZoomIn, ZoomOut } from 'lucide-react';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
 import { useUpdateTemplateState } from '../hooks/updateTemplateContext';
+import { cn } from '../../../../../global-utils/twMerge';
 interface ImageViewerProps {
   images: string[];
   name?: string;
@@ -57,7 +58,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
         <span className="max-w-50 truncate text-lg">{name}</span>
         <div className="flex items-center gap-2 rounded-md border bg-white p-1">
           <LightIconButton Icon={ZoomOut} onClick={zoomOut} title="Zoom Out" />
-          <input type="range" min="25" max="200" step={0.002} value={zoom} onChange={handleZoomChange} className="w-36 cursor-pointer" />
+          <input type="range" min="30" max="200" step={0.002} value={zoom} onChange={handleZoomChange} className="w-36 cursor-pointer" />
           <span className="w-8 text-sm font-light text-gray-500">{zoom.toFixed(0)}%</span>
           <LightIconButton Icon={ZoomIn} onClick={zoomIn} title="Zoom In" />
           {shrinked ? (
@@ -95,14 +96,26 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
   );
 };
 
-export const LightIconButton = ({ onClick, Icon, title }: { onClick: (e: any) => void; Icon: any; title?: string }) => {
+export const LightIconButton = ({
+  onClick,
+  Icon,
+  title,
+  iconClassName,
+  className,
+}: {
+  onClick: (e: any) => void;
+  Icon: any;
+  title?: string;
+  iconClassName?: string;
+  className?: string;
+}) => {
   const onClickHandler = (e: any) => {
     e.stopPropagation();
     onClick(e);
   };
   return (
-    <span className="group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200" onClick={onClickHandler}>
-      <Icon strokeWidth={1} size={18} />
+    <span className={cn('group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200', className)} onClick={onClickHandler}>
+      <Icon strokeWidth={1} size={18} className={iconClassName} />
       <div className="absolute bottom-9 left-1/2 z-10 -translate-x-1/2 transform rounded-md bg-gray-400 px-2 py-0.5 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
         {title}
       </div>

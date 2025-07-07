@@ -31,7 +31,7 @@ const RecentFilesCardComponent: React.FC = () => {
       {state.loadingRecords ? (
         <SkeletonLoader />
       ) : (
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-hidden">
           <table className="min-w-full">
             <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
               <tr>

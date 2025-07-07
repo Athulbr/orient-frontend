@@ -65,7 +65,7 @@ export const ResizableContainer: React.FC<ResizableContainerProps> = ({
         }}
         draggable={false}
       >
-        <div className={`absolute top-1/2 left-1/2 h-8 w-3 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-gray-500 transition-colors hover:bg-blue-500`}>
+        <div className={`absolute top-1/2 left-1/2 h-8 w-3 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-gray-400 transition-colors hover:bg-blue-500`}>
           <div className="flex h-full w-full items-center justify-center">
             <div className="h-1 w-0.5 rounded-full bg-gray-300"></div>
             <div className="ml-0.5 h-1 w-0.5 rounded-full bg-gray-300"></div>

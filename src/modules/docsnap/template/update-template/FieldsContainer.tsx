@@ -196,7 +196,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
           <LightIconButton Icon={ChevronUp} onClick={moveUpSection} title="Move Up" />
           <LightIconButton Icon={ChevronDown} onClick={moveDownSection} title="Move Down" />
 
-          <LightIconButton Icon={Trash2} onClick={() => {}} title="Delete" />
+          <LightIconButton Icon={Trash2} onClick={() => {}} title="Delete" className="hover:text-red-500" />
         </div>
       </div>
       {opened && (
@@ -302,7 +302,7 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
         <LightIconButton Icon={Eye} onClick={() => updateHidden(true)} title="Visible" />
       )}
       <LightIconButton Icon={Settings} onClick={() => setShowConfigForm(true)} title="Config" />
-      <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" />
+      <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
       {showConfigForm && (
         <UseFormbuilder
           className="w-130"
