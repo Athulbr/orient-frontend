@@ -14,7 +14,6 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
     arrays[item] = state.arrayFields[index];
   });
   const extractedData = {
-    ...state.topLevelFields,
     ...state.objectFields,
     ...arrays,
   };
