@@ -9,7 +9,7 @@ import { formatFieldLabel } from './utils';
 
 interface DocumentPreviewComponentIF {
   containerRef: any;
-  lastHoveredFieldRef: any;
+  fieldRefs: any;
 }
 
 interface WirePoints {
@@ -19,12 +19,11 @@ interface WirePoints {
   y2: number;
 }
 
-export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({ containerRef, lastHoveredFieldRef }) => {
+export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({ containerRef, fieldRefs }) => {
   const { state, setState } = useViewRecordState();
   const bboxRef = useRef<Record<string, HTMLDivElement | null>>({});
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateWirePosition = () => {
@@ -77,16 +76,13 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
     if (!container) return;
 
     const handleScroll = () => {
-      setIsScrolling(true);
       requestAnimationFrame(updateWirePosition);
 
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 150);
+      scrollTimeoutRef.current = setTimeout(() => {}, 150);
     };
 
     container.addEventListener('scroll', handleScroll);
@@ -103,35 +99,35 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   }, [zoomLevel, state.bbox?.y_min]);
 
   const handleFieldClick = (hoveredFieldId: string, bbox: any, pageNumber: number) => {
-    if (bbox && !isScrolling) {
-      lastHoveredFieldRef.current = [hoveredFieldId, bbox, pageNumber];
+    if (bbox) {
+      const fieldEl = fieldRefs.current[hoveredFieldId];
+      const containerBox = containerRef.current?.getBoundingClientRect();
+
+      let wireCoords = { x1: 0, y1: 0, x2: 0, y2: 0 };
+
+      if (fieldEl && containerBox) {
+        const fieldBox = fieldEl.getBoundingClientRect();
+        wireCoords = {
+          x1: fieldBox.left - containerBox.left + fieldBox.width,
+          y1: fieldBox.top + fieldBox.height / 2 - containerBox.top,
+          x2: 0,
+          y2: 0,
+        };
+      }
+
       setState(prev => ({
         ...prev,
-        bbox: bbox,
+        bbox,
         hoveredFieldId,
         pageNumber,
+        wire: wireCoords,
       }));
     }
   };
 
   const handleValueChange = (value: string) => {
     const keysArray = state.hoveredFieldId?.split(':');
-    if (keysArray?.length === 2) {
-      const [fieldType, fieldKey] = keysArray;
-      setState(prev => {
-        const newState = { ...prev };
-        if (fieldType === 'topLevelFields') {
-          newState.topLevelFields = {
-            ...prev.topLevelFields,
-            [fieldKey]: {
-              ...prev.topLevelFields[fieldKey],
-              value,
-            },
-          };
-        }
-        return newState;
-      });
-    }
+
     if (keysArray?.length === 3) {
       const [fieldType, fieldKey, subFieldKey] = keysArray;
       setState(prev => {
@@ -175,19 +171,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const handleCheckToggle = (checked?: boolean) => {
     const hoveredFieldId = state.hoveredFieldId;
     const keysArray = hoveredFieldId?.split(':') ?? [];
-    if (keysArray.length === 2) {
-      const [fieldType, fieldKey] = keysArray;
-      setState(prev => ({
-        ...prev,
-        topLevelFields: {
-          ...prev.topLevelFields,
-          [fieldKey]: {
-            ...prev.topLevelFields[fieldKey],
-            checked: Boolean(checked),
-          },
-        },
-      }));
-    } else if (keysArray.length === 3) {
+    if (keysArray.length === 3) {
       const [fieldType, fieldKey, subFieldKey] = keysArray;
       setState(prev => ({
         ...prev,
@@ -227,14 +211,7 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
   const getHoveredField = () => {
     const hoveredFieldId = state.hoveredFieldId;
     const keysArray = hoveredFieldId?.split(':');
-    if (keysArray?.length === 2) {
-      const [fieldType, fieldKey] = keysArray;
-      if (fieldType === 'topLevelFields') {
-        return state.topLevelFields[fieldKey] || null;
-      }
 
-      return null;
-    }
     if (keysArray?.length === 3) {
       const [fieldType, fieldKey, subFieldKey] = keysArray;
       if (fieldType === 'arrayFields') {
@@ -290,34 +267,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
         <div className="relative bg-amber-300" key={index} style={{ transform: `scale(${zoomLevel - 0.1})` }}>
           <img className="h-full w-full" src={image} alt={`Document page ${index + 1}`} loading="lazy" />
 
-          {/* ========================== Top Level Fields ========================== */}
-          {Object.entries(state.topLevelFields).map(([key, field], i: number) => {
-            const bbox = field?.bbox;
-            if (!bbox || field?.page !== index + 1) return null;
-            const hoveredFieldId = `topLevelFields:${key}`;
-            return (
-              <div
-                tabIndex={0}
-                key={`${key}_${i}_${field?.confidence}`}
-                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute hover:border-2 hover:border-blue-600`}
-                style={{
-                  left: `${bbox.x_min * 100 - 0.4}%`,
-                  top: `${bbox.y_min * 100 - 0.4}%`,
-                  width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
-                  height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
-                }}
-                onClick={() => {
-                  if (isScrolling) return;
-                  handleFieldClick(hoveredFieldId, bbox, index + 1);
-                  setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
-                }}
-              >
-                <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  {formatFieldLabel(key)}
-                </div>{' '}
-              </div>
-            );
-          })}
           {/* ========================== Object Fields ========================== */}
           {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
             return (
@@ -337,7 +286,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                         height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                       }}
                       onClick={() => {
-                        if (isScrolling) return;
                         handleFieldClick(hoveredFieldId, bbox, index + 1);
                         setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                       }}
@@ -373,7 +321,6 @@ export const DocumentPreviewComponent: React.FC<DocumentPreviewComponentIF> = ({
                               height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                             }}
                             onClick={() => {
-                              if (isScrolling) return;
                               handleFieldClick(hoveredFieldId, bbox, index + 1);
                               setState(prev => ({
                                 ...prev,

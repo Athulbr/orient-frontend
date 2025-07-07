@@ -8,7 +8,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
   const { state, setState } = useViewRecordState();
-  const { fieldRefs, isScrollingRef, lastHoveredFieldRef, containerRef } = refs;
+  const { fieldRefs, containerRef } = refs;
   const [commentDialog, setCommentDialog] = useState(false);
   const toast = useToastStore();
   const updateWire = (fieldId: string, bbox: any) => {
@@ -80,6 +80,14 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         const firstRow = Object.values(item)[0] || {};
         const labels = Object.keys(firstRow);
 
+        const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
+
+        useEffect(() => {
+          if (state.autoFocusTriggered) return;
+          fieldRefs.current[fieldId].focus();
+          setState(prev => ({ ...prev, autoFocusTriggered: true }));
+        }, [state.arrayFields]);
+
         return (
           <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
             <section className="mb-2 flex justify-between text-lg font-bold capitalize">
@@ -93,7 +101,10 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     Add Line Item
                   </Button>
                 </div>
-                <XCircle onClick={() => setState(prev => ({ ...prev, selectedTableName: '' }))} className="cursor-pointer text-gray-500 hover:text-red-500" />
+                <XCircle
+                  onClick={() => setState(prev => ({ ...prev, selectedTableName: '', autoFocusTriggered: false }))}
+                  className="cursor-pointer text-gray-500 hover:text-red-500"
+                />
               </div>
             </section>
             <div className="flex-1 overflow-auto">
@@ -115,6 +126,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                         const value = subItem[label];
 
                         const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
+                        console.log('hoveredFieldId:===========', hoveredFieldId);
                         return (
                           <ArrayFieldTextarea
                             key={i}
@@ -122,6 +134,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                             fieldId={hoveredFieldId}
                             label={label}
                             fieldRefs={fieldRefs}
+                            disabled={state.loadingS3File}
                             onChange={(e: any) => {
                               setState(prev => {
                                 const updated = [...prev.arrayFields];
@@ -135,23 +148,30 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                             onMouseEnter={() => {
                               const bbox = value?.bbox;
                               if (bbox) {
-                                lastHoveredFieldRef.current = [hoveredFieldId, bbox, value.page];
-                                if (!isScrollingRef.current) {
-                                  setState(prev => ({
-                                    ...prev,
-                                    hoveredFieldId: hoveredFieldId,
-                                    pageNumber: value.page ? value.page : prev.pageNumber,
-                                    hoveredOnArrayField: true,
-                                  }));
-                                  updateWire(hoveredFieldId, value.bbox);
-                                }
+                                setState(prev => ({
+                                  ...prev,
+                                  hoveredFieldId: hoveredFieldId,
+                                  pageNumber: value.page ? value.page : prev.pageNumber,
+                                  hoveredOnArrayField: true,
+                                }));
+                                updateWire(hoveredFieldId, value.bbox);
                               }
                             }}
                           />
                         );
                       })}
                       <td className="h-full border py-2 pl-9">
-                        <Trash2 onClick={() => deleteLineItem(mainIndex, rowIndex)} size={20} className="cursor-pointer text-gray-500 hover:text-red-500" />
+                        <Trash2
+                          tabIndex={0}
+                          onClick={() => deleteLineItem(mainIndex, rowIndex)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              deleteLineItem(mainIndex, rowIndex);
+                            }
+                          }}
+                          size={20}
+                          className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
+                        />
                       </td>
                     </tr>
                   ))}
@@ -173,8 +193,9 @@ interface PropsIF {
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onMouseEnter: () => void;
   fieldRefs: any;
+  disabled?: boolean;
 }
-const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs }) => {
+const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled }) => {
   const adjustTextareaHeight = () => {
     const textarea = fieldRefs.current[fieldId];
     if (!textarea) return;
@@ -198,8 +219,9 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
         // @ts-ignore
         ref={el => (fieldRefs.current[fieldId] = el)}
         onChange={onChange}
-        onClick={onMouseEnter}
+        // onClick={onMouseEnter}
         onFocus={onMouseEnter}
+        disabled={disabled}
       />
     </td>
   );

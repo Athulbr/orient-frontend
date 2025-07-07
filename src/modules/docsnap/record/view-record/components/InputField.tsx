@@ -16,9 +16,22 @@ interface InputFieldProps {
   value: string;
   checked?: boolean;
   checkClickHandler?: (checked: boolean) => void;
+  disabled?: boolean;
 }
 
-export const InputField = ({ label, errorMessage, onMouseAction, ref, confidence, value, onchange, checked, checkClickHandler, ...props }: InputFieldProps) => {
+export const InputField = ({
+  label,
+  errorMessage,
+  onMouseAction,
+  ref,
+  confidence,
+  value,
+  onchange,
+  disabled,
+  checked,
+  checkClickHandler,
+  ...props
+}: InputFieldProps) => {
   const [commentDialog, setCommentDialog] = useState(false);
   const id = useId();
 
@@ -47,6 +60,7 @@ export const InputField = ({ label, errorMessage, onMouseAction, ref, confidence
           value={value ? value : ''}
           onChange={onchange}
           {...props}
+          disabled={disabled}
           id={id}
         />
         <div className="mr-1">

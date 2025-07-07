@@ -1,11 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useViewRecordState } from './viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { useEffect } from 'react';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages } from '../utils';
-import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
 
 export const useViewRecordApi = () => {
@@ -45,7 +43,6 @@ export const useViewRecordApi = () => {
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
 
       getAndConvertDocumentToImage(res.data.pdfFileName);
-      const topLevelFields: Record<string, any> = {};
       const objectFields: Record<string, any> = {};
       const arrayFields: Record<string, any>[] = [];
       const tableNames: string[] = [];
@@ -59,13 +56,10 @@ export const useViewRecordApi = () => {
           } else if (typeof value === 'object' && value !== null && value?.value === undefined) {
             // its object
             objectFields[key] = value;
-          } else if (typeof value === 'object' && value !== null) {
-            // its Key Value
-            topLevelFields[key] = value;
           }
         });
       }
-      setState(prev => ({ ...prev, topLevelFields, record: res.data, objectFields, arrayFields, tableNames, loadingData: false }));
+      setState(prev => ({ ...prev, record: res.data, objectFields, arrayFields, tableNames, loadingData: false }));
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to get Record');
@@ -114,7 +108,7 @@ export const useViewRecordApi = () => {
         document: state.record.document,
         extractedData: state.record.extractedData,
         metadata: state.record.metadata,
-        updatedData: { ...state.topLevelFields, ...state.objectFields, line_items: state.arrayFields[0] },
+        updatedData: { ...state.objectFields, line_items: state.arrayFields[0] },
       };
 
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));

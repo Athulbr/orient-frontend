@@ -10,7 +10,19 @@ export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
   //   }
   // }, [state.hoveredFieldId]);
 
-  if (!wire || state.tabIndex !== 0 || state.loadingS3File || state.bbox === null || !bboxRef || !state.hoveredFieldId) return null;
+  if (
+    !wire ||
+    state.tabIndex !== 0 ||
+    state.loadingS3File ||
+    state.bbox === null ||
+    !bboxRef ||
+    !state.hoveredFieldId ||
+    !wire.x1 ||
+    !wire.y1 ||
+    !wire.x2 ||
+    !wire.y2
+  )
+    return null;
 
   // Calculate the horizontal segment end points
   let startHorizontalX = wire.x1 + 50;
@@ -23,9 +35,9 @@ export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
     wire.x1 = box?.left + box?.width / 2;
     wire.y1 = box?.top + box?.height;
     startHorizontalX = wire.x1;
-    startHorizontalY = wire.y1 + 50;
+    startHorizontalY = wire.y1;
     endHorizontalX = wire.x2;
-    endHorizontalY = wire.y2 - 50;
+    endHorizontalY = wire.y2;
   }
 
   return (
