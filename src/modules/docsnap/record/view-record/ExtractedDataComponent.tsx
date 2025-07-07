@@ -1,8 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { useViewRecordState } from './hooks/viewRecordContext';
-import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
-import { RenderTopLevelFields } from './render-field-components/RenderTopLevelFields';
 import { LoadingDataSpinner, ProgressLoader } from './components/Loaders';
 import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
@@ -11,11 +9,10 @@ import { TableNames } from './render-field-components/TableNames';
 
 interface ExtractedDataComponentProps {
   containerRef: any;
-  lastHoveredFieldRef: any;
   fieldRefs: any;
 }
 
-const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, lastHoveredFieldRef, fieldRefs }) => {
+const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, fieldRefs }) => {
   const { state, setState } = useViewRecordState();
 
   const [data, setData] = useState<{ progress?: number; current_step?: string }>({});
@@ -68,15 +65,6 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
       isScrollingRef.current = true;
       scrollTimerRef.current = setTimeout(() => {
         isScrollingRef.current = false;
-        // if (lastHoveredFieldRef.current !== null) {
-        //   setState(prev => ({
-        //     ...prev,
-        //     hoveredFieldId: `${lastHoveredFieldRef.current?.[0]}`,
-        //     pageNumber: lastHoveredFieldRef.current?.[2] || 0,
-        //     bbox: lastHoveredFieldRef.current?.[1] || null,
-        //   }));
-        //   updateWire(`${lastHoveredFieldRef.current[0]}`, lastHoveredFieldRef.current[1]);
-        // }
       }, 100);
     };
     const container = containerRef.current;
@@ -134,8 +122,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
         <ExportButton />
       </div>
       <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pt-3 pb-50">
-        <RenderTopLevelFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
-        <RenderObjectFields refs={{ fieldRefs, isScrollingRef, lastHoveredFieldRef }} updateWire={updateWire} />
+        <RenderObjectFields refs={{ fieldRefs, isScrollingRef }} updateWire={updateWire} />
         <TableNames />
       </div>
       <ExtractedDataFooter />

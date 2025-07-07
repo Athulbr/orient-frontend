@@ -56,6 +56,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const recordIdListArray = JSON.parse(recordIdList);
     const index = recordIdListArray.indexOf(state.record?._id);
     if (index === -1) return;
+    setState(prev => ({ ...prev, selectedTableName: '', hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
     navigate(`/docsnap/record/view/${recordIdListArray[index + 1]}`);
   };
 

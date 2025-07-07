@@ -1,12 +1,20 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
-import { RenderTopLevelFieldsIF } from './RenderTopLevelFields';
 
-export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, refs }) => {
+interface RenderObjectFieldsIF {
+  updateWire: (fieldId: string, bbox: any) => void;
+  refs: {
+    fieldRefs: any;
+    isScrollingRef: any;
+  };
+}
+
+export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs }) => {
   const { state, setState } = useViewRecordState();
-  const { fieldRefs, isScrollingRef, lastHoveredFieldRef } = refs;
+  const { fieldRefs, isScrollingRef } = refs;
+
   return (
     <>
       {Object.entries(state.objectFields).map(([key, valueMain], mainIndex) => {
@@ -46,7 +54,6 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                     ref={el => (fieldRefs.current[fieldId] = el)}
                     onMouseAction={() => {
                       if (value?.bbox) {
-                        lastHoveredFieldRef.current = [fieldId, value?.bbox, value?.page];
                         if (!isScrollingRef.current) {
                           setState(prev => ({
                             ...prev,
@@ -59,6 +66,7 @@ export const RenderObjectFields: FC<RenderTopLevelFieldsIF> = ({ updateWire, ref
                         }
                       }
                     }}
+                    disabled={state.loadingS3File}
                     onChange={onChange}
                   />
                 );
