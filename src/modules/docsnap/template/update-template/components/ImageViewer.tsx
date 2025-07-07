@@ -55,7 +55,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
         <span className="max-w-50 truncate text-lg">{name}</span>
         <div className="flex items-center gap-2 rounded-md border bg-white p-1">
           <LightIconButton Icon={ZoomOut} onClick={zoomOut} title="Zoom Out" />
-          <input type="range" min="50" max="200" step={0.002} value={zoom} onChange={handleZoomChange} className="w-36 cursor-pointer" />
+          <input type="range" min="25" max="200" step={0.002} value={zoom} onChange={handleZoomChange} className="w-36 cursor-pointer" />
           <span className="w-8 text-sm font-light text-gray-500">{zoom.toFixed(0)}%</span>
           <LightIconButton Icon={ZoomIn} onClick={zoomIn} title="Zoom In" />
           {shrinked ? (

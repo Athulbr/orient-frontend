@@ -4,7 +4,7 @@ import { useViewRecordState } from '../hooks/viewRecordContext';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
-import { useViewRecordGlobalStore } from '../hooks/useViewRecordGlobalStore';
+import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 
 interface DataPreviewComponentIF {
   children: ReactNode;

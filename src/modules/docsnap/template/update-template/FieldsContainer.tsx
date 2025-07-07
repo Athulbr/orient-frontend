@@ -12,16 +12,72 @@ import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder
 import { useParams } from 'react-router-dom';
 import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
+import { useS3DocumentsStore } from '../../../../zustand-store/useStoredDocuments';
+import { fileTypeFromBuffer } from 'file-type';
+import { useToastStore } from '../../../../components/toast/ToastStore';
+import { convertPdfToImages } from '../../record/view-record/utils';
+import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 
 export const FieldsContainer: React.FC = () => {
   const { state, setState } = useUpdateTemplateState();
 
   const { getTemplateApi } = useUpdateTemplatePageApi();
-  const { id } = useParams();
+  const { id, fileName } = useParams();
+  const toast = useToastStore();
+
+  useEffect(() => {
+    if (!fileName) return;
+    const getFileAndConvertToImages = async () => {
+      setState(prev => ({ ...prev, loadingS3File: true }));
+      const s3Response = await useS3DocumentsStore.getState().getS3File(fileName);
+      const imageData = s3Response?.data?.Body?.data;
+      if (!imageData) {
+        toast.error('S3 document not found');
+        return;
+      }
+      const uint8Array = new Uint8Array(imageData);
+      const getFileType = await fileTypeFromBuffer(uint8Array);
+      let pdfFile: any;
+      let imageUrl;
+      if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
+        pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+        imageUrl = [URL.createObjectURL(pdfFile).toString()];
+      } else {
+        pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+        imageUrl = await convertPdfToImages(pdfFile);
+      }
+
+      setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl, sectionList: [] }));
+    };
+    getFileAndConvertToImages();
+  }, [fileName]);
 
   useEffect(() => {
     if (!id) return;
-    // getTemplateApi(id);
+    const getTemplateData = async () => {
+      const templateData = await getTemplateApi(id);
+      setState(prev => ({ ...prev, loadingS3File: true }));
+      const s3Response = await useS3DocumentsStore.getState().getS3File(templateData?.s3FileName);
+      const imageData = s3Response?.data?.Body?.data;
+      if (!imageData) {
+        toast.error('S3 document not found');
+        return;
+      }
+      const uint8Array = new Uint8Array(imageData);
+      const getFileType = await fileTypeFromBuffer(uint8Array);
+      let pdfFile: any;
+      let imageUrl;
+      if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
+        pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+        imageUrl = [URL.createObjectURL(pdfFile).toString()];
+      } else {
+        pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+        imageUrl = await convertPdfToImages(pdfFile);
+      }
+
+      setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
+    };
+    getTemplateData();
   }, [id]);
   const addNewSection = () => {
     const sectionList = [...state.sectionList];
@@ -37,7 +93,23 @@ export const FieldsContainer: React.FC = () => {
         },
       ],
     });
-    setState({ sectionList });
+    setState(prev => ({ ...prev, sectionList }));
+  };
+  const addNewTable = () => {
+    const sectionList = [...state.sectionList];
+    sectionList.push({
+      name: 'New Table',
+      dataType: 'array',
+      jsonKey: 'new_table',
+      subFields: [
+        {
+          name: '',
+          jsonKey: '',
+          dataType: 'str',
+        },
+      ],
+    });
+    setState(prev => ({ ...prev, sectionList }));
   };
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -50,7 +122,7 @@ export const FieldsContainer: React.FC = () => {
           <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewSection} outlined>
             Add Section
           </Button>
-          <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewSection} outlined>
+          <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewTable} outlined>
             Add Table
           </Button>
         </div>
@@ -76,7 +148,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const section = sectionList[mainIndex];
     sectionList[mainIndex] = sectionList[mainIndex - 1];
     sectionList[mainIndex - 1] = section;
-    setState({ sectionList });
+    setState(prev => ({ ...prev, sectionList }));
   };
 
   const moveDownSection = (e: any) => {
@@ -86,7 +158,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const section = sectionList[mainIndex];
     sectionList[mainIndex] = sectionList[mainIndex + 1];
     sectionList[mainIndex + 1] = section;
-    setState({ sectionList });
+    setState(prev => ({ ...prev, sectionList }));
   };
 
   const addNewField = () => {
@@ -96,7 +168,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
       jsonKey: '',
       dataType: 'str',
     });
-    setState({ sectionList });
+    setState(prev => ({ ...prev, sectionList }));
   };
 
   const editSectionDialogHandler = (e: any) => {
@@ -129,7 +201,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             onDragEnd={reorderedFields => {
               const sectionList = [...state.sectionList];
               sectionList[mainIndex].subFields = reorderedFields;
-              setState({ sectionList });
+              setState(prev => ({ ...prev, sectionList }));
             }}
             className="flex flex-col gap-4 p-2"
           >
@@ -163,36 +235,49 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
       const sectionList = [...prev.sectionList];
       sectionList[mainIndex].subFields[index].name = capitalizeFirstLetter(e.target.value as string);
       sectionList[mainIndex].subFields[index].jsonKey = (e.target.value as string).toLowerCase().replace(/\s/g, '_');
-      return { sectionList };
+      return { ...prev, sectionList };
     });
   };
   const updateJsonKey = (e: any) => {
     setState(prev => {
       const sectionList = [...prev.sectionList];
       sectionList[mainIndex].subFields[index].jsonKey = e.target.value;
-      return { sectionList };
+      return { ...prev, sectionList };
     });
   };
   const updateDataType = (value: string) => {
     setState(prev => {
       const sectionList = [...prev.sectionList];
       sectionList[mainIndex].subFields[index].dataType = value;
-      return { sectionList };
+      return { ...prev, sectionList };
     });
   };
   const deleteField = () => {
     setState(prev => {
       const sectionList = [...prev.sectionList];
       sectionList[mainIndex].subFields.splice(index, 1);
-      return { sectionList };
+      return { ...prev, sectionList };
     });
   };
   const updateHidden = (value: boolean) => {
-    setState(prev => {
-      const sectionList = [...prev.sectionList];
-      sectionList[mainIndex].subFields[index].hidden = value;
-      return { sectionList };
-    });
+    // setState(prev => {
+    //   const sectionList = [...prev.sectionList];
+    //   const subFields = [...sectionList[mainIndex].subFields];
+    //   subFields[index].hidden = value;
+
+    //   sectionList[mainIndex].subFields = subFields;
+    //   return { ...prev, sectionList };
+    // });
+
+    const templateData = [...state.sectionList];
+    const subFields = [...templateData[mainIndex].subFields];
+    subFields[index].hidden = value;
+    if (value) {
+      const [movedField] = subFields.splice(index, 1);
+      subFields.push(movedField);
+    }
+    templateData[mainIndex].subFields = subFields;
+    setState(prev => ({ ...prev, sectionList: templateData }));
   };
   return (
     <div className="mt-1 flex items-center gap-2 rounded border bg-white p-2">

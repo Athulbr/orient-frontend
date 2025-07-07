@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages } from '../utils';
-import { useViewRecordGlobalStore } from './useViewRecordGlobalStore';
-import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
+import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
+import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
 
 export const useViewRecordApi = () => {
   const { state, setState } = useViewRecordState();
@@ -144,7 +144,7 @@ export const useViewRecordApi = () => {
   return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData };
 };
 
-const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
+export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
   const blob = new Blob([binaryData], { type: mimeType });
   return new File([blob], fileName, { type: mimeType });
 };

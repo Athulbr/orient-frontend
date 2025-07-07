@@ -1,9 +1,9 @@
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { useS3DocumentsStore } from '../../../../../hooks/useStoredDocuments';
+import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
-import { useViewRecordGlobalStore } from '../../view-record/hooks/useViewRecordGlobalStore';
+import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import { useListRecordApi } from '../hooks/useListRecordApi';
 import { useListRecordPageState } from '../hooks/listRecordPageContext';

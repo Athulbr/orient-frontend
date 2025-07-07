@@ -4,17 +4,18 @@ import PageNameComponent from '../../../../components/PageName';
 import { FieldsContainer } from './FieldsContainer';
 import { ImageViewer } from './components/ImageViewer';
 import { ResizableContainer } from './components/ResizableContainer';
-import { sampleImages, templateFields } from './components/temp';
 import { UpdateTemplateStateProvider } from './hooks/updateTemplateContext';
-import { useEffect, useState } from 'react';
-import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
 
 export interface UpdateTemplateStateIF {
   sectionList: any[];
+  loadingS3File: boolean;
+  images: any[];
 }
 const initialState: UpdateTemplateStateIF = {
-  sectionList: templateFields,
+  sectionList: [],
+  loadingS3File: false,
+  images: [],
 };
 
 const UpdateTemplatePage: React.FC = () => {
@@ -26,7 +27,7 @@ const UpdateTemplatePage: React.FC = () => {
         <Breadcrumbs page="updateTemplate" />
         <PageNameComponent name="Update Template" showBackButton />
         <ResizableContainer
-          left={<ImageViewer images={sampleImages} name="Purchase Order" />}
+          left={<ImageViewer images={state.images} name="Purchase Order" />}
           right={<FieldsContainer />}
           initialLeftWidthPercent={60}
           minLeftWidthPercent={40}

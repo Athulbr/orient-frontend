@@ -26,7 +26,7 @@ export const useUpdateTemplatePageApi = () => {
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${id}`);
       setState(prev => ({ ...prev, sectionList: res.data?.fields }));
       toast.success('Template fetched successfully');
-      return true;
+      return res.data;
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to create template');

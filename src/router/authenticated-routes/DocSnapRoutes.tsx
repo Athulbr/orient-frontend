@@ -15,6 +15,7 @@ const DocSnapRoutes = () => {
         <Route path="/project/list" element={<ListProjectPage />} />
         <Route path="/template/list" element={<ListTemplatePage />} />
         <Route path="/template/update/:id" element={<UpdateTemplatePage />} />
+        <Route path="/template/create/:fileName" element={<UpdateTemplatePage />} />
         <Route path="/document/list/:id" element={<ListDocumentPage />} />
         <Route path="/record/list" element={<ListRecordPage />} />
         <Route path="/record/view/:id" element={<ViewRecordPage />} />

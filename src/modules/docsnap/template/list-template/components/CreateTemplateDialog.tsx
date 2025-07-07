@@ -60,11 +60,11 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
   if (!state.showCreateTemplateDialog) return null;
   return (
     <DialogComponent
-      className="w-[800px]"
-      name="Create Template"
+      className="max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]"
+      name={showFileUploadUI ? 'Upload Document' : 'Create Template'}
       isOpen={state.showCreateTemplateDialog}
       closeDialog={closeDialog}
-      primaryButtonText="Create Template"
+      primaryButtonText={showFileUploadUI ? '' : 'Create Template'}
       onPrimaryAction={handleSubmit}
     >
       <div className="h-full p-6">
@@ -128,19 +128,17 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
 };
 
 const FileUploadUIComponent = ({ closeDialog }: { closeDialog: () => void }) => {
+  const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const onFileDrop = async (files: FileList) => {
     setUploading(true);
     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, files[0] as File);
-    const requestBody = {
-      name: '',
-    };
-    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
+    navigate(`/docsnap/template/create/${s3Response.data?.fileName}`);
     closeDialog();
     setUploading(false);
   };
   return (
-    <div className="flex h-100 w-full flex-col items-center justify-center">
+    <div className="flex h-[50vh] w-full flex-col items-center justify-center">
       {uploading ? <FullScreenLoader text="Uploading Document" /> : <DragAndDropFileInput onFileDrop={onFileDrop} />}
     </div>
   );
