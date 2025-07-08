@@ -18,7 +18,6 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
   useEffect(() => {
     getTemplatesApi();
   }, []);
-  console.log('state.loadingTemplates:===========', state.loadingTemplates);
   return (
     <div className="relative">
       <div

@@ -70,7 +70,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
       top: container.scrollTop + scrollAmount,
       behavior: 'smooth',
     });
-  }, [state.hoveredFieldId]);
+  }, [state.hoveredFieldId, zoom]);
 
   useEffect(() => {
     const container = imageContainerRef.current;
@@ -321,7 +321,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                     return (
                       <div
                         key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
-                        className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute hover:border-2 hover:border-blue-600`}
+                        className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
                         style={{
                           left: `${bbox.x_min * 100 - 0.4}%`,
                           top: `${bbox.y_min * 100 - 0.4}%`,
@@ -356,7 +356,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                           return (
                             <div
                               key={`${mainKey}_${i}`}
-                              className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute hover:border-2 hover:border-blue-600`}
+                              className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
                               style={{
                                 left: `${bbox.x_min * 100 - 0.4}%`,
                                 top: `${bbox.y_min * 100 - 0.4}%`,

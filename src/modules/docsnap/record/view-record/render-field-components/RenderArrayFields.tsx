@@ -119,7 +119,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                         const value = subItem[label];
 
                         const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
-                        console.log('hoveredFieldId:===========', hoveredFieldId);
                         return (
                           <ArrayFieldTextarea
                             key={i}

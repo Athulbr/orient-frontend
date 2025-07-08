@@ -42,8 +42,8 @@ export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
         strokeWidth={2}
         fill="none"
       />
-      <circle cx={wire.x1} cy={wire.y1} r={3.5} fill="rgb(13 109 214)" />
-      <circle cx={wire.x2} cy={wire.y2} r={3.5} fill="rgb(13 109 214)" />
+      <circle cx={wire.x1} cy={wire.y1} r={2.5} fill="rgb(13 109 214)" />
+      <circle cx={wire.x2} cy={wire.y2} r={3} fill="rgb(13 109 214)" />
     </svg>
   );
 };

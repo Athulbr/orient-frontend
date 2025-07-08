@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useEffect } from 'react';
+import { FC, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '../../../../../components/Button';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { ButtonBox } from '../../../../../components/ButtonBox';
@@ -7,28 +7,35 @@ interface CommentDialogPropsIF {
   closeDialog: () => void;
   isOpen: boolean;
 }
+
 export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog }) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
 
   const toast = useToastStore();
-
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = (event: MouseEvent) => {
+  // Memoize the click outside handler to prevent recreation on every render
+  const handleClickOutside = useCallback(
+    (event: MouseEvent) => {
       if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
         closeDialog();
       }
-    };
+    },
+    [closeDialog]
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen, closeDialog]);
+  }, [isOpen, handleClickOutside]);
 
-  const onClickHandler = () => {
+  // Memoize the click handler to prevent recreation on every render
+  const onClickHandler = useCallback(() => {
     if (!comment) return;
     setLoading(true);
     setTimeout(() => {
@@ -37,7 +44,22 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
       closeDialog();
       setLoading(false);
     }, 1000);
-  };
+  }, [comment, toast, closeDialog]);
+
+  // Memoize the textarea change handler
+  const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(e.target.value);
+  }, []);
+
+  // Memoize the close handler (in case it's not already memoized in parent)
+  const handleClose = useCallback(() => {
+    closeDialog();
+  }, [closeDialog]);
+
+  // Memoize computed values
+  const isCommentEmpty = useMemo(() => !comment, [comment]);
+  const buttonText = useMemo(() => (loading ? 'Saving...' : 'Save'), [loading]);
+
   if (!isOpen) return null;
 
   return (
@@ -48,17 +70,17 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
       <header className="w-full font-bold text-gray-600">Add Comment</header>
       <textarea
         value={comment}
-        onChange={e => setComment(e.target.value)}
+        onChange={handleCommentChange}
         className="w-full rounded-lg border p-2 text-sm text-gray-700 focus:outline-1"
         rows={3}
         placeholder="Add your comment here..."
       />
       <ButtonBox>
-        <Button onClick={closeDialog} small outlined>
+        <Button onClick={handleClose} small outlined>
           Close
         </Button>
-        <Button onClick={onClickHandler} disabled={!comment} small className="w-fit" outlined>
-          {loading ? 'Saving...' : 'Save'}
+        <Button onClick={onClickHandler} disabled={isCommentEmpty} small className="w-fit" outlined>
+          {buttonText}
         </Button>
       </ButtonBox>
     </div>

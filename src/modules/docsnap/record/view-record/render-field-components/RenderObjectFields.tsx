@@ -17,12 +17,12 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
 
   return (
     <>
-      {Object.entries(state.objectFields).map(([key, valueMain], mainIndex) => {
+      {Object.entries(state.objectFields).map(([key, valueMain]) => {
         return (
           <div key={key} className="flex flex-col rounded-lg border bg-white p-1 hover:border-blue-400">
             <label className="p-3 text-lg font-bold capitalize">{formatFieldLabel(key)}</label>
             <div className="flex flex-wrap gap-y-2">
-              {Object.entries(valueMain).map(([subKey, value], i) => {
+              {Object.entries(valueMain).map(([subKey, value]) => {
                 const fieldId = `objectFields:${key}:${subKey}`;
                 const onChange = (e: any) => {
                   setState(prev => {
