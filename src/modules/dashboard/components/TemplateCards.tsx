@@ -1,8 +1,12 @@
-import { ChevronRight } from 'lucide-react';
-import { useEffect } from 'react';
+import { ChevronRight, Edit, MoreVertical, Upload } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { useDashboardApi } from '../hooks/useDashboardApi';
+import { Button } from '../../../components/Button';
+import { Dropdown } from '../../../components/Dropdown';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import httpRequest from '../../../global-utils/httpRequest';
 import { TemplateCardComponent } from '../../docsnap/template/list-template/components/TemplateCard';
 
 interface TemplateCardsComponentIF {
@@ -11,40 +15,93 @@ interface TemplateCardsComponentIF {
 
 export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => {
   const { state, setState } = useDashboardState();
-
+  const [cardsPerRow, setCardsPerRow] = useState(4);
   const navigate = useNavigate();
   const { getTemplatesApi } = useDashboardApi();
+
+  // Calculate how many cards can fit based on screen width
+  const calculateCardsPerRow = useCallback(() => {
+    const screenWidth = window.innerWidth;
+    const cardMinWidth = 300; // min-w-80 = 320px
+    const containerPadding = 48; // accounting for container padding
+    const gapBetweenCards = 24; // gap-6 = 24px
+
+    // Calculate maximum cards that can fit
+    const availableWidth = screenWidth - containerPadding;
+    const maxCards = Math.floor((availableWidth + gapBetweenCards) / (cardMinWidth + gapBetweenCards));
+
+    // Ensure at least 2 cards (1 template + 1 "View All") and max 6 cards
+    return Math.max(2, Math.min(maxCards, 6));
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerRow(calculateCardsPerRow());
+    };
+
+    // Set initial value
+    handleResize();
+
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, [calculateCardsPerRow]);
 
   useEffect(() => {
     getTemplatesApi();
   }, []);
+
+  // Calculate how many template cards to show (reserve 1 slot for "View All")
+  const templatesToShow = Math.max(0, cardsPerRow - 1);
+  const visibleTemplates = state.templates.slice(0, templatesToShow);
+
   return (
     <div className="relative">
-      <div
-        onClick={() => navigate('/docsnap/template/list')}
-        className="absolute top-0 right-0 z-1 flex h-full w-25 cursor-pointer items-center justify-center gap-1 border border-sky-200 bg-white text-sm text-nowrap text-sky-600 hover:bg-gray-100"
-      >
-        View All
-        <ChevronRight size={14} />
-      </div>
       {state.loadingTemplates ? (
-        <div className="flex min-h-40 gap-6 overflow-x-auto pr-30">
-          {Array.from({ length: 5 }).map((_, idx) => (
-            <TemplateCardComponent key={idx} isLoading />
+        <div className="flex min-h-40 gap-6">
+          {Array.from({ length: cardsPerRow }).map((_, idx) => (
+            <TemplateCardComponent key={idx} isLoading flexBasis={`${100 / cardsPerRow}%`} />
           ))}
         </div>
       ) : (
-        <div className="flex min-h-40 gap-6 overflow-x-auto pr-30">
-          {state.templates.map((template, idx) => (
+        <div className="flex min-h-40 gap-6">
+          {visibleTemplates.map((template, idx) => (
             <TemplateCardComponent
               key={idx}
               template={template}
+              flexBasis={`${100 / cardsPerRow}%`}
               onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
               refreshPage={() => getTemplatesApi()}
             />
           ))}
+          <ViewAllCard flexBasis={`${100 / cardsPerRow}%`} />
         </div>
       )}
+    </div>
+  );
+};
+
+interface ViewAllCardProps {
+  flexBasis: string;
+}
+
+const ViewAllCard: React.FC<ViewAllCardProps> = ({ flexBasis }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      onClick={() => navigate('/docsnap/template/list')}
+      className="cursor-pointer rounded-2xl border border-sky-200 bg-white transition hover:bg-gray-50"
+      style={{ flexBasis, minWidth: 0 }}
+    >
+      <div className="flex h-40 items-center justify-center">
+        <div className="flex items-center gap-2 text-sky-600">
+          <span className="text-sm font-medium">View All</span>
+          <ChevronRight size={16} />
+        </div>
+      </div>
     </div>
   );
 };

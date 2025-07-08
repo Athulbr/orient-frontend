@@ -9,11 +9,13 @@ interface PropsIF {
   onClickUpload?: () => void;
   isLoading?: boolean;
   refreshPage?: () => void;
+  flexBasis?: string;
 }
 
-export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage }) => {
+export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis }) => {
   const toast = useToastStore();
   const navigate = useNavigate();
+
   const handleDropdownOptionChange = async (option: string) => {
     if (option === 'Delete') {
       const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/template/delete/${template._id}`);
@@ -23,9 +25,15 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       }
     }
   };
+
+  const cardStyle = flexBasis ? { flexBasis, minWidth: 0 } : {};
+
   if (isLoading) {
     return (
-      <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition">
+      <div
+        className="relative flex h-40 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
+        style={cardStyle}
+      >
         {/* Title and Menu Row */}
         <div className="mb-2 flex w-full items-start justify-between">
           <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
@@ -53,16 +61,20 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       </div>
     );
   }
+
   if (!template) return null;
   const { name, uploaded, pending, approved } = template;
 
   return (
-    <div className="relative flex h-40 min-w-80 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition">
+    <div
+      className="relative flex h-40 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
+      style={cardStyle}
+    >
       {/* Title and Menu Row */}
       <div className="mb-2.5 flex w-full items-start justify-between">
-        <div className="text font-semibold text-gray-800">{name}</div>
+        <div className="text truncate pr-2 font-semibold text-gray-800">{name}</div>
         <Dropdown options={['Delete']} onChange={handleDropdownOptionChange}>
-          <button className="cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
+          <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
             <MoreVertical size={18} />
           </button>
         </Dropdown>
