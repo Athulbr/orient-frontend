@@ -10,15 +10,25 @@ interface PreviewHeaderComponentProps {
   shrinked: boolean;
   shrinkExpandHandler: () => void;
   download: () => void;
+  name?: string;
 }
 
-export const PreviewHeaderComponent = ({ zoom, zoomOut, zoomIn, handleZoomChange, shrinked, shrinkExpandHandler, download }: PreviewHeaderComponentProps) => {
+export const PreviewHeaderComponent = ({
+  zoom,
+  name,
+  zoomOut,
+  zoomIn,
+  handleZoomChange,
+  shrinked,
+  shrinkExpandHandler,
+  download,
+}: PreviewHeaderComponentProps) => {
   const navigate = useNavigate();
   return (
     <div className="flex h-16 items-center justify-between border border-r-0 bg-white px-4">
       <div className="flex items-center gap-2">
         <BackButton onClick={() => navigate('/docsnap/record/list')} />
-        <span className="max-w-50 truncate text-lg">Document Name</span>
+        <span className="max-w-50 truncate text-lg">{name}</span>
       </div>
       <div className="flex items-center gap-2 rounded-md border bg-white p-1">
         <LightIconButton Icon={ZoomOut} onClick={zoomOut} title="Zoom Out" />

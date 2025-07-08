@@ -23,14 +23,15 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `test.json`;
+    link.download = `${state.record?.name}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };
   if (!showExportButton) return;
   return (
     <Dropdown onChange={downloadJSONFile} options={['XLSX', 'JSON']}>
-      <Button small outlined>
+      {/* ISSUE:Button is preventing (e.preventDefault()) */}
+      <Button small outlined onClick={downloadJSONFile}>
         Export
       </Button>
     </Dropdown>

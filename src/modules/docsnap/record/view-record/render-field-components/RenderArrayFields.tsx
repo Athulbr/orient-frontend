@@ -94,7 +94,10 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     Add Line Item
                   </Button>
                 </div>
-                <XCircle onClick={() => setState(prev => ({ ...prev, selectedTableName: '' }))} className="cursor-pointer text-gray-500 hover:text-red-500" />
+                <XCircle
+                  onClick={() => setState(prev => ({ ...prev, selectedTableName: '', hoveredOnArrayField: false, hoveredFieldId: null, bbox: null }))}
+                  className="cursor-pointer text-gray-500 hover:text-red-500"
+                />
               </div>
             </section>
             <div className="flex-1 overflow-auto">

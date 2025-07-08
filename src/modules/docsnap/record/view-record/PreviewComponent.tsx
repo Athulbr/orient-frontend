@@ -293,6 +293,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
         shrinked={shrinked}
         shrinkExpandHandler={shrinkExpandHandler}
         download={download}
+        name={state.record?.name}
       />
 
       <div
