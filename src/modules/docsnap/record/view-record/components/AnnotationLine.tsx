@@ -1,14 +1,8 @@
-import { useEffect } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 
 export const AnnotationLine = ({ bboxRef }: { bboxRef: any }) => {
-  const { state, setState } = useViewRecordState();
+  const { state } = useViewRecordState();
   const wire = state.wire;
-  // useEffect(() => {
-  //   if (state.wire?.x2 && state.wire?.x1 === 0 && state.wire?.y1 === 0) {
-  //     setState(prev => ({ ...prev, hoveredFieldId: null }));
-  //   }
-  // }, [state.hoveredFieldId]);
 
   if (
     !wire ||

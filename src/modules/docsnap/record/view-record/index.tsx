@@ -1,13 +1,12 @@
 import { useRef, useState } from 'react';
-import { DocumentPreviewComponent } from './DocumentPreview';
 import { useViewRecordState, ViewRecordStateProvider } from './hooks/viewRecordContext';
 import { TabViewContainer } from './components/TabViewContainer';
 import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
-import { ImageViewer } from '../../template/update-template/components/ImageViewer';
 import { PreviewComponent } from './PreviewComponent';
+import { AnnotationLine } from './components/AnnotationLine';
 
 interface WirePoints {
   x1: number;
@@ -109,7 +108,7 @@ const LeftContainer = ({ containerRef, fieldRefs }: { containerRef: any; fieldRe
   return (
     <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
       {/* <DocumentPreviewComponent containerRef={containerRef} fieldRefs={fieldRefs} /> */}
-      <PreviewComponent images={state.images} />
+      <PreviewComponent fieldRefs={fieldRefs} containerRef={containerRef} />
     </div>
   );
 };

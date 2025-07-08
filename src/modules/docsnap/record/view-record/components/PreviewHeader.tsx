@@ -54,9 +54,18 @@ const LightIconButton = ({
     onClick(e);
   };
   return (
-    <span className={cn('group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200', className)} onClick={onClickHandler}>
-      <Icon strokeWidth={1} size={18} className={iconClassName} />
-      <div className="absolute top-10 left-1/2 z-10 -translate-x-1/2 transform rounded bg-gray-400 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100">
+    <span
+      translate="no"
+      className={cn('group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200', className)}
+      onClick={onClickHandler}
+      unselectable="on"
+    >
+      <Icon translate="no" strokeWidth={1} size={18} className={iconClassName} />
+      <div
+        unselectable="on"
+        translate="no"
+        className="absolute top-10 left-1/2 z-10 -translate-x-1/2 transform rounded bg-gray-400 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100"
+      >
         {title}
       </div>
     </span>

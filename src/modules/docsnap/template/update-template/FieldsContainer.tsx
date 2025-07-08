@@ -132,9 +132,11 @@ export const FieldsContainer: React.FC = () => {
   };
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex h-[64px] w-full items-center border border-l-0 bg-gray-50 pl-5 text-lg text-gray-800">
+      <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
         Template Fields
-        <Button onClick={handleCreateTemplate}>Create Template</Button>
+        <Button outlined onClick={handleCreateTemplate}>
+          Create Template
+        </Button>
       </div>
       {state.loadingTemplate ? (
         <FullScreenLoader text="Loading Template..." />
