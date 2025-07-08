@@ -76,17 +76,10 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
   return (
     <>
       {state.arrayFields.map((item, mainIndex) => {
-        // Get all unique labels (column names) from the first subItem
         const firstRow = Object.values(item)[0] || {};
         const labels = Object.keys(firstRow);
 
-        const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
-
-        useEffect(() => {
-          if (state.autoFocusTriggered) return;
-          fieldRefs.current[fieldId].focus();
-          setState(prev => ({ ...prev, autoFocusTriggered: true }));
-        }, [state.arrayFields]);
+        // const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
 
         return (
           <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
@@ -101,10 +94,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     Add Line Item
                   </Button>
                 </div>
-                <XCircle
-                  onClick={() => setState(prev => ({ ...prev, selectedTableName: '', autoFocusTriggered: false }))}
-                  className="cursor-pointer text-gray-500 hover:text-red-500"
-                />
+                <XCircle onClick={() => setState(prev => ({ ...prev, selectedTableName: '' }))} className="cursor-pointer text-gray-500 hover:text-red-500" />
               </div>
             </section>
             <div className="flex-1 overflow-auto">

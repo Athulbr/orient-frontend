@@ -17,7 +17,7 @@ export const TableNames: FC = () => {
               <button
                 key={index}
                 onClick={() => {
-                  setState(prev => ({ ...prev, selectedTableName: prev.selectedTableName === name ? '' : name, autoFocusTriggered: false }));
+                  setState(prev => ({ ...prev, selectedTableName: prev.selectedTableName === name ? '' : name }));
                 }}
                 className={`flex cursor-pointer items-center justify-between rounded-lg border py-3 pr-3 pl-6 font-semibold hover:border-blue-300 ${state.selectedTableName === name ? 'border-blue-300 bg-blue-50' : 'bg-white'}`}
               >

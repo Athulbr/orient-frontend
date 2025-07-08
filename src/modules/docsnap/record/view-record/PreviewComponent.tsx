@@ -143,10 +143,10 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
       if (fieldEl && containerBox) {
         const fieldBox = fieldEl.getBoundingClientRect();
         wireCoords = {
-          x1: fieldBox.left - containerBox.left + fieldBox.width,
-          y1: fieldBox.top + fieldBox.height / 2 - containerBox.top,
-          x2: 0,
-          y2: 0,
+          x1: 0,
+          y1: 0,
+          x2: fieldBox.left - containerBox.left,
+          y2: fieldBox.top + fieldBox.height / 2 - containerBox.top,
         };
       }
 
@@ -303,7 +303,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
           <div
             className="relative w-fit bg-green-500 shadow-xl shadow-gray-400"
             style={{
-              width: `${zoom - 5}%`,
+              width: `${zoom - 10}%`,
               height: 'auto',
             }}
             key={index}
@@ -418,7 +418,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
             )}
           </div>
         ))}
-        {/* <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div> */}
+        <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
       </div>
       <AnnotationLine bboxRef={bboxRef} />
     </div>

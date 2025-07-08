@@ -16,6 +16,7 @@ export const useViewRecordApi = () => {
   // ============================= Get Record By Id ==================================
 
   const getAndConvertDocumentToImage = async (pdfFileName: string) => {
+    setState(prev => ({ ...prev, loadingS3File: true }));
     const s3Response = await getS3File(pdfFileName);
     const imageData = s3Response?.data?.Body?.data;
     if (!imageData) {
