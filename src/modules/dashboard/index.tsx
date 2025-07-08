@@ -3,12 +3,13 @@ import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
 import { StatusCardComponent } from './components/StatusCard';
-import { TemplateCardsComponent } from './components/TemplateCards';
 import { UploadDocumentComponent } from '../docsnap/upload-document';
 import { CreateTemplateComponent } from '../docsnap/template/list-template/components/CreateTemplateDialog';
+import { TemplateCardListComponent } from './components/TemplateCardList';
 
 export interface DashboardStateIF {
   totalRecords: number;
+  totalTemplates: number;
   records: any[];
   templates: any[];
   loadingRecords: boolean;
@@ -22,6 +23,7 @@ export interface DashboardStateIF {
 
 const initialState = {
   totalRecords: 0,
+  totalTemplates: 0,
   isDashboard: true,
   records: [],
   loadingRecords: false,
@@ -46,7 +48,7 @@ const DashboardPage: FC = () => {
               <RecentFilesCardComponent />
               <StatusCardComponent />
             </div>
-            <TemplateCardsComponent />
+            <TemplateCardListComponent />
           </div>
         </div>
       </div>

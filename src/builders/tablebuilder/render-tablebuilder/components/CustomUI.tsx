@@ -21,7 +21,6 @@ export const StatusCustomUI = ({ data }: { data: any }) => {
 export const DeleteCustomUI = ({}: { data: any }) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.info('Delete button clicked');
   };
   return (
     <div>

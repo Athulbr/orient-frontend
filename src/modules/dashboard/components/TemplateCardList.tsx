@@ -13,7 +13,7 @@ interface TemplateCardsComponentIF {
   test?: string;
 }
 
-export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => {
+export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () => {
   const { state, setState } = useDashboardState();
   const [cardsPerRow, setCardsPerRow] = useState(4);
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
               refreshPage={() => getTemplatesApi()}
             />
           ))}
-          <ViewAllCard flexBasis={`${100 / cardsPerRow}%`} />
+          {state.totalTemplates > templatesToShow && <ViewAllCard totalTemplates={state.totalTemplates} flexBasis={`${100 / cardsPerRow}%`} />}
         </div>
       )}
     </div>
@@ -85,9 +85,10 @@ export const TemplateCardsComponent: React.FC<TemplateCardsComponentIF> = () => 
 
 interface ViewAllCardProps {
   flexBasis: string;
+  totalTemplates: number;
 }
 
-const ViewAllCard: React.FC<ViewAllCardProps> = ({ flexBasis }) => {
+const ViewAllCard: React.FC<ViewAllCardProps> = ({ flexBasis, totalTemplates }) => {
   const navigate = useNavigate();
 
   return (
@@ -98,7 +99,7 @@ const ViewAllCard: React.FC<ViewAllCardProps> = ({ flexBasis }) => {
     >
       <div className="flex h-40 items-center justify-center">
         <div className="flex items-center gap-2 text-sky-600">
-          <span className="text-sm font-medium">View All</span>
+          <span className="text-sm font-medium">View All {totalTemplates} Templates</span>
           <ChevronRight size={16} />
         </div>
       </div>

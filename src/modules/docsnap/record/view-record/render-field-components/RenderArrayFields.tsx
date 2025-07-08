@@ -87,14 +87,15 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
               {formatFieldLabel(state.tableNames[mainIndex])}
               <div className="flex items-center gap-10">
                 <div className="flex gap-2">
-                  <Button outlined onClick={() => setCommentDialog(true)}>
+                  <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                     Add Comment
                   </Button>
-                  <Button id="qwerty" outlined onClick={addLineItem}>
+                  <Button tabIndex={-1} outlined onClick={addLineItem}>
                     Add Line Item
                   </Button>
                 </div>
                 <XCircle
+                  tabIndex={-1}
                   onClick={() => setState(prev => ({ ...prev, selectedTableName: '', hoveredOnArrayField: false, hoveredFieldId: null, bbox: null }))}
                   className="cursor-pointer text-gray-500 hover:text-red-500"
                 />
@@ -147,6 +148,14 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                   hoveredOnArrayField: true,
                                 }));
                                 updateWire(hoveredFieldId, value.bbox);
+                              } else {
+                                setState(prev => ({
+                                  ...prev,
+                                  hoveredFieldId: null,
+                                  hoveredOnArrayField: false,
+                                  bbox: null,
+                                  wire: null,
+                                }));
                               }
                             }}
                           />

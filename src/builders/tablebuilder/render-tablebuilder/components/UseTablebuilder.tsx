@@ -30,7 +30,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
       const data = JSON.parse(tablebuilder);
       const tableData = data.find((item: any) => item.name === name);
       if (tableData) {
-        console.info('Retreived tablebuilder data from cache');
+        // console.info('Retreived tablebuilder data from cache');
         setSettings(tableData.settings);
         return;
       }

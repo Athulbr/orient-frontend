@@ -40,6 +40,17 @@ export const TableBody: FC = () => {
       </tbody>
     );
   }
+  if (loading) {
+    return (
+      <tbody>
+        <tr>
+          <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
+            Loading...
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
 
   const rowClickHandler = (e: React.MouseEvent<HTMLTableRowElement>, row: Record<string, string>) => {
     e.stopPropagation();
@@ -70,7 +81,7 @@ export const TableBody: FC = () => {
               />
             </td>
           )}
-          {columns.map((column, index) => {
+          {columns.map(column => {
             if (column.hidden) return null;
             return (
               <td key={column.key as string} className="px-1 py-4">

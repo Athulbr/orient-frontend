@@ -58,7 +58,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
       }));
       setFields(updatedFields);
     }
-  }, [existingData, fields, setFields]);
+  }, [existingData]);
 
   return (
     <DialogComponent loading={loading || fields.length === 0} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>

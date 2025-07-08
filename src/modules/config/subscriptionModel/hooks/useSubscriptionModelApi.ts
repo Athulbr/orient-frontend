@@ -9,11 +9,6 @@ export const useSubscriptionModelsApi = () => {
   const { id } = useParams();
   const toast = useToastStore();
 
-  useEffect(() => {
-    if (!id) return;
-    setState(prev => ({ ...prev, projectId: id }));
-  }, [id]);
-
   // ============================= CREATE ==================================
 
   const createSubscriptionModelApi = async (payload: any) => {

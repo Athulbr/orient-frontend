@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useTemplateState } from './hooks/templateContext';
 import { useListTemplatePageApi } from './hooks/useTemplateApi';
 import { MoreVertical, Edit, Upload } from 'lucide-react';
@@ -11,37 +11,6 @@ import httpRequest from '../../../../global-utils/httpRequest';
 const ListTemplateComponent: React.FC = () => {
   const { state, setState } = useTemplateState();
   const { getTemplatesApi } = useListTemplatePageApi();
-  const [cardsPerRow, setCardsPerRow] = useState(4);
-
-  // Calculate how many cards can fit per row based on screen width
-  const calculateCardsPerRow = useCallback(() => {
-    const screenWidth = window.innerWidth;
-    const cardMinWidth = 300; // min-w-80 = 320px
-    const containerPadding = 48; // accounting for container padding
-    const gapBetweenCards = 16; // gap-4 = 16px
-
-    // Calculate maximum cards that can fit per row
-    const availableWidth = screenWidth - containerPadding;
-    const maxCards = Math.floor((availableWidth + gapBetweenCards) / (cardMinWidth + gapBetweenCards));
-
-    // Ensure at least 1 card and reasonable maximum
-    return Math.max(1, Math.min(maxCards, 6));
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setCardsPerRow(calculateCardsPerRow());
-    };
-
-    // Set initial value
-    handleResize();
-
-    // Add resize listener
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, [calculateCardsPerRow]);
 
   useEffect(() => {
     getTemplatesApi();
@@ -54,8 +23,8 @@ const ListTemplateComponent: React.FC = () => {
 
   if (state.loadingTemplates) {
     return (
-      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cardsPerRow}, 1fr)` }}>
-        {Array.from({ length: cardsPerRow * 2 }).map((_, idx) => (
+      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+        {Array.from({ length: 10 }).map((_, idx) => (
           <TemplateCardComponent key={idx} isLoading />
         ))}
       </div>
@@ -63,7 +32,7 @@ const ListTemplateComponent: React.FC = () => {
   }
 
   return (
-    <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cardsPerRow}, 1fr)` }}>
+    <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
       {state.templates.map((template: any, idx: number) => (
         <TemplateCardComponent
           onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
@@ -83,7 +52,6 @@ interface PropsIF {
   onClickUpload?: () => void;
   isLoading?: boolean;
   refreshPage?: () => void;
-  flexBasis?: string;
 }
 
 export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage }) => {

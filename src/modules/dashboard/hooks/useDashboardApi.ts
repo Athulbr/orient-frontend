@@ -22,8 +22,12 @@ export const useDashboardApi = () => {
   const getTemplatesApi = async () => {
     try {
       setState(prev => ({ ...prev, loadingTemplates: true }));
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, { pageSize: 15, filters: { deleted: false } });
-      setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, {
+        pageSize: 15,
+        custom: true,
+        filters: { deleted: false },
+      });
+      setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data, totalTemplates: res.total }));
       return true;
     } catch (error) {
       toast.error('Failed to fetch template');

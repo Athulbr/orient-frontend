@@ -8,6 +8,7 @@ import { useViewRecordState } from './hooks/viewRecordContext';
 import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
 import { AnnotationLine } from './components/AnnotationLine';
+import { LoadingDataSpinner } from './components/Loaders';
 interface PreviewComponentProps {
   fieldRefs: any;
   containerRef: any;
@@ -296,131 +297,137 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
         name={state.record?.name}
       />
 
-      <div
-        ref={imageContainerRef}
-        className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-100 pt-8 pb-50 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
-      >
-        {state.images.map((imgSrc, index) => (
-          <div
-            className="relative w-fit bg-green-500 shadow-xl shadow-gray-400"
-            style={{
-              width: `${zoom - 10}%`,
-              height: 'auto',
-            }}
-            key={index}
-          >
-            <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
-            {/* ========================== Object Fields ========================== */}
-            {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
-              return (
-                <Fragment key={`${mainKey}_${mainIndex}`}>
-                  {Object.entries(mainValue).map(([key, field]: any, i: number) => {
-                    const bbox = field?.bbox;
-                    if (!bbox || field?.page !== index + 1) return null;
-                    const hoveredFieldId = `objectFields:${mainKey}:${key}`;
-                    return (
-                      <div
-                        key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
-                        className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
-                        style={{
-                          left: `${bbox.x_min * 100 - 0.4}%`,
-                          top: `${bbox.y_min * 100 - 0.4}%`,
-                          width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
-                          height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
-                        }}
-                        onClick={() => {
-                          handleFieldClick(hoveredFieldId, bbox, index + 1);
-                          setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
-                        }}
-                      >
-                        <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                          {formatFieldLabel(key)}
+      {state.loadingS3File ? (
+        <div className="flex h-full w-full flex-col items-center justify-center">
+          <LoadingDataSpinner text="Loading Document..." />
+        </div>
+      ) : (
+        <div
+          ref={imageContainerRef}
+          className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-100 pt-8 pb-50 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
+        >
+          {state.images.map((imgSrc, index) => (
+            <div
+              className="relative w-fit bg-green-500 shadow-xl shadow-gray-400"
+              style={{
+                width: `${zoom - 10}%`,
+                height: 'auto',
+              }}
+              key={index}
+            >
+              <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
+              {/* ========================== Object Fields ========================== */}
+              {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
+                return (
+                  <Fragment key={`${mainKey}_${mainIndex}`}>
+                    {Object.entries(mainValue).map(([key, field]: any, i: number) => {
+                      const bbox = field?.bbox;
+                      if (!bbox || field?.page !== index + 1) return null;
+                      const hoveredFieldId = `objectFields:${mainKey}:${key}`;
+                      return (
+                        <div
+                          key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
+                          className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
+                          style={{
+                            left: `${bbox.x_min * 100 - 0.4}%`,
+                            top: `${bbox.y_min * 100 - 0.4}%`,
+                            width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
+                            height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
+                          }}
+                          onClick={() => {
+                            handleFieldClick(hoveredFieldId, bbox, index + 1);
+                            setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
+                          }}
+                        >
+                          <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                            {formatFieldLabel(key)}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </Fragment>
-              );
-            })}
-            {/* ========================== Array Fields ========================== */}
-            {state.arrayFields.map((table, mainIndex) => {
-              return (
-                <div key={`${mainIndex}`}>
-                  {Object.entries(table).map(([mainKey, row]: any, i: number) => {
-                    return (
-                      <div key={`${mainKey}_${i}`}>
-                        {Object.entries(row).map(([key, field]: any, i: number) => {
-                          const bbox = field?.bbox;
-                          if (!bbox || field?.page !== index + 1) return null;
-                          const hoveredFieldId = `arrayFields:${mainIndex}:${mainKey}:${key}`;
-                          return (
-                            <div
-                              key={`${mainKey}_${i}`}
-                              className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
-                              style={{
-                                left: `${bbox.x_min * 100 - 0.4}%`,
-                                top: `${bbox.y_min * 100 - 0.4}%`,
-                                width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
-                                height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
-                              }}
-                              onClick={() => {
-                                handleFieldClick(hoveredFieldId, bbox, index + 1);
-                                setState(prev => ({
-                                  ...prev,
-                                  scrollToViewField: prev.scrollToViewField + 1,
-                                  hoveredOnArrayField: true,
-                                  selectedTableName: state.tableNames[mainIndex],
-                                }));
-                              }}
-                            >
-                              <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                {formatFieldLabel(key)}
+                      );
+                    })}
+                  </Fragment>
+                );
+              })}
+              {/* ========================== Array Fields ========================== */}
+              {state.arrayFields.map((table, mainIndex) => {
+                return (
+                  <div key={`${mainIndex}`}>
+                    {Object.entries(table).map(([mainKey, row]: any, i: number) => {
+                      return (
+                        <div key={`${mainKey}_${i}`}>
+                          {Object.entries(row).map(([key, field]: any, i: number) => {
+                            const bbox = field?.bbox;
+                            if (!bbox || field?.page !== index + 1) return null;
+                            const hoveredFieldId = `arrayFields:${mainIndex}:${mainKey}:${key}`;
+                            return (
+                              <div
+                                key={`${mainKey}_${i}`}
+                                className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
+                                style={{
+                                  left: `${bbox.x_min * 100 - 0.4}%`,
+                                  top: `${bbox.y_min * 100 - 0.4}%`,
+                                  width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
+                                  height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
+                                }}
+                                onClick={() => {
+                                  handleFieldClick(hoveredFieldId, bbox, index + 1);
+                                  setState(prev => ({
+                                    ...prev,
+                                    scrollToViewField: prev.scrollToViewField + 1,
+                                    hoveredOnArrayField: true,
+                                    selectedTableName: state.tableNames[mainIndex],
+                                  }));
+                                }}
+                              >
+                                <div className="pointer-events-none absolute top-[-15px] left-0 z-10 mt-1 -translate-y-full rounded-md bg-gray-800 px-2 py-1 text-sm text-nowrap text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                  {formatFieldLabel(key)}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
 
-            {state.bbox && state.tabIndex === 0 && !state.loadingS3File && index === state.pageNumber - 1 && (
-              <div>
-                <BoundingBox
-                  bbox={state.bbox}
-                  onRef={el => {
-                    bboxRef.current[1234] = el;
-                  }}
-                />
-
-                {/* ========================== Hovered Field Card ========================== */}
-                {getHoveredField() && (
-                  <HoveredFieldCard
-                    hoveredField={getHoveredField()}
-                    hoveredFieldId={state.hoveredFieldId || ''}
+              {state.bbox && state.tabIndex === 0 && !state.loadingS3File && index === state.pageNumber - 1 && (
+                <div>
+                  <BoundingBox
                     bbox={state.bbox}
-                    onValueChange={handleValueChange}
-                    onCheckToggle={handleCheckToggle}
-                    arrayLength={arrayLength}
-                    isChecked={
-                      arrayLength === 4
-                        ? state.arrayFields[Number(subKey)]?.[subSubKey]?.[label]?.checked || false
-                        : arrayLength === 3
-                          ? // @ts-ignore
-                            state[mainKey]?.[subKey]?.[subSubKey]?.checked || false
-                          : // @ts-ignore
-                            state[mainKey]?.[subKey]?.checked || false
-                    }
+                    onRef={el => {
+                      bboxRef.current[1234] = el;
+                    }}
                   />
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-        <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
-      </div>
+
+                  {/* ========================== Hovered Field Card ========================== */}
+                  {getHoveredField() && (
+                    <HoveredFieldCard
+                      hoveredField={getHoveredField()}
+                      hoveredFieldId={state.hoveredFieldId || ''}
+                      bbox={state.bbox}
+                      onValueChange={handleValueChange}
+                      onCheckToggle={handleCheckToggle}
+                      arrayLength={arrayLength}
+                      isChecked={
+                        arrayLength === 4
+                          ? state.arrayFields[Number(subKey)]?.[subSubKey]?.[label]?.checked || false
+                          : arrayLength === 3
+                            ? // @ts-ignore
+                              state[mainKey]?.[subKey]?.[subSubKey]?.checked || false
+                            : // @ts-ignore
+                              state[mainKey]?.[subKey]?.checked || false
+                      }
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+          <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+        </div>
+      )}
       <AnnotationLine bboxRef={bboxRef} />
     </div>
   );

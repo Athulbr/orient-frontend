@@ -1,11 +1,19 @@
+import { useEffect } from 'react';
 import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { useSubscriptionModelState } from './hooks/subscriptionModelContext';
 import { useSubscriptionModelsApi } from './hooks/useSubscriptionModelApi';
+import { useParams } from 'react-router-dom';
 
 export const ListSubscriptionModelComponent: React.FC = () => {
+  const { id } = useParams();
   const { setState, state } = useSubscriptionModelState();
   const { getSubscriptionModelByIdApi, deleteSubscriptionModelApi } = useSubscriptionModelsApi();
+
+  useEffect(() => {
+    if (!id) return;
+    setState(prev => ({ ...prev, projectId: `${id}` }));
+  }, [id]);
 
   const actionButtons = [
     {

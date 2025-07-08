@@ -64,6 +64,14 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                           }));
                           updateWire(fieldId, value?.bbox);
                         }
+                      } else {
+                        setState(prev => ({
+                          ...prev,
+                          hoveredFieldId: null,
+                          hoveredOnArrayField: false,
+                          bbox: null,
+                          wire: null,
+                        }));
                       }
                     }}
                     disabled={state.loadingS3File}
