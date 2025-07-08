@@ -63,7 +63,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
   if (state.selectedTableName) return null;
 
   return (
-    <div className="flex items-center justify-end gap-2 border-t bg-white p-2">
+    <div className="flex items-center justify-end gap-2 border-t p-2">
       <Tooltip text="Skip to Next Document">
         <Button small outlined onClick={skipToNextDocumentHandler}>
           <SkipForward size={18} className="text-gray-500" />

@@ -1,9 +1,10 @@
 .tabNav {
   width: 100%;
-  background-color: #f9fafb;
-  padding: 4px 10px;
+  background-color: white;
+  padding: 0 10px;
   display: flex;
   align-items: center;
+  height: 59.4px;
 }
 
 .tabList {

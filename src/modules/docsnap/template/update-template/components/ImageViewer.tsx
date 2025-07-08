@@ -9,7 +9,6 @@ interface ImageViewerProps {
 }
 
 export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Name' }) => {
-  const { state } = useUpdateTemplateState();
   const [zoom, setZoom] = useState(100);
   const [shrinked, setShrinked] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,7 +53,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-16 items-center justify-between border border-r-0 bg-gray-50 px-4">
+      <div className="flex h-16 items-center justify-between border border-r-0 bg-white px-4">
         <span className="max-w-50 truncate text-lg">{name}</span>
         <div className="flex items-center gap-2 rounded-md border bg-white p-1">
           <LightIconButton Icon={ZoomOut} onClick={zoomOut} title="Zoom Out" />
@@ -70,28 +69,24 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
         <LightIconButton Icon={Download} onClick={download} title="Download" />
       </div>
 
-      {state.loadingS3File ? (
-        <FullScreenLoader text="Loading Document..." />
-      ) : (
-        <div
-          ref={containerRef}
-          className={`relative flex h-full flex-col gap-6 overflow-auto bg-white pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
-        >
-          {images.map((imgSrc, index) => (
-            <div
-              className="w-fit bg-green-500 shadow-xl shadow-gray-400"
-              style={{
-                width: `${zoom - 10}%`,
-                height: 'auto',
-              }}
-              key={index}
-            >
-              <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
-            </div>
-          ))}
-          <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
-        </div>
-      )}
+      <div
+        ref={containerRef}
+        className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-50 pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
+      >
+        {images.map((imgSrc, index) => (
+          <div
+            className="w-fit bg-green-500 shadow-xl shadow-gray-400"
+            style={{
+              width: `${zoom - 10}%`,
+              height: 'auto',
+            }}
+            key={index}
+          >
+            <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
+          </div>
+        ))}
+        <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+      </div>
     </div>
   );
 };

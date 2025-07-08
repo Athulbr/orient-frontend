@@ -1,10 +1,13 @@
 import { useRef, useState } from 'react';
 import { DocumentPreviewComponent } from './DocumentPreview';
-import { ViewRecordStateProvider } from './hooks/viewRecordContext';
+import { useViewRecordState, ViewRecordStateProvider } from './hooks/viewRecordContext';
 import { TabViewContainer } from './components/TabViewContainer';
 import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
+import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
+import { ImageViewer } from '../../template/update-template/components/ImageViewer';
+import { PreviewComponent } from './PreviewComponent';
 
 interface WirePoints {
   x1: number;
@@ -81,11 +84,14 @@ const ViewRecordPage: React.FC = () => {
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
       <div className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[40vh]' : 'pb-0'}`} ref={containerRef}>
-        <DocumentPreviewComponent containerRef={containerRef} fieldRefs={fieldRefs} />
-        <TabViewContainer>
-          <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />
-          <DocumentBotComponent />
-        </TabViewContainer>
+        {/* <DocumentPreviewComponent containerRef={containerRef} fieldRefs={fieldRefs} /> */}
+        <ResizableContainer
+          left={<LeftContainer containerRef={containerRef} fieldRefs={fieldRefs} />}
+          right={<RightContainer containerRef={containerRef} fieldRefs={fieldRefs} />}
+          initialLeftWidthPercent={75}
+          minLeftWidthPercent={60}
+          maxLeftWidthPercent={80}
+        />
         {state.selectedTableName && (
           <div className="absolute bottom-0 left-0 z-1 flex h-[40vh] w-full flex-col overflow-hidden border-t border-blue-200 bg-gray-50 p-2">
             <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, containerRef }} updateWire={() => {}} />
@@ -97,3 +103,24 @@ const ViewRecordPage: React.FC = () => {
 };
 
 export default ViewRecordPage;
+
+const LeftContainer = ({ containerRef, fieldRefs }: { containerRef: any; fieldRefs: any }) => {
+  const { state } = useViewRecordState();
+  return (
+    <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
+      {/* <DocumentPreviewComponent containerRef={containerRef} fieldRefs={fieldRefs} /> */}
+      <PreviewComponent images={state.images} />
+    </div>
+  );
+};
+
+const RightContainer = ({ containerRef, fieldRefs }: { containerRef: any; fieldRefs: any }) => {
+  return (
+    <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
+      <TabViewContainer>
+        <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />
+        <DocumentBotComponent />
+      </TabViewContainer>
+    </div>
+  );
+};

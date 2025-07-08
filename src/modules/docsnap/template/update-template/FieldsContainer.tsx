@@ -22,7 +22,7 @@ import FullScreenLoader from '../../../../components/FullScreenLoader';
 export const FieldsContainer: React.FC = () => {
   const { state, setState } = useUpdateTemplateState();
 
-  const { getTemplateApi } = useUpdateTemplatePageApi();
+  const { getTemplateApi, createTemplateApi } = useUpdateTemplatePageApi();
   const { id, fileName } = useParams();
   const toast = useToastStore();
 
@@ -112,9 +112,30 @@ export const FieldsContainer: React.FC = () => {
     });
     setState(prev => ({ ...prev, sectionList }));
   };
+  const handleCreateTemplate = () => {
+    const requestBody = {
+      name: 'Purchase 1234',
+      description: 'Updated Description',
+      fields: [],
+      s3FileName: 'PO_VA_539-n44628.pdf',
+      docType: 'purchase_order',
+      active: false,
+      deleted: false,
+      primaryModel: 'openai',
+      secondaryModel: 'gemini',
+      verify: true,
+      automationID: 'wVCp6fW08Z59st3V',
+      enableOcr: true,
+      enableChat: true,
+    };
+    createTemplateApi(requestBody);
+  };
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex h-[64px] w-full items-center border border-l-0 bg-gray-50 pl-5 text-lg text-gray-800">Template Fields</div>
+      <div className="flex h-[64px] w-full items-center border border-l-0 bg-gray-50 pl-5 text-lg text-gray-800">
+        Template Fields
+        <Button onClick={handleCreateTemplate}>Create Template</Button>
+      </div>
       {state.loadingTemplate ? (
         <FullScreenLoader text="Loading Template..." />
       ) : (

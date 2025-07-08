@@ -11,7 +11,7 @@ export const useUpdateTemplatePageApi = () => {
   const getTemplatesApi = async () => {
     try {
       setState(prev => ({ ...prev, loadingTemplates: true }));
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`);
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, { pageSize: 100 });
       setState(prev => ({ ...prev }));
       toast.success('Template fetched successfully');
       return true;

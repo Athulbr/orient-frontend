@@ -24,7 +24,7 @@ const BackButton: React.FC<BackButtonIF> = ({ onClick, tooltipText = 'Go back', 
         onClick={onClick}
         onKeyDown={handleKeyDown}
         className={cn(
-          'flex h-8 w-10 cursor-pointer items-center justify-center rounded-lg border bg-gray-50 hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none',
+          'flex h-8 w-10 cursor-pointer items-center justify-center rounded-lg bg-gray-50 hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none',
           className
         )}
       >
