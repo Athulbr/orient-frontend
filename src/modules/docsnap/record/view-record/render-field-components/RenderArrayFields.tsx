@@ -205,6 +205,12 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     textarea.style.height = `${textarea.scrollHeight + 4}px`;
   };
 
+  const handleFocus = (event: any) => {
+    // Select all text inside the textarea when it receives focus
+    event.target.select();
+    onMouseEnter();
+  };
+
   useEffect(() => {
     adjustTextareaHeight();
   }, [value?.value]);
@@ -221,7 +227,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
         ref={el => (fieldRefs.current[fieldId] = el)}
         onChange={onChange}
         // onClick={onMouseEnter}
-        onFocus={onMouseEnter}
+        onFocus={handleFocus}
         disabled={disabled}
       />
     </td>

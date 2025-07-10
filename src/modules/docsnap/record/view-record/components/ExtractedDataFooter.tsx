@@ -2,7 +2,7 @@ import { Button } from '../../../../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
 import { useViewRecordState } from '../hooks/viewRecordContext';
-import { Forward, RefreshCcw, SkipForward } from 'lucide-react';
+import { Forward, RefreshCcw, RefreshCw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
 import httpRequest from '../../../../../global-utils/httpRequest';
@@ -72,7 +72,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
       </Tooltip>
       <Tooltip text="Re Extract">
         <Button onClick={handleReExtract} small outlined>
-          <RefreshCcw size={18} className={`text-gray-500 ${state.reExtracting ? 'animate-spin' : ''}`} />
+          <RefreshCw size={18} className={`text-gray-500 ${state.reExtracting ? 'animate-spin' : ''}`} />
         </Button>
       </Tooltip>
       <Button onClick={() => navigate(-1)} outlined small>

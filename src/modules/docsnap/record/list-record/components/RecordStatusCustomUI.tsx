@@ -1,16 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useListRecordPageState } from '../hooks/listRecordPageContext';
 
 export const RecordStatusCustomUI = (row: any) => {
   const [data, setData] = useState<any>(null);
-  const { state } = useListRecordPageState();
-  const [refresh, setRefresh] = useState(0);
-
-  useEffect(() => {
-    setRefresh(state.refresh);
-  }, []);
-
-  console.log('refresh:===========', refresh);
 
   const streamUrl = row?.data?.metadata?.stream_url;
 
@@ -44,10 +35,9 @@ export const RecordStatusCustomUI = (row: any) => {
   if (!streamUrl) {
     return <div className="font-semibold text-red-400">Failed</div>;
   }
-
   return (
     <div className="w-fit cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
-      Processing
+      {data?.status || 'Waiting'}
     </div>
   );
 

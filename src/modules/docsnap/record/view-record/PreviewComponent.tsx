@@ -317,6 +317,11 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
               }}
               key={index}
             >
+              {state.reExtracting && (
+                <div className="absolute top-0 left-0 z-1000 flex h-full w-full items-center justify-center overflow-hidden border-3 border-sky-300 bg-[#1fa9f033]">
+                  <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
+                </div>
+              )}
               <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
               {/* ========================== Object Fields ========================== */}
               {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
@@ -337,6 +342,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                             height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                           }}
                           onClick={() => {
+                            if (state.reExtracting) return;
                             handleFieldClick(hoveredFieldId, bbox, index + 1);
                             setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1, hoveredOnArrayField: false, selectedTableName: '' }));
                           }}
@@ -372,6 +378,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                                   height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
                                 }}
                                 onClick={() => {
+                                  if (state.reExtracting) return;
                                   handleFieldClick(hoveredFieldId, bbox, index + 1);
                                   setState(prev => ({
                                     ...prev,
@@ -395,15 +402,18 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
               })}
 
               {state.bbox && state.tabIndex === 0 && !state.loadingS3File && index === state.pageNumber - 1 && (
-                <div>
-                  <BoundingBox
-                    bbox={state.bbox}
-                    onRef={el => {
-                      bboxRef.current[1234] = el;
-                    }}
-                  />
-
-                  {/* ========================== Hovered Field Card ========================== */}
+                <div
+                  ref={el => {
+                    bboxRef.current[1234] = el;
+                  }}
+                  className="absolute border-2 border-blue-600"
+                  style={{
+                    left: `${state.bbox.x_min * 100 - 0.4}%`,
+                    top: `${state.bbox.y_min * 100 - 0.4}%`,
+                    width: `${(state.bbox.x_max - state.bbox.x_min) * 100 + 0.8}%`,
+                    height: `${(state.bbox.y_max - state.bbox.y_min) * 100 + 0.6}%`,
+                  }}
+                >
                   {getHoveredField() && (
                     <HoveredFieldCard
                       hoveredField={getHoveredField()}

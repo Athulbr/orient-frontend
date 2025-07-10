@@ -57,10 +57,8 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
 
   return (
     <div
-      className={`${state.hoveredOnArrayField ? 'shadow-none' : 'shadow-lg'} absolute flex flex-col gap-2 rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-lg shadow-gray-400`}
+      className={`${state.hoveredOnArrayField ? 'bottom-[120%] shadow-none' : 'top-[120%] shadow-lg'} absolute left-0 z-10000000 flex flex-col gap-2 rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-lg shadow-gray-400`}
       style={{
-        left: `${bbox.x_min * 100 - 0.5}%`,
-        top: state.hoveredOnArrayField ? `calc(${bbox.y_max * 100 - 6}% - ${textareaRef.current?.offsetHeight}px)` : `${bbox.y_max * 100 + 1}%`,
         minWidth: '250px',
       }}
     >

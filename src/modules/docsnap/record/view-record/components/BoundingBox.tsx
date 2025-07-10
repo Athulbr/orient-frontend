@@ -23,9 +23,6 @@ export const BoundingBox: React.FC<BoundingBoxProps> = ({ bbox, onRef }) => {
         width: `${(bbox.x_max - bbox.x_min) * 100 + 0.8}%`,
         height: `${(bbox.y_max - bbox.y_min) * 100 + 0.6}%`,
       }}
-      // onClick={() => {
-      //   setState(prev => ({ ...prev, scrollToViewField: prev.scrollToViewField + 1 }));
-      // }}
     />
   );
 };
