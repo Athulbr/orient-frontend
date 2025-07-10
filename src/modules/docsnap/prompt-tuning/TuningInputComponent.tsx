@@ -12,7 +12,7 @@ import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import Spinner from '../../../components/Spinner';
 
 // Constants
-const API_ENDPOINT = 'https://dev.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
+const API_ENDPOINT = 'https://demo.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
 const BASED_ON_OPTIONS = [
   { label: 'Edit', value: 'edit' },
   { label: 'Comment', value: 'comment' },
@@ -136,7 +136,7 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
       },
       include_confidence: true,
       include_bbox: true,
-      confidence_threshold: 0.8,
+      confidence_threshold: 0.5,
       s3_file_name: 'PO_Private_00114126882.pdf',
       provider_id: 'openai',
       model_id: 'gpt-4o',

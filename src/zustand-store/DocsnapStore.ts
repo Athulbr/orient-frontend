@@ -28,7 +28,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
           entity_schema: convertedJson,
           include_confidence: true,
           include_bbox: true,
-          confidence_threshold: 0.8,
+          confidence_threshold: 0.5,
           s3_file_name: s3Response?.data?.fileName,
           provider_id: 'azure',
           model_id: 'gpt-4o',
@@ -78,7 +78,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
   },
   trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
     try {
-      const response = await fetch(`https://dev.makez.ai/chatbot/upload`, {
+      const response = await fetch(`https://demo.makez.ai/chatbot/upload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
