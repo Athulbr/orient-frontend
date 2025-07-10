@@ -16,6 +16,8 @@ export interface TemplateStateIF {
   showUploadDocumentDialog: boolean;
   selectedTemplate: any;
   refresh: number;
+  predefinedTemplates: any[];
+  loadingPredefinedTemplates: boolean;
 }
 const initialState = {
   id: '',
@@ -25,6 +27,8 @@ const initialState = {
   showUploadDocumentDialog: false,
   selectedTemplate: null,
   refresh: 1,
+  predefinedTemplates: [],
+  loadingPredefinedTemplates: false,
 };
 
 const ListTemplatePage: React.FC = () => {

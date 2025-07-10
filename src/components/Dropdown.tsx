@@ -12,7 +12,8 @@ export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onC
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleDropdown = () => {
+  const toggleDropdown = (e: any) => {
+    e.stopPropagation();
     setIsOpen(!isOpen);
   };
 
@@ -54,8 +55,8 @@ export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onC
         tabIndex={0}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleDropdown();
+            e.stopPropagation();
+            toggleDropdown(e);
           }
         }}
         aria-expanded={isOpen}
@@ -70,7 +71,10 @@ export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onC
               <button
                 key={`${option}-${index}`}
                 className="block w-full px-4 py-2 text-left text-sm text-nowrap text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:outline-none"
-                onClick={() => handleOptionClick(option)}
+                onClick={(e: any) => {
+                  e.stopPropagation();
+                  handleOptionClick(option);
+                }}
                 role="menuitem"
                 type="button"
               >

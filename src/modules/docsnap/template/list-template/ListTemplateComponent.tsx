@@ -1,20 +1,15 @@
 import { useEffect } from 'react';
 import { useTemplateState } from './hooks/templateContext';
 import { useListTemplatePageApi } from './hooks/useTemplateApi';
-import { MoreVertical, Edit, Upload } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../../components/Button';
-import { Dropdown } from '../../../../components/Dropdown';
-import { useToastStore } from '../../../../components/toast/ToastStore';
-import httpRequest from '../../../../global-utils/httpRequest';
 import { TemplateCardComponent } from './components/TemplateCard';
 
 const ListTemplateComponent: React.FC = () => {
   const { state, setState } = useTemplateState();
-  const { getTemplatesApi } = useListTemplatePageApi();
+  const { getTemplatesApi, getPredefinedTemplatesApi } = useListTemplatePageApi();
 
   useEffect(() => {
     getTemplatesApi();
+    getPredefinedTemplatesApi();
   }, []);
 
   useEffect(() => {

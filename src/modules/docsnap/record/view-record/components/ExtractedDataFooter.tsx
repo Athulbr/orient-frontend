@@ -16,10 +16,9 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
   const { setState } = useViewRecordState();
   const { updateRecordApiById, updateExtractedData, getRecordApiById } = useViewRecordApi();
   const handleSubmit = () => {};
-  const [reExtracting, setReExtracting] = useState<boolean>(false);
 
   const handleReExtract = async () => {
-    setReExtracting(true);
+    setState(prev => ({ ...prev, reExtracting: true }));
     const convertedJson = convertJSON(state.record?.fields || []);
 
     setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
@@ -45,7 +44,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
       if (data.current_step === 'Complete') {
         eventSource.close();
         await updateExtractedData(data?.result?.extracted_data || {});
-        setReExtracting(false);
+        setState(prev => ({ ...prev, reExtracting: false }));
         await getRecordApiById(state.record?._id);
       }
     });
@@ -73,7 +72,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
       </Tooltip>
       <Tooltip text="Re Extract">
         <Button onClick={handleReExtract} small outlined>
-          <RefreshCcw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
+          <RefreshCcw size={18} className={`text-gray-500 ${state.reExtracting ? 'animate-spin' : ''}`} />
         </Button>
       </Tooltip>
       <Button onClick={() => navigate(-1)} outlined small>

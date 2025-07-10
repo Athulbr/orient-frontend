@@ -47,6 +47,7 @@ export interface ViewRecordStateIF {
   scrollToViewField: number;
   selectedTableName: string;
   hoveredOnArrayField: boolean;
+  reExtracting: boolean;
 }
 const initialState = {
   showCreateDialog: false,
@@ -70,6 +71,7 @@ const initialState = {
   scrollToViewField: 1,
   selectedTableName: '',
   hoveredOnArrayField: false,
+  reExtracting: false,
 };
 
 const ViewRecordPage: React.FC = () => {

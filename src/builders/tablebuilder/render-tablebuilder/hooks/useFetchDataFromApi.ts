@@ -10,7 +10,7 @@ export const useFetchDataFromApi = () => {
 
   const getDataFromApi = useCallback(
     async (customQuery?: Partial<QueryParams>, clearFilterRequest?: boolean): Promise<boolean> => {
-      setState(prev => ({ ...prev }));
+      setState(prev => ({ ...prev, fetchingApi: true }));
 
       try {
         // Build the base query from state
@@ -51,7 +51,7 @@ export const useFetchDataFromApi = () => {
           throw new Error('Invalid API response format');
         }
 
-        setState(prev => ({ ...prev, total: res.total, data: res.data, loading: true }));
+        setState(prev => ({ ...prev, total: res.total, data: res.data, loading: true, fetchingApi: false }));
 
         return true;
       } catch (error) {

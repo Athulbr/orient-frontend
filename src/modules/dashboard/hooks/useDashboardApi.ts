@@ -19,6 +19,20 @@ export const useDashboardApi = () => {
       toast.error('Failed to fetch record');
     }
   };
+  const getPredefinedTemplatesApi = async () => {
+    try {
+      setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/pre-template`, {
+        pageSize: 15,
+        custom: true,
+        filters: { deleted: false },
+      });
+      setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data, totalPredefinedTemplates: res.total }));
+      return true;
+    } catch (error) {
+      toast.error('Failed to fetch predefined template');
+    }
+  };
   const getTemplatesApi = async () => {
     try {
       setState(prev => ({ ...prev, loadingTemplates: true }));
@@ -30,9 +44,9 @@ export const useDashboardApi = () => {
       setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data, totalTemplates: res.total }));
       return true;
     } catch (error) {
-      toast.error('Failed to fetch template');
+      toast.error('Failed to fetch predefined template');
     }
   };
 
-  return { getRecordsApi, getTemplatesApi };
+  return { getRecordsApi, getPredefinedTemplatesApi, getTemplatesApi };
 };

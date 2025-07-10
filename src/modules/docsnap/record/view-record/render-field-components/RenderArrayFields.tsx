@@ -127,7 +127,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                             fieldId={hoveredFieldId}
                             label={label}
                             fieldRefs={fieldRefs}
-                            disabled={state.loadingS3File}
+                            disabled={state.loadingS3File || state.reExtracting}
                             onChange={(e: any) => {
                               setState(prev => {
                                 const updated = [...prev.arrayFields];

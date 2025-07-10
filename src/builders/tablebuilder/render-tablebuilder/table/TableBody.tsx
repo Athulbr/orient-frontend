@@ -29,23 +29,23 @@ export const TableBody: FC = () => {
     [customUI]
   );
 
-  if (data.length === 0) {
-    return (
-      <tbody className="divide-y divide-gray-200">
-        <tr>
-          <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
-            No data available
-          </td>
-        </tr>
-      </tbody>
-    );
-  }
   if (loading) {
     return (
       <tbody>
         <tr>
           <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
             Loading...
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+  if (data.length === 0) {
+    return (
+      <tbody className="divide-y divide-gray-200">
+        <tr>
+          <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
+            {state.fetchingApi ? 'Loading...' : 'No data available'}
           </td>
         </tr>
       </tbody>

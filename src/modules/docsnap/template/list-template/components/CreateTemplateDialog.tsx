@@ -18,7 +18,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
 
   const handleSubmit = async () => {
     if (showFileUploadUI) return;
-    const template = state.templates.find((template: any) => template.name === selectedTemplateName);
+    const template = state.predefinedTemplates.find((template: any) => template.name === selectedTemplateName);
     if (template) {
       setError('Template name already exists');
     } else {
@@ -41,7 +41,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
   };
 
   const onChangeTemplateName = (e: any) => {
-    const template = state.templates.find((template: any) => template.name === e.target.value);
+    const template = state.predefinedTemplates.find((template: any) => template.name === e.target.value);
     if (template) {
       setError('Template name already exists');
     } else {
@@ -83,7 +83,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             </div>
 
             <div className="flex h-full w-full flex-wrap gap-4">
-              {state.templates
+              {state.predefinedTemplates
                 .filter((template: any) => template.name.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map((template: any, idx: number) => (
                   <div

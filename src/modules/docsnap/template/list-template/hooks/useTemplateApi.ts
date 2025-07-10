@@ -20,6 +20,18 @@ export const useListTemplatePageApi = () => {
       toast.error('Failed to create template');
     }
   };
+  const getPredefinedTemplatesApi = async () => {
+    try {
+      setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/pre-template`);
+      setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data }));
+      toast.success('Template fetched successfully');
+      return true;
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to create template');
+    }
+  };
   const getTemplateApi = async (id: string) => {
     try {
       setState(prev => ({ ...prev, loadingTemplate: true }));
@@ -66,5 +78,5 @@ export const useListTemplatePageApi = () => {
     }
   };
 
-  return { createTemplateApi, updateTemplateApi, getTemplateApi, deleteTemplateApi, getTemplatesApi };
+  return { createTemplateApi, updateTemplateApi, getTemplateApi, deleteTemplateApi, getTemplatesApi, getPredefinedTemplatesApi };
 };

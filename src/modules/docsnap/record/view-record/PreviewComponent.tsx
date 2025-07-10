@@ -9,6 +9,8 @@ import { BoundingBox } from './components/BoundingBox';
 import { HoveredFieldCard } from './components/HoveredFieldCard';
 import { AnnotationLine } from './components/AnnotationLine';
 import { LoadingDataSpinner } from './components/Loaders';
+import Spinner from '../../../../components/Spinner';
+import FullScreenLoader from '../../../../components/FullScreenLoader';
 interface PreviewComponentProps {
   fieldRefs: any;
   containerRef: any;
@@ -299,7 +301,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
 
       {state.loadingS3File ? (
         <div className="flex h-full w-full flex-col items-center justify-center">
-          <LoadingDataSpinner text="Loading Document..." />
+          <FullScreenLoader text="Loading Document..." />
         </div>
       ) : (
         <div

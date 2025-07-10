@@ -38,6 +38,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                     value={value?.value || ''}
                     confidence={`${value?.confidence * 100}`}
                     checked={value?.checked}
+                    disabled={state.loadingS3File || state.reExtracting}
                     checkClickHandler={(checked: boolean) => {
                       setState(prev => ({
                         ...prev,
@@ -74,7 +75,6 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                         }));
                       }
                     }}
-                    disabled={state.loadingS3File}
                     onChange={onChange}
                   />
                 );

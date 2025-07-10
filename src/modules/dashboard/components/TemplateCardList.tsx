@@ -16,8 +16,7 @@ interface TemplateCardsComponentIF {
 export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () => {
   const { state, setState } = useDashboardState();
   const [cardsPerRow, setCardsPerRow] = useState(4);
-  const navigate = useNavigate();
-  const { getTemplatesApi } = useDashboardApi();
+  const { getTemplatesApi, getPredefinedTemplatesApi } = useDashboardApi();
 
   // Calculate how many cards can fit based on screen width
   const calculateCardsPerRow = useCallback(() => {
@@ -51,6 +50,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
   useEffect(() => {
     getTemplatesApi();
+    getPredefinedTemplatesApi();
   }, []);
 
   // Calculate how many template cards to show (reserve 1 slot for "View All")

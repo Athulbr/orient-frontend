@@ -19,6 +19,8 @@ export interface DashboardStateIF {
   selectedTemplate: any;
   refresh: number;
   isDashboard: boolean;
+  predefinedTemplates: any[];
+  loadingPredefinedTemplates: boolean;
 }
 
 const initialState = {
@@ -33,6 +35,8 @@ const initialState = {
   showUploadDocumentDialog: false,
   selectedTemplate: null,
   refresh: 1,
+  predefinedTemplates: [],
+  loadingPredefinedTemplates: false,
 };
 
 const DashboardPage: FC = () => {
