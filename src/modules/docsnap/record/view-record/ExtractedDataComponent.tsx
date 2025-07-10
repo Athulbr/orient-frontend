@@ -57,6 +57,10 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
   };
 
   useEffect(() => {
+    if (state.hoveredFieldId !== null) updateWire(state.hoveredFieldId, state.bbox);
+  }, [state.leftWidthPercent]);
+
+  useEffect(() => {
     const handleScroll = () => {
       if (state.hoveredFieldId !== null) updateWire(state.hoveredFieldId, state.bbox);
 

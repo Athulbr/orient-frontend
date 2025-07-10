@@ -10,9 +10,9 @@ const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
   const { state } = useLoginPageState();
 
   const loginWithMicrosoft = async () => {
-    console.log('Login with Microsoft initiated');
+    console.info('Login with Microsoft initiated');
     instance.loginRedirect(loginRequest).catch(e => {
-      console.log('Sign In issue---->', e);
+      console.error('Sign In issue---->', e);
     });
   };
 

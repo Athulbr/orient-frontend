@@ -214,7 +214,6 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
   useEffect(() => {
     adjustTextareaHeight();
   }, [value?.value]);
-  console.log('label:===========', label);
   return (
     <td className="border p-1">
       <textarea

@@ -41,8 +41,6 @@ export const RecordStatusCustomUI = (row: any) => {
     </div>
   );
 
-  // console.log('data:===========', data);
-
   // return (
   //   <div className="flex flex-col">
   //     <div className="text-[10px] text-amber-500">{data?.current_step || ''}</div>
