@@ -136,7 +136,7 @@ const TuningInputComponent: React.FC<TuningInputComponentProps> = ({ selectedRow
       },
       include_confidence: true,
       include_bbox: true,
-      confidence_threshold: 0.8,
+      confidence_threshold: 0.5,
       s3_file_name: 'PO_Private_00114126882.pdf',
       provider_id: 'openai',
       model_id: 'gpt-4o',

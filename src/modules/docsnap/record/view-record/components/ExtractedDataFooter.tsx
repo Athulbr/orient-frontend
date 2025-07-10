@@ -29,7 +29,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
       entity_schema: convertedJson,
       include_confidence: true,
       include_bbox: true,
-      confidence_threshold: 0.8,
+      confidence_threshold: 0.5,
       s3_file_name: state.record?.pdfFileName,
       provider_id: 'azure',
       model_id: 'gpt-4o',
