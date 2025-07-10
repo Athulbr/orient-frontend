@@ -22,6 +22,13 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
       { text: '/' },
       { text: 'Update Template' },
     ],
+    viewTemplate: [
+      { text: 'Docsnap', path: '/' },
+      { text: '/' },
+      { text: 'Templates', path: '/docsnap/template/list' },
+      { text: '/' },
+      { text: 'View Template' },
+    ],
     listFormbuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Formbuilders' }],
     listTablebuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Tablebuilders' }],
     listUpdatedField: [{ text: 'Settings' }, { text: '/' }, { text: 'Updated Fields' }],

@@ -4,17 +4,12 @@ export interface TabNavProps {
   defaultActiveTab?: number;
   className?: string;
   onChange?: (index: number) => void;
+  tabs: { id: string; title: string }[];
 }
 
-export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange }) => {
+export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange, tabs }) => {
   // State for tracking active tab
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
-
-  const tabs = [
-    { id: 'data', title: 'Extracted Data' },
-    { id: 'chat', title: 'Chat with Document' },
-    // { id: 'comment', title: 'Comments' },
-  ];
 
   // Refs for DOM elements
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);

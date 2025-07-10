@@ -20,10 +20,14 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
     if (!id) return;
     getRecordApiById(id);
   }, [id, refresh]);
+  const tabs = [
+    { id: 'data', title: 'Extracted Data' },
+    { id: 'chat', title: 'Chat with Document' },
+  ];
 
   return (
     <div className={`flex h-full w-full flex-col border-l bg-[#f9fafb]`}>
-      <TabNavComponent className="relative z-20 border-b bg-[#f9fafb]" onChange={tabIndex => setState(prev => ({ ...prev, tabIndex }))} />
+      <TabNavComponent tabs={tabs} className="relative z-20 border-b bg-[#f9fafb]" onChange={tabIndex => setState(prev => ({ ...prev, tabIndex }))} />
       <div className="flex flex-1 flex-col overflow-hidden">
         {state.tabIndex === 0 ? React.Children.toArray(children)[0] : state.tabIndex === 1 ? React.Children.toArray(children)[1] : <div>Comments</div>}
       </div>

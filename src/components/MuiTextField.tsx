@@ -17,7 +17,6 @@ export const MuiTextField: React.FC<MuiTextFieldIF> = ({ label, errorMessage, va
           className={`peer w-full rounded border border-gray-400 px-4 py-3 pr-11 text-sm text-gray-800 duration-200 outline-none hover:border-gray-600 focus:border-gray-900 ${errorMessage ? 'border-red-500 hover:border-red-500 focus:border-red-500' : ''} ${className}`}
           {...rest}
           ref={inputRef}
-          autoComplete="new-password"
         />
         <span
           onClick={() => inputRef.current?.focus()}

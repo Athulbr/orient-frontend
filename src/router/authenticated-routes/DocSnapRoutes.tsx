@@ -7,6 +7,7 @@ import ViewRecordPage from '../../modules/docsnap/record/view-record';
 import ListRecordPage from '../../modules/docsnap/record/list-record';
 import ListTemplatePage from '../../modules/docsnap/template/list-template';
 import UpdateTemplatePage from '../../modules/docsnap/template/update-template';
+import ViewTemplatePage from '../../modules/docsnap/template/view-template';
 
 const DocSnapRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const DocSnapRoutes = () => {
       <Routes>
         <Route path="/project/list" element={<ListProjectPage />} />
         <Route path="/template/list" element={<ListTemplatePage />} />
+        <Route path="/template/view/:id" element={<ViewTemplatePage />} />
         <Route path="/template/update/:id" element={<UpdateTemplatePage />} />
         <Route path="/template/create/:fileName" element={<UpdateTemplatePage />} />
         <Route path="/document/list/:id" element={<ListDocumentPage />} />

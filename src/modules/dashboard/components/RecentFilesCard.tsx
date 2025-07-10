@@ -18,7 +18,7 @@ const RecentFilesCardComponent: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex h-auto flex-1 flex-col gap-y-4 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
+    <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
       <div className="flex items-center justify-between px-2 pt-4">
         <h5 className="text-gray-800">Recent Files</h5>
         <span

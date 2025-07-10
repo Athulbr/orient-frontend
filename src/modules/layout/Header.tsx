@@ -36,9 +36,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
   };
 
   return (
-    <div className="flex min-h-16 justify-between bg-black">
-      {/* // <div className="flex min-h-16 justify-between bg-[#042443]"> */}
-      {/* <div className="flex min-h-16 justify-between bg-[#012D56]">  */}
+    // <div className="flex min-h-16 justify-between bg-black">
+    // <div className="flex min-h-16 justify-between bg-[#042443]">
+    <div className="flex min-h-16 justify-between bg-[#012D56]">
       {!showSidebar && (
         <div tabIndex={0} className="flex h-17 w-16 items-center justify-center md:hidden">
           <Menu onClick={() => setShowSidebar(true)} className="cursor-pointer" color="white" size={30} />

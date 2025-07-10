@@ -45,7 +45,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
           extractedData: null,
           pdfFileName: s3Response?.data?.fileName,
           name: s3Response?.data?.fileName,
-          document: template._id,
+          templateId: template._id,
           documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf',
         };
 

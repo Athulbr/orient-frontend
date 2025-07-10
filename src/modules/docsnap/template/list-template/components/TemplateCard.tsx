@@ -67,6 +67,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
 
   return (
     <div
+      onClick={() => navigate(`/docsnap/template/view/${template._id}`)}
       className="relative flex h-40 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
       style={cardStyle}
     >

@@ -6,7 +6,6 @@ import ExtractedDataComponent from './ExtractedDataComponent';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
 import { PreviewComponent } from './PreviewComponent';
-import { AnnotationLine } from './components/AnnotationLine';
 
 interface WirePoints {
   x1: number;
