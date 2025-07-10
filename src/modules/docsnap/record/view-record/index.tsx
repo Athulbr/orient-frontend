@@ -48,6 +48,7 @@ export interface ViewRecordStateIF {
   selectedTableName: string;
   hoveredOnArrayField: boolean;
   reExtracting: boolean;
+  leftWidthPercent: number;
 }
 const initialState = {
   showCreateDialog: false,
@@ -68,6 +69,7 @@ const initialState = {
   messages: [],
   chatLoading: false,
   tableViewDialog: false,
+  leftWidthPercent: 75,
   scrollToViewField: 1,
   selectedTableName: '',
   hoveredOnArrayField: false,
@@ -89,6 +91,7 @@ const ViewRecordPage: React.FC = () => {
           initialLeftWidthPercent={75}
           minLeftWidthPercent={60}
           maxLeftWidthPercent={80}
+          onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}
         />
         {state.selectedTableName && (
           <div className="absolute bottom-0 left-0 z-1 flex h-[40vh] w-full flex-col overflow-hidden border-t border-blue-200 bg-gray-50 p-2">

@@ -214,6 +214,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
   useEffect(() => {
     adjustTextareaHeight();
   }, [value?.value]);
+  console.log('label:===========', label);
   return (
     <td className="border p-1">
       <textarea
@@ -221,7 +222,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
         id={fieldId}
         aria-label={fieldId}
         rows={1}
-        className={`min-w-0 rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
+        className={` ${label === 'Description' ? 'min-w-90' : 'min-w-0'} rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
         value={value?.value || ''}
         // @ts-ignore
         ref={el => (fieldRefs.current[fieldId] = el)}

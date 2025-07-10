@@ -73,7 +73,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
       top: container.scrollTop + scrollAmount,
       behavior: 'smooth',
     });
-  }, [state.hoveredFieldId, zoom]);
+  }, [state.hoveredFieldId, zoom, state.leftWidthPercent]);
 
   useEffect(() => {
     const container = imageContainerRef.current;

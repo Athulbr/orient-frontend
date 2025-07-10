@@ -7,6 +7,7 @@ interface ResizableContainerProps {
   minLeftWidthPercent?: number;
   maxLeftWidthPercent?: number;
   className?: string;
+  onResize?: (leftWidthPercent: number) => void;
 }
 
 export const ResizableContainer: React.FC<ResizableContainerProps> = ({
@@ -16,6 +17,7 @@ export const ResizableContainer: React.FC<ResizableContainerProps> = ({
   minLeftWidthPercent = 10,
   maxLeftWidthPercent = 90,
   className = '',
+  onResize,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
@@ -33,6 +35,7 @@ export const ResizableContainer: React.FC<ResizableContainerProps> = ({
 
       if (newLeftPercent >= minLeftWidthPercent && newLeftPercent <= maxLeftWidthPercent) {
         setLeftWidthPercent(newLeftPercent);
+        onResize?.(newLeftPercent);
       }
     };
 
