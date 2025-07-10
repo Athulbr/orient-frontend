@@ -12,7 +12,7 @@ import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import Spinner from '../../../components/Spinner';
 
 // Constants
-const API_ENDPOINT = 'https://dev.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
+const API_ENDPOINT = 'https://demo.makez.ai/ai/api/finetune/v1/prompt/prompt-tune';
 const BASED_ON_OPTIONS = [
   { label: 'Edit', value: 'edit' },
   { label: 'Comment', value: 'comment' },

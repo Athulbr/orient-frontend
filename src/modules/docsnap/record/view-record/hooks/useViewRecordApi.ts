@@ -87,7 +87,7 @@ export const useViewRecordApi = () => {
       botName: state.record?.pdfFileName,
     };
 
-    const response: any = await httpRequest('POST', `https://dev.makez.ai/chatbot/query`, requestBody);
+    const response: any = await httpRequest('POST', `https://demo.makez.ai/chatbot/query`, requestBody);
 
     setState(prev => ({
       ...prev,
