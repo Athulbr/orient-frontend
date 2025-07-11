@@ -109,6 +109,7 @@ export const useViewRecordApi = () => {
         template: state?.record?.templateId,
         extractedData: state?.record?.extractedData,
         metadata: state?.record?.metadata,
+        fileName: state?.record?.name,
         updatedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
       };
 
