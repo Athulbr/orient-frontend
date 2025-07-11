@@ -148,8 +148,8 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
         wireCoords = {
           x1: 0,
           y1: 0,
-          x2: fieldBox.left - containerBox.left,
-          y2: fieldBox.top + fieldBox.height / 2 - containerBox.top,
+          x2: state.hoveredOnArrayField ? fieldBox.left + fieldBox.width / 2 : fieldBox.left,
+          y2: state.hoveredOnArrayField ? fieldBox.top : fieldBox.top + fieldBox.height / 2,
         };
       }
 
