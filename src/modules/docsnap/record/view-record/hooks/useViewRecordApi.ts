@@ -106,10 +106,10 @@ export const useViewRecordApi = () => {
   const updateRecordApiById = async () => {
     try {
       const payload = {
-        document: state.record.document,
-        extractedData: state.record.extractedData,
-        metadata: state.record.metadata,
-        updatedData: { ...state.objectFields, line_items: state.arrayFields[0] },
+        template: state?.record?.templateId,
+        extractedData: state?.record?.extractedData,
+        metadata: state?.record?.metadata,
+        updatedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
       };
 
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
