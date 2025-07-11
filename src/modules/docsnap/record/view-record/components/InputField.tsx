@@ -46,7 +46,7 @@ export const InputField = ({
       )}
 
       <div
-        className={`flex h-9.5 w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-400'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
+        className={`mt-0.5 flex h-9.5 w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-400'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
       >
         <input
           onFocus={() => onMouseAction?.()}

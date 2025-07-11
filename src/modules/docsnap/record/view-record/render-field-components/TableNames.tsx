@@ -11,7 +11,7 @@ export const TableNames: FC = () => {
       {state.arrayFields.map((item, mainIndex) => {
         const length = Object.entries(item).length;
         return (
-          <div key={mainIndex} className="flex flex-col gap-2">
+          <div key={mainIndex} className="flex flex-col gap-2 rounded-lg border bg-white p-3 hover:border-blue-400">
             <div className="pl-1 text-lg font-semibold">Tables</div>
             {state.tableNames.map((name, index) => (
               <button
