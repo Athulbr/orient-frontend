@@ -1,40 +1,82 @@
 import { useState } from 'react';
-import { UpdatedFieldsIF } from './interface';
-import FieldDetailsComponent from './FieldDetailsComponent';
-import TuningInputComponent from './TuningInputComponent';
-import { DialogComponent } from '../../../components/DialogComponent';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageNameComponent from '../../../components/PageName';
 import PageContainer from '../../../components/PageContainer';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { PromptTuningStateProvider } from './hooks/promptTuningContext';
+import PromptTuningDialogComponent from './PromptTuningDialog';
+
+export interface PromptTuningStateIF {
+  showTuningDialog: boolean;
+  loading: boolean;
+  id: string;
+  refresh: number;
+  promptTuning: any | null;
+  selectedTemplateId: string;
+  fineTunedFieldList: any[];
+  fromDate: any;
+  toDate: any;
+}
+const sampleResponse = [
+  {
+    field_name: 'bill_to.bill_to_company vin-1',
+    current_prompt: 'Extract name of the VA facility or medical center. it represents which company or VA facility we are received order from.',
+    updated_prompt:
+      'Extract the name of the VA facility or medical center. It represents which company or VA facility we received the order from. Ensure to standardize the name by appending "VAMC" to the end of the facility name if it is a VA Medical Center. If the facility name includes a location or identifier in parentheses, retain the main facility name followed by "VAMC". If the facility is not a VA Medical Center, use the name as is.',
+    update_count: 120,
+  },
+  {
+    field_name: 'bill_to.bill_to_name vin-2',
+    current_prompt: 'extract it from purchase agent field or from Fax page who is making purchase order. or received from whom',
+    updated_prompt:
+      'Ensure names are extracted in the format "First Last" or "First Middle Last" without any additional punctuation or formatting. If the name includes a middle initial, it should be placed between the first and last name. If the name is in all caps, convert it to title case. If the name includes a suffix like "III," it should be placed at the end of the name. If the name includes a prefix like "Dr." or "Mr.," it should be placed at the beginning of the name. If the name is associated with an organization, ensure the organization name is included before the person\'s name.',
+    update_count: 115,
+  },
+  {
+    field_name: 'bill_to.bill_to_name vin-2',
+    current_prompt: 'extract it from purchase agent field or from Fax page who is making purchase order. or received from whom',
+    updated_prompt:
+      'Ensure names are extracted in the format "First Last" or "First Middle Last" without any additional punctuation or formatting. If the name includes a middle initial, it should be placed between the first and last name. If the name is in all caps, convert it to title case. If the name includes a suffix like "III," it should be placed at the end of the name. If the name includes a prefix like "Dr." or "Mr.," it should be placed at the beginning of the name. If the name is associated with an organization, ensure the organization name is included before the person\'s name.',
+    update_count: 115,
+  },
+  {
+    field_name: 'bill_to.bill_to_name vin-2',
+    current_prompt: 'extract it from purchase agent field or from Fax page who is making purchase order. or received from whom',
+    updated_prompt:
+      'Ensure names are extracted in the format "First Last" or "First Middle Last" without any additional punctuation or formatting. If the name includes a middle initial, it should be placed between the first and last name. If the name is in all caps, convert it to title case. If the name includes a suffix like "III," it should be placed at the end of the name. If the name includes a prefix like "Dr." or "Mr.," it should be placed at the beginning of the name. If the name is associated with an organization, ensure the organization name is included before the person\'s name.',
+    update_count: 115,
+  },
+];
+const initialState = {
+  showTuningDialog: false,
+  loading: false,
+  id: '',
+  refresh: 1,
+  promptTuning: null,
+  selectedTemplateId: '',
+  fineTunedFieldList: [],
+  fromDate: null,
+  toDate: null,
+};
 
 const UpdatedFieldsListPage: React.FC = () => {
-  const [dialog, setDialog] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<UpdatedFieldsIF | null>(null);
-
+  const [state, setState] = useState<PromptTuningStateIF>(initialState);
   const customFunctions = {
-    rowClickHandler: (data: UpdatedFieldsIF) => {
-      setDialog(true);
-      setSelectedRow(data);
+    rowClickHandler: (row: any) => {
+      setState(prev => ({ ...prev, showTuningDialog: true, selectedTemplateId: row.template?._id }));
     },
   };
-  const tablebuilderFilters = { projectName: selectedRow?.projectName || '', jsonKey: selectedRow?.jsonKey || '' };
 
   return (
-    <PageContainer className="">
-      <PageNameComponent name="Updated Fields">
-        <Breadcrumbs page="listUpdatedField" />
-      </PageNameComponent>
-      <UseTablebuilder name="updated fields" customFunctions={customFunctions} fluidHeight />
-      {/* <PromptTuningDialog isOpen={dialog} closeDialog={() => setDialog(false)} selectedRow={selectedRow} /> */}
-      <DialogComponent name="Prompt Tunning" className="h-4/5 w-3/4" isOpen={dialog} closeDialog={() => setDialog(false)}>
-        <div className="flex max-w-full flex-col gap-10 p-5">
-          <FieldDetailsComponent selectedRow={selectedRow} />
-          <UseTablebuilder name="updated field comment" externalFilters={[]} />
-          <TuningInputComponent selectedRow={selectedRow} />
-        </div>
-      </DialogComponent>
-    </PageContainer>
+    <PromptTuningStateProvider value={{ state, setState }}>
+      <PageContainer className="">
+        <PageNameComponent name="Updated Fields">
+          <Breadcrumbs page="listUpdatedField" />
+        </PageNameComponent>
+        <UseTablebuilder name="Prompt Tuning Table" customFunctions={customFunctions} fluidHeight />
+      </PageContainer>
+      <PromptTuningDialogComponent />
+    </PromptTuningStateProvider>
   );
 };
 

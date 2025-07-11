@@ -42,7 +42,7 @@ export const TextAreaComponent: FC<TextAreaProps> = ({
       {label && (
         <label
           htmlFor={textareaId}
-          className={classNames('flex items-center gap-1 text-sm font-medium text-gray-700', disabled && 'cursor-not-allowed opacity-50', labelClassName)}
+          className={classNames('flex items-center gap-1 pl-1 text-sm font-medium text-gray-700', disabled && 'cursor-not-allowed opacity-50', labelClassName)}
         >
           {label}
           {required && <span className="text-red-500">*</span>}

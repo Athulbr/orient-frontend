@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, X } from 'lucide-react';
 import { format, isSameDay, isAfter, isBefore, startOfDay, isWithinInterval, setHours } from 'date-fns';
 import { Button } from '../../../../components/Button';
+import { cn } from '../../../../global-utils/twMerge';
 
 interface DatePickerProps {
   from: Date | null;
@@ -124,22 +125,22 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
   };
 
   return (
-    <div ref={pickerRef} className={`relative inline-block ${className}`}>
+    <div ref={pickerRef} className={cn(`relative inline-block`, className)}>
       <Button onClick={() => !disabled && setIsOpen(!isOpen)} outlined>
         <Calendar className="h-3.5 w-3.5" />
         <span>{from && to ? `${format(from, 'MMM d')} - ${format(to, 'MMM d')}` : from ? `From ${format(from, 'MMM d')}` : 'Date Range'}</span>
       </Button>
 
       {isOpen && (
-        <div className="border-input absolute z-50 mt-1 w-[300px] overflow-hidden rounded-md border bg-white shadow-lg">
-          <div className="border-b p-3">
+        <div className="absolute z-50 mt-1 w-[300px] overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg">
+          <div className="border-b border-gray-300 p-3">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-medium">Date Range</h3>
-              <button type="button" onClick={handleClear} className="text-muted-foreground cursor-pointer border px-2 py-1 text-xs hover:text-gray-500">
+              <button type="button" onClick={handleClear} className="cursor-pointer border border-gray-300 px-2 py-1 text-xs text-gray-400 hover:text-gray-500">
                 Clear
               </button>
             </div>
-            <div className="text-muted-foreground text-xs">
+            <div className="text-xs text-gray-400">
               {!tempFrom && !tempTo
                 ? 'Select start date first'
                 : !tempTo
@@ -150,7 +151,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
             </div>
           </div>
 
-          <div className="p-3">
+          <div className="border-b border-gray-300 p-3">
             <div className="mb-4 flex items-center justify-between">
               <button type="button" onClick={previousMonth} className="rounded-full p-1 hover:bg-gray-200">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -160,7 +161,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
               <div className="font-medium">
                 {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </div>
-              <button type="button" onClick={nextMonth} className="hover:bg-primary rounded-full p-1">
+              <button type="button" onClick={nextMonth} className="rounded-full p-1 hover:bg-blue-600 hover:text-white">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -169,7 +170,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
 
             <div className="mb-1 grid grid-cols-7 gap-1">
               {weekdays.map(day => (
-                <div key={day} className="text-muted-foreground py-1 text-center text-xs font-medium">
+                <div key={day} className="py-1 text-center text-xs font-medium text-gray-400">
                   {day}
                 </div>
               ))}
@@ -184,7 +185,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
                   onMouseEnter={() => tempFrom && !tempTo && setHoverDate(day)}
                   onMouseLeave={() => setHoverDate(null)}
                   // disabled={isAfter(day, new Date())}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${isCurrentMonth(day) ? 'text-gray-600' : 'text-muted-foreground opacity-50'} ${isDaySelected(day) ? 'bg-primary hover:bg-primary/90 text-white' : ''} ${isDayInRange(day) ? 'bg-primary/20 hover:bg-primary/30' : 'hover:bg-gray-2'} 'cursor-pointer' transition-colors`}
+                  className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm transition-colors ${isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-400 opacity-50'} ${isDaySelected(day) ? 'bg-blue-600 text-white hover:bg-blue-700' : ''} ${isDayInRange(day) ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-gray-100'}`}
                 >
                   {day.getDate()}
                 </button>
@@ -192,7 +193,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
             </div>
           </div>
 
-          <div className="border-t p-3">
+          <div className="style={{ borderTop: '1px solid #d1d5db' }} p-3">
             <Button onClick={handleSubmit} className="w-full" disabled={!tempFrom || !tempTo}>
               Apply
             </Button>

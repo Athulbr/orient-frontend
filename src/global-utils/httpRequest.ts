@@ -26,7 +26,7 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000000);
 
     try {
       const response = await fetch(url, {

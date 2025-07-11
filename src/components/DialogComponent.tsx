@@ -3,7 +3,6 @@ import { X } from 'lucide-react';
 import { useEscapeKey } from '../hooks/useEscapeKey';
 import { ButtonBox } from './ButtonBox';
 import { Button } from './Button';
-import FullScreenLoader from './FullScreenLoader';
 import Spinner from './Spinner';
 import { cn } from '../global-utils/twMerge';
 

@@ -65,12 +65,8 @@ export const TableBody: FC = () => {
 
   return (
     <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
-      {data.map((row: any) => (
-        <tr
-          onClick={e => rowClickHandler(e, row)}
-          key={row._id}
-          className={selectedIds.includes(row._id) && rowSelection.enableRowHighlight ? 'bg-blue-50' : ''}
-        >
+      {data.map((row: any, index: number) => (
+        <tr onClick={e => rowClickHandler(e, row)} key={index} className={selectedIds.includes(row._id) && rowSelection.enableRowHighlight ? 'bg-blue-50' : ''}>
           {selectable && (
             <td onClick={e => e.stopPropagation()} className="px-6 py-4 whitespace-nowrap">
               <input
