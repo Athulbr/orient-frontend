@@ -7,6 +7,7 @@ interface InjectedDataIF {
   customFunctions: Record<string, (row: any, data?: any) => void>;
   fluidHeight?: boolean;
   actionButtons?: { label: string; action: () => void }[];
+  disableLoader?: boolean;
 }
 
 const TablebuilderStateContext = createContext<

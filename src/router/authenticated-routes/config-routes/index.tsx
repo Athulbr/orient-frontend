@@ -41,7 +41,7 @@ const ConfigRoutes = () => {
       <PageNameComponent className="p-4 pt-0" customGoBackFunction={() => navigate('/')} name="Settings" showBackButton />
       <div className="flex w-full flex-1 overflow-hidden">
         <NavigationComponent />
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto pr-6 pl-4">
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto border-t pt-2 pr-6 pl-4">
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
               <Route path="/role/list" element={<ListRolePage />} />
@@ -55,7 +55,6 @@ const ConfigRoutes = () => {
               <Route path="/prompt-tuning" element={<UpdatedFieldsListPage />} />
               <Route path="/user/*" element={<UserRoutes />} />
               <Route path="/comment/*" element={<ListCommentPage />} />
-              {/* <Route path="/" element={<AppConfigMenuPage />} /> */}
               <Route path="/*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

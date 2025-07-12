@@ -6,6 +6,7 @@ import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
 import { Button } from '../../../../components/Button';
 import { TableNames } from './render-field-components/TableNames';
+import { useViewRecordApi } from './hooks/useViewRecordApi';
 
 interface ExtractedDataComponentProps {
   containerRef: any;
@@ -14,6 +15,7 @@ interface ExtractedDataComponentProps {
 
 const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, fieldRefs }) => {
   const { state, setState } = useViewRecordState();
+  const { getRecordApiById } = useViewRecordApi();
 
   const [data, setData] = useState<{ progress?: number; current_step?: string }>({});
 
@@ -106,6 +108,10 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
       eventSource.addEventListener('task_update', (event: any) => {
         const data = JSON.parse(event.data);
         setData(data);
+        if (data.status === 'Complete') {
+          eventSource.close();
+          getRecordApiById(state.record?._id);
+        }
       });
       eventSource.onerror = () => {
         eventSource.close();

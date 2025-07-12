@@ -9,7 +9,6 @@ export interface TablebuilderStateIF {
   endDate: Date | null;
   searchValue: string;
   skipActiveFilters: boolean;
-  fetchingApi: boolean;
   activeFilters: {
     key: string;
     value: string;

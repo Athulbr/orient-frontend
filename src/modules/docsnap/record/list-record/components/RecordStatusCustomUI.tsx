@@ -23,9 +23,9 @@ export const RecordStatusCustomUI = (row: any) => {
       };
     };
     connect();
-  }, [streamUrl]);
+  }, [streamUrl, row?.data?.extractedData]);
 
-  if (row?.data?.extractedData) {
+  if (row?.data?.extractedData || data?.status === 'Complete') {
     return (
       <div className="w-fit cursor-pointer rounded-lg border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-500 hover:bg-blue-100 hover:text-blue-700">
         Review
@@ -35,9 +35,10 @@ export const RecordStatusCustomUI = (row: any) => {
   if (!streamUrl) {
     return <div className="font-semibold text-red-400">Failed</div>;
   }
+
   return (
     <div className="w-fit cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
-      {data?.status || 'Waiting'}
+      Processing
     </div>
   );
 

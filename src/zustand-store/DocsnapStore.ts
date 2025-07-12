@@ -36,7 +36,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         };
         if (template.enableOcr) requestBody.ocr_engine = 'doctr';
         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
-        set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
 
         const createReqObject = {
           metadata: res,
@@ -48,8 +47,12 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         };
 
         const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+        set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
 
-        set({ refreshRecord: get().refreshRecord + 1 });
+        const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
+        if (!processingFiles.length) {
+          set({ refreshRecord: get().refreshRecord + 1 });
+        }
 
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
         const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
@@ -67,8 +70,10 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
               `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
               requestBody
             );
-
-            set({ refreshRecord: get().refreshRecord + 1 });
+            const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+            if (!processingFiles.length) {
+              set({ refreshRecord: get().refreshRecord + 1 });
+            }
           }
         });
       } catch (error) {

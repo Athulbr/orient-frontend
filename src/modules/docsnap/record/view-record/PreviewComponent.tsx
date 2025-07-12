@@ -317,7 +317,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
               }}
               key={index}
             >
-              {state.reExtracting && (
+              {(state.reExtracting || !state.record?.extractedData) && (
                 <div className="absolute top-0 left-0 z-1000 flex h-full w-full items-center justify-center overflow-hidden border-3 border-sky-300 bg-[#1fa9f033]">
                   <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
                 </div>

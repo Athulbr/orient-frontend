@@ -12,6 +12,7 @@ interface UseTablebuilderPropsIF {
   customFunctions?: Record<string, (row: any, data: any) => void>;
   actionButtons?: { label: string; action: () => void }[];
   refresh?: number;
+  disableLoader?: boolean;
 }
 
 export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
@@ -22,6 +23,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
   externalFilters,
   actionButtons,
   refresh,
+  disableLoader,
 }) => {
   const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
   useEffect(() => {
@@ -63,6 +65,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
         externalFilters={externalFilters}
         actionButtons={actionButtons}
         refresh={refresh}
+        disableLoader={disableLoader}
       />
     </div>
   );

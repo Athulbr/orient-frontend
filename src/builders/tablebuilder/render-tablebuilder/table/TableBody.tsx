@@ -29,29 +29,6 @@ export const TableBody: FC = () => {
     [customUI]
   );
 
-  if (loading) {
-    return (
-      <tbody>
-        <tr>
-          <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
-            Loading...
-          </td>
-        </tr>
-      </tbody>
-    );
-  }
-  if (data.length === 0) {
-    return (
-      <tbody className="divide-y divide-gray-200">
-        <tr>
-          <td colSpan={columns.length + (selectable ? 1 : 0)} className="px-6 py-4 text-center">
-            {state.fetchingApi ? 'Loading...' : 'No data available'}
-          </td>
-        </tr>
-      </tbody>
-    );
-  }
-
   const rowClickHandler = (e: React.MouseEvent<HTMLTableRowElement>, row: Record<string, string>) => {
     e.stopPropagation();
     if (customFunctions['rowClickHandler']) {
@@ -82,7 +59,7 @@ export const TableBody: FC = () => {
             return (
               <td key={column.key as string} className="px-1 py-4">
                 <div
-                  className={`max-w-[200px] min-w-[100px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative after:absolute after:top-0 after:left-0 after:w-full after:rounded-xs after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
+                  className={`max-w-[200px] min-w-[100px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative animate-pulse after:absolute after:top-0 after:left-0 after:w-full after:rounded-sm after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
                 >
                   {column.dateUI ? (
                     <div>{formatDate(row[column.key])}</div>

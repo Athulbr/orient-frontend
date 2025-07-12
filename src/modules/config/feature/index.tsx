@@ -37,9 +37,7 @@ const ListFeaturePage: React.FC = () => {
         </DialogComponent>
       ) : (
         <PageContainer className="gap-2">
-          <PageNameComponent name="List of Features">
-            <Breadcrumbs page="listFeature" />
-          </PageNameComponent>
+          <PageNameComponent name="List of Features" />
           <ListFeatureComponent />
         </PageContainer>
       )}

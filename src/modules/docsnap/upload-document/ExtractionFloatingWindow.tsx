@@ -46,11 +46,11 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
   };
 
   return (
-    <div className="absolute right-4 bottom-4 z-10000 flex w-110 flex-col gap-2 rounded-lg border bg-white">
+    <div className="absolute right-4 bottom-4 z-10000 flex w-110 flex-col gap-2 rounded-lg border bg-white shadow-lg shadow-gray-600">
       <div className="flex w-full items-center justify-between border-b p-4 text-lg font-semibold">
         Extraction Status <CircleX size={20} className="cursor-pointer text-gray-500" onClick={clearExtractionQueue} />
       </div>
-      <div className="flex flex-col gap-4 p-4">
+      <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto p-4">
         {extractionQueue.map((file: any, idx: number) => (
           <div key={idx} className={cn('flex items-center justify-between gap-2')}>
             <p className="truncate text-sm">{file.fileName}</p>

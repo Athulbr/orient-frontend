@@ -41,6 +41,7 @@ export const ListFeatureComponent: React.FC = () => {
       customFunctions={customFunctions}
       customUI={customUI}
       actionButtons={actionButtons}
+      externalFilters={{ isActive: true }}
     />
   );
 };
