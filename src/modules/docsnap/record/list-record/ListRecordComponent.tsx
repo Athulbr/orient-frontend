@@ -11,7 +11,7 @@ export const ListRecordComponent: React.FC = () => {
   const navigate = useNavigate();
   const { deleteRecordApi } = useListRecordApi();
 
-  const { refreshRecord } = useDocsnapStore();
+  const { refreshRecord, extractionQueue } = useDocsnapStore();
 
   useEffect(() => {
     if (refreshRecord === 10) return;
@@ -32,6 +32,7 @@ export const ListRecordComponent: React.FC = () => {
   };
   return (
     <UseTablebuilder
+      disableLoader={extractionQueue.length > 0}
       customUI={customUI}
       externalFilters={{ deleted: false }}
       refresh={state.refresh}

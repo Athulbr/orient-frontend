@@ -2,6 +2,7 @@ import { CircleCheck, Eye, XCircle } from 'lucide-react';
 import { formatFieldLabel } from '../utils';
 import { useEffect, useRef, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
+import { ConfidenceScore } from './ConfidenceScore';
 
 interface BoundingBox {
   x_min: number;
@@ -10,6 +11,7 @@ interface BoundingBox {
 
 interface HoveredField {
   value: string;
+  confidence: number;
 }
 
 interface HoveredFieldCardProps {
@@ -57,13 +59,16 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
 
   return (
     <div
-      className={`${state.hoveredOnArrayField ? 'bottom-[120%] shadow-none' : 'top-[120%] shadow-lg'} absolute left-0 z-10000000 flex flex-col gap-2 rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-lg shadow-gray-400`}
-      style={{
-        minWidth: '250px',
-      }}
+      className={`${state.hoveredOnArrayField ? 'bottom-[120%] shadow-none' : 'top-[120%] shadow-lg'} absolute left-0 z-10000000 flex min-w-70 flex-col gap-2 rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-lg shadow-gray-400`}
     >
       <div className="flex items-center justify-between gap-2 pl-1 font-semibold">
-        {getFieldLabel()}
+        <div className="flex items-center gap-2">
+          {getFieldLabel()}
+          <span className="flex items-center font-light">
+            (&nbsp;
+            <ConfidenceScore confidence={`${hoveredField.confidence * 100}`} />)
+          </span>
+        </div>
         <XCircle onClick={() => setState(prev => ({ ...prev, hoveredFieldId: null }))} className="cursor-pointer text-gray-400 hover:text-red-500" size={22} />
       </div>
       <div className="flex items-center justify-between gap-2 text-lg">
