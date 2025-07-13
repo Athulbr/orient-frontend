@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useSubscriptionModelState } from './subscriptionModelContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useSubscriptionModelsApi = () => {
@@ -51,7 +50,9 @@ export const useSubscriptionModelsApi = () => {
   const queryModulesApi = async () => {
     try {
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module`, { pageSize: 1000 });
-      return res.data || [];
+      const modules = res.data || [];
+      setState(prev => ({ ...prev, modules }));
+      return modules;
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to fetch Modules');
@@ -62,7 +63,9 @@ export const useSubscriptionModelsApi = () => {
   const queryFeaturesApi = async () => {
     try {
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/feature`, { pageSize: 1000 });
-      return res.data || [];
+      const features = res.data || [];
+      setState(prev => ({ ...prev, features }));
+      return features;
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to fetch Features');

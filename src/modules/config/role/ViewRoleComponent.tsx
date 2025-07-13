@@ -1,474 +1,245 @@
-import React, { useState, useRef } from 'react';
-import { Trash2 } from 'lucide-react';
-import { Button } from '../../../components/Button';
+import React, { useEffect, useState } from 'react';
+import { Check, ChevronDown, Search, Users, FileText, Settings, Package, AlertCircle } from 'lucide-react';
+import { useRoleState } from './hooks/roleContext';
+import { useRolesApi } from './hooks/useRoleApi';
 
-// Types
+// Type definitions
 interface Module {
+  _id: string;
+  key: string;
   name: string;
-  features: string[];
+  order: number;
 }
 
-interface Role {
+interface Feature {
+  _id: string;
+  key: string;
   name: string;
-  permissions: string[];
+  description: string;
+  isActive: boolean;
+  isBeta: boolean;
+  moduleId: string;
+  deleted: boolean;
 }
 
-// Dummy data (can be replaced with props or API data)
-const initialRole: Role = {
-  name: 'validator',
-  permissions: [],
+// Utility function to get module icon
+const getModuleIcon = (moduleKey: string) => {
+  const iconMap: Record<string, React.ComponentType> = {
+    user: Users,
+    docsnap: FileText,
+    promate: Settings,
+  };
+  return iconMap[moduleKey] || Package;
 };
 
-const initialModules: Module[] = [
-  {
-    name: 'user',
-    features: [
-      'create:user:own',
-      'create:user:all',
-      'read:user:own',
-      'read:user:all',
-      'update:user:own',
-      'update:user:all',
-      'delete:user:own',
-      'delete:user:all',
-      'update:password:own',
-    ],
-  },
-  {
-    name: 'project',
-    features: [
-      'create:project:own',
-      'create:project:all',
-      'read:project:own',
-      'read:project:all',
-      'update:project:own',
-      'update:project:all',
-      'delete:project:own',
-      'delete:project:all',
-    ],
-  },
-  {
-    name: 'document',
-    features: [
-      'create:document:own',
-      'create:document:all',
-      'read:document:own',
-      'read:document:all',
-      'update:document:own',
-      'update:document:all',
-      'delete:document:own',
-      'delete:document:all',
-    ],
-  },
-  {
-    name: 'record',
-    features: [
-      'create:record:own',
-      'create:record:all',
-      'read:record:own',
-      'read:record:all',
-      'update:record:own',
-      'update:record:all',
-      'delete:record:own',
-      'delete:record:all',
-    ],
-  },
-  {
-    name: 'comment',
-    features: [
-      'create:comment:own',
-      'create:comment:all',
-      'read:comment:own',
-      'read:comment:all',
-      'update:comment:own',
-      'update:comment:all',
-      'delete:comment:own',
-      'delete:comment:all',
-    ],
-  },
-];
+// Feature Card Component
+const FeatureCard: React.FC<{ feature: Feature }> = ({ feature }) => (
+  <div className="mb-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="text-sm font-medium text-slate-800">{feature.name}</h3>
+        <p className="mt-1 text-xs text-slate-600">{feature.description}</p>
+      </div>
+      {feature.isBeta && <span className="rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-800">Beta</span>}
+    </div>
+  </div>
+);
 
-function getPermissionType(permission: string): 'all' | 'own' | 'custom' | 'other' {
-  if (permission.endsWith(':all')) return 'all';
-  if (permission.endsWith(':own')) return 'own';
-  if (permission.endsWith(':null')) return 'custom';
-  return 'other';
-}
-
-const badgeColors: Record<string, string> = {
-  all: 'bg-blue-600',
-  own: 'bg-green-600',
-  custom: 'bg-yellow-500',
-  other: 'bg-gray-500',
-};
-
-export const ViewRoleComponent: React.FC = () => {
-  const [role, setRole] = useState<Role>(initialRole);
-  const [modules, setModules] = useState<Module[]>(initialModules);
-  const [searchAssigned, setSearchAssigned] = useState<string>('');
-  const [searchAvailable, setSearchAvailable] = useState<string>('');
-  const [openAssigned, setOpenAssigned] = useState<number[]>(Array.from({ length: modules.length }, (_, i) => i));
-  const [openAvailable, setOpenAvailable] = useState<number[]>(Array.from({ length: modules.length }, (_, i) => i));
-  const [addFeatureIdx, setAddFeatureIdx] = useState<number | null>(null);
-  const [newFeature, setNewFeature] = useState<string>('');
-
-  // Drag and drop state
-  const [dragInfo, setDragInfo] = useState<{
-    moduleIdx: number | null;
-    featureIdx: number | null;
-    overIdx: number | null;
-    type: 'assigned' | 'available' | null;
-  }>({ moduleIdx: null, featureIdx: null, overIdx: null, type: null });
-
-  // Assigned permissions by module
-  const assignedByModule: Module[] = modules.map(mod => ({
-    ...mod,
-    features: mod.features.filter(f => role.permissions.includes(f)),
-  }));
-
-  // Available features by module (now just all features, not filtered)
-  const availableByModule: Module[] = modules;
-
-  // Accordion toggle
-  const toggleAccordion = (section: 'assigned' | 'available', idx: number) => {
-    if (section === 'assigned') {
-      setOpenAssigned((prev: number[]) => (prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]));
-    } else {
-      setOpenAvailable((prev: number[]) => (prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]));
-    }
-  };
-
-  // Remove permission
-  const handleRemove = (feature: string) => {
-    setRole(r => ({ ...r, permissions: r.permissions.filter(p => p !== feature) }));
-  };
-
-  // Add feature directly (for Add button)
-  const handleAdd = (feature: string) => {
-    if (!role.permissions.includes(feature)) {
-      setRole(r => ({ ...r, permissions: [...r.permissions, feature] }));
-    }
-  };
-
-  // Add new feature to module
-  const handleAddFeatureToModule = (idx: number) => {
-    if (!newFeature.trim()) return;
-    setModules(prev =>
-      prev.map((mod, i) => (i === idx && !mod.features.includes(newFeature.trim()) ? { ...mod, features: [...mod.features, newFeature.trim()] } : mod))
-    );
-    setNewFeature('');
-    setAddFeatureIdx(null);
-  };
-
-  // Filter helpers
-  const filterFeatures = (features: string[], search: string) => features.filter(f => f.toLowerCase().includes(search.toLowerCase()));
-
-  // Delete feature from module (and from role.permissions if assigned)
-  const handleDeleteFeature = (moduleIdx: number, feature: string) => {
-    setModules(prev => prev.map((mod, i) => (i === moduleIdx ? { ...mod, features: mod.features.filter(f => f !== feature) } : mod)));
-    setRole(r => ({ ...r, permissions: r.permissions.filter(p => p !== feature) }));
-  };
-
-  // Drag and drop handlers
-  const handleDragStart = (moduleIdx: number, featureIdx: number, type: 'assigned' | 'available') => {
-    setDragInfo({ moduleIdx, featureIdx, overIdx: featureIdx, type });
-  };
-
-  const handleDragEnter = (moduleIdx: number, featureIdx: number, type: 'assigned' | 'available') => {
-    // Only allow drag within the same module and type
-    if (dragInfo.moduleIdx === moduleIdx && dragInfo.type === type) {
-      setDragInfo(info => ({ ...info, overIdx: featureIdx }));
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (moduleIdx: number, type: 'assigned' | 'available') => {
-    if (dragInfo.moduleIdx === moduleIdx && dragInfo.featureIdx !== null && dragInfo.overIdx !== null && dragInfo.type === type) {
-      if (type === 'assigned') {
-        // Assigned list: reorder only assigned features in this module
-        setRole(r => {
-          const mod = assignedByModule[moduleIdx];
-          const features = filterFeatures(mod.features, searchAssigned);
-          const featureList = [...features];
-          const [dragged] = featureList.splice(dragInfo.featureIdx!, 1);
-          featureList.splice(dragInfo.overIdx!, 0, dragged);
-          // Update role.permissions order for these features
-          const newPermissions = [...r.permissions];
-          // Remove all these features from permissions
-          mod.features.forEach(f => {
-            const idx = newPermissions.indexOf(f);
-            if (idx !== -1) newPermissions.splice(idx, 1);
-          });
-          // Insert reordered features at the start of this module's block
-          const insertAt = Math.max(...mod.features.map(f => r.permissions.indexOf(f)).filter(i => i !== -1), 0);
-          newPermissions.splice(insertAt, 0, ...featureList);
-          return { ...r, permissions: newPermissions };
-        });
-      } else if (type === 'available') {
-        // Available list: reorder features in the module
-        setModules(prev =>
-          prev.map((mod, i) => {
-            if (i !== moduleIdx) return mod;
-            const features = filterFeatures(mod.features, searchAvailable);
-            const featureList = [...features];
-            const [dragged] = featureList.splice(dragInfo.featureIdx!, 1);
-            featureList.splice(dragInfo.overIdx!, 0, dragged);
-            // Now, merge reordered features back into mod.features
-            // Only reorder the filtered subset, keep others in place
-            const newFeatures: string[] = [];
-            let fIdx = 0;
-            for (const f of mod.features) {
-              if (features.includes(f)) {
-                newFeatures.push(featureList[fIdx++]);
-              } else {
-                newFeatures.push(f);
-              }
-            }
-            return { ...mod, features: newFeatures };
-          })
-        );
-      }
-    }
-    setDragInfo({ moduleIdx: null, featureIdx: null, overIdx: null, type: null });
-  };
-
-  const handleDragEnd = () => {
-    setDragInfo({ moduleIdx: null, featureIdx: null, overIdx: null, type: null });
-  };
+// Module Accordion Component
+const ModuleAccordion: React.FC<{ module: Module; features: Feature[] }> = ({ module, features }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const Icon = getModuleIcon(module.key);
 
   return (
-    <div className="flex h-[80vh] w-full flex-1 gap-10 overflow-hidden p-4">
-      {/* Left: Role Permissions */}
-      <section className="flex flex-1 flex-col rounded-xl bg-white p-6 shadow-lg">
-        <div className="mb-4 flex items-center gap-2 text-2xl font-bold text-blue-700">
-          <span className="mr-2 inline-block h-6 w-2 rounded-full bg-blue-600"></span>
-          {role.name}
+    <div className="mb-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <button onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between p-4 hover:bg-slate-50">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white">
+            <Icon />
+          </div>
+          <span className="text-sm font-medium">{module.name}</span>
         </div>
-        <input
-          className="mb-4 rounded-lg border border-gray-300 px-3 py-2 transition focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          placeholder="Search permissions..."
-          value={searchAssigned}
-          onChange={e => setSearchAssigned(e.target.value)}
-        />
-        <div className="space-y-2 overflow-y-auto">
-          {assignedByModule.map((mod, idx) => (
-            <div className="rounded-lg border border-gray-200 bg-gray-100" key={mod.name}>
-              <div
-                className="flex cursor-pointer items-center justify-between px-4 py-3 transition select-none hover:bg-blue-50"
-                onClick={() => toggleAccordion('assigned', idx)}
-              >
-                <div className="flex gap-2">
-                  <span className="font-semibold text-gray-700 capitalize">{mod.name} Module</span>
-                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700">{mod.features.length}</span>
-                </div>
-              </div>
-              <div className={`px-4 transition-all duration-300 ${openAssigned.includes(idx) ? 'h-auto py-2' : 'max-h-0 overflow-hidden py-0'}`}>
-                {filterFeatures(mod.features, searchAssigned).length === 0 && <div className="py-2 text-gray-400 italic">No permissions</div>}
-                {filterFeatures(mod.features, searchAssigned).map((feature, fIdx) => (
-                  <div
-                    className={`urp-draggable mb-2 flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-sm transition ${dragInfo.moduleIdx === idx && dragInfo.type === 'assigned' && dragInfo.overIdx === fIdx ? 'ring-2 ring-blue-400' : ''}`}
-                    key={feature}
-                    draggable
-                    onDragStart={() => handleDragStart(idx, fIdx, 'assigned')}
-                    onDragEnter={() => handleDragEnter(idx, fIdx, 'assigned')}
-                    onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(idx, 'assigned')}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <span className={`rounded px-2 py-1 text-xs font-bold ${badgeColors[getPermissionType(feature)]} text-white`}>
-                      {getPermissionType(feature)}
-                    </span>
-                    <span className="flex-1 text-sm text-gray-700">{feature}</span>
-                    <Button outlined small color="red" className="ml-2 px-2 py-1 text-lg font-bold" title="Remove" onClick={() => handleRemove(feature)}>
-                      ×
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <ChevronDown className={`h-4 w-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="border-t border-slate-100 p-4">
+          {features.map(feature => (
+            <FeatureCard key={feature._id} feature={feature} />
           ))}
         </div>
-      </section>
-
-      {/* Right: Available Features */}
-      <section className="flex flex-1 flex-col rounded-xl bg-white p-6 shadow-lg">
-        <div className="mb-4 flex items-center gap-2 text-2xl font-bold text-green-700">
-          <span className="mr-2 inline-block h-6 w-2 rounded-full bg-green-600"></span>
-          Available Features
-        </div>
-        <input
-          className="mb-4 rounded-lg border border-gray-300 px-3 py-2 transition focus:ring-2 focus:ring-green-400 focus:outline-none"
-          placeholder="Search features..."
-          value={searchAvailable}
-          onChange={e => setSearchAvailable(e.target.value)}
-        />
-        <div className="space-y-2 overflow-y-auto">
-          {availableByModule.map((mod, idx) => (
-            <div className="rounded-lg border border-gray-200 bg-gray-100" key={mod.name}>
-              <div
-                className="flex cursor-pointer items-center justify-between px-4 py-3 transition select-none hover:bg-green-50"
-                onClick={() => toggleAccordion('available', idx)}
-              >
-                <div className="flex gap-2">
-                  <span className="font-semibold text-gray-700 capitalize">{mod.name} Module</span>
-                  <span className="ml-2 rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-700">{mod.features.length}</span>
-                </div>
-                <Button
-                  small
-                  outlined
-                  onClick={e => {
-                    e.stopPropagation();
-                    setAddFeatureIdx(idx);
-                  }}
-                >
-                  + Add Feature
-                </Button>
-              </div>
-              {/* Add Feature Input */}
-              {addFeatureIdx === idx && (
-                <div className="flex items-center gap-2 rounded-b-lg bg-green-50 px-4 py-2">
-                  <input
-                    className="flex-1 rounded border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-green-400 focus:outline-none"
-                    placeholder="New feature name (e.g. approveComent:own)"
-                    value={newFeature}
-                    onChange={e => setNewFeature(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') handleAddFeatureToModule(idx);
-                      if (e.key === 'Escape') {
-                        setAddFeatureIdx(null);
-                        setNewFeature('');
-                      }
-                    }}
-                    autoFocus
-                  />
-                  <Button outlined small color="green" className="px-2 py-1 text-xs font-semibold" onClick={() => handleAddFeatureToModule(idx)}>
-                    Add
-                  </Button>
-                  <Button
-                    small
-                    outlined
-                    className="px-2 py-1 text-xs font-semibold"
-                    onClick={() => {
-                      setAddFeatureIdx(null);
-                      setNewFeature('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
-              <div className={`px-4 transition-all duration-300 ${openAvailable.includes(idx) ? 'h-auto py-2' : 'max-h-0 overflow-hidden py-0'}`}>
-                {filterFeatures(mod.features, searchAvailable).length === 0 && <div className="py-2 text-gray-400 italic">No features</div>}
-                {filterFeatures(mod.features, searchAvailable).map((feature, fIdx) => {
-                  const isAssigned = role.permissions.includes(feature);
-                  return (
-                    <div
-                      className={`urp-draggable mb-2 flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-sm transition ${dragInfo.moduleIdx === idx && dragInfo.type === 'available' && dragInfo.overIdx === fIdx ? 'ring-2 ring-green-400' : ''}`}
-                      key={feature}
-                      draggable
-                      onDragStart={() => handleDragStart(idx, fIdx, 'available')}
-                      onDragEnter={() => handleDragEnter(idx, fIdx, 'available')}
-                      onDragOver={handleDragOver}
-                      onDrop={() => handleDrop(idx, 'available')}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <span className={`rounded px-2 py-1 text-xs font-bold ${badgeColors[getPermissionType(feature)]} text-white`}>
-                        {getPermissionType(feature)}
-                      </span>
-                      <span className="flex-1 text-sm text-gray-700">{feature}</span>
-                      {isAssigned ? (
-                        <span className="ml-2 rounded bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">Assigned</span>
-                      ) : (
-                        <Button
-                          outlined
-                          small
-                          color="green"
-                          className="ml-2 px-2 py-1 text-xs font-semibold"
-                          title="Add to permissions"
-                          onClick={() => handleAdd(feature)}
-                        >
-                          + Add
-                        </Button>
-                      )}
-                      <Button
-                        outlined
-                        small
-                        color="red"
-                        className="ml-1 flex items-center justify-center px-2 py-1"
-                        title="Delete feature"
-                        onClick={() => handleDeleteFeature(idx, feature)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      )}
     </div>
   );
 };
 
-const allFeatures = [
-  'create:user:own',
-  'create:user:all',
-  'read:user:own',
-  'read:user:all',
-  'update:user:own',
-  'update:user:all',
-  'delete:user:own',
-  'delete:user:all',
-  'docsnap',
-];
+// Search Input Component
+const SearchInput: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}> = ({ value, onChange, placeholder }) => (
+  <div className="relative mb-4">
+    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+      <Search className="h-4 w-4 text-slate-400" />
+    </div>
+    <input
+      type="text"
+      className="w-full rounded-lg border border-slate-300 bg-slate-50 py-2 pr-4 pl-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    />
+  </div>
+);
 
-const subscriptionLevel1 = [
-  'create:user',
-  'read:user:own',
-  'delete:user:own',
-  'delete:user:all',
-  'delete:user:all',
-  'export',
-  'read:user:own',
-  'delete:user:own',
-  'delete:user:all',
-];
+// Right Container with Features
+const RightContainer: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
 
-const subscriptionLevel2 = [
-  'create:user:own',
-  'create:user:all',
-  'read:user:own',
-  'delete:user:all',
-  'export',
-  'read:user:own',
-  'delete:user:own',
-  'delete:user:all',
-  'read:user:own',
-  'delete:user:own',
-  'delete:user:all',
-];
+  // Mock data - In a real app, this would come from your API/context
+  const modules: Module[] = [
+    { _id: '1', key: 'user', name: 'User Management', order: 1 },
+    { _id: '2', key: 'docsnap', name: 'Document Management', order: 2 },
+    { _id: '3', key: 'promate', name: 'Settings', order: 3 },
+  ];
 
-const subscriptionLevel3 = [
-  'create:user:own',
-  'create:user:all',
-  'read:user:own',
-  'delete:user:own',
-  'read:user:own',
-  'delete:user:own',
-  'delete:user:all',
-  'delete:user:all',
-  'delete:user:all',
-  'create:user:own',
-  'create:user:all',
-  'read:user:own',
-  'delete:user:own',
-  'delete:user:all',
-  'delete:user:all',
-  'delete:user:all',
-  'export',
-];
+  const features: Feature[] = [
+    {
+      _id: 'f1',
+      key: 'user_create',
+      name: 'Create Users',
+      description: 'Allows creating new user accounts',
+      isActive: true,
+      isBeta: false,
+      moduleId: '1',
+      deleted: false,
+    },
+    {
+      _id: 'f2',
+      key: 'user_edit',
+      name: 'Edit Users',
+      description: 'Allows editing existing user accounts',
+      isActive: true,
+      isBeta: false,
+      moduleId: '1',
+      deleted: false,
+    },
+    {
+      _id: 'f3',
+      key: 'docsnap_view',
+      name: 'View Documents',
+      description: 'Allows viewing documents',
+      isActive: true,
+      isBeta: true,
+      moduleId: '2',
+      deleted: false,
+    },
+  ];
+
+  const filteredFeatures = searchTerm
+    ? features.filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase()) || f.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    : features;
+
+  const featuresByModule = modules.reduce<Record<string, Feature[]>>((acc, module) => {
+    const moduleFeatures = filteredFeatures.filter(f => f.moduleId === module._id);
+    if (moduleFeatures.length > 0) {
+      acc[module._id] = moduleFeatures;
+    }
+    return acc;
+  }, {});
+
+  return (
+    <div className="h-full overflow-y-auto p-6">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold text-slate-800">Available Features</h2>
+        <p className="text-sm text-slate-500">Features available for this role based on subscription</p>
+      </div>
+
+      <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search features..." />
+
+      <div className="space-y-4">
+        {Object.keys(featuresByModule).length > 0 ? (
+          modules
+            .filter(module => featuresByModule[module._id]?.length > 0)
+            .map(module => <ModuleAccordion key={module._id} module={module} features={featuresByModule[module._id]} />)
+        ) : (
+          <div className="py-8 text-center">
+            <AlertCircle className="mx-auto h-8 w-8 text-slate-400" />
+            <p className="mt-2 text-slate-500">No features found</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Left Container with Role Details
+const LeftContainer: React.FC = () => {
+  const { state } = useRoleState();
+  const { role } = state;
+
+  if (!role) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-slate-500">Select a role to view details</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto border-r border-slate-200 p-6">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-slate-800">{role.name}</h2>
+        <p className="text-sm text-slate-500">Role Details</p>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <h3 className="mb-2 text-sm font-medium text-slate-700">Description</h3>
+          <p className="text-sm text-slate-600">{role.description || 'No description provided'}</p>
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-sm font-medium text-slate-700">Permissions</h3>
+          <div className="space-y-2">
+            {Array.isArray(role.permissions) && role.permissions.length > 0 ? (
+              role.permissions.map((permission: string) => (
+                <div key={permission} className="flex items-center space-x-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-slate-600">{permission}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">No permissions assigned</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Component
+const ViewRoleComponent: React.FC = () => {
+  const { state } = useRoleState();
+  const { getRoleByIdApi } = useRolesApi();
+
+  useEffect(() => {
+    if (state.id) {
+      getRoleByIdApi(state.id);
+    }
+  }, [state.id]);
+
+  return (
+    <div className="flex h-[calc(100vh-200px)] bg-slate-50">
+      <div className="w-1/3">
+        <LeftContainer />
+      </div>
+      <div className="w-2/3">
+        <RightContainer />
+      </div>
+    </div>
+  );
+};
+
+export default ViewRoleComponent;

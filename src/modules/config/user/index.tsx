@@ -4,7 +4,6 @@ import PageNameComponent from '../../../components/PageName';
 import CreateUserComponent from './CreateUserComponent';
 import { UserStateProvider } from './hooks/userContext';
 import { ListUserComponent } from './ListUserComponent';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export interface UserStateIF {
   showCreateDialog: boolean;
@@ -25,9 +24,7 @@ const ListUserPage: React.FC = () => {
   return (
     <UserStateProvider value={{ state, setState }}>
       <PageContainer className="gap-4">
-        <PageNameComponent name="User List">
-          <Breadcrumbs page="listUser" />
-        </PageNameComponent>
+        <PageNameComponent name="User List" />
         <ListUserComponent />
         <CreateUserComponent />
       </PageContainer>

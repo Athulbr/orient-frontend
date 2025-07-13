@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, Search, Package, Users, FileText, Settings, AlertCircle } from 'lucide-react';
 import { useSubscriptionModelState } from './hooks/subscriptionModelContext';
 import { useSubscriptionModelsApi } from './hooks/useSubscriptionModelApi';
+import { Button } from '../../../components/Button';
 
 // Type definitions
 interface Module {
@@ -22,120 +23,7 @@ interface Feature {
   deleted: boolean;
 }
 
-interface SubscriptionModel {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  cycle: string;
-  features: string[];
-}
-
-// Sample data
-const sampleModuleList: Module[] = [
-  {
-    _id: '6871d67d81d2eac5128fb0c3',
-    key: 'user',
-    name: 'User',
-    order: 1,
-  },
-  {
-    _id: '6871d6dd81d2eac5128fb0c8',
-    key: 'docsnap',
-    name: 'Docsnap',
-    order: 2,
-  },
-  {
-    _id: '68739ef4d64c7dd15a1ef07f',
-    key: 'promate',
-    name: 'Promate',
-    order: 3,
-  },
-];
-
-const sampleFeatureList: Feature[] = [
-  {
-    _id: '6871d7bc81d2eac5128fb0d5',
-    key: 'create:user',
-    name: 'Create User',
-    description: 'This role can create new user',
-    isActive: true,
-    isBeta: false,
-    moduleId: '6871d67d81d2eac5128fb0c3',
-    deleted: false,
-  },
-  {
-    _id: '68739fead64c7dd15a1ef0b0',
-    key: 'get:user',
-    name: 'Get User',
-    description: 'View user details and information',
-    isActive: true,
-    isBeta: false,
-    moduleId: '6871d67d81d2eac5128fb0c3',
-    deleted: false,
-  },
-  {
-    _id: '6873a00ad64c7dd15a1ef0b9',
-    key: 'delete:user',
-    name: 'Delete User',
-    description: 'Remove user from the system',
-    isActive: true,
-    isBeta: false,
-    moduleId: '6871d67d81d2eac5128fb0c3',
-    deleted: false,
-  },
-  {
-    _id: '6873a026d64c7dd15a1ef0c2',
-    key: 'update:user',
-    name: 'Update User',
-    description: 'Modify user details and permissions',
-    isActive: true,
-    isBeta: false,
-    moduleId: '6871d67d81d2eac5128fb0c3',
-    deleted: false,
-  },
-  {
-    _id: '6873a027d64c7dd15a1ef0c3',
-    key: 'create:document',
-    name: 'Create Document',
-    description: 'Create new documents in Docsnap',
-    isActive: true,
-    isBeta: false,
-    moduleId: '6871d6dd81d2eac5128fb0c8',
-    deleted: false,
-  },
-  {
-    _id: '6873a028d64c7dd15a1ef0c4',
-    key: 'edit:document',
-    name: 'Edit Document',
-    description: 'Edit existing documents',
-    isActive: true,
-    isBeta: false,
-    moduleId: '6871d6dd81d2eac5128fb0c8',
-    deleted: false,
-  },
-  {
-    _id: '6873a029d64c7dd15a1ef0c5',
-    key: 'manage:projects',
-    name: 'Manage Projects',
-    description: 'Create and manage Promate projects',
-    isActive: true,
-    isBeta: true,
-    moduleId: '68739ef4d64c7dd15a1ef07f',
-    deleted: false,
-  },
-];
-
-const sampleSubscriptionModel: SubscriptionModel = {
-  _id: '686deeaadce3739db2bee37a',
-  name: 'Enterprise',
-  description: 'Enterprise plan for 365 days',
-  price: 10,
-  cycle: 'yearly',
-  features: ['6871d7bc81d2eac5128fb0d5', '68739fead64c7dd15a1ef0b0'],
-};
-
-// Helper function to get module icon
+// Utility functions
 const getModuleIcon = (moduleKey: string) => {
   const iconMap: Record<string, React.ComponentType<any>> = {
     user: Users,
@@ -145,27 +33,59 @@ const getModuleIcon = (moduleKey: string) => {
   return iconMap[moduleKey] || Package;
 };
 
-// Reusable FeatureCard component
+const useFeatureActions = () => {
+  const { setState } = useSubscriptionModelState();
+
+  const assignFeature = (featureId: string) => {
+    setState(prev => {
+      if (!prev || prev.subscriptionModel?.features.includes(featureId)) return prev;
+      return {
+        ...prev,
+        subscriptionModel: {
+          ...prev.subscriptionModel,
+          features: [...(prev.subscriptionModel?.features || []), featureId],
+        },
+      };
+    });
+  };
+
+  const unassignFeature = (featureId: string) => {
+    setState(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        subscriptionModel: {
+          ...prev.subscriptionModel,
+          features: prev.subscriptionModel?.features.filter((id: string) => id !== featureId) || [],
+        },
+      };
+    });
+  };
+
+  return { assignFeature, unassignFeature };
+};
+
+// Components
 interface FeatureCardProps {
   feature: Feature;
   isAssigned: boolean;
   onAssign: (featureId: string) => void;
-  onUnassign?: (featureId: string) => void;
+  onUnassign: (featureId: string) => void;
   showActionButton?: boolean;
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isAssigned, onAssign, onUnassign, showActionButton = true }) => {
   const handleClick = () => {
-    if (isAssigned && onUnassign) {
+    if (isAssigned) {
       onUnassign(feature._id);
-    } else if (!isAssigned) {
+    } else {
       onAssign(feature._id);
     }
   };
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="mb-3 flex items-start justify-between">
+      <div className="mb-1 flex items-start justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-slate-800">{feature.name}</h3>
           {feature.isBeta && <span className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 text-xs font-medium text-white">Beta</span>}
@@ -186,18 +106,17 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature, isAssigned, onAssign
   );
 };
 
-// Accordion component
-interface AccordionProps {
+interface ModuleAccordionProps {
   module: Module;
   features: Feature[];
   assignedFeatureIds: string[];
   onAssign: (featureId: string) => void;
-  onUnassign?: (featureId: string) => void;
+  onUnassign: (featureId: string) => void;
   showActionButtons?: boolean;
 }
 
-const ModuleAccordion: React.FC<AccordionProps> = ({ module, features, assignedFeatureIds, onAssign, onUnassign, showActionButtons = true }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const ModuleAccordion: React.FC<ModuleAccordionProps> = ({ module, features, assignedFeatureIds, onAssign, onUnassign, showActionButtons = true }) => {
+  const [isOpen, setIsOpen] = useState(true);
   const IconComponent = getModuleIcon(module.key);
 
   if (features.length === 0) return null;
@@ -223,7 +142,7 @@ const ModuleAccordion: React.FC<AccordionProps> = ({ module, features, assignedF
       </button>
 
       {isOpen && (
-        <div className="space-y-2 border-t border-slate-100 px-4 pb-4">
+        <div className="space-y-4 border-t border-slate-100 px-4 py-4">
           {features.map(feature => (
             <FeatureCard
               key={feature._id}
@@ -240,16 +159,61 @@ const ModuleAccordion: React.FC<AccordionProps> = ({ module, features, assignedF
   );
 };
 
-// Left container component
-interface LeftContainerProps {
-  subscription: SubscriptionModel;
-  modules: Module[];
-  features: Feature[];
-  onUnassign: (featureId: string) => void;
+interface SearchInputProps {
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-const LeftContainer: React.FC<LeftContainerProps> = ({ subscription, modules, features, onUnassign }) => {
+const SearchInput: React.FC<SearchInputProps> = ({ placeholder, value, onChange }) => (
+  <div className="relative">
+    <input
+      type="text"
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 pl-10 text-slate-800 placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+    />
+    <div className="absolute top-1/2 left-3 -translate-y-1/2 transform text-slate-400">
+      <Search className="h-4 w-4" />
+    </div>
+  </div>
+);
+
+interface EmptyStateProps {
+  searchTerm: string;
+  type: 'assigned' | 'available';
+}
+
+const EmptyState: React.FC<EmptyStateProps> = ({ searchTerm, type }) => (
+  <div className="py-12 text-center">
+    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200">
+      <AlertCircle className="h-8 w-8 text-slate-400" />
+    </div>
+    <p className="text-slate-500">
+      {searchTerm ? 'No features match your search' : type === 'assigned' ? 'No features assigned to this plan' : 'No features available'}
+    </p>
+    <p className="mt-1 text-sm text-slate-400">
+      {searchTerm
+        ? 'Try adjusting your search terms'
+        : type === 'assigned'
+          ? 'Add features from the available features panel'
+          : 'Features will appear here when loaded'}
+    </p>
+  </div>
+);
+
+const LeftContainer: React.FC = () => {
+  const { state } = useSubscriptionModelState();
+  const { assignFeature, unassignFeature } = useFeatureActions();
+  const { updateSubscriptionModelApi } = useSubscriptionModelsApi();
   const [searchTerm, setSearchTerm] = useState('');
+
+  const subscription = state.subscriptionModel;
+  const modules = state.modules || [];
+  const features = state.features || [];
+
+  if (!subscription) return null;
 
   const assignedFeatures = features.filter(feature => subscription.features.includes(feature._id));
 
@@ -259,19 +223,26 @@ const LeftContainer: React.FC<LeftContainerProps> = ({ subscription, modules, fe
 
   const sortedModules = [...modules].sort((a, b) => a.order - b.order);
 
+  const handleUpdate = async () => {
+    await updateSubscriptionModelApi(subscription);
+  };
+
   return (
     <div className="flex h-full flex-col bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Fixed Header - Same height as right container */}
       <div className="flex-shrink-0 border-b border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 shadow-lg">
             <span className="text-lg font-bold text-white">{subscription.name.charAt(0).toUpperCase()}</span>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">{subscription.name} Plan</h1>
-            <p className="text-sm text-slate-600">{subscription.description}</p>
+          <div className="flex w-full justify-between">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-xl font-bold text-slate-800">{subscription.name} Plan</h1>
+              <p className="text-sm text-slate-600">{subscription.description}</p>
+            </div>
+            <Button onClick={handleUpdate}>Update</Button>
           </div>
         </div>
+
         <div className="mb-4 flex items-center gap-4 text-sm">
           <div className="rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 px-3 py-1 font-semibold text-white">
             ${subscription.price} / {subscription.cycle}
@@ -281,31 +252,12 @@ const LeftContainer: React.FC<LeftContainerProps> = ({ subscription, modules, fe
           </div>
         </div>
 
-        {/* Search bar */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search assigned features..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 pl-10 text-slate-800 placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="absolute top-1/2 left-3 -translate-y-1/2 transform text-slate-400">
-            <Search className="h-4 w-4" />
-          </div>
-        </div>
+        <SearchInput placeholder="Search assigned features..." value={searchTerm} onChange={setSearchTerm} />
       </div>
 
-      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {filteredFeatures.length === 0 ? (
-          <div className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200">
-              <AlertCircle className="h-8 w-8 text-slate-400" />
-            </div>
-            <p className="text-slate-500">{searchTerm ? 'No features match your search' : 'No features assigned to this plan'}</p>
-            <p className="mt-1 text-sm text-slate-400">{searchTerm ? 'Try adjusting your search terms' : 'Add features from the available features panel'}</p>
-          </div>
+          <EmptyState searchTerm={searchTerm} type="assigned" />
         ) : (
           <div className="space-y-3">
             {sortedModules.map(module => {
@@ -316,8 +268,8 @@ const LeftContainer: React.FC<LeftContainerProps> = ({ subscription, modules, fe
                   module={module}
                   features={moduleFeatures}
                   assignedFeatureIds={subscription.features}
-                  onAssign={() => {}}
-                  onUnassign={onUnassign}
+                  onAssign={assignFeature}
+                  onUnassign={unassignFeature}
                   showActionButtons={true}
                 />
               );
@@ -329,17 +281,14 @@ const LeftContainer: React.FC<LeftContainerProps> = ({ subscription, modules, fe
   );
 };
 
-// Right container component
-interface RightContainerProps {
-  features: Feature[];
-  assignedFeatureIds: string[];
-  modules: Module[];
-  onAssign: (featureId: string) => void;
-  onUnassign: (featureId: string) => void; // Added this prop
-}
-
-const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatureIds, modules, onAssign, onUnassign }) => {
+const RightContainer: React.FC = () => {
+  const { state } = useSubscriptionModelState();
+  const { assignFeature, unassignFeature } = useFeatureActions();
   const [searchTerm, setSearchTerm] = useState('');
+
+  const features = state.features || [];
+  const modules = state.modules || [];
+  const assignedFeatureIds = state.subscriptionModel?.features || [];
 
   const filteredFeatures = features.filter(
     feature => feature.name.toLowerCase().includes(searchTerm.toLowerCase()) || feature.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -349,7 +298,6 @@ const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatu
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Fixed Header - Same height as left container */}
       <div className="flex-shrink-0 border-b border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
@@ -363,137 +311,59 @@ const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatu
           </div>
         </div>
 
-        {/* Spacer div to match left container height */}
-        <div className="mb-4 h-6"></div>
+        <div className="mb-4 h-9"></div>
 
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search features..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 pl-10 text-slate-800 placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="absolute top-1/2 left-3 -translate-y-1/2 transform text-slate-400">
-            <Search className="h-4 w-4" />
-          </div>
-        </div>
+        <SearchInput placeholder="Search features..." value={searchTerm} onChange={setSearchTerm} />
       </div>
 
-      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="space-y-3">
-          {sortedModules.map(module => {
-            const moduleFeatures = filteredFeatures.filter(feature => feature.moduleId === module._id);
-            return (
-              <ModuleAccordion
-                key={module._id}
-                module={module}
-                features={moduleFeatures}
-                assignedFeatureIds={assignedFeatureIds}
-                onAssign={onAssign}
-                onUnassign={onUnassign} // Added this prop
-                showActionButtons={true}
-              />
-            );
-          })}
-        </div>
+        {filteredFeatures.length === 0 ? (
+          <EmptyState searchTerm={searchTerm} type="available" />
+        ) : (
+          <div className="space-y-3">
+            {sortedModules.map(module => {
+              const moduleFeatures = filteredFeatures.filter(feature => feature.moduleId === module._id);
+              return (
+                <ModuleAccordion
+                  key={module._id}
+                  module={module}
+                  features={moduleFeatures}
+                  assignedFeatureIds={assignedFeatureIds}
+                  onAssign={assignFeature}
+                  onUnassign={unassignFeature}
+                  showActionButtons={true}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-// Main component
 export const ViewSubscriptionModelComponent: React.FC = () => {
-  const { state } = useSubscriptionModelState();
+  const { queryModulesApi, queryFeaturesApi } = useSubscriptionModelsApi();
 
-  // Local states fed from APIs
-  const [subscription, setSubscription] = useState<SubscriptionModel | null>(state.subscriptionModel);
-  const [modules, setModules] = useState<Module[]>([]);
-  const [features, setFeatures] = useState<Feature[]>([]);
-
-  const { queryModulesApi, queryFeaturesApi, updateSubscriptionModelApi } = useSubscriptionModelsApi();
-
-  // Fetch modules & features on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [mods, feats] = await Promise.all([queryModulesApi(), queryFeaturesApi()]);
-        setModules(mods);
-        setFeatures(feats);
+        await queryModulesApi();
+        await queryFeaturesApi();
       } catch (error) {
         console.error('Failed to fetch modules/features', error);
       }
     };
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update local subscription whenever global state changes
-  useEffect(() => {
-    if (state.subscriptionModel) {
-      setSubscription(state.subscriptionModel);
-    }
-  }, [state.subscriptionModel]);
-  // local subscription setter handled above
-
-  const handleAssignFeature = (featureId: string) => {
-    setSubscription(prev => {
-      if (!prev) return prev; // nothing to update when subscription not loaded
-      if (prev.features.includes(featureId)) return prev;
-      return {
-        ...prev,
-        features: [...prev.features, featureId],
-      } as SubscriptionModel;
-    });
-  };
-
-  const handleUnassignFeature = (featureId: string) => {
-    setSubscription(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        features: prev.features.filter(id => id !== featureId),
-      } as SubscriptionModel;
-    });
-  };
-
-  // handler to persist updates
-  const handleUpdate = async () => {
-    if (!subscription) return;
-    await updateSubscriptionModelApi(subscription);
-  };
-
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-100 to-slate-200 p-4">
-      <div className="flex-1 flex overflow-hidden rounded-xl shadow-2xl">
-        <div className="w-1/2 border-r border-slate-300">
-          <LeftContainer
-            subscription={subscription || sampleSubscriptionModel}
-            modules={modules.length ? modules : sampleModuleList}
-            features={features.length ? features : sampleFeatureList}
-            onUnassign={handleUnassignFeature}
-          />
-        </div>
-        <div className="w-1/2">
-          <RightContainer
-            features={features.length ? features : sampleFeatureList}
-            assignedFeatureIds={subscription ? subscription.features : sampleSubscriptionModel.features}
-            modules={modules.length ? modules : sampleModuleList}
-            onAssign={handleAssignFeature}
-            onUnassign={handleUnassignFeature} // Added this prop
-          />
-        </div>
+    <div className="flex flex-1 overflow-hidden rounded-xl shadow-2xl">
+      <div className="w-1/2 border-r border-slate-300">
+        <LeftContainer />
       </div>
-      {/* Action Bar */}
-      <div className="mt-4 flex justify-end">
-        <button
-          onClick={handleUpdate}
-          disabled={state.loading}
-          className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white shadow-md transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {state.loading ? 'Updating...' : 'Update'}
-        </button>
+      <div className="w-1/2">
+        <RightContainer />
       </div>
     </div>
   );

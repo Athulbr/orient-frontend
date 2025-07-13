@@ -5,7 +5,6 @@ import { TenantStateProvider } from './hooks/tenantContext';
 import { ListTenantComponent } from './ListTenantComponent';
 import { DialogComponent } from '../../../components/DialogComponent';
 import CreateTenantComponent from './CreateTenantComponent';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import { ViewTenantComponent } from './ViewTenantComponent';
 
 export interface TenantStateIF {
@@ -37,9 +36,7 @@ const ListTenantPage: React.FC = () => {
         </DialogComponent>
       ) : (
         <PageContainer className="gap-2">
-          <PageNameComponent name="List of Tenants">
-            <Breadcrumbs page="listTenant" />
-          </PageNameComponent>
+          <PageNameComponent name="List of Tenants" />
           <ListTenantComponent />
         </PageContainer>
       )}

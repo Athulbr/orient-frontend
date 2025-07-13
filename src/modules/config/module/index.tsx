@@ -6,7 +6,6 @@ import { ListModuleComponent } from './ListModuleComponent';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { ViewModuleComponent } from './ViewModuleComponent';
 import CreateModuleComponent from './CreateModuleComponent';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export interface ModuleStateIF {
   showViewDialog: boolean;
@@ -37,9 +36,7 @@ const ListModulePage: React.FC = () => {
         </DialogComponent>
       ) : (
         <PageContainer className="gap-2">
-          <PageNameComponent name="List of Modules">
-            <Breadcrumbs page="listModule" />
-          </PageNameComponent>
+          <PageNameComponent name="List of Modules" />
           <ListModuleComponent />
         </PageContainer>
       )}

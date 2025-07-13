@@ -3,9 +3,7 @@ import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import { SubscriptionModelStateProvider } from './hooks/subscriptionModelContext';
 import { ListSubscriptionModelComponent } from './ListSubscriptionModelComponent';
-import { DialogComponent } from '../../../components/DialogComponent';
 import CreateSubscriptionModelComponent from './CreateSubscriptionModelComponent';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import { ViewSubscriptionModelComponent } from './ViewSubscriptionModelComponent';
 
 export interface SubscriptionModelStateIF {
@@ -14,6 +12,8 @@ export interface SubscriptionModelStateIF {
   loading: boolean;
   id: string;
   subscriptionModel: any | null;
+  modules: any[];
+  features: any[];
   refresh: number;
 }
 
@@ -23,6 +23,8 @@ const initialState: SubscriptionModelStateIF = {
   loading: false,
   id: '',
   subscriptionModel: null,
+  modules: [],
+  features: [],
   refresh: 1,
 };
 
@@ -32,14 +34,10 @@ const ListSubscriptionModelPage: React.FC = () => {
   return (
     <SubscriptionModelStateProvider value={{ state, setState }}>
       {state.showViewDialog ? (
-        <DialogComponent closeDialog={() => setState(prev => ({ ...prev, showViewDialog: false }))} name="View Subscription Model" isOpen className="w-[90vw]">
-          <ViewSubscriptionModelComponent />
-        </DialogComponent>
+        <ViewSubscriptionModelComponent />
       ) : (
         <PageContainer className="gap-2">
-          <PageNameComponent name="List of Subscription Models">
-            <Breadcrumbs page="listSubscriptionModel" />
-          </PageNameComponent>
+          <PageNameComponent name="List of Subscription Models" />
           <ListSubscriptionModelComponent />
         </PageContainer>
       )}

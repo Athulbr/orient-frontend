@@ -4,7 +4,6 @@ import PageNameComponent from '../../../components/PageName';
 import { ProjectStateProvider } from './hooks/projectContext';
 import CreateProjectComponent from './CreateProjectComponent';
 import { ListProjectComponent } from './ListProjectComponent';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 
 export interface ProjectStateIF {
   showCreateDialog: boolean;
@@ -29,9 +28,7 @@ const ListProjectPage: React.FC = () => {
   return (
     <ProjectStateProvider value={{ state, setState }}>
       <PageContainer className="gap-4">
-        <PageNameComponent name="Project List">
-          <Breadcrumbs page="listProject" />
-        </PageNameComponent>
+        <PageNameComponent name="Project List" />
         <ListProjectComponent />
         <CreateProjectComponent />
       </PageContainer>

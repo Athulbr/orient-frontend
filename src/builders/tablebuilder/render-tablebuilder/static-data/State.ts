@@ -6,7 +6,7 @@ export const tablebuilderInitialState: TablebuilderStateIF = {
   loading: false,
   total: 0,
   page: 1,
-  pageRows: 15,
+  pageRows: 10,
   activeFilters: [],
   startDate: null,
   endDate: null,

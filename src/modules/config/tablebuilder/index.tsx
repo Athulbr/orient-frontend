@@ -1,8 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useState } from 'react';
 import { TablebuilderStateProvider } from './hooks/tablebuilderContext';
 import ListTablebuilderComponent from './ListTablebuilderComponent';
@@ -35,9 +32,7 @@ const ListTablebuilderPage: React.FC = () => {
   return (
     <TablebuilderStateProvider value={{ state, setState }}>
       <PageContainer className="gap-2">
-        <PageNameComponent name="Tablebuilder List">
-          <Breadcrumbs page="listTablebuilder" />
-        </PageNameComponent>
+        <PageNameComponent name="Tablebuilder List" />
         <ListTablebuilderComponent />
       </PageContainer>
     </TablebuilderStateProvider>
