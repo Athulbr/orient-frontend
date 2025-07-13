@@ -10,6 +10,27 @@ const CreateTenantComponent: React.FC<CreateTenantComponentIF> = () => {
   const { state, setState } = useTenantState();
   const { createTenantApi, updateTenantApi } = useTenantsApi();
 
+  const onSubmit = (data: any) => {
+    if (state.tenant) {
+      updateTenantApi(data);
+    } else {
+      const requestBody = {
+        subscription: {
+          status: 'active',
+          isTrialOn: false,
+          isAutoRenew: false,
+          planRef: data.subscriptionPlan,
+          startDate: '2025-09-06T18:30:00.000Z',
+          endDate: '2025-08-07T18:30:00.000Z',
+          nextBillingDate: '2025-08-07T18:30:00.000Z',
+        },
+        name: data.name,
+        dbURI: 'mongodb://localhost:27017/makez_dev',
+      };
+      createTenantApi(requestBody);
+    }
+  };
+
   return (
     <UseFormbuilder
       isOpen={state.showCreateDialog}
@@ -17,7 +38,7 @@ const CreateTenantComponent: React.FC<CreateTenantComponentIF> = () => {
       name="Create Tenant Form"
       className="w-130"
       existingData={state.tenant || {}}
-      onSubmit={e => (state.tenant ? updateTenantApi(e) : createTenantApi(e))}
+      onSubmit={onSubmit}
       closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', tenant: null }))}
     />
   );

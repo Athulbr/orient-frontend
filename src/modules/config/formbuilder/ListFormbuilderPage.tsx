@@ -18,12 +18,22 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
 
   const toast = useToastStore();
 
+  const refreshCache = async () => {
+    const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
+    window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
+    toast.success('Cache refreshed successfully');
+  };
+
   const actionButtons = [
     {
       label: 'Create Formbuilder',
       action: () => {
         navigate('/config/formbuilder/create');
       },
+    },
+    {
+      label: 'Refresh Cache',
+      action: refreshCache,
     },
   ];
 
@@ -48,9 +58,7 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
   };
   return (
     <PageContainer className="gap-2">
-      <PageNameComponent name="Formbuilder List">
-        <Breadcrumbs page="listFormbuilder" />
-      </PageNameComponent>
+      <PageNameComponent name="Formbuilder List" />
       <UseTablebuilder
         refresh={refresh}
         name="list formbuilder"
