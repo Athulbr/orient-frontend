@@ -46,6 +46,30 @@ export const useSubscriptionModelsApi = () => {
     }
   };
 
+  // =========================== QUERY LISTS =============================
+
+  const queryModulesApi = async () => {
+    try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module`, { pageSize: 1000 });
+      return res.data || [];
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to fetch Modules');
+      throw error;
+    }
+  };
+
+  const queryFeaturesApi = async () => {
+    try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/feature`, { pageSize: 1000 });
+      return res.data || [];
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to fetch Features');
+      throw error;
+    }
+  };
+
   const deleteSubscriptionModelApi = async (id: string) => {
     try {
       const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/subscription/delete/${id}`);
@@ -58,5 +82,12 @@ export const useSubscriptionModelsApi = () => {
     }
   };
 
-  return { createSubscriptionModelApi, getSubscriptionModelByIdApi, updateSubscriptionModelApi, deleteSubscriptionModelApi };
+  return {
+    createSubscriptionModelApi,
+    getSubscriptionModelByIdApi,
+    updateSubscriptionModelApi,
+    deleteSubscriptionModelApi,
+    queryModulesApi,
+    queryFeaturesApi,
+  };
 };

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, Search, Package, Users, FileText, Settings, AlertCircle } from 'lucide-react';
+import { useSubscriptionModelState } from './hooks/subscriptionModelContext';
+import { useSubscriptionModelsApi } from './hooks/useSubscriptionModelApi';
 
 // Type definitions
 interface Module {
@@ -333,9 +335,10 @@ interface RightContainerProps {
   assignedFeatureIds: string[];
   modules: Module[];
   onAssign: (featureId: string) => void;
+  onUnassign: (featureId: string) => void; // Added this prop
 }
 
-const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatureIds, modules, onAssign }) => {
+const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatureIds, modules, onAssign, onUnassign }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredFeatures = features.filter(
@@ -389,6 +392,7 @@ const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatu
                 features={moduleFeatures}
                 assignedFeatureIds={assignedFeatureIds}
                 onAssign={onAssign}
+                onUnassign={onUnassign} // Added this prop
                 showActionButtons={true}
               />
             );
@@ -401,31 +405,95 @@ const RightContainer: React.FC<RightContainerProps> = ({ features, assignedFeatu
 
 // Main component
 export const ViewSubscriptionModelComponent: React.FC = () => {
-  const [subscription, setSubscription] = useState<SubscriptionModel>(sampleSubscriptionModel);
+  const { state } = useSubscriptionModelState();
+
+  // Local states fed from APIs
+  const [subscription, setSubscription] = useState<SubscriptionModel | null>(state.subscriptionModel);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [features, setFeatures] = useState<Feature[]>([]);
+
+  const { queryModulesApi, queryFeaturesApi, updateSubscriptionModelApi } = useSubscriptionModelsApi();
+
+  // Fetch modules & features on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [mods, feats] = await Promise.all([queryModulesApi(), queryFeaturesApi()]);
+        setModules(mods);
+        setFeatures(feats);
+      } catch (error) {
+        console.error('Failed to fetch modules/features', error);
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update local subscription whenever global state changes
+  useEffect(() => {
+    if (state.subscriptionModel) {
+      setSubscription(state.subscriptionModel);
+    }
+  }, [state.subscriptionModel]);
+  // local subscription setter handled above
 
   const handleAssignFeature = (featureId: string) => {
-    setSubscription(prev => ({
-      ...prev,
-      features: [...prev.features, featureId],
-    }));
+    setSubscription(prev => {
+      if (!prev) return prev; // nothing to update when subscription not loaded
+      if (prev.features.includes(featureId)) return prev;
+      return {
+        ...prev,
+        features: [...prev.features, featureId],
+      } as SubscriptionModel;
+    });
   };
 
   const handleUnassignFeature = (featureId: string) => {
-    setSubscription(prev => ({
-      ...prev,
-      features: prev.features.filter(id => id !== featureId),
-    }));
+    setSubscription(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        features: prev.features.filter(id => id !== featureId),
+      } as SubscriptionModel;
+    });
+  };
+
+  // handler to persist updates
+  const handleUpdate = async () => {
+    if (!subscription) return;
+    await updateSubscriptionModelApi(subscription);
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-4">
-      <div className="flex h-full overflow-hidden rounded-xl shadow-2xl">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-100 to-slate-200 p-4">
+      <div className="flex-1 flex overflow-hidden rounded-xl shadow-2xl">
         <div className="w-1/2 border-r border-slate-300">
-          <LeftContainer subscription={subscription} modules={sampleModuleList} features={sampleFeatureList} onUnassign={handleUnassignFeature} />
+          <LeftContainer
+            subscription={subscription || sampleSubscriptionModel}
+            modules={modules.length ? modules : sampleModuleList}
+            features={features.length ? features : sampleFeatureList}
+            onUnassign={handleUnassignFeature}
+          />
         </div>
         <div className="w-1/2">
-          <RightContainer features={sampleFeatureList} assignedFeatureIds={subscription.features} modules={sampleModuleList} onAssign={handleAssignFeature} />
+          <RightContainer
+            features={features.length ? features : sampleFeatureList}
+            assignedFeatureIds={subscription ? subscription.features : sampleSubscriptionModel.features}
+            modules={modules.length ? modules : sampleModuleList}
+            onAssign={handleAssignFeature}
+            onUnassign={handleUnassignFeature} // Added this prop
+          />
         </div>
+      </div>
+      {/* Action Bar */}
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={handleUpdate}
+          disabled={state.loading}
+          className="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white shadow-md transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {state.loading ? 'Updating...' : 'Update'}
+        </button>
       </div>
     </div>
   );
