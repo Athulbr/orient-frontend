@@ -82,7 +82,7 @@ const NavigationComponent: FC = () => {
       {settings.map(group => (
         <div key={group.name}>
           <div
-            className="flex cursor-pointer items-center justify-between border-b bg-gray-50 py-5 pr-4 pl-6 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-100"
+            className="flex cursor-pointer items-center justify-between border-b bg-gray-100 py-5 pr-4 pl-6 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-100"
             onClick={() => toggleGroup(group.name)}
           >
             <div className="flex items-center gap-3">

@@ -17,9 +17,9 @@ const ListTemplateComponent: React.FC = () => {
     getTemplatesApi();
   }, [state.refresh]);
 
-  if (state.loadingTemplates) {
+  if (!state.loadingTemplates) {
     return (
-      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+      <div className="flex flex-wrap gap-4">
         {Array.from({ length: 10 }).map((_, idx) => (
           <TemplateCardComponent key={idx} isLoading />
         ))}
@@ -28,7 +28,7 @@ const ListTemplateComponent: React.FC = () => {
   }
 
   return (
-    <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+    <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
       {state.templates.map((template: any, idx: number) => (
         <TemplateCardComponent
           onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
