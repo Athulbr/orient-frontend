@@ -29,7 +29,7 @@ export const usePromptTuningApi = () => {
 
   const updateTemplateApi = async (requestBody: any) => {
     try {
-      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/template/update/prompt/${state.selectedTemplateId}`, requestBody);
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/updated-field/update/prompt/${state.selectedTemplateId}`, requestBody);
       setState(prev => ({ ...prev, showTuningDialog: false, id: '', templateName: '', selectedTemplateId: '' }));
       toast.success('Template updated successfully');
       return true;

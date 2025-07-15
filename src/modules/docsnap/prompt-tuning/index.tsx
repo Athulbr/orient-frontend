@@ -69,7 +69,10 @@ const UpdatedFieldsListPage: React.FC = () => {
     },
   };
   const updatedQuery = (query: any) => {
-    setState(prev => ({ ...prev, fromDate: query.startDate, toDate: query.endDate }));
+    if (query.startDate && query.endDate) {
+      console.log('query.startDate:===========', query.startDate.toISOString().split('T')[0]);
+      setState(prev => ({ ...prev, fromDate: query.startDate.toISOString().split('T')[0], toDate: query.endDate.toISOString().split('T')[0] }));
+    }
     return query;
   };
   return (
