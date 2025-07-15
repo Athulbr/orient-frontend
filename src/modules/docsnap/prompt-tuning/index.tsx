@@ -13,7 +13,8 @@ export interface PromptTuningStateIF {
   refresh: number;
   promptTuning: any | null;
   selectedTemplateId: string;
-  fineTunedFieldList: any[];
+  templateName: string;
+  fineTunedFieldList: Record<string, any>[];
   fromDate: any;
   toDate: any;
 }
@@ -50,6 +51,7 @@ const sampleResponse = [
 const initialState = {
   showTuningDialog: false,
   loading: false,
+  templateName: '',
   id: '',
   refresh: 1,
   promptTuning: null,
@@ -63,17 +65,20 @@ const UpdatedFieldsListPage: React.FC = () => {
   const [state, setState] = useState<PromptTuningStateIF>(initialState);
   const customFunctions = {
     rowClickHandler: (row: any) => {
-      setState(prev => ({ ...prev, showTuningDialog: true, selectedTemplateId: row.template?._id }));
+      setState(prev => ({ ...prev, showTuningDialog: true, selectedTemplateId: row.template?._id, templateName: row.template?.name }));
     },
   };
-
+  const updatedQuery = (query: any) => {
+    setState(prev => ({ ...prev, fromDate: query.startDate, toDate: query.endDate }));
+    return query;
+  };
   return (
     <PromptTuningStateProvider value={{ state, setState }}>
       <PageContainer className="">
         <PageNameComponent name="Updated Fields">
           <Breadcrumbs page="listUpdatedField" />
         </PageNameComponent>
-        <UseTablebuilder name="Prompt Tuning Table" customFunctions={customFunctions} fluidHeight />
+        <UseTablebuilder name="Prompt Tuning Table" updatedQuery={updatedQuery} customFunctions={customFunctions} fluidHeight />
       </PageContainer>
       <PromptTuningDialogComponent />
     </PromptTuningStateProvider>

@@ -19,7 +19,7 @@ const RecentFilesCardComponent: React.FC = () => {
 
   return (
     <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
-      <div className="flex items-center justify-between px-2 pt-4">
+      <div className="flex items-center justify-between px-4 pt-6">
         <h5 className="text-gray-800">Recent Files</h5>
         <span
           onClick={() => navigate('/docsnap/record/list')}
@@ -30,7 +30,7 @@ const RecentFilesCardComponent: React.FC = () => {
       </div>
       {state.loadingRecords ? (
         <SkeletonLoader />
-      ) : (
+      ) : state.records.length > 0 ? (
         <div className="h-full overflow-y-hidden">
           <table className="min-w-full">
             <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
@@ -57,6 +57,8 @@ const RecentFilesCardComponent: React.FC = () => {
             </tbody>
           </table>
         </div>
+      ) : (
+        <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-gray-400">Your recently uploaded files will appear here</div>
       )}
     </div>
   );

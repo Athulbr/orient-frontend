@@ -53,7 +53,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
           {/* <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
           <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
-            <span className="flex items-center gap-2 text-sm text-gray-300">
+            <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">
               <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
               {firstName}
             </span>

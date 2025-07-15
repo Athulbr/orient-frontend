@@ -12,10 +12,9 @@ export const useUserApiService = () => {
 
   const createUserApi = async (user: any) => {
     try {
-      setTimeout(() => {
-        setState(prev => ({ ...prev, loading: true }));
-        toast.success('User Created Successfully');
-      }, 2000);
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/create`, user);
+      setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: prev.refresh + 1 }));
+      toast.success('User Created Successfully');
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to Create User');

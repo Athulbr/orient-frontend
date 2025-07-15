@@ -119,7 +119,7 @@ export interface FormBuilderContextType {
   setFields: React.Dispatch<React.SetStateAction<FieldIF[]>>;
   formSettings: FormSettingsIF;
   setFormSettings: React.Dispatch<React.SetStateAction<FormSettingsIF>>;
-  createForm: () => void;
-  updateForm: () => void;
-  getFormbuilderByIdApi: () => void;
+  createForm: (name: string) => void;
+  updateForm: (name: string) => void;
+  getFormbuilderByIdApi: () => Promise<string>;
 }

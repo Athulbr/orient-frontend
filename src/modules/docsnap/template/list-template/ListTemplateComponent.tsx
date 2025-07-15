@@ -17,7 +17,7 @@ const ListTemplateComponent: React.FC = () => {
     getTemplatesApi();
   }, [state.refresh]);
 
-  if (!state.loadingTemplates) {
+  if (state.loadingTemplates) {
     return (
       <div className="flex flex-wrap gap-4">
         {Array.from({ length: 10 }).map((_, idx) => (

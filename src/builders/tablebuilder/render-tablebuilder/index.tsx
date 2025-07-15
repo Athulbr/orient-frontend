@@ -13,6 +13,7 @@ interface PropsIF {
   actionButtons?: { label: string; action: () => void }[];
   refresh?: number;
   disableLoader?: boolean;
+  updatedQuery?: (query: any) => any;
 }
 
 export const RenderTablebuilder: React.FC<PropsIF> = ({
@@ -24,11 +25,17 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
   actionButtons = [],
   refresh,
   disableLoader,
+  updatedQuery,
 }) => {
   const [state, setState] = useState<TablebuilderStateIF>(tablebuilderInitialState);
   return (
     <TablebuilderStateProvider
-      value={{ state, setState, settings, injectedData: { customUI, customFunctions, fluidHeight, externalFilters, actionButtons, disableLoader } }}
+      value={{
+        state,
+        setState,
+        settings,
+        injectedData: { customUI, updatedQuery, customFunctions, fluidHeight, externalFilters, actionButtons, disableLoader },
+      }}
     >
       <Table refresh={refresh} />
     </TablebuilderStateProvider>

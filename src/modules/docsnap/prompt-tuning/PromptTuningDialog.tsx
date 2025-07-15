@@ -1,4 +1,6 @@
 import { DatePicker } from '../../../builders/tablebuilder/render-tablebuilder/components/DatePicker';
+import { formatDate } from '../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
+import { Button } from '../../../components/Button';
 import { DialogComponent } from '../../../components/DialogComponent';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import { TextAreaComponent } from '../../../components/Textarea';
@@ -11,32 +13,61 @@ interface PromptTuningDialogComponentIF {
 
 const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () => {
   const { state, setState } = usePromptTuningState();
-  const { fineTunePrompt } = usePromptTuningApi();
+  const { fineTunePrompt, updateTemplateApi } = usePromptTuningApi();
 
-  const onDateChange = (from: any, to: any) => {
-    setState(prev => ({ ...prev, fromDate: from, toDate: to }));
+  const fineTuneTemplate = () => {
+    // const requestBody = {
+    //   templateId: '686eb2d9205d42635ef9f283',
+    //   start_date: '2025-07-13',
+    //   end_date: '2025-07-14',
+    //   updated_count: 5,
+    //   data_source: 'mongodb',
+    // };
     const requestBody = {
       templateId: state.selectedTemplateId,
-      start_date: `${from.toISOString()}`.split('T')[0],
-      end_date: `${to.toISOString()}`.split('T')[0],
-      updated_count: 20,
+      start_date: `${state.fromDate}`,
+      end_date: `${state.toDate}`,
+      updated_count: 7,
+      data_source: 'mongodb',
     };
 
     fineTunePrompt(requestBody);
   };
 
+  const savePrompt = () => {
+    const fineTunedFieldList = state.fineTunedFieldList.map((field: any) => {
+      return {
+        field_name: field.field_name,
+        current_prompt: field.current_prompt,
+        updated_prompt: field.updated_prompt,
+      };
+    });
+    const requestBody = {
+      templateId: state.selectedTemplateId,
+      updatedFields: fineTunedFieldList,
+    };
+    updateTemplateApi(requestBody);
+  };
+
   return (
     <DialogComponent
-      primaryButtonText="Validate"
+      primaryButtonText={state.fineTunedFieldList.length > 0 ? 'Save' : ''}
       secondaryButtonText="Cancel"
       className="max-h-[95vh] w-[80vw]"
       isOpen={state.showTuningDialog}
-      name="Prompt Tuning"
+      name={`Template Prompt Tuning: ${state.templateName}`}
+      onPrimaryAction={savePrompt}
       closeDialog={() => setState(prev => ({ ...prev, showTuningDialog: false, fromDate: null, toDate: null, loading: false, fineTunedFieldList: [] }))}
     >
       <div className="flex min-h-140 flex-col gap-4 overflow-hidden p-4 pb-0">
         <div className="flex w-full">
-          <DatePicker from={state.fromDate} to={state.toDate} onSubmit={onDateChange} />
+          <DatePicker
+            from={state.fromDate}
+            to={state.toDate}
+            onSubmit={(from: any, to: any) =>
+              setState(prev => ({ ...prev, fromDate: `${from.toISOString()}`.split('T')[0], toDate: `${to.toISOString()}`.split('T')[0] }))
+            }
+          />
         </div>
         {state.loading ? (
           <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
@@ -55,7 +86,24 @@ const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () 
             ))}
           </div>
         ) : (
-          <div className="flex h-full w-full flex-1 flex-col items-center justify-center">Please Select Date Range</div>
+          <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
+            <div className="flex w-full flex-col gap-2 border-gray-200 pb-4">
+              <div className="flex items-center justify-center gap-2">
+                {state.fromDate && state.toDate ? (
+                  <>
+                    <span className="text-gray-500">{state.fromDate}</span>
+                    <span className="text-gray-400">-</span>
+                    <span className="text-gray-500">{state.toDate}</span>
+                  </>
+                ) : (
+                  'Please select date range'
+                )}
+              </div>
+            </div>
+            <Button disabled={!state.fromDate || !state.toDate} onClick={fineTuneTemplate} outlined>
+              Fine-tune Template
+            </Button>
+          </div>
         )}
       </div>
     </DialogComponent>

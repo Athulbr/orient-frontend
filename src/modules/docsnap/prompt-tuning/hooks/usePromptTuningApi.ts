@@ -28,5 +28,17 @@ export const usePromptTuningApi = () => {
     }
   };
 
-  return { fineTunePrompt };
+  const updateTemplateApi = async (requestBody: any) => {
+    try {
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/template/update/prompt/${state.selectedTemplateId}`, requestBody);
+      setState(prev => ({ ...prev, showTuningDialog: false, id: '', templateName: '', selectedTemplateId: '' }));
+      toast.success('Template updated successfully');
+      return true;
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to update Template');
+    }
+  };
+
+  return { fineTunePrompt, updateTemplateApi };
 };

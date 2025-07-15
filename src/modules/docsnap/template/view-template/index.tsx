@@ -34,8 +34,8 @@ const ViewTemplatePage: React.FC = () => {
     <ViewTemplateStateProvider value={{ state, setState }}>
       <PageContainer className="gap-4 overflow-hidden py-6">
         <div className="flex flex-col gap-4 px-6">
-          <Breadcrumbs page="viewTemplate" />
-          <PageNameComponent name="View Template" showBackButton />
+          <Breadcrumbs page="viewTemplate" pageName={state.template?.name} />
+          <PageNameComponent name={state.template?.name} showBackButton />
         </div>
         <div className="flex h-full w-full flex-col bg-red-500">
           <TabViewContainer>

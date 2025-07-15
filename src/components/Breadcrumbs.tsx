@@ -4,9 +4,10 @@ import { cn } from '../global-utils/twMerge';
 interface BreadcrumbsIF {
   page: string;
   className?: string;
+  pageName?: string;
 }
 
-const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
+const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className, pageName }) => {
   const navigate = useNavigate();
   const breadcrumbs = {
     listUser: [{ text: 'Settings' }, { text: '/' }, { text: 'Users' }],
@@ -27,7 +28,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
       { text: '/' },
       { text: 'Templates', path: '/docsnap/template/list' },
       { text: '/' },
-      { text: 'View Template' },
+      { text: pageName || '' },
     ],
     listFormbuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Formbuilders' }],
     listTablebuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Tablebuilders' }],
@@ -50,7 +51,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className }) => {
   };
 
   return (
-    <div className={cn('flex gap-2 pl-1 text-sm font-light text-gray-500', className)}>
+    <div className={cn('flex gap-2 pl-1 text-xs font-light text-gray-500', className)}>
       {getBreadcrumb()?.map((item: any, i: number) => {
         return (
           <div

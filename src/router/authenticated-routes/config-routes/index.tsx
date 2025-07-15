@@ -33,11 +33,12 @@ import ListFeaturePage from '../../../modules/config/feature';
 import ListSubscriptionModelPage from '../../../modules/config/subscriptionModel';
 import ListTablebuilderPage from '../../../modules/config/tablebuilder';
 import ListTenantPage from '../../../modules/config/tenant';
+import { cn } from '../../../global-utils/twMerge';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
   return (
-    <PageContainer className="py-6">
+    <PageContainer className="py-4">
       <PageNameComponent className="p-4 pt-0" customGoBackFunction={() => navigate('/')} name="Settings" showBackButton />
       <div className="flex w-full flex-1 overflow-hidden">
         <NavigationComponent />
@@ -96,10 +97,13 @@ const NavigationComponent: FC = () => {
               return (
                 <div
                   key={item.key}
-                  className={`flex cursor-pointer items-center gap-3 border-b py-5 pl-12 text-sm text-gray-600 transition-colors duration-200 hover:bg-sky-50 hover:text-sky-500 ${window.location.pathname.split('/')[2] === item.key ? 'bg-sky-50 text-sky-500' : ''}`}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-3 border-b py-5 pl-12 text-sm text-gray-600 transition-colors duration-200 hover:bg-sky-50 hover:text-sky-500',
+                    window.location.pathname.split('/')[2] === item.key ? 'bg-sky-50 text-sky-500' : ''
+                  )}
                   onClick={() => navigate(item.path)}
                 >
-                  <item.icon strokeWidth={1.5} fill={window.location.pathname.split('/')[2] === item.key ? 'white' : 'none'} className="" size={18} />
+                  <item.icon strokeWidth={1.5} className="" size={18} />
                   {item.name}
                 </div>
               );
@@ -205,7 +209,7 @@ const settings = [
         name: 'Prompt Tuning',
         icon: SquareTerminal,
         path: '/config/prompt-tuning',
-        key: 'promptTuning',
+        key: 'prompt-tuning',
       },
     ],
   },

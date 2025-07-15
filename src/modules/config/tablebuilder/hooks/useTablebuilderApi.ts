@@ -55,7 +55,7 @@ export const useTablebuilderApi = () => {
   // ============================= DELETE ==================================
   const deleteTablebuilderApi = async (id: string) => {
     try {
-      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/tablebuilder/delete/${id}`);
+      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/delete/${id}`);
       setState(prev => ({ ...prev, id: '', refresh: (prev.refresh || 0) + 1 }));
       toast.success('Tablebuilder deleted successfully');
       return true;

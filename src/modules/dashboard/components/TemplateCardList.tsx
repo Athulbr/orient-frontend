@@ -65,7 +65,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
             <TemplateCardComponent key={idx} isLoading flexBasis={`${100 / cardsPerRow}%`} />
           ))}
         </div>
-      ) : (
+      ) : visibleTemplates.length > 0 ? (
         <div className="flex min-h-40 gap-6">
           {visibleTemplates.map((template, idx) => (
             <TemplateCardComponent
@@ -78,6 +78,8 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
           ))}
           {state.totalTemplates > templatesToShow && <ViewAllCard totalTemplates={state.totalTemplates} flexBasis={`${100 / cardsPerRow}%`} />}
         </div>
+      ) : (
+        <div className="flex h-40 w-full items-center justify-center rounded-2xl bg-white text-gray-400">Your recently created template will appear here</div>
       )}
     </div>
   );

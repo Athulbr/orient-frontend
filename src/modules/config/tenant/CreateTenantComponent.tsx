@@ -25,7 +25,8 @@ const CreateTenantComponent: React.FC<CreateTenantComponentIF> = () => {
           nextBillingDate: '2025-08-07T18:30:00.000Z',
         },
         name: data.name,
-        dbURI: 'mongodb://localhost:27017/makez_dev',
+        domain: data.domain,
+        dbURI: data.dbURI,
       };
       createTenantApi(requestBody);
     }

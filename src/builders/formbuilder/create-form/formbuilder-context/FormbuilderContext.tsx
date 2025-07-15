@@ -19,18 +19,17 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [formSettings, setFormSettings] = useState<FormSettingsIF>({
     columns: 1,
   });
-  const [formbuilderName, setFormbuilderName] = useState('');
   const toast = useToastStore();
 
-  const createForm = async () => {
+  const createForm = async (name: string) => {
     try {
       setLoading(true);
-      const formName = prompt('Enter form name');
-      if (!formName) {
+      if (!name) {
+        toast.error('Form name is required');
         return;
       }
       await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder`, {
-        name: formName || 'Form-1',
+        name,
         fields,
         settings: formSettings,
       });
@@ -44,15 +43,12 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
       setLoading(false);
     }
   };
-  const updateForm = async () => {
+  const updateForm = async (name: string) => {
     try {
       setLoading(true);
-      const formName = prompt('Enter form name if you want to update form name');
-      if (!formName && !formbuilderName) {
-        return;
-      }
+
       await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`, {
-        name: formName || formbuilderName,
+        name,
         fields,
         settings: formSettings,
       });
@@ -71,12 +67,11 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
       setLoading(true);
       const res = await httpAiRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`);
       setFields(res?.data.fields);
-      setFormbuilderName(res?.data.name);
       setFormSettings(res?.data.settings);
-      return true;
+      return res?.data?.name;
     } catch (error) {
       console.error(error);
-      return false;
+      return '';
     } finally {
       setLoading(false);
     }

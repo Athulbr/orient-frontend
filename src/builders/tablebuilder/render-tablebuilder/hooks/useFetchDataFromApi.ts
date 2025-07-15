@@ -45,7 +45,9 @@ export const useFetchDataFromApi = () => {
         // const url = 'http://192.168.1.36:4600';
         const url = api.getUrlFromEnv ? import.meta.env[api.envVariable] : api.url;
 
-        const res = await httpRequest('POST', `${url}${api.endPoint}`, clearFilterRequest ? { filters: injectedData.externalFilters } : query);
+        const updatedQuery = injectedData.updatedQuery ? injectedData.updatedQuery(query) : query;
+
+        const res = await httpRequest('POST', `${url}${api.endPoint}`, clearFilterRequest ? { filters: injectedData.externalFilters } : updatedQuery);
 
         if (!res || !res.data) {
           throw new Error('Invalid API response format');

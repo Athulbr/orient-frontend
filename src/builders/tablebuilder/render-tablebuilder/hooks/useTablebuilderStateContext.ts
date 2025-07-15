@@ -8,6 +8,7 @@ interface InjectedDataIF {
   fluidHeight?: boolean;
   actionButtons?: { label: string; action: () => void }[];
   disableLoader?: boolean;
+  updatedQuery?: (query: any) => any;
 }
 
 const TablebuilderStateContext = createContext<

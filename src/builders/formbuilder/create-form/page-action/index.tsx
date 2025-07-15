@@ -13,6 +13,8 @@ import { useParams } from 'react-router-dom';
 import { DialogComponent } from '../../../../components/DialogComponent';
 import { RenderForm } from '../../render-form/RenderForm';
 import { UseFormbuilder } from '../../use-formbuilder';
+import { ButtonBox } from '../../../../components/ButtonBox';
+import { useToastStore } from '../../../../components/toast/ToastStore';
 
 interface Message {
   id: number;
@@ -22,6 +24,7 @@ interface Message {
 
 const PageActionComponent: React.FC = () => {
   const { id } = useParams();
+  const toast = useToastStore();
   const [messages, setMessages] = useState<Message[]>([{ id: 1, text: 'Hello! How can I help you?', isUser: false }]);
   const {
     fields,
@@ -42,10 +45,16 @@ const PageActionComponent: React.FC = () => {
   const [isUserClosedChatbot, setIsUserClosedChatbot] = useState(true);
   const [email, setEmail] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [name, setName] = useState('');
+  const [showNameDialog, setShowNameDialog] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    getFormbuilderByIdApi();
+    const getName = async () => {
+      const name = await getFormbuilderByIdApi();
+      if (name) setName(name);
+    };
+    getName();
   }, [id]);
 
   const hideChatbot = () => {
@@ -115,10 +124,20 @@ const PageActionComponent: React.FC = () => {
     }
   };
 
+  const handleUpdateFormbuilder = () => {
+    if (!name) {
+      toast.error('Form name is required');
+      return;
+    }
+    id ? updateForm(name) : createForm(name);
+
+    setShowNameDialog(false);
+  };
+
   const handleSave = () => {
     setShowFieldInputError(true);
     if (fields.some(item => item.key.trim() === '' || item.label.trim() === '')) return;
-    id ? updateForm() : createForm();
+    setShowNameDialog(true);
   };
 
   const handlePreview = () => {
@@ -174,6 +193,14 @@ const PageActionComponent: React.FC = () => {
         closeDialog={() => setShowSettings(false)}
         onSubmit={handleSubmitSettings}
       />
+      <DialogComponent isOpen={showNameDialog} closeDialog={() => setShowNameDialog(false)} name="Formbuilder Name">
+        <div className="flex w-100 flex-col gap-4 p-4">
+          <TextField className="w-full" label="Formbuilder Name" value={name} onChange={e => setName(e.target.value)} />
+          <ButtonBox>
+            <Button onClick={handleUpdateFormbuilder}>{id ? 'Update' : 'Create'}</Button>
+          </ButtonBox>
+        </div>
+      </DialogComponent>
     </PageActionBox>
   );
 };

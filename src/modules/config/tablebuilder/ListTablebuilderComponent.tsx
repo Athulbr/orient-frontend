@@ -7,7 +7,7 @@ interface ListTablebuilderComponentIF {
 
 const ListTablebuilderComponent: React.FC<ListTablebuilderComponentIF> = () => {
   const { state, setState } = useTablebuilderState();
-  const { refreshCache } = useTablebuilderApi();
+  const { refreshCache, deleteTablebuilderApi } = useTablebuilderApi();
   const actionButtons = [
     {
       label: 'Create Tablebuilder',
@@ -24,7 +24,9 @@ const ListTablebuilderComponent: React.FC<ListTablebuilderComponentIF> = () => {
     editClickHandler: (row: Record<string, string>) => {
       setState(prev => ({ ...prev, id: row._id, createDialog: true }));
     },
-    deleteClickHandler: (row: Record<string, string>) => {},
+    deleteClickHandler: (row: Record<string, string>) => {
+      deleteTablebuilderApi(row._id);
+    },
   };
   return <UseTablebuilder name="list tablebuilder" fluidHeight actionButtons={actionButtons} customFunctions={customFunctions} />;
 };
