@@ -28,7 +28,7 @@ const ListTablebuilderComponent: React.FC<ListTablebuilderComponentIF> = () => {
       deleteTablebuilderApi(row._id);
     },
   };
-  return <UseTablebuilder name="list tablebuilder" fluidHeight actionButtons={actionButtons} customFunctions={customFunctions} />;
+  return <UseTablebuilder name="list tablebuilder" refresh={state.refresh} fluidHeight actionButtons={actionButtons} customFunctions={customFunctions} />;
 };
 
 export default ListTablebuilderComponent;

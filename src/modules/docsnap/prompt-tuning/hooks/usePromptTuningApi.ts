@@ -1,4 +1,3 @@
-import { useParams } from 'react-router-dom';
 import { usePromptTuningState } from './promptTuningContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
