@@ -6,6 +6,8 @@ import FullScreenLoader from '../../../components/FullScreenLoader';
 import { TextAreaComponent } from '../../../components/Textarea';
 import { usePromptTuningState } from './hooks/promptTuningContext';
 import { usePromptTuningApi } from './hooks/usePromptTuningApi';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import Spinner from '../../../components/Spinner';
 
 interface PromptTuningDialogComponentIF {
   test?: string;
@@ -14,6 +16,7 @@ interface PromptTuningDialogComponentIF {
 const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () => {
   const { state, setState } = usePromptTuningState();
   const { fineTunePrompt, updateTemplateApi } = usePromptTuningApi();
+  const toast = useToastStore();
 
   const fineTuneTemplate = () => {
     // const requestBody = {
@@ -35,6 +38,10 @@ const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () 
   };
 
   const savePrompt = () => {
+    if (state.fineTunedFieldList.length === 0) {
+      toast.error('Please fine-tune the template first');
+      return;
+    }
     const fineTunedFieldList = state.fineTunedFieldList.map((field: any) => {
       return {
         field_name: field.field_name,
@@ -49,9 +56,24 @@ const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () 
     updateTemplateApi(requestBody);
   };
 
+  const additionalButtons = [
+    {
+      label: state.updatingTemplate ? 'Saving Template...' : 'Save Template',
+      action: savePrompt,
+    },
+  ];
+
+  const ValidateHandler = () => {
+    setState(prev => ({ ...prev, validating: true }));
+    setTimeout(() => {
+      setState(prev => ({ ...prev, validationSuccess: true, validating: false }));
+    }, 4000);
+  };
+
   return (
     <DialogComponent
-      primaryButtonText={state.fineTunedFieldList.length > 0 ? 'Save' : ''}
+      additionalButtons={state.validationSuccess ? additionalButtons : []}
+      primaryButtonText={state.fineTunedFieldList.length > 0 ? 'Validate' : ''}
       secondaryButtonText="Cancel"
       className="max-h-[95vh] w-[80vw]"
       isOpen={state.showTuningDialog}
@@ -70,9 +92,9 @@ const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () 
             }
           />
         </div>
-        {state.loading ? (
+        {state.loading || state.updatingTemplate || state.validating ? (
           <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
-            <FullScreenLoader text="Fine-Tuning Prompts..." />
+            <FullScreenLoader text={state.loading ? 'Fine-Tuning Template...' : state.updatingTemplate ? 'Saving Template...' : 'Validating Template...'} />
           </div>
         ) : state.fineTunedFieldList.length > 0 ? (
           <div className="flex w-full flex-col gap-8 overflow-y-auto p-4">
@@ -102,7 +124,13 @@ const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () 
               </div>
             </div>
             <Button disabled={!state.fromDate || !state.toDate} onClick={fineTuneTemplate} outlined>
-              Fine-tune Template
+              {state.loading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner /> Fine-Tuning Template...
+                </span>
+              ) : (
+                'Fine-Tune Template'
+              )}
             </Button>
           </div>
         )}

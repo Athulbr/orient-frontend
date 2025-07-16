@@ -17,6 +17,9 @@ export interface PromptTuningStateIF {
   fineTunedFieldList: Record<string, any>[];
   fromDate: any;
   toDate: any;
+  validationSuccess: boolean;
+  validating: boolean;
+  updatingTemplate: boolean;
 }
 const sampleResponse = [
   {
@@ -59,6 +62,9 @@ const initialState = {
   fineTunedFieldList: [],
   fromDate: null,
   toDate: null,
+  validationSuccess: false,
+  validating: false,
+  updatingTemplate: false,
 };
 
 const UpdatedFieldsListPage: React.FC = () => {
@@ -70,7 +76,6 @@ const UpdatedFieldsListPage: React.FC = () => {
   };
   const updatedQuery = (query: any) => {
     if (query.startDate && query.endDate) {
-      console.log('query.startDate:===========', query.startDate.toISOString().split('T')[0]);
       setState(prev => ({ ...prev, fromDate: query.startDate.toISOString().split('T')[0], toDate: query.endDate.toISOString().split('T')[0] }));
     }
     return query;
@@ -78,9 +83,7 @@ const UpdatedFieldsListPage: React.FC = () => {
   return (
     <PromptTuningStateProvider value={{ state, setState }}>
       <PageContainer className="">
-        <PageNameComponent name="Updated Fields">
-          <Breadcrumbs page="listUpdatedField" />
-        </PageNameComponent>
+        <PageNameComponent name="Updated Fields" />
         <UseTablebuilder name="Prompt Tuning Table" updatedQuery={updatedQuery} customFunctions={customFunctions} fluidHeight />
       </PageContainer>
       <PromptTuningDialogComponent />
