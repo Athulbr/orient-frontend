@@ -18,6 +18,7 @@ export interface DialogPropsIF {
   fullScreen?: boolean;
   className?: string;
   loading?: boolean;
+  additionalButtons?: { label: string; action: () => void }[];
 }
 
 export const DialogComponent: React.FC<DialogPropsIF> = ({
@@ -32,6 +33,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
   className,
   fullScreen,
   loading,
+  additionalButtons,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -131,6 +133,11 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
                 {secondaryButtonText}
               </Button>
             )}
+            {additionalButtons?.map((button, index) => (
+              <Button key={index} outlined onClick={button.action}>
+                {button.label}
+              </Button>
+            ))}
             {primaryButtonText && (
               <Button id="primary-button" onClick={handlePrimaryAction}>
                 {primaryButtonText}
