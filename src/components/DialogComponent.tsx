@@ -18,6 +18,7 @@ export interface DialogPropsIF {
   fullScreen?: boolean;
   className?: string;
   loading?: boolean;
+  disableBlurCloseDialog?: boolean;
 }
 
 export const DialogComponent: React.FC<DialogPropsIF> = ({
@@ -32,6 +33,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
   className,
   fullScreen,
   loading,
+  disableBlurCloseDialog = false,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -40,6 +42,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
 
   // Handle click outside to close
   useEffect(() => {
+    if (disableBlurCloseDialog || !isOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
         closeDialog();

@@ -57,6 +57,7 @@ const PromptTuningDialogComponent: React.FC<PromptTuningDialogComponentIF> = () 
       isOpen={state.showTuningDialog}
       name={`Template Prompt Tuning: ${state.templateName}`}
       onPrimaryAction={savePrompt}
+      disableBlurCloseDialog
       closeDialog={() => setState(prev => ({ ...prev, showTuningDialog: false, fromDate: null, toDate: null, loading: false, fineTunedFieldList: [] }))}
     >
       <div className="flex min-h-140 flex-col gap-4 overflow-hidden p-4 pb-0">
