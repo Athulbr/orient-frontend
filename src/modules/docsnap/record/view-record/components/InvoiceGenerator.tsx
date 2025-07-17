@@ -1,53 +1,47 @@
-import { useState } from 'react';
-import { RichTextEditor } from '../../../../../components/RichTextEditor';
-import { purchaseOrder } from '../utils';
 import { Button } from '../../../../../components/Button';
 import Spinner from '../../../../../components/Spinner';
 import { FileText } from 'lucide-react';
+import { useViewRecordState } from '../hooks/viewRecordContext';
+import { RichTextEditor } from '../../../../../components/RichTextEditor';
+import { useViewRecordApi } from '../hooks/useViewRecordApi';
 
 export const InvoiceGenerator: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [content, setContent] = useState('');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { state, setState } = useViewRecordState();
+  const { generateInvoiceWithAI } = useViewRecordApi();
 
-  const generateInvoice = async () => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('http://localhost:3001/api/generate-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ purchaseOrder }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setContent(data.invoice);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error generating invoice:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (!state.record?.extractedData) {
+    return null;
+  }
 
   return (
-    <div className={`flex h-full w-full flex-col items-center justify-center overflow-hidden p-6 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {content ? (
-        <div className="flex flex-1 flex-col overflow-y-auto">
-          <RichTextEditor className="h-full" initialContent={content} onChange={setContent} theme={theme} placeholder="Start writing your invoice..." />
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      {state.invoiceContent ? (
+        <div className="flex-1 overflow-hidden p-4 pr-2">
+          <div className="relative h-full">
+            <RichTextEditor
+              height="calc(100vh - 85px)"
+              value={state.invoiceContent || ''}
+              onChange={(newContent: string) => setState(prev => ({ ...prev, invoiceContent: newContent }))}
+              placeholder="Your invoice content will appear here..."
+            />
+            {state.generatingInvoice && (
+              <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center bg-black">
+                <Spinner size={32} />
+                <span className="ml-2 text-white">Regenerating Invoice...</span>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
-        <Button startIcon={isLoading ? <Spinner size={20} /> : <FileText size={18} />} onClick={generateInvoice} disabled={isLoading}>
-          {isLoading ? 'Generating Invoice...' : 'Generate Invoice'}
-        </Button>
+        <div className="flex flex-1 flex-col items-center justify-center p-6">
+          <Button
+            startIcon={state.generatingInvoice ? <Spinner size={20} /> : <FileText size={18} />}
+            onClick={generateInvoiceWithAI}
+            disabled={state.generatingInvoice}
+          >
+            {state.generatingInvoice ? 'Generating Invoice...' : 'Generate Invoice'}
+          </Button>
+        </div>
       )}
     </div>
   );

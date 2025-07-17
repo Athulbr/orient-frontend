@@ -139,6 +139,35 @@ const renderPageToImageHighQuality = async (pdf: any, pageNumber: number): Promi
   });
 };
 
+export const filterExtractedDataForInvoiceGeneration = (input: any): any => {
+  try {
+    function extractValues(obj: any): any {
+      if (Array.isArray(obj)) {
+        return obj.map(item => extractValues(item));
+      }
+
+      if (obj && typeof obj === 'object') {
+        if (obj.hasOwnProperty('value')) {
+          return obj.value;
+        }
+
+        const result: any = {};
+        for (const key in obj) {
+          result[key] = extractValues(obj[key]);
+        }
+        return result;
+      }
+
+      return obj;
+    }
+
+    return extractValues(input);
+  } catch (error: any) {
+    console.error('Error processing data:', error.message);
+    return null;
+  }
+};
+
 export const purchaseOrder = {
   basic_details: {
     po_number: {
@@ -584,4 +613,283 @@ export const purchaseOrder = {
       },
     },
   ],
+};
+
+const sampleExtractedData = {
+  basic_details: {
+    quote_id: {
+      value: 'QT66607MD',
+      confidence: 0.9996137022972107,
+      bbox: {
+        x_min: '0.736328125',
+        y_min: '0.1513671875',
+        x_max: '0.8462775735294117',
+        y_max: '0.1689453125',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    po_date: {
+      value: '7/8/2025',
+      confidence: 0.9996671676635742,
+      bbox: {
+        x_min: '0.5745634191176471',
+        y_min: '0.1533203125',
+        x_max: '0.6428079044117647',
+        y_max: '0.1650390625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    quote_email: {
+      value: 'RFQ@rehabmart.com',
+      confidence: 0.7839723626772562,
+      bbox: {
+        x_min: '0.21438419117647056',
+        y_min: '0.1826171875',
+        x_max: '0.38752297794117646',
+        y_max: '0.197265625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    contact_email: {
+      value: 'QuotePO@rehabmart.com',
+      confidence: 0.5859683553377787,
+      bbox: {
+        x_min: '0.5606617647058824',
+        y_min: '0.18359375',
+        x_max: '0.7704503676470589',
+        y_max: '0.1982421875',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    rm_rep: {
+      value: 'MD',
+      confidence: 0.9989466071128845,
+      bbox: {
+        x_min: '0.14361213235294118',
+        y_min: '0.3681640625',
+        x_max: '0.1789981617647059',
+        y_max: '0.3837890625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    sub_total: {
+      value: 5626,
+    },
+    sales_tax: {
+      value: 0,
+    },
+    total: {
+      value: 5626,
+    },
+  },
+  ship_to: {
+    name: {
+      value: 'Birmingham VA Medical Center or Sohini Parekh',
+    },
+    street: {
+      value: '700 19th St S',
+      confidence: 0.9969817250967026,
+      bbox: {
+        x_min: '0.09432444852941174',
+        y_min: '0.2822265625',
+        x_max: '0.20553768382352944',
+        y_max: '0.2978515625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    city: {
+      value: 'Birmingham',
+      confidence: 0.8377301096916199,
+      bbox: {
+        x_min: '0.09558823529411764',
+        y_min: '0.25',
+        x_max: '0.19542738970588236',
+        y_max: '0.2646484375',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    state: {
+      value: 'AL',
+      confidence: 0.999985933303833,
+      bbox: {
+        x_min: '0.20174632352941174',
+        y_min: '0.298828125',
+        x_max: '0.23334099264705882',
+        y_max: '0.314453125',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    zip: {
+      value: '35294-1927',
+      confidence: 0.9999300241470337,
+      bbox: {
+        x_min: '0.23460477941176472',
+        y_min: '0.298828125',
+        x_max: '0.33191636029411764',
+        y_max: '0.3134765625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+  },
+  bill_to: {
+    bill_to_company: {
+      value: 'Birmingham VA Medical Center',
+      confidence: 0.9356433898210526,
+      bbox: {
+        x_min: '0.09558823529411764',
+        y_min: '0.248046875',
+        x_max: '0.3571920955882353',
+        y_max: '0.2646484375',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    bill_to_name: {
+      value: 'Sohini Parekh',
+      confidence: 0.9946127235889435,
+      bbox: {
+        x_min: '0.09432444852941174',
+        y_min: '0.2646484375',
+        x_max: '0.20806525735294118',
+        y_max: '0.2802734375',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    street: {
+      value: '700 19th St S',
+      confidence: 0.9969817250967026,
+      bbox: {
+        x_min: '0.09432444852941174',
+        y_min: '0.2822265625',
+        x_max: '0.20553768382352944',
+        y_max: '0.2978515625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    city: {
+      value: 'Birmingham',
+      confidence: 0.8377301096916199,
+      bbox: {
+        x_min: '0.09558823529411764',
+        y_min: '0.25',
+        x_max: '0.19542738970588236',
+        y_max: '0.2646484375',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    state: {
+      value: 'AL',
+      confidence: 0.999985933303833,
+      bbox: {
+        x_min: '0.20174632352941174',
+        y_min: '0.298828125',
+        x_max: '0.23334099264705882',
+        y_max: '0.314453125',
+      },
+      page: 1,
+      similarity: 1,
+    },
+    zip: {
+      value: '35294-1927',
+      confidence: 0.9999300241470337,
+      bbox: {
+        x_min: '0.23460477941176472',
+        y_min: '0.298828125',
+        x_max: '0.33191636029411764',
+        y_max: '0.3134765625',
+      },
+      page: 1,
+      similarity: 1,
+    },
+  },
+  line_items: [
+    {
+      'Item Code': {
+        value: 'HAU-1428-47-113',
+        confidence: 0.982659786939621,
+        bbox: {
+          x_min: '0.13855698529411764',
+          y_min: '0.443359375',
+          x_max: '0.29147518382352944',
+          y_max: '0.45703125',
+        },
+        page: 1,
+        similarity: 1,
+      },
+      Quantity: {
+        value: '1',
+      },
+      Description: {
+        value:
+          'Hausmann Hi-Lo Bariatric Mat Table with Power Backrest Hausmann Hi-Lo Bariatric Mat Table with Power Backrest - 4 ft. x 7 ft. Bariatric Mat Table with Blue Upholstery',
+      },
+      Amount: {
+        value: '5,176.00',
+        confidence: 0.9724100232124329,
+        bbox: {
+          x_min: '0.328125',
+          y_min: '0.443359375',
+          x_max: '0.40900735294117646',
+          y_max: '0.4580078125',
+        },
+        page: 1,
+        similarity: 1,
+      },
+    },
+    {
+      'Item Code': {
+        value: 'HAU-LOADDOCK',
+        confidence: 0.8885273337364197,
+        bbox: {
+          x_min: '0.13729319852941174',
+          y_min: '0.5078125',
+          x_max: '0.306640625',
+          y_max: '0.525390625',
+        },
+        page: 1,
+        similarity: 1,
+      },
+      Quantity: {
+        value: '1',
+      },
+      Description: {
+        value:
+          'Hausmann Hi-Lo Bariatric Mat Table with Power Backrest Delivery Method - Dock-to-Dock Load Dock Delivery (Delivery Driver Will NOT Unload Items) For Businesses with Loading Docks',
+      },
+      Amount: {
+        value: '450.00',
+        confidence: 0.9998452663421631,
+        bbox: {
+          x_min: '0.3420266544117647',
+          y_min: '0.509765625',
+          x_max: '0.40900735294117646',
+          y_max: '0.5244140625',
+        },
+        page: 1,
+        similarity: 1,
+      },
+    },
+  ],
+};
+
+const sampleOutput = {
+  ship_to: {
+    name: 'Birmingham VA Medical Center or Sohini Parekh',
+    street: '700 19th St S',
+    city: 'Birmingham',
+    state: 'Birmingham',
+    zip: '35294-1927',
+  },
 };

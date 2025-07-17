@@ -50,6 +50,8 @@ export interface ViewRecordStateIF {
   hoveredOnArrayField: boolean;
   reExtracting: boolean;
   leftWidthPercent: number;
+  invoiceContent: string;
+  generatingInvoice: boolean;
 }
 const initialState = {
   showCreateDialog: false,
@@ -75,6 +77,8 @@ const initialState = {
   selectedTableName: '',
   hoveredOnArrayField: false,
   reExtracting: false,
+  invoiceContent: '',
+  generatingInvoice: false,
 };
 
 const ViewRecordPage: React.FC = () => {

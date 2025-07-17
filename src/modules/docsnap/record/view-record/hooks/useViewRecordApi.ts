@@ -3,7 +3,7 @@ import { useViewRecordState } from './viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
-import { convertPdfToImages } from '../utils';
+import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
 import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
 
 export const useViewRecordApi = () => {
@@ -136,8 +136,24 @@ export const useViewRecordApi = () => {
       setState(prev => ({ ...prev, loadingData: false }));
     }
   };
+  const generateInvoiceWithAI = async () => {
+    try {
+      const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
+      setState(prev => ({ ...prev, generatingInvoice: true }));
+      const res: any = await httpRequest('POST', 'http://localhost:3001/api/generate-invoice', {
+        purchaseOrder: filteredData,
+      });
+      setState(prev => ({ ...prev, invoiceContent: res.invoice || 'Error generating invoice' }));
+      toast.success('Invoice generated successfully');
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to generate Invoice');
+    } finally {
+      setState(prev => ({ ...prev, generatingInvoice: false }));
+    }
+  };
 
-  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData };
+  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData, generateInvoiceWithAI };
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
