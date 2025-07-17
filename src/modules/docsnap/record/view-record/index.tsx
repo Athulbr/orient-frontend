@@ -6,6 +6,7 @@ import ExtractedDataComponent from './ExtractedDataComponent';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
 import { PreviewComponent } from './PreviewComponent';
+import { InvoiceGenerator } from './components/InvoiceGenerator';
 
 interface WirePoints {
   x1: number;
@@ -89,7 +90,7 @@ const ViewRecordPage: React.FC = () => {
           left={<LeftContainer containerRef={containerRef} fieldRefs={fieldRefs} />}
           right={<RightContainer containerRef={containerRef} fieldRefs={fieldRefs} />}
           initialLeftWidthPercent={75}
-          minLeftWidthPercent={60}
+          minLeftWidthPercent={30}
           maxLeftWidthPercent={80}
           onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}
         />
@@ -121,6 +122,7 @@ const RightContainer = ({ containerRef, fieldRefs }: { containerRef: any; fieldR
       <TabViewContainer>
         <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />
         <DocumentBotComponent />
+        <InvoiceGenerator />
       </TabViewContainer>
     </div>
   );
