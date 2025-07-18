@@ -27,8 +27,8 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
   ];
 
   return (
-    <div className={`flex h-full w-full flex-col border-l bg-[#f9fafb]`}>
-      <TabNavComponent tabs={tabs} className="relative z-20 border-b bg-[#f9fafb]" onChange={tabIndex => setState(prev => ({ ...prev, tabIndex }))} />
+    <div className={`flex h-full w-full flex-col border-l bg-gray-50`}>
+      <TabNavComponent tabs={tabs} className="relative z-20 border-b" onChange={tabIndex => setState(prev => ({ ...prev, tabIndex }))} />
       <div className="flex flex-1 flex-col overflow-hidden">
         {state.tabIndex === 0 ? (
           React.Children.toArray(children)[0]

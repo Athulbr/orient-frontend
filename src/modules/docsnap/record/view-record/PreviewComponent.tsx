@@ -124,13 +124,6 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
     }
   }, [zoom]);
 
-  const download = () => {
-    const link = document.createElement('a');
-    link.href = state.images[0];
-    link.download = state.record?.name;
-    link.click();
-  };
-
   const shrinkExpandHandler = () => {
     setZoom(shrinked ? 110 : 60);
     setShrinked(!shrinked);
@@ -295,7 +288,6 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
         handleZoomChange={handleZoomChange}
         shrinked={shrinked}
         shrinkExpandHandler={shrinkExpandHandler}
-        download={download}
         name={state.record?.name}
       />
 

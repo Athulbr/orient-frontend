@@ -89,10 +89,21 @@ const ViewRecordPage: React.FC = () => {
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
       <div className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[40vh]' : 'pb-0'}`} ref={containerRef}>
-        {/* <DocumentPreviewComponent containerRef={containerRef} fieldRefs={fieldRefs} /> */}
         <ResizableContainer
-          left={<LeftContainer containerRef={containerRef} fieldRefs={fieldRefs} />}
-          right={<RightContainer containerRef={containerRef} fieldRefs={fieldRefs} />}
+          left={
+            <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
+              <PreviewComponent fieldRefs={fieldRefs} containerRef={containerRef} />
+            </div>
+          }
+          right={
+            <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
+              <TabViewContainer>
+                <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />
+                <DocumentBotComponent />
+                <InvoiceGenerator />
+              </TabViewContainer>
+            </div>
+          }
           initialLeftWidthPercent={75}
           minLeftWidthPercent={30}
           maxLeftWidthPercent={80}
@@ -109,25 +120,3 @@ const ViewRecordPage: React.FC = () => {
 };
 
 export default ViewRecordPage;
-
-const LeftContainer = ({ containerRef, fieldRefs }: { containerRef: any; fieldRefs: any }) => {
-  const { state } = useViewRecordState();
-  return (
-    <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
-      {/* <DocumentPreviewComponent containerRef={containerRef} fieldRefs={fieldRefs} /> */}
-      <PreviewComponent fieldRefs={fieldRefs} containerRef={containerRef} />
-    </div>
-  );
-};
-
-const RightContainer = ({ containerRef, fieldRefs }: { containerRef: any; fieldRefs: any }) => {
-  return (
-    <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
-      <TabViewContainer>
-        <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />
-        <DocumentBotComponent />
-        <InvoiceGenerator />
-      </TabViewContainer>
-    </div>
-  );
-};

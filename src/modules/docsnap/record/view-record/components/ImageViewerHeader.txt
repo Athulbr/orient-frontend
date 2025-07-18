@@ -72,6 +72,7 @@ export const ImageViewerHeader = ({ name, zoomLevel, setZoomLevel, onDownload }:
         </div>
       </div>
       <Tooltip text="Download" position="bottom">
+        aaaaaa
         <Download size={20} className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={handleDownload} />
       </Tooltip>
     </div>

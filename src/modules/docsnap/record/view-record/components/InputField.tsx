@@ -38,7 +38,7 @@ export const InputField = ({
   return (
     <div className={`group relative w-full min-w-0 rounded-sm p-2 pt-1`} onClick={() => onMouseAction?.()}>
       {label && (
-        <label htmlFor={id} className="flex items-center justify-between pl-1 text-sm text-gray-600 group-hover:text-[#2563eb]">
+        <label htmlFor={id} className="flex items-center justify-between pl-1 text-gray-900 group-hover:text-[#2563eb]">
           {label}
           <ValidateSkuButton label={label} value={value} />
           {confidence && <ConfidenceScore confidence={confidence} />}
@@ -46,7 +46,7 @@ export const InputField = ({
       )}
 
       <div
-        className={`mt-0.5 flex h-9.5 w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-400'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
+        className={`mt-0.5 flex h-10.5 w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-400'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
       >
         <input
           onFocus={() => onMouseAction?.()}
@@ -56,7 +56,7 @@ export const InputField = ({
             }
           }}
           ref={ref}
-          className="min-w-0 flex-1 px-2 text-sm text-gray-700 focus:outline-none"
+          className="min-w-0 flex-1 px-3 text-gray-900 focus:outline-none"
           value={value ? value : ''}
           onChange={onchange}
           {...props}

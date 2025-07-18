@@ -21,7 +21,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
         return (
           <div key={key} className="flex flex-col rounded-lg border bg-white p-1 hover:border-blue-400">
             <label className="p-3 text-lg font-bold capitalize">{formatFieldLabel(key)}</label>
-            <div className="flex flex-wrap gap-y-3">
+            <div className="flex flex-wrap gap-y-4">
               {Object.entries(valueMain).map(([subKey, value]) => {
                 const fieldId = `objectFields:${key}:${subKey}`;
                 const onChange = (e: any) => {

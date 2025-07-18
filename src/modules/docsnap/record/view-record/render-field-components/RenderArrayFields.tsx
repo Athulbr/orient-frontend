@@ -110,7 +110,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                         {formatFieldLabel(label)}
                       </th>
                     ))}
-                    <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
+                    {Object.entries(item).length > 1 && <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -161,19 +161,21 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                           />
                         );
                       })}
-                      <td className="h-full border py-2 pl-9">
-                        <Trash2
-                          tabIndex={0}
-                          onClick={() => deleteLineItem(mainIndex, rowIndex)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                              deleteLineItem(mainIndex, rowIndex);
-                            }
-                          }}
-                          size={20}
-                          className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
-                        />
-                      </td>
+                      {Object.entries(item).length > 1 && (
+                        <td className="h-full border py-2 pl-9">
+                          <Trash2
+                            tabIndex={0}
+                            onClick={() => deleteLineItem(mainIndex, rowIndex)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                deleteLineItem(mainIndex, rowIndex);
+                              }
+                            }}
+                            size={20}
+                            className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
+                          />
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
