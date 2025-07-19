@@ -6,6 +6,7 @@ import PromateRoutes from './PromateRoutes';
 import ConfigRoutes from './config-routes';
 import DashboardPage from '../../modules/dashboard';
 import DocSnapRoutes from './DocSnapRoutes';
+import UserRoutes from './UserRoutes';
 
 const AuthenticatedRoutes = () => {
   return (
@@ -13,6 +14,7 @@ const AuthenticatedRoutes = () => {
       <Routes>
         <Route path="/docsnap/*" element={<DocSnapRoutes />} />
         <Route path="/promate/*" element={<PromateRoutes />} />
+        <Route path="/user/*" element={<UserRoutes />} />
         <Route path="/config/*" element={<ConfigRoutes />} />
         <Route path="/" element={<DashboardPage />} />
         <Route path="/*" element={<NotFoundPage />} />

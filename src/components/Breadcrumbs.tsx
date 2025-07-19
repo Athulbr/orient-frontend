@@ -11,6 +11,7 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className, pageName }) => 
   const navigate = useNavigate();
   const breadcrumbs = {
     listRecord: [{ text: 'Docsnap', path: '/' }, { text: '/' }, { text: 'Records' }],
+    UserAccount: [{ text: 'Home', path: '/' }, { text: '/' }, { text: 'Account Details' }],
     // Checked ^
     listProject: [{ text: 'Settings' }, { text: '/' }, { text: 'Projects' }],
     updateTemplate: [

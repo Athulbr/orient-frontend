@@ -35,7 +35,7 @@ export const useLoginPageApi = () => {
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/login`, { email: state.email, password: state.password });
       if (res?.data?.accessToken) {
         window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
-        window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
+        window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
         toast.success('Logged in successfully');
         const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 });
         const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });

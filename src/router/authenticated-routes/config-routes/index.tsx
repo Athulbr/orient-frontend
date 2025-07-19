@@ -34,6 +34,7 @@ import ListSubscriptionModelPage from '../../../modules/config/subscriptionModel
 import ListTablebuilderPage from '../../../modules/config/tablebuilder';
 import ListTenantPage from '../../../modules/config/tenant';
 import { cn } from '../../../global-utils/twMerge';
+import { ListUserComponent } from '../../../modules/config/user/list-user/ListUserComponent';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const ConfigRoutes = () => {
               <Route path="/tablebuilder/list" element={<ListTablebuilderPage />} />
               <Route path="/project/list" element={<ListProjectPage />} />
               <Route path="/prompt-tuning" element={<UpdatedFieldsListPage />} />
-              <Route path="/user/*" element={<UserRoutes />} />
+              <Route path="/user/list" element={<ListUserComponent />} />
               <Route path="/comment/*" element={<ListCommentPage />} />
               <Route path="/*" element={<NotFoundPage />} />
             </Routes>

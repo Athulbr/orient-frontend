@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useUserState } from './userContext';
-import { useToastStore } from '../../../../components/toast/ToastStore';
-import httpRequest from '../../../../global-utils/httpRequest';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
+import httpRequest from '../../../../../global-utils/httpRequest';
 
 export const useUserApiService = () => {
   const { setState } = useUserState();

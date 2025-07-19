@@ -1,5 +1,4 @@
-import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
-import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
+import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { useUserState } from './hooks/userContext';
 import { useUserApiService } from './hooks/useUserApiService';
 

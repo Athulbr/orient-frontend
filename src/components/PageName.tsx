@@ -20,7 +20,7 @@ const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name
   return (
     <div className={cn('flex justify-between pb-1', className)}>
       <div className="">
-        <div className="flex items-center gap-4 text-xl">
+        <div className="flex items-center gap-2 text-xl">
           {showBackButton && <BackButton onClick={onClickHandler} />} {name}
         </div>
       </div>

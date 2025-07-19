@@ -17,7 +17,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
   const { instance } = useMsal();
   const isAuthenticated = useIsAuthenticated();
 
-  const firstName = JSON.parse(window?.sessionStorage.getItem(`${'firstName'}`) as string) || 'User';
+  const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
   const logOut = () => {
     toast.success('Logged out successfully');
     if (isAuthenticated) {
@@ -33,6 +33,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
   };
   const onChangeDropDown = (e: string) => {
     if (e === 'Logout') logOut();
+    if (e === 'Account') navigate(`/user/account/${user._id}`);
   };
 
   return (
@@ -55,7 +56,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
           <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
             <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">
               <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-              {firstName}
+              {user?.firstName}
             </span>
           </Dropdown>
           {/* <Dropdown onChange={onChangeDropDown} options={['Light', 'Dark', 'Default']}>
