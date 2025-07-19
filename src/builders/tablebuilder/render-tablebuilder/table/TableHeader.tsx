@@ -21,7 +21,7 @@ export function TableHeader() {
     <thead>
       <tr>
         {selectable && (
-          <th scope="col" className="sticky top-0 w-12 bg-gray-50 px-6 py-3">
+          <th scope="col" className="sticky top-0 w-12 bg-gray-50 px-5 py-3">
             <input
               type="checkbox"
               className="cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -36,7 +36,7 @@ export function TableHeader() {
             <th
               key={column.key as string}
               scope="col"
-              className={`sticky top-0 z-1 h-14 bg-gray-50 px-1 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase ${
+              className={`sticky top-0 z-1 h-14 bg-gray-50 px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase xl:px-5 ${
                 column.sortable ? 'cursor-pointer select-none' : ''
               }`}
               // onClick={column.sortable ? e => handleSort(column.key, e.shiftKey) : undefined} todo

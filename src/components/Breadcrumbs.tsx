@@ -10,11 +10,8 @@ interface BreadcrumbsIF {
 const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className, pageName }) => {
   const navigate = useNavigate();
   const breadcrumbs = {
-    listUser: [{ text: 'Settings' }, { text: '/' }, { text: 'Users' }],
-    listRole: [{ text: 'Settings' }, { text: '/' }, { text: 'Roles' }],
-    listPermission: [{ text: 'Settings' }, { text: '/' }, { text: 'Permission' }],
-    listRecord: [{ text: 'Docsnap' }, { text: '/' }, { text: 'Records' }],
-    listComment: [{ text: 'Settings' }, { text: '/' }, { text: 'Comments' }],
+    listRecord: [{ text: 'Docsnap', path: '/' }, { text: '/' }, { text: 'Records' }],
+    // Checked ^
     listProject: [{ text: 'Settings' }, { text: '/' }, { text: 'Projects' }],
     updateTemplate: [
       { text: 'Docsnap', path: '/' },
@@ -30,8 +27,6 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className, pageName }) => 
       { text: '/' },
       { text: pageName || '' },
     ],
-    listFormbuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Formbuilders' }],
-    listTablebuilder: [{ text: 'Settings' }, { text: '/' }, { text: 'Tablebuilders' }],
     listUpdatedField: [{ text: 'Settings' }, { text: '/' }, { text: 'Updated Fields' }],
     listModule: [{ text: 'Settings' }, { text: '/' }, { text: 'Modules' }],
     listFeature: [{ text: 'Settings' }, { text: '/' }, { text: 'Features' }],

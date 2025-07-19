@@ -65,12 +65,19 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
     const containerRect = container.getBoundingClientRect();
     const fieldRect = fieldEl.getBoundingClientRect();
 
-    const bboxCenter = fieldRect.top + fieldRect.height / 2;
-    const containerCenter = containerRect.top + containerRect.height / 2;
-    const scrollAmount = bboxCenter - containerCenter;
+    // Calculate vertical scroll amount
+    const bboxCenterY = fieldRect.top + fieldRect.height / 2;
+    const containerCenterY = containerRect.top + containerRect.height / 2;
+    const scrollAmountY = bboxCenterY - containerCenterY;
+
+    // Calculate horizontal scroll amount
+    const bboxCenterX = fieldRect.left + fieldRect.width / 2;
+    const containerCenterX = containerRect.left + containerRect.width / 2;
+    const scrollAmountX = bboxCenterX - containerCenterX;
 
     container.scrollTo({
-      top: container.scrollTop + scrollAmount,
+      top: container.scrollTop + scrollAmountY,
+      left: container.scrollLeft + scrollAmountX,
       behavior: 'smooth',
     });
   }, [state.hoveredFieldId, zoom, state.leftWidthPercent]);
@@ -99,12 +106,12 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
   }, [containerRef]);
 
   const zoomIn = () => {
-    const newZoom = Math.min(zoom + 10, 200);
+    const newZoom = Math.min(zoom + 10, 250);
     setZoom(newZoom);
   };
 
   const zoomOut = () => {
-    const newZoom = Math.max(zoom - 10, 50);
+    const newZoom = Math.max(zoom - 10, 30);
     setZoom(newZoom);
   };
 

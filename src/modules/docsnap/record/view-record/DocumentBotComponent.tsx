@@ -5,6 +5,7 @@ import ChatMessage from './components/ChatMessage';
 import DotLoader from './components/dot-loader';
 import { useViewRecordApi } from './hooks/useViewRecordApi';
 import { useViewRecordState } from './hooks/viewRecordContext';
+import { useNavigate } from 'react-router-dom';
 
 interface DocumentBotComponentIF {
   test?: string;
@@ -13,6 +14,7 @@ interface DocumentBotComponentIF {
 const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
   const { state, setState } = useViewRecordState();
   const { sendMessage } = useViewRecordApi();
+  const navigate = useNavigate();
   const sendMessageHandler = async (message: string) => {
     sendMessage(message);
   };
@@ -27,7 +29,7 @@ const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
       </ChatContainer>
       <ChatInput sendMessage={sendMessageHandler} />
       <div className="flex items-center justify-end gap-2 border-t bg-white p-2">
-        <Button onClick={() => {}} outlined small>
+        <Button onClick={() => navigate(-1)} outlined small>
           Cancel
         </Button>
       </div>

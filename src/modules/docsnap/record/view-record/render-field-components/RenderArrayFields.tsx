@@ -70,7 +70,13 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
 
     newArrayFields[mainIndex] = newItem;
 
-    setState(prev => ({ ...prev, arrayFields: newArrayFields }));
+    setState(prev => ({
+      ...prev,
+      hoveredFieldId: null,
+      arrayFields: newArrayFields,
+      bbox: null,
+      wire: null,
+    }));
   };
 
   return (

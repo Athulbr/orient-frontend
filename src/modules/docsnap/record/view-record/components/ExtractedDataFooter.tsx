@@ -63,27 +63,29 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
 
   if (state.selectedTableName) return null;
 
+  const reExtracting = state.reExtracting;
+
   return (
     <div className="flex items-center justify-end gap-2 border-t p-2">
       <Tooltip text="Skip to Next Document">
-        <Button small outlined onClick={skipToNextDocumentHandler}>
+        <Button disabled={reExtracting} small outlined onClick={skipToNextDocumentHandler}>
           <SkipForward size={18} className="text-gray-500" />
         </Button>
       </Tooltip>
       <Tooltip text="Re Extract">
-        <Button onClick={handleReExtract} small outlined>
-          <RefreshCw size={18} className={`text-gray-500 ${state.reExtracting ? 'animate-spin' : ''}`} />
+        <Button disabled={reExtracting} onClick={handleReExtract} small outlined>
+          <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
         </Button>
       </Tooltip>
-      <Button onClick={() => navigate(-1)} outlined small>
+      <Button disabled={reExtracting} onClick={() => navigate(-1)} outlined small>
         Cancel
       </Button>
       <Tooltip text="Save Updated Data">
-        <Button onClick={() => updateRecordApiById()} outlined small>
+        <Button disabled={reExtracting} onClick={() => updateRecordApiById()} outlined small>
           Save
         </Button>
       </Tooltip>
-      <Button onClick={handleSubmit} outlined small>
+      <Button disabled={reExtracting} onClick={handleSubmit} outlined small>
         Submit
       </Button>
     </div>

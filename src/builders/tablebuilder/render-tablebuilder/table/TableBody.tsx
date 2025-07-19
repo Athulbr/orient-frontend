@@ -45,7 +45,7 @@ export const TableBody: FC = () => {
       {data.map((row: any, index: number) => (
         <tr onClick={e => rowClickHandler(e, row)} key={index} className={selectedIds.includes(row._id) && rowSelection.enableRowHighlight ? 'bg-blue-50' : ''}>
           {selectable && (
-            <td onClick={e => e.stopPropagation()} className="px-6 py-4 whitespace-nowrap">
+            <td onClick={e => e.stopPropagation()} className="px-5 py-4 whitespace-nowrap">
               <input
                 type="checkbox"
                 className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
@@ -57,9 +57,9 @@ export const TableBody: FC = () => {
           {columns.map(column => {
             if (column.hidden) return null;
             return (
-              <td key={column.key as string} className="px-1 py-4">
+              <td key={column.key as string} className="px-2 py-4 xl:px-5">
                 <div
-                  className={`max-w-[200px] min-w-[100px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative animate-pulse after:absolute after:top-0 after:left-0 after:w-full after:rounded-sm after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
+                  className={`min-w-[100px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative animate-pulse after:absolute after:top-0 after:left-0 after:w-full after:rounded-sm after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
                 >
                   {column.dateUI ? (
                     <div>{formatDate(row[column.key])}</div>

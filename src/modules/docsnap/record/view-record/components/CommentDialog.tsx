@@ -36,10 +36,10 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
 
   // Memoize the click handler to prevent recreation on every render
   const onClickHandler = useCallback(() => {
-    if (!comment) return;
+    if (!`${comment}`.trim()) return;
     setLoading(true);
     setTimeout(() => {
-      toast.success('Comment added successfully');
+      toast.success('Comment added successfully : TODO');
       setComment('');
       closeDialog();
       setLoading(false);
@@ -57,7 +57,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
   }, [closeDialog]);
 
   // Memoize computed values
-  const isCommentEmpty = useMemo(() => !comment, [comment]);
+  const isCommentEmpty = useMemo(() => !`${comment}`.trim(), [comment]);
   const buttonText = useMemo(() => (loading ? 'Saving...' : 'Save'), [loading]);
 
   if (!isOpen) return null;
@@ -65,7 +65,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
   return (
     <div
       ref={dialogRef}
-      className="absolute top-17 right-2 z-10 flex w-[calc(100%-10px)] max-w-md flex-col items-end gap-2 rounded-lg border bg-white px-4 py-2 text-lg shadow-xl"
+      className="absolute top-19 right-2 z-10 flex w-[calc(100%-10px)] max-w-md flex-col items-end gap-2 rounded-lg border bg-white px-4 py-2 text-lg shadow-xl"
     >
       <header className="w-full font-bold text-gray-600">Add Comment</header>
       <textarea

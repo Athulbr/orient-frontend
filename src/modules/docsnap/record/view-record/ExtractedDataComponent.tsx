@@ -7,6 +7,7 @@ import { ExportButton } from './components/ExportButton';
 import { Button } from '../../../../components/Button';
 import { TableNames } from './render-field-components/TableNames';
 import { useViewRecordApi } from './hooks/useViewRecordApi';
+import RequestNewField from './components/RequestNewField';
 
 interface ExtractedDataComponentProps {
   containerRef: any;
@@ -126,9 +127,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="z-20 flex justify-end gap-2 border-b p-2">
-        <Button small outlined>
-          Request New Field
-        </Button>
+        <RequestNewField />
         <ExportButton />
       </div>
       <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 pt-3 pb-50">

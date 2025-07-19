@@ -4,10 +4,12 @@ import { FileText } from 'lucide-react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { RichTextEditor } from '../../../../../components/RichTextEditor';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
+import { useNavigate } from 'react-router-dom';
 
 export const InvoiceGenerator: React.FC = () => {
   const { state, setState } = useViewRecordState();
   const { generateInvoiceWithAI } = useViewRecordApi();
+  const navigate = useNavigate();
 
   if (!state.record?.extractedData) {
     return null;
@@ -43,6 +45,11 @@ export const InvoiceGenerator: React.FC = () => {
           </Button>
         </div>
       )}
+      <div className="flex items-center justify-end gap-2 border-t bg-white p-2">
+        <Button onClick={() => navigate(-1)} outlined small>
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 };

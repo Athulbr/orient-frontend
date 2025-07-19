@@ -27,7 +27,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
     if (formbuilder) {
       const data = JSON.parse(formbuilder);
       const formData = data.find((item: any) => item.name === name);
-      if (formData.fields.length) {
+      if (formData?.fields?.length) {
         setFields(formData.fields);
         setSettings(formData.settings);
         return;
