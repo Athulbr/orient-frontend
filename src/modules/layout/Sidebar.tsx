@@ -30,7 +30,7 @@ const DesktopSidebar = () => {
         ))}
         <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 ${expandedSidebar ? 'w-full' : 'items-center text-[10px]'}`}>
           <NavItem key={configMenuItem.key} item={configMenuItem} onClick={() => handleNavigation(configMenuItem.path)} expandedSidebar={expandedSidebar} />
-          <span className="flex justify-center text-sm transition-opacity duration-300">{expandedSidebar ? '© 2025 makez.ai' : 'V 1.0.0'}</span>
+          <span className="flex justify-center text-xs transition-opacity duration-300">{expandedSidebar ? '© 2025 makez.ai' : 'V 1.0.0'}</span>
         </div>
       </section>
     </div>

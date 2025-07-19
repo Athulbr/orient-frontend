@@ -70,7 +70,7 @@ export const Dropdown: React.FC<DropdownMenuPropsIF> = ({ children, options, onC
             {options.map((option, index) => (
               <button
                 key={`${option}-${index}`}
-                className="block w-full px-4 py-2 text-left text-sm text-nowrap text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:outline-none"
+                className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-nowrap text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:outline-none"
                 onClick={(e: any) => {
                   e.stopPropagation();
                   handleOptionClick(option);
