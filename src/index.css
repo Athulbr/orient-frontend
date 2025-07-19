@@ -22,6 +22,10 @@
   }
 }
 
+body {
+  overscroll-behavior: none;
+}
+
 /* Scrollbar CSS */
 ::-webkit-scrollbar {
   width: 2px;

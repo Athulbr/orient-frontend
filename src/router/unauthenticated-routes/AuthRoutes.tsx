@@ -5,6 +5,7 @@ import AuthLayoutComponent from '../../modules/auth/AuthLayout';
 
 const LoginPage = lazy(() => import('../../modules/auth/login'));
 const SignUpPage = lazy(() => import('../../modules/auth/signup'));
+const ConfirmSignUpPage = lazy(() => import('../../modules/auth/confirm-signup'));
 
 const AuthRoutes = () => {
   return (
@@ -13,6 +14,7 @@ const AuthRoutes = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/confirm-signup/:email/:otp" element={<ConfirmSignUpPage />} />
           <Route path="/" element={<LoginPage />} />
           <Route path="/*" element={<Navigate to="/auth/login" replace />} />
         </Routes>
