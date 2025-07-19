@@ -67,12 +67,15 @@ export const useTablebuilderApi = () => {
   // ============================= Refresh Cache ==================================
   const refreshCache = async () => {
     try {
+      setState(prev => ({ ...prev, refreshingCache: true }));
       const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 });
       window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(tablebuilderesponse?.data));
       toast.success('Cache refreshed successfully');
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to refresh cache');
+    } finally {
+      setState(prev => ({ ...prev, refreshingCache: false }));
     }
   };
 

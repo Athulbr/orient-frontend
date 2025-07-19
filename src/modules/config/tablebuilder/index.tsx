@@ -10,12 +10,14 @@ export interface TablebuilderStateIF {
   id: string;
   tablebuilder: any;
   createDialog: boolean;
+  refreshingCache: boolean;
 }
 const tablebuilderInitialState: TablebuilderStateIF = {
   refresh: 1,
   id: '',
   tablebuilder: null,
   createDialog: false,
+  refreshingCache: false,
 };
 
 const ListTablebuilderPage: React.FC = () => {

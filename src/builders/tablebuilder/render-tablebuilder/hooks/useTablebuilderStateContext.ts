@@ -6,7 +6,7 @@ interface InjectedDataIF {
   externalFilters: Record<string, string>;
   customFunctions: Record<string, (row: any, data?: any) => void>;
   fluidHeight?: boolean;
-  actionButtons?: { label: string; action: () => void }[];
+  actionButtons?: { label: string; action: () => void; loading?: boolean }[];
   disableLoader?: boolean;
   updatedQuery?: (query: any) => any;
 }

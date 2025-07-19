@@ -28,12 +28,8 @@ const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className, pageName }) => 
       { text: pageName || '' },
     ],
     listUpdatedField: [{ text: 'Settings' }, { text: '/' }, { text: 'Updated Fields' }],
-    listModule: [{ text: 'Settings' }, { text: '/' }, { text: 'Modules' }],
-    listFeature: [{ text: 'Settings' }, { text: '/' }, { text: 'Features' }],
-    listTenant: [{ text: 'Settings' }, { text: '/' }, { text: 'Tenants' }],
     listTemplate: [{ text: 'Docsnap', path: '/' }, { text: '/' }, { text: 'Templates', path: '/docsnap/template/list' }],
-    listSubscriptionModel: [{ text: 'Settings' }, { text: '/' }, { text: 'Subscription Models' }],
-    viewRecord: [{ text: 'Docsnap', path: '/docsnap/record/list' }, { text: '/' }, { text: 'View Record' }],
+    viewRecord: [{ text: 'Docsnap', path: '/' }, { text: '/' }, { text: 'View Record' }],
   };
 
   const getBreadcrumb = () => {

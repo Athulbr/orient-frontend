@@ -16,8 +16,9 @@ const ListTablebuilderComponent: React.FC<ListTablebuilderComponentIF> = () => {
       },
     },
     {
-      label: 'Refresh Cache',
+      label: state.refreshingCache ? 'Refreshing Cache...' : 'Refresh Cache',
       action: refreshCache,
+      loading: state.refreshingCache,
     },
   ];
   const customFunctions = {

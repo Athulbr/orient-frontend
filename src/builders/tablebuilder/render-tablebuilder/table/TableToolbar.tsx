@@ -9,6 +9,7 @@ import { ActiveFilter } from '../utils/interface';
 import { getFiltersObject } from '../utils/getFiltersObject';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { Button } from '../../../../components/Button';
+import Spinner from '../../../../components/Spinner';
 
 export function TableToolbar() {
   const { injectedData } = useTablebuilderState();
@@ -17,7 +18,7 @@ export function TableToolbar() {
     <div className="mb-2 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4 p-1">
       {injectedData.actionButtons?.map((button, index) => (
         <Button key={index} outlined onClick={button.action}>
-          {button.label}
+          {button.loading && <Spinner size={18} />} {button.label}
         </Button>
       ))}
       <SearchInput />

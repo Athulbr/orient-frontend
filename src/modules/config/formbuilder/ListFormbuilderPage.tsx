@@ -15,13 +15,22 @@ interface ListFormbuilderPageIF {
 const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
   const navigate = useNavigate();
   const [refresh, setRefresh] = useState(1);
+  const [refreshingCache, setRefreshingCache] = useState(false);
 
   const toast = useToastStore();
 
   const refreshCache = async () => {
-    const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
-    window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
-    toast.success('Cache refreshed successfully');
+    try {
+      setRefreshingCache(true);
+      const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
+      window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
+      toast.success('Cache refreshed successfully');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to refresh cache');
+    } finally {
+      setRefreshingCache(false);
+    }
   };
 
   const actionButtons = [
@@ -32,8 +41,9 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
       },
     },
     {
-      label: 'Refresh Cache',
+      label: refreshingCache ? 'Refreshing Cache...' : 'Refresh Cache',
       action: refreshCache,
+      loading: refreshingCache,
     },
   ];
 

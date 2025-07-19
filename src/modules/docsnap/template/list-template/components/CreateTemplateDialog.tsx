@@ -5,7 +5,6 @@ import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useNavigate } from 'react-router-dom';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
-import Spinner from '../../../../../components/Spinner';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
@@ -20,11 +19,11 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     if (showFileUploadUI) return;
     const template = state.predefinedTemplates.find((template: any) => template.name === selectedTemplateName);
     if (template) {
-      setError('Template name already exists');
+      setError('Template name already exists, please choose another name');
     } else {
       const template = state.templates.find((template: any) => template.name === selectedTemplateName);
       if (template) {
-        setError('Template name already exists');
+        setError('Template name already exists, please choose another name');
         return;
       }
       const requestBody = {
@@ -43,7 +42,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
   const onChangeTemplateName = (e: any) => {
     const template = state.predefinedTemplates.find((template: any) => template.name === e.target.value);
     if (template) {
-      setError('Template name already exists');
+      setError('Template name already exists, please choose another name');
     } else {
       setError('');
     }
