@@ -10,9 +10,9 @@ export const useUserAccountApi = () => {
 
   const getUserApi = async (id: string) => {
     try {
-      setState(prev => ({ ...prev, loadingUserAccount: true }));
+      setState(prev => ({ ...prev, loadingUser: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/user/${id}`);
-      setState(prev => ({ ...prev, loadingUserAccount: false, userAccount: res.data }));
+      setState(prev => ({ ...prev, loadingUser: false, user: res.data }));
       toast.success('UserAccount fetched successfully');
       return true;
     } catch (error) {
@@ -20,6 +20,13 @@ export const useUserAccountApi = () => {
       toast.error('Failed to fetch userAccount');
     }
   };
+  const logout = async () => {
+    window.sessionStorage.clear();
+    toast.success('Logged out successfully');
+    setTimeout(() => {
+      window?.location?.replace('/');
+    }, 1000);
+  };
 
-  return { getUserApi };
+  return { getUserApi, logout };
 };

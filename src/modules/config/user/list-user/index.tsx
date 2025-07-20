@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import CreateUserComponent from './CreateUserComponent';
-import { UserStateProvider } from './hooks/userContext';
 import { ListUserComponent } from './ListUserComponent';
 import PageContainer from '../../../../components/PageContainer';
 import PageNameComponent from '../../../../components/PageName';
+import { UserStateProvider } from './hooks/userContext';
 
 export interface UserStateIF {
   showCreateDialog: boolean;

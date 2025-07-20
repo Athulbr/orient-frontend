@@ -18,25 +18,31 @@ interface UseFormbuilderIF {
 
 export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData = null, className, title, loading }) => {
   const [fields, setFields] = useState<FieldIF[]>([]);
+  const [hasError, setHasError] = useState(false);
   const [settings, setSettings] = useState({
     columns: 1,
   });
 
   const getFormbuilder = async () => {
-    const formbuilder = window?.sessionStorage?.getItem('formbuilder');
-    if (formbuilder) {
-      const data = JSON.parse(formbuilder);
-      const formData = data.find((item: any) => item.name === name);
-      if (formData?.fields?.length) {
-        setFields(formData.fields);
-        setSettings(formData.settings);
-        return;
+    try {
+      const formbuilder = window?.sessionStorage?.getItem('formbuilder');
+      if (formbuilder) {
+        const data = JSON.parse(formbuilder);
+        const formData = data.find((item: any) => item.name === name);
+        if (formData?.fields?.length) {
+          setFields(formData.fields);
+          setSettings(formData.settings);
+          return;
+        }
       }
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/name`, { name });
+      if (fields.length) return;
+      setFields(res.data.fields);
+      setSettings(res.data.settings);
+    } catch (error) {
+      console.log(error);
+      setHasError(true);
     }
-    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/name`, { name });
-    if (fields.length) return;
-    setFields(res.data.fields);
-    setSettings(res.data.settings);
   };
 
   useEffect(() => {
@@ -59,6 +65,10 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
       setFields(updatedFields);
     }
   }, [existingData]);
+
+  if (hasError) {
+    return null;
+  }
 
   return (
     <DialogComponent loading={loading || fields.length === 0} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>

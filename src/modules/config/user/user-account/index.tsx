@@ -1,21 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { UserAccountStateProvider } from './hooks/userAccountContext';
 import PageContainer from '../../../../components/PageContainer';
 import PageNameComponent from '../../../../components/PageName';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { useNavigate, useParams } from 'react-router-dom';
-import UserDetailsComponent from './UserDetailsComponent';
-import { useUserAccountApi } from './hooks/useUserAccountApi';
+import { useNavigate } from 'react-router-dom';
+import { UserDetailsComponent } from './UserDetailsComponent';
 
 export interface UserAccountStateIF {
-  id: string;
-  userAccount: any | null;
-  loadingUserAccount: boolean;
+  user: any | null;
+  loadingUser: boolean;
 }
 const initialState = {
-  id: '',
-  userAccount: null,
-  loadingUserAccount: false,
+  user: null,
+  loadingUser: false,
 };
 
 const UserAccountDetailsPage: React.FC = () => {

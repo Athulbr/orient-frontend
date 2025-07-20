@@ -7,8 +7,6 @@ export const DashboardHeaderComponent: FC = () => {
   const { state, setState } = useDashboardState();
   const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
 
-  console.log('user:===========', user);
-
   return (
     <section className="flex w-full items-center justify-between gap-y-4 px-3">
       <div className="flex-1 text-xl lg:text-2xl">

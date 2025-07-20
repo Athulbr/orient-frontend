@@ -22,8 +22,6 @@ import FullScreenLoader from '../../../components/FullScreenLoader';
 import UpdatedFieldsListPage from '../../../modules/docsnap/prompt-tuning';
 import { NotFoundPage } from '../../not-found-routes/GlobalNotFoundPage';
 import FormbuilderRoutes from './FormbuilderRoutes';
-import UserRoutes from '../UserRoutes';
-import ListCommentPage from '../../../modules/config/comment/ListCommentPage';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import ListRolePage from '../../../modules/config/role';
@@ -34,7 +32,8 @@ import ListSubscriptionModelPage from '../../../modules/config/subscriptionModel
 import ListTablebuilderPage from '../../../modules/config/tablebuilder';
 import ListTenantPage from '../../../modules/config/tenant';
 import { cn } from '../../../global-utils/twMerge';
-import { ListUserComponent } from '../../../modules/config/user/list-user/ListUserComponent';
+import ListCommentPage from '../../../modules/docsnap/comment/ListCommentPage';
+import ListUserPage from '../../../modules/config/user/list-user';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
@@ -55,7 +54,7 @@ const ConfigRoutes = () => {
               <Route path="/tablebuilder/list" element={<ListTablebuilderPage />} />
               <Route path="/project/list" element={<ListProjectPage />} />
               <Route path="/prompt-tuning" element={<UpdatedFieldsListPage />} />
-              <Route path="/user/list" element={<ListUserComponent />} />
+              <Route path="/user/list" element={<ListUserPage />} />
               <Route path="/comment/*" element={<ListCommentPage />} />
               <Route path="/*" element={<NotFoundPage />} />
             </Routes>
