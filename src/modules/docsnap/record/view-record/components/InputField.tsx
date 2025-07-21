@@ -75,7 +75,7 @@ export const InputField = ({
           onClick={() => setCommentDialog(true)}
           className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-300 hover:bg-gray-100"
         >
-          <MessageSquareText size={16} className="text-gray-800" strokeWidth={1.3} />
+          <MessageSquareText size={20} className="text-gray-900" strokeWidth={1.3} />
         </div>
       </div>
 

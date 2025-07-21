@@ -9,10 +9,14 @@ import { UserDetailsComponent } from './UserDetailsComponent';
 export interface UserAccountStateIF {
   user: any | null;
   loadingUser: boolean;
+  updateNameDialog: boolean;
+  updatePasswordDialog: boolean;
 }
 const initialState = {
   user: null,
   loadingUser: false,
+  updateNameDialog: false,
+  updatePasswordDialog: false,
 };
 
 const UserAccountDetailsPage: React.FC = () => {

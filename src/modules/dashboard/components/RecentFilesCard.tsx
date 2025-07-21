@@ -45,13 +45,13 @@ const RecentFilesCardComponent: React.FC = () => {
             <tbody className="divide-y divide-gray-100 bg-white">
               {state.records.map((row, idx) => (
                 <tr key={idx} className="cursor-pointer" onClick={() => navigate(`/docsnap/record/view/${row._id}`)}>
-                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
-                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
-                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
-                  <td className="max-w-75 min-w-50 px-5 py-4 text-sm whitespace-nowrap">
+                  <td className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
+                  <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
+                  <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                  <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
                     <StatusBadge status={'Review'} />
                   </td>
-                  <td className="max-w-75 min-w-50 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">{formatDate(row.updatedAt)}</td>
+                  <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">{formatDate(row.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

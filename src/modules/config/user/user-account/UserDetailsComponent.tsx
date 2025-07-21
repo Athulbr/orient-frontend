@@ -9,6 +9,10 @@ import { DialogComponent } from '../../../../components/DialogComponent';
 import DragAndDropFileInput from '../../../../components/DragAndDropFileInput';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
+import { BasicDetailsComponent } from './components/BasicDetails';
+import { SecurityDetails } from './components/SecurityDetails';
+import { SubscriptionDetails } from './components/SubscriptionDetails';
+import { NotificationsDetails } from './components/NotificationDetails';
 interface UserDetailsComponentIF {
   test?: string;
 }
@@ -17,7 +21,7 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
   const { id } = useParams();
-  const { logout, getUserApi } = useUserAccountApi();
+  const { logout, getUserApi, updateUserName, updateUserPassword } = useUserAccountApi();
 
   useEffect(() => {
     if (!id) return;
@@ -67,128 +71,30 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
   );
 };
 
-const BasicDetails = () => {
-  const { state } = useUserAccountState();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const onSubmit = (fields: FieldIF[]) => {
-    console.log('fields:===========', fields);
-  };
-  return (
-    <>
-      <DetailsCard>
-        <DetailsCardItem label="First Name" value={state.user?.firstName} />
-        <DetailsCardItem label="Last Name" value={state.user?.lastName} />
-        <Edit onClick={() => setDialogOpen(true)} className="absolute top-4 right-4 cursor-pointer hover:text-sky-500" size={18} />
-      </DetailsCard>
-      <DetailsCard>
-        <DetailsCardItem label="Email" value={state.user?.email} />
-        <DetailsCardItem label="Role" value={state.user?.role} />
-        <DetailsCardItem label="Account Status" value={state.user?.active ? 'Active' : 'Inactive'} />
-        <DetailsCardItem label="Email Verification" value={state.user?.verified ? 'Verified' : 'Not Verified'} />
-        <DetailsCardItem label="Member Since" value={formatDateString(state.user?.createdAt)} />
-        <DetailsCardItem label="Last Login" value={formatDateString(state.user?.lastLogin)} />
-      </DetailsCard>
-      <UseFormbuilder
-        title="Edit Name"
-        existingData={state.user || {}}
-        className="w-100"
-        name="Update User Name Form"
-        isOpen={dialogOpen}
-        closeDialog={() => setDialogOpen(false)}
-        onSubmit={onSubmit}
-      />
-    </>
-  );
-};
-const Security = () => {
-  const { state } = useUserAccountState();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const onSubmit = (fields: FieldIF[]) => {
-    console.log('fields:===========', fields);
-  };
-  return (
-    <DetailsCard>
-      <DetailsCardItem label="Password" value="********" />
-      <Edit onClick={() => setDialogOpen(true)} className="absolute top-4 right-4 cursor-pointer hover:text-sky-500" size={18} />
-      <UseFormbuilder
-        title="Update Password"
-        existingData={state.user || {}}
-        className="w-100"
-        name="Update Password Form"
-        isOpen={dialogOpen}
-        closeDialog={() => setDialogOpen(false)}
-        onSubmit={onSubmit}
-      />
-    </DetailsCard>
-  );
-};
-const Subscription = () => {
-  return (
-    <DetailsCard>
-      <DetailsCardItem label="Subscription" value="Free Plan" />
-      <Edit className="absolute top-4 right-4 cursor-pointer hover:text-sky-500" size={18} />
-    </DetailsCard>
-  );
-};
-const Notifications = () => {
-  return (
-    <DetailsCard>
-      <DetailsCardItem label="Notification" value="On" />
-      <Edit className="absolute top-4 right-4 cursor-pointer hover:text-sky-500" size={18} />
-    </DetailsCard>
-  );
-};
-
-const DetailsCard = ({ children }: { children: React.ReactNode }) => {
-  return <div className="relative flex w-full flex-wrap items-center gap-8 rounded-lg border p-6">{children}</div>;
-};
-const DetailsCardItem = ({ label, value }: { label: string; value: string }) => {
-  const { state } = useUserAccountState();
-  return (
-    <div className="flex w-[46%] flex-col gap-2">
-      <span className="text-sm font-semibold text-gray-500">{label}</span>
-      <span className={`relative text-gray-600`}>
-        {state.loadingUser ? <span className="absolute top-0 left-0 h-6 w-30 animate-pulse rounded-sm bg-gray-200"></span> : value}
-        &nbsp;
-      </span>
-    </div>
-  );
-};
-
 const navItems = [
   {
     name: 'Basic Details',
     icon: Edit,
-    component: <BasicDetails />,
+    component: <BasicDetailsComponent />,
   },
   {
     name: 'Security',
     icon: ShieldCheck,
-    component: <Security />,
+    component: <SecurityDetails />,
   },
   {
     name: 'Subscription',
     icon: ShieldCheck,
-    component: <Subscription />,
+    component: <SubscriptionDetails />,
   },
   {
     name: 'Notifications',
     icon: Bell,
-    component: <Notifications />,
+    component: <NotificationsDetails />,
   },
   {
     name: 'Logout',
     icon: LogOut,
-    component: <BasicDetails />,
+    component: <BasicDetailsComponent />,
   },
 ];
-
-const formatDateString = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
