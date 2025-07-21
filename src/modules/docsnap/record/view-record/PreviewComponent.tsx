@@ -121,6 +121,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
   };
 
   useEffect(() => {
+    if (state.hoveredFieldId) return;
     if (zoom > 130 && imageContainerRef.current) {
       const container = imageContainerRef.current;
       const scrollLeft = (container.scrollWidth - container.clientWidth) / 2;

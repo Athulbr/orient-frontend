@@ -52,7 +52,6 @@ export const useFetchDataFromApi = () => {
         if (!res || !res.data) {
           throw new Error('Invalid API response format');
         }
-
         setState(prev => ({ ...prev, total: res.total, data: res.data }));
 
         return true;

@@ -1,10 +1,10 @@
 import { Search, X } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { SingleSelect } from '../components/SingleSelect';
 import { DatePicker } from '../components/DatePicker';
 import { SearchField } from '../components/SearchField';
-import { debounce, throttle } from '../utils/SerachLimit';
+import { debounce, throttle } from 'lodash';
 import { ActiveFilter } from '../utils/interface';
 import { getFiltersObject } from '../utils/getFiltersObject';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
@@ -143,6 +143,7 @@ function DateRangePicker() {
 // ============================================================================================================================================
 
 // Search Input Component
+
 function SearchInput() {
   const { settings, state, setState } = useTablebuilderState();
   const { getDataFromApi } = useFetchDataFromApi();
@@ -150,29 +151,52 @@ function SearchInput() {
   const { searchValue } = state;
   const { search } = settings;
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((query: string, searchableColumns: string[]) => {
-        getDataFromApi({
-          page: 1,
-          search: query,
-          searchableColumns,
-        });
-      }, 1000),
-    [getDataFromApi]
-  );
+  // Use refs to always get the latest values
+  const getDataFromApiRef = useRef(getDataFromApi);
+  const searchSettingsRef = useRef(search);
 
-  const throttleSearch = useMemo(
-    () =>
-      throttle((query: string, searchableColumns: string[]) => {
-        getDataFromApi({
-          page: 1,
-          search: query,
-          searchableColumns,
-        });
-      }, 2000),
-    [getDataFromApi]
-  );
+  // Update refs when dependencies change
+  useEffect(() => {
+    getDataFromApiRef.current = getDataFromApi;
+  }, [getDataFromApi]);
+
+  useEffect(() => {
+    searchSettingsRef.current = search;
+  }, [search]);
+
+  // Create debounced function that uses current refs
+  const debouncedSearch = useMemo(() => {
+    const debouncedFn = debounce((query: string, searchableColumns: string[]) => {
+      getDataFromApiRef.current({
+        page: 1,
+        search: query,
+        searchableColumns,
+      });
+    }, 1000);
+
+    return debouncedFn;
+  }, []); // Empty dependency array since we use refs
+
+  // Create throttled function that uses current refs
+  const throttleSearch = useMemo(() => {
+    const throttledFn = throttle((query: string, searchableColumns: string[]) => {
+      getDataFromApiRef.current({
+        page: 1,
+        search: query,
+        searchableColumns,
+      });
+    }, 2000);
+
+    return throttledFn;
+  }, []); // Empty dependency array since we use refs
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+      throttleSearch.cancel();
+    };
+  }, [debouncedSearch, throttleSearch]);
 
   // Update search value
   const onChangeSearchValue = useCallback(
@@ -182,25 +206,38 @@ function SearchInput() {
         searchValue: newSearchValue,
         page: 1,
       }));
-      if (clear)
+
+      if (clear) {
+        // Cancel pending debounced/throttled calls when clearing
+        debouncedSearch.cancel();
+        throttleSearch.cancel();
+
         getDataFromApi({
           page: 1,
           search: newSearchValue,
         });
+      }
     },
-    [setState, getDataFromApi]
+    [setState, getDataFromApi, debouncedSearch, throttleSearch]
   );
 
   const handleSearchChange = useCallback(
     (value: string) => {
+      if (/[!@#$%^&*()+\|{};:]/.test(value)) {
+        return null;
+      }
+
       onChangeSearchValue(value, false);
-      if (search.searchRateControl === 'debouncing') {
-        debouncedSearch(value, search.searchableColumns);
-      } else if (search.searchRateControl === 'throttling') {
-        throttleSearch(value, search.searchableColumns);
+
+      const currentSearch = searchSettingsRef.current;
+
+      if (currentSearch.searchRateControl === 'debouncing') {
+        debouncedSearch(value, currentSearch.searchableColumns);
+      } else if (currentSearch.searchRateControl === 'throttling') {
+        throttleSearch(value, currentSearch.searchableColumns);
       }
     },
-    [onChangeSearchValue, search, debouncedSearch, throttleSearch]
+    [onChangeSearchValue, debouncedSearch, throttleSearch]
   );
 
   if (!search.showSearchInput) return null;
@@ -214,7 +251,7 @@ function SearchInput() {
       value={searchValue}
       onChange={e => handleSearchChange(e.target.value)}
       leftIcon={<Search className="h-4 w-4" />}
-      rightIcon={searchValue ? <X className="h-4 w-4" onClick={() => onChangeSearchValue('', true)} /> : undefined}
+      rightIcon={searchValue ? <X className="h-4 w-4 cursor-pointer" onClick={() => onChangeSearchValue('', true)} /> : undefined}
     />
   );
 }

@@ -46,7 +46,7 @@ export const InvoiceGenerator: React.FC = () => {
         </div>
       )}
       <div className="flex items-center justify-end gap-2 border-t bg-white p-2">
-        <Button onClick={() => navigate(-1)} outlined small>
+        <Button onClick={() => navigate('/docsnap/record/list')} outlined small>
           Cancel
         </Button>
       </div>

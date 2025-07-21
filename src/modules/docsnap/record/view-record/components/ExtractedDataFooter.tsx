@@ -77,7 +77,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
           <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
         </Button>
       </Tooltip>
-      <Button disabled={reExtracting} onClick={() => navigate(-1)} outlined small>
+      <Button disabled={reExtracting} onClick={() => navigate('/docsnap/record/list')} outlined small>
         Cancel
       </Button>
       <Tooltip text="Save Updated Data">
