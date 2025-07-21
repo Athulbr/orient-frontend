@@ -52,6 +52,7 @@ export interface ViewRecordStateIF {
   leftWidthPercent: number;
   invoiceContent: string;
   generatingInvoice: boolean;
+  requestNewFieldDialog: boolean;
 }
 const initialState = {
   showCreateDialog: false,
@@ -79,6 +80,7 @@ const initialState = {
   reExtracting: false,
   invoiceContent: '',
   generatingInvoice: false,
+  requestNewFieldDialog: false,
 };
 
 const ViewRecordPage: React.FC = () => {

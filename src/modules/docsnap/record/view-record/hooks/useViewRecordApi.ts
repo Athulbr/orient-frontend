@@ -5,6 +5,7 @@ import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
 import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
+import { template } from 'lodash';
 
 export const useViewRecordApi = () => {
   const { state, setState } = useViewRecordState();
@@ -152,8 +153,25 @@ export const useViewRecordApi = () => {
       setState(prev => ({ ...prev, generatingInvoice: false }));
     }
   };
+  const createRequestedNewField = async (description: string) => {
+    try {
+      const requestBody = {
+        description,
+        requestType: 'field',
+        template: state.record?.templateId,
+      };
+      setState(prev => ({ ...prev, creatingRequest: true }));
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`, requestBody);
+      toast.success('Request created successfully');
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to create Request');
+    } finally {
+      setState(prev => ({ ...prev, creatingRequest: false, requestNewFieldDialog: false }));
+    }
+  };
 
-  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData, generateInvoiceWithAI };
+  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData, generateInvoiceWithAI, createRequestedNewField };
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {

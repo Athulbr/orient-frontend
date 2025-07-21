@@ -2,22 +2,31 @@ import { UseFormbuilder } from '../../../../../builders/formbuilder/use-formbuil
 import { Button } from '../../../../../components/Button';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useState } from 'react';
+import { useViewRecordApi } from '../hooks/useViewRecordApi';
+import { useViewRecordState } from '../hooks/viewRecordContext';
 
 interface RequestNewFieldIF {
   test?: string;
 }
 
 const RequestNewField: React.FC<RequestNewFieldIF> = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { state, setState } = useViewRecordState();
+  const { createRequestedNewField } = useViewRecordApi();
   const onSubmit = (fields: any) => {
-    console.log('fields:============', fields);
+    createRequestedNewField(fields.description);
   };
   return (
     <div className="">
-      <Button small outlined onClick={() => setIsOpen(true)}>
+      <Button small outlined onClick={() => setState(prev => ({ ...prev, requestNewFieldDialog: true }))}>
         Request New Field
       </Button>
-      <UseFormbuilder onSubmit={onSubmit} name="Request New Field Form" className="w-100" closeDialog={() => setIsOpen(false)} isOpen={isOpen} />
+      <UseFormbuilder
+        onSubmit={onSubmit}
+        name="Request New Field Form"
+        className="w-100"
+        closeDialog={() => setState(prev => ({ ...prev, requestNewFieldDialog: false }))}
+        isOpen={state.requestNewFieldDialog}
+      />
     </div>
   );
 };
