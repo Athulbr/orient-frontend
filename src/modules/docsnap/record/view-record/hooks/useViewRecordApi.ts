@@ -158,7 +158,7 @@ export const useViewRecordApi = () => {
       const requestBody = {
         description,
         requestType: 'field',
-        template: state.record?.templateId,
+        document: state.record?.templateId._id, // TODO: update this
       };
       setState(prev => ({ ...prev, creatingRequest: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`, requestBody);
