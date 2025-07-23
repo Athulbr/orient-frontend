@@ -45,7 +45,9 @@ const RecentFilesCardComponent: React.FC = () => {
             <tbody className="divide-y divide-gray-100 bg-white">
               {state.records.map((row, idx) => (
                 <tr key={idx} className="cursor-pointer" onClick={() => navigate(`/docsnap/record/view/${row._id}`)}>
-                  <td className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.name}</td>
+                  <td title={row.name} className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
+                    {row.name}
+                  </td>
                   <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
                   <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
                   <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">

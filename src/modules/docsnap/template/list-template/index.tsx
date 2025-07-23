@@ -18,6 +18,7 @@ export interface TemplateStateIF {
   refresh: number;
   predefinedTemplates: any[];
   loadingPredefinedTemplates: boolean;
+  loadingCreateTemplate: boolean;
 }
 const initialState = {
   id: '',
@@ -29,6 +30,7 @@ const initialState = {
   refresh: 1,
   predefinedTemplates: [],
   loadingPredefinedTemplates: false,
+  loadingCreateTemplate: false,
 };
 
 const ListTemplatePage: React.FC = () => {

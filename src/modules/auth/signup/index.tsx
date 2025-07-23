@@ -6,7 +6,6 @@ import { OAuthButtons } from './components/OAuthButtons';
 import { LoginRedirectText } from '../signup/components/LoginRedirectText';
 import { SignupPageStateProvider } from './hooks/SignupPageStateProvider';
 import { SignupInputs } from './components/SignupInputs';
-import OtpVerification from './components/OtpVerification';
 
 export interface SignupPageStateIF {
   firstName: string;
@@ -25,8 +24,8 @@ export interface SignupPageStateIF {
     confirmPassword: string;
   };
   isSubmitClicked: boolean;
-  showOtpVerificationDialog: boolean;
   termsOfService: boolean;
+  signUpSuccess: boolean;
 }
 const initialState = {
   firstName: '',
@@ -45,8 +44,8 @@ const initialState = {
     confirmPassword: '',
   },
   isSubmitClicked: false,
-  showOtpVerificationDialog: false,
   termsOfService: false,
+  signUpSuccess: false,
 };
 const SignupPage: FC = () => {
   const [state, setState] = useState<SignupPageStateIF>(initialState);
@@ -55,12 +54,15 @@ const SignupPage: FC = () => {
     <SignupPageStateProvider value={{ state, setState }}>
       <div className="h-auto w-3/5 max-w-90 min-w-90">
         <WelComeText />
-        <AuthErrorComponent />
-        <SignupInputs />
-        <Divider />
-        <OAuthButtons />
-        <LoginRedirectText />
-        {state.showOtpVerificationDialog && <OtpVerification />}
+        {!state.signUpSuccess && (
+          <>
+            <AuthErrorComponent />
+            <SignupInputs />
+            <Divider />
+            <OAuthButtons />
+            <LoginRedirectText />
+          </>
+        )}
       </div>
     </SignupPageStateProvider>
   );

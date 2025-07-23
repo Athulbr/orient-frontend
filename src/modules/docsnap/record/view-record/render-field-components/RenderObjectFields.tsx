@@ -35,6 +35,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                   <InputField
                     key={fieldId}
                     label={formatFieldLabel(subKey)}
+                    jsonKey={subKey}
                     value={value?.value || ''}
                     confidence={`${value?.confidence * 100}`}
                     checked={value?.checked}

@@ -13,8 +13,8 @@ const AuthRoutes = () => {
       <AuthLayoutComponent>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup/verify/:email/:token" element={<ConfirmSignUpPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/confirm-signup/:email/:otp" element={<ConfirmSignUpPage />} />
           <Route path="/" element={<LoginPage />} />
           <Route path="/*" element={<Navigate to="/auth/login" replace />} />
         </Routes>

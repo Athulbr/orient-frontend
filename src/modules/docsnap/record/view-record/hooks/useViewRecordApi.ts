@@ -114,6 +114,8 @@ export const useViewRecordApi = () => {
         updatedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
       };
 
+      console.log('payload:===========', payload);
+
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
       const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
       toast.success('Record updated successfully');
@@ -170,8 +172,25 @@ export const useViewRecordApi = () => {
       setState(prev => ({ ...prev, creatingRequest: false, requestNewFieldDialog: false }));
     }
   };
+  const createComment = async (comment: string, jsonKey: string) => {
+    try {
+      const requestBody = {
+        jsonKey,
+        comment,
+        templateId: state.record?.templateId._id,
+      };
+      setState(prev => ({ ...prev, creatingRequest: true }));
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`, requestBody);
+      toast.success('Comment created successfully');
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to create Comment');
+    } finally {
+      setState(prev => ({ ...prev, creatingRequest: false }));
+    }
+  };
 
-  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData, generateInvoiceWithAI, createRequestedNewField };
+  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData, generateInvoiceWithAI, createRequestedNewField, createComment };
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {

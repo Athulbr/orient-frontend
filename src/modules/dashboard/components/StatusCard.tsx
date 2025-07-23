@@ -4,14 +4,21 @@ import { useDashboardState } from '../hooks/dashboardContext';
 export const StatusCardComponent = () => {
   const { state } = useDashboardState();
 
+  if (!state.loadingRecords && state.records?.length === 0) {
+    return (
+      <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 lg:order-1 lg:h-full lg:w-100">
+        <div className="flex items-center justify-between">
+          <div className="text-gray-800">Quick Summary</div>
+        </div>
+        <div className="flex flex-1 items-center justify-center text-gray-400">Quick Summary will appear here</div>
+      </div>
+    );
+  }
+
   return (
-    // <div className="flex h-full flex-col gap-y-4 px-3 rounded-2xl border bg-red-200 p-5 shadow-sm">
     <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 lg:order-1 lg:h-full lg:w-100">
       <div className="flex items-center justify-between">
         <div className="text-gray-800">Quick Summary</div>
-        {/* <a href="#" className="flex items-center gap-1 text-sm text-sky-500 hover:underline">
-          See More <ChevronRight size={16} />
-        </a> */}
       </div>
       <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-[17px]">
         {state.loadingRecords || !state.totalRecords ? (

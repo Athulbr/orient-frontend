@@ -190,7 +190,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
           </div>
         );
       })}
-      <CommentDialog isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
     </>
   );
 };

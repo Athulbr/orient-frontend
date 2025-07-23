@@ -19,19 +19,21 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     if (showFileUploadUI) return;
     const template = state.predefinedTemplates.find((template: any) => template.name === selectedTemplateName);
     if (template) {
-      setError('Template name already exists, please choose another name');
+      setError('Template name already exists, Please choose any other name');
     } else {
       const template = state.templates.find((template: any) => template.name === selectedTemplateName);
       if (template) {
-        setError('Template name already exists, please choose another name');
+        setError('Template name already exists, Please choose any other name');
         return;
       }
       const requestBody = {
         name: selectedTemplateName,
         templateId: selectedTemplate._id,
       };
+      setState({ ...state, loadingCreateTemplate: true });
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
       if (state.isDashboard) {
+        setState({ ...state, loadingCreateTemplate: false });
         navigate('/docsnap/template/list');
         return;
       }
@@ -42,7 +44,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
   const onChangeTemplateName = (e: any) => {
     const template = state.predefinedTemplates.find((template: any) => template.name === e.target.value);
     if (template) {
-      setError('Template name already exists, please choose another name');
+      setError('Template name already exists, Please choose any other name');
     } else {
       setError('');
     }
@@ -63,7 +65,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
       name={showFileUploadUI ? 'Upload Document' : 'Create Template'}
       isOpen={state.showCreateTemplateDialog}
       closeDialog={closeDialog}
-      primaryButtonText={showFileUploadUI ? '' : 'Create Template'}
+      primaryButtonText={showFileUploadUI ? '' : state.loadingCreateTemplate ? 'Creating Template...' : 'Create Template'}
       onPrimaryAction={handleSubmit}
     >
       <div className="h-full p-6">

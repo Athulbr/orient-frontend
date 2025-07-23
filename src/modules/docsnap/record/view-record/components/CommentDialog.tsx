@@ -2,18 +2,22 @@ import { FC, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '../../../../../components/Button';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { ButtonBox } from '../../../../../components/ButtonBox';
+import { useViewRecordApi } from '../hooks/useViewRecordApi';
 
 interface CommentDialogPropsIF {
   closeDialog: () => void;
   isOpen: boolean;
+  jsonKey: string;
 }
 
-export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog }) => {
+export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, jsonKey }) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
 
   const toast = useToastStore();
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  const { createComment } = useViewRecordApi();
 
   // Memoize the click outside handler to prevent recreation on every render
   const handleClickOutside = useCallback(
@@ -38,13 +42,8 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog })
   const onClickHandler = useCallback(() => {
     if (!`${comment}`.trim()) return;
     setLoading(true);
-    setTimeout(() => {
-      toast.success('Comment added successfully : TODO');
-      setComment('');
-      closeDialog();
-      setLoading(false);
-    }, 1000);
-  }, [comment, toast, closeDialog]);
+    createComment(comment, jsonKey);
+  }, [comment, toast, closeDialog, jsonKey]);
 
   // Memoize the textarea change handler
   const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {

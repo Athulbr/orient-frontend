@@ -17,6 +17,7 @@ interface InputFieldProps {
   checked?: boolean;
   checkClickHandler?: (checked: boolean) => void;
   disabled?: boolean;
+  jsonKey?: string;
 }
 
 export const InputField = ({
@@ -30,6 +31,7 @@ export const InputField = ({
   disabled,
   checked,
   checkClickHandler,
+  jsonKey,
   ...props
 }: InputFieldProps) => {
   const [commentDialog, setCommentDialog] = useState(false);
@@ -80,7 +82,7 @@ export const InputField = ({
       </div>
 
       {errorMessage && <p className="mt-1 pl-1 text-xs text-red-500">{errorMessage}</p>}
-      <CommentDialog isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
+      <CommentDialog jsonKey={jsonKey || ''} isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
     </div>
   );
 };

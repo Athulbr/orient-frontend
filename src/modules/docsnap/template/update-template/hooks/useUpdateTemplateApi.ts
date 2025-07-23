@@ -3,7 +3,7 @@ import httpRequest from '../../../../../global-utils/httpRequest';
 import { useUpdateTemplateState } from './updateTemplateContext';
 
 export const useUpdateTemplatePageApi = () => {
-  const { state, setState } = useUpdateTemplateState();
+  const { setState } = useUpdateTemplateState();
   const toast = useToastStore();
 
   // ============================= CREATE TEMPLATE ==================================
@@ -13,7 +13,7 @@ export const useUpdateTemplatePageApi = () => {
       setState(prev => ({ ...prev, loadingTemplates: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, { pageSize: 100 });
       setState(prev => ({ ...prev }));
-      toast.success('Template fetched successfully');
+      // toast.success('Template fetched successfully');
       return true;
     } catch (error) {
       console.error('error:===========', error);
@@ -25,7 +25,7 @@ export const useUpdateTemplatePageApi = () => {
       setState(prev => ({ ...prev, loadingTemplate: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${id}`);
       setState(prev => ({ ...prev, sectionList: res.data?.fields, loadingTemplate: false }));
-      toast.success('Template fetched successfully');
+      // toast.success('Template fetched successfully');
       return res.data;
     } catch (error) {
       console.error('error:===========', error);
