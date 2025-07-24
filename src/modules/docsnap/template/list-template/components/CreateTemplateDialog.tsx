@@ -17,28 +17,24 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
 
   const handleSubmit = async () => {
     if (showFileUploadUI) return;
-    const template = state.predefinedTemplates.find((template: any) => template.name === selectedTemplateName);
+
+    const template = state.templates.find((template: any) => template.name === selectedTemplateName);
     if (template) {
       setError('Template name already exists, Please choose any other name');
-    } else {
-      const template = state.templates.find((template: any) => template.name === selectedTemplateName);
-      if (template) {
-        setError('Template name already exists, Please choose any other name');
-        return;
-      }
-      const requestBody = {
-        name: selectedTemplateName,
-        templateId: selectedTemplate._id,
-      };
-      setState({ ...state, loadingCreateTemplate: true });
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
-      if (state.isDashboard) {
-        setState({ ...state, loadingCreateTemplate: false });
-        navigate('/docsnap/template/list');
-        return;
-      }
-      setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
+      return;
     }
+    const requestBody = {
+      name: selectedTemplateName,
+      templateId: selectedTemplate._id,
+    };
+    setState({ ...state, loadingCreateTemplate: true });
+    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
+    if (state.isDashboard) {
+      setState({ ...state, loadingCreateTemplate: false });
+      navigate('/docsnap/template/list');
+      return;
+    }
+    setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
   };
 
   const onChangeTemplateName = (e: any) => {
