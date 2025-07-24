@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   preview: {
-    allowedHosts: ['dev.makez.ai', 'app.makez.ai', 'atl-xfactr-web.maximtech.com', 'frontend-kjqb.onrender.com', 'demo.makez.ai'],
+    allowedHosts: ['dev.makez.ai', 'app.makez.ai', 'atl-xfactr-web.maximtech.com', 'xfactr-web.rehabmart.com', 'demo.makez.ai'],
   },
   test: {
     globals: true,
