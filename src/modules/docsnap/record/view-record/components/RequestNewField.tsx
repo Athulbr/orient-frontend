@@ -17,7 +17,7 @@ const RequestNewField: React.FC<RequestNewFieldIF> = () => {
   };
   return (
     <div className="">
-      <Button small outlined onClick={() => setState(prev => ({ ...prev, requestNewFieldDialog: true }))}>
+      <Button disabled={state.reExtracting} small outlined onClick={() => setState(prev => ({ ...prev, requestNewFieldDialog: true }))}>
         Request New Field
       </Button>
       <UseFormbuilder
