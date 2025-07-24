@@ -23,7 +23,7 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
   const tabs = [
     { id: 'data', title: 'Extracted Data' },
     { id: 'chat', title: 'Chat with Document' },
-    // { id: 'invoice', title: 'Invoice Generator' },
+    { id: 'invoice', title: 'Invoice Generator' },
   ];
 
   return (
