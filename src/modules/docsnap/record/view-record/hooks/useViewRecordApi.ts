@@ -5,7 +5,7 @@ import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
 import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
-import { template } from 'lodash';
+// import { template } from 'lodash';
 
 export const useViewRecordApi = () => {
   const { state, setState } = useViewRecordState();
@@ -141,7 +141,7 @@ export const useViewRecordApi = () => {
     try {
       const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
       setState(prev => ({ ...prev, generatingInvoice: true }));
-      const res: any = await httpRequest('POST', 'http://localhost:3001/api/generate-invoice', {
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`, {
         purchaseOrder: filteredData,
       });
       setState(prev => ({ ...prev, invoiceContent: res.invoice || 'Error generating invoice' }));
