@@ -179,12 +179,14 @@ export const useViewRecordApi = () => {
       };
       setState(prev => ({ ...prev, creatingRequest: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`, requestBody);
+
       toast.success('Comment created successfully');
     } catch (error) {
       console.error('error:===========', error);
       toast.error('Failed to create Comment');
     } finally {
       setState(prev => ({ ...prev, creatingRequest: false }));
+      return true;
     }
   };
 

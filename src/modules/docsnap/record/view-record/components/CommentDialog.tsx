@@ -39,11 +39,15 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
   }, [isOpen, handleClickOutside]);
 
   // Memoize the click handler to prevent recreation on every render
-  const onClickHandler = useCallback(() => {
+  const onClickHandler = useCallback(async () => {
     if (!`${comment}`.trim()) return;
     setLoading(true);
-    createComment(comment, jsonKey);
-  }, [comment, toast, closeDialog, jsonKey]);
+    const res = await createComment(comment, jsonKey);
+    if (res) {
+      setLoading(false);
+      closeDialog();
+    }
+  }, [comment, createComment, closeDialog, jsonKey]);
 
   // Memoize the textarea change handler
   const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
