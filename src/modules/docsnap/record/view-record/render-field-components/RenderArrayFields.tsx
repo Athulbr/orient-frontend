@@ -187,6 +187,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 </tbody>
               </table>
             </div>
+            <CommentDialog jsonKey={'line_item'} isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
           </div>
         );
       })}

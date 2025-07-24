@@ -208,41 +208,22 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
 
   const handleCheckToggle = (checked?: boolean) => {
     const hoveredFieldId = state.hoveredFieldId;
-    const keysArray = hoveredFieldId?.split(':') ?? [];
+    const keysArray: any = hoveredFieldId?.split(':') ?? [];
     if (keysArray.length === 3) {
       const [fieldType, fieldKey, subFieldKey] = keysArray;
-      setState(prev => ({
-        ...prev,
-        objectFields: {
-          ...prev.objectFields,
-          [fieldKey]: {
-            ...prev.objectFields[fieldKey],
-            [subFieldKey]: {
-              ...prev.objectFields[fieldKey][subFieldKey],
-              checked: Boolean(checked),
-            },
-          },
-        },
-      }));
+      setState(prev => {
+        const newState = { ...prev };
+        newState.objectFields[fieldKey][subFieldKey].checked = Boolean(checked);
+        return newState;
+      });
     }
     if (keysArray.length === 4) {
       const [fieldType, fieldKey, subFieldKey, subSubFieldKey] = keysArray;
-      setState(prev => ({
-        ...prev,
-        arrayFields: prev.arrayFields.map((table, tableIdx) => {
-          if (tableIdx !== Number(fieldKey)) return table;
-          return {
-            ...table,
-            [subFieldKey]: {
-              ...table[subFieldKey],
-              [subSubFieldKey]: {
-                ...table[subFieldKey][subSubFieldKey],
-                checked: Boolean(checked),
-              },
-            },
-          };
-        }),
-      }));
+      setState(prev => {
+        const newState = { ...prev };
+        newState.arrayFields[fieldKey][subFieldKey][subSubFieldKey].checked = Boolean(checked);
+        return newState;
+      });
     }
   };
 

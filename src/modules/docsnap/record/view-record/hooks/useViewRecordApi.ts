@@ -114,8 +114,6 @@ export const useViewRecordApi = () => {
         updatedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
       };
 
-      console.log('payload:===========', payload);
-
       setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
       const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
       toast.success('Record updated successfully');

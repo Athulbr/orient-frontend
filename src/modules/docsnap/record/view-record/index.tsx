@@ -227,15 +227,6 @@ const ViewRecordPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  //   useEffect(() => {
-  //     setState({
-  //       ...state,
-  //       invoiceContent: initialInvoiceContent,
-  //     });
-  //   }, [state.tabIndex]);
-
-  console.log('state.arrayFields:===========', state.arrayFields);
-
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
       <div className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[40vh]' : 'pb-0'}`} ref={containerRef}>

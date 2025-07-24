@@ -40,7 +40,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
       setFields(res.data.fields);
       setSettings(res.data.settings);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setHasError(true);
     }
   };
