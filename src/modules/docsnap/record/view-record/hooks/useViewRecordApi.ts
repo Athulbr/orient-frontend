@@ -141,6 +141,7 @@ export const useViewRecordApi = () => {
     try {
       const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
       setState(prev => ({ ...prev, generatingInvoice: true }));
+      // test
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`, {
         purchaseOrder: filteredData,
       });
