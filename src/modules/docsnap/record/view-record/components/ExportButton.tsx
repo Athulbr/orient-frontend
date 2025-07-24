@@ -61,7 +61,6 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
       downloadJSONFile();
     }
     if (value === 'XLSX') {
-      alert('');
       downloadXlsxFile();
     }
   };
@@ -69,7 +68,7 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
   return (
     <Dropdown onChange={onChangeOption} options={['XLSX', 'JSON']}>
       {/* ISSUE:Button is preventing (e.preventDefault()) */}
-      <button>Export</button>
+      <button className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 hover:bg-gray-100">Export</button>
     </Dropdown>
   );
 };

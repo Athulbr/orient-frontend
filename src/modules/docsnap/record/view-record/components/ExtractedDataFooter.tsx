@@ -2,20 +2,26 @@ import { Button } from '../../../../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
 import { useViewRecordState } from '../hooks/viewRecordContext';
-import { Forward, RefreshCcw, RefreshCw, SkipForward } from 'lucide-react';
+import { RefreshCw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
 import httpRequest from '../../../../../global-utils/httpRequest';
-import { useState } from 'react';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 interface ExtractedDataFooterIF {
   test?: string;
 }
 
 const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
   const navigate = useNavigate();
+  const toast = useToastStore();
   const { setState } = useViewRecordState();
   const { updateRecordApiById, updateExtractedData, getRecordApiById } = useViewRecordApi();
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    setTimeout(() => {
+      toast.success('Record submitted successfully');
+      navigate('/docsnap/record/list');
+    }, 3000);
+  };
 
   const handleReExtract = async () => {
     setState(prev => ({ ...prev, reExtracting: true }));
