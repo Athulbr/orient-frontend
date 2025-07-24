@@ -32,6 +32,8 @@ export const LoginInputs: React.FC<LoginInputsIF> = () => {
         onChange={e => setState(prev => ({ ...prev, email: e.target.value }))}
         className="-webkit-text-fill-color: #fff"
         onKeyDown={handleKeyDown}
+        autoComplete="current-password"
+        name="email"
       />
       <MuiPasswordTextField
         errorMessage={state.fieldError.password}
