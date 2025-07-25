@@ -13,6 +13,10 @@ const ListTemplateComponent: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    getTemplatesApi();
+  }, [state.searchText]);
+
+  useEffect(() => {
     if (state.refresh === 1) return;
     getTemplatesApi();
   }, [state.refresh]);
