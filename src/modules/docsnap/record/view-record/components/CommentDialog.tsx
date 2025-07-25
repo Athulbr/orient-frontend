@@ -23,6 +23,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
       if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
+        setComment('');
         closeDialog();
       }
     },
@@ -45,6 +46,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
     const res = await createComment(comment, jsonKey);
     if (res) {
       setLoading(false);
+      setComment('');
       closeDialog();
     }
   }, [comment, createComment, closeDialog, jsonKey]);
@@ -57,6 +59,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
   // Memoize the close handler (in case it's not already memoized in parent)
   const handleClose = useCallback(() => {
     closeDialog();
+    setComment('');
   }, [closeDialog]);
 
   // Memoize computed values

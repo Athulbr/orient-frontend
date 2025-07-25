@@ -6,6 +6,7 @@ import { StatusCardComponent } from './components/StatusCard';
 import { UploadDocumentComponent } from '../docsnap/upload-document';
 import { CreateTemplateComponent } from '../docsnap/template/list-template/components/CreateTemplateDialog';
 import { TemplateCardListComponent } from './components/TemplateCardList';
+import { usePreventBackNavigation } from '../../components/PreventBackNavigation';
 
 export interface DashboardStateIF {
   totalRecords: number;
@@ -41,6 +42,9 @@ const initialState = {
 
 const DashboardPage: FC = () => {
   const [state, setState] = useState<DashboardStateIF>(initialState);
+  usePreventBackNavigation(() => {
+    alert('Back button clicked');
+  }, true);
 
   return (
     <DashboardStateProvider value={{ state, setState }}>
