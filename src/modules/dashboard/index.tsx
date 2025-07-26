@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
@@ -42,9 +42,6 @@ const initialState = {
 
 const DashboardPage: FC = () => {
   const [state, setState] = useState<DashboardStateIF>(initialState);
-  usePreventBackNavigation(() => {
-    alert('Back button clicked');
-  }, true);
 
   return (
     <DashboardStateProvider value={{ state, setState }}>
