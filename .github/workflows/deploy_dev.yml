@@ -10,7 +10,7 @@ on:
 jobs:
   deploy:
     # Use the reusable workflow for deploying the application
-    uses: rehab-mart/cicd-actions/.github/workflows/reusable-deploy.yml@main
+    uses: rehab-mart/cicd-actions/.github/workflows/reusable-dev2-deploy.yml@main
     with:
       app_name: 'frontend-v2' # Name of the application to be deployed
       app_port: '8080' # Port on which the application will run
