@@ -5,7 +5,7 @@ import { useRolesApi } from './hooks/useRoleApi';
 
 export const ListRoleComponent: React.FC = () => {
   const { setState, state } = useRoleState();
-  const { getRoleByIdApi, deleteRoleApi } = useRolesApi();
+  const { deleteRoleApi, getSubscriptionModelByIdApi, getAllModulesApi, getAllFeaturesApi } = useRolesApi();
   const actionButtons = [
     {
       label: 'Create Role',
@@ -16,8 +16,10 @@ export const ListRoleComponent: React.FC = () => {
   ];
   const customFunctions = {
     rowClickHandler: (row: any) => {
-      setState(prev => ({ ...prev, showViewDialog: true, id: row._id }));
-      getRoleByIdApi(row._id);
+      setState(prev => ({ ...prev, showViewDialog: true, id: row._id, role: row }));
+      getSubscriptionModelByIdApi('686deeaadce3739db2bee37a'); // TODO
+      getAllModulesApi();
+      getAllFeaturesApi();
     },
     editClickHandler: (row: any) => {
       setState(prev => ({ ...prev, showCreateDialog: true, role: row, id: row._id }));

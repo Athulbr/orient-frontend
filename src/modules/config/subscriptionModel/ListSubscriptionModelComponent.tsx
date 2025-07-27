@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 export const ListSubscriptionModelComponent: React.FC = () => {
   const { id } = useParams();
   const { setState, state } = useSubscriptionModelState();
-  const { getSubscriptionModelByIdApi, deleteSubscriptionModelApi } = useSubscriptionModelsApi();
+  const { getSubscriptionModelByIdApi, deleteSubscriptionModelApi, getAllModulesApi, getAllFeaturesApi } = useSubscriptionModelsApi();
 
   useEffect(() => {
     if (!id) return;
@@ -28,6 +28,8 @@ export const ListSubscriptionModelComponent: React.FC = () => {
     rowClickHandler: (row: any) => {
       setState(prev => ({ ...prev, showViewDialog: true, id: row._id }));
       getSubscriptionModelByIdApi(row._id);
+      getAllModulesApi();
+      getAllFeaturesApi();
     },
     editClickHandler: (row: any) => {
       setState(prev => ({ ...prev, showCreateDialog: true, subscriptionModel: row, id: row._id }));

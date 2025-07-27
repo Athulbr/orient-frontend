@@ -14,6 +14,9 @@ export interface RoleStateIF {
   id: string;
   role: any | null;
   refresh: number;
+  subscriptionModel: any;
+  features: any;
+  modules: any;
 }
 const initialState: RoleStateIF = {
   showViewDialog: false,
@@ -22,6 +25,9 @@ const initialState: RoleStateIF = {
   id: '',
   role: null,
   refresh: 1,
+  subscriptionModel: null,
+  features: [],
+  modules: [],
 };
 
 const ListRolePage: React.FC = () => {

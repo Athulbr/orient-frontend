@@ -343,20 +343,6 @@ const RightContainer: React.FC = () => {
 };
 
 export const ViewSubscriptionModelComponent: React.FC = () => {
-  const { queryModulesApi, queryFeaturesApi } = useSubscriptionModelsApi();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await queryModulesApi();
-        await queryFeaturesApi();
-      } catch (error) {
-        console.error('Failed to fetch modules/features', error);
-      }
-    };
-    fetchData();
-  }, []);
-
   return (
     <div className="flex flex-1 overflow-hidden rounded-xl shadow-2xl">
       <div className="w-1/2 border-r border-slate-300">

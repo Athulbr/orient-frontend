@@ -16,6 +16,18 @@ export const useRolesApi = () => {
 
   // ============================= CREATE ==================================
 
+  const getSubscriptionModelByIdApi = async (id: string) => {
+    try {
+      setState(prev => ({ ...prev, loading: true }));
+      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/subscription/${id}`);
+      toast.success('Subscription Model fetched successfully');
+      setState(prev => ({ ...prev, loading: false, subscriptionModel: res.data, fields: res.data.fields }));
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to fetch Subscription Model');
+    }
+  };
+
   const createRoleApi = async (payload: any) => {
     try {
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/role/create`, payload);
@@ -39,17 +51,17 @@ export const useRolesApi = () => {
     }
   };
 
-  const getRoleByIdApi = async (id: string) => {
-    try {
-      setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/role/${id}`);
-      toast.success('Role fetched successfully');
-      setState(prev => ({ ...prev, loading: false, role: res.data, fields: res.data.fields }));
-    } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to Create Role');
-    }
-  };
+  // const getRoleByIdApi = async (id: string) => {
+  //   try {
+  //     setState(prev => ({ ...prev, loading: true }));
+  //     const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/role/${id}`);
+  //     toast.success('Role fetched successfully');
+  //     setState(prev => ({ ...prev, loading: false, role: res.data, fields: res.data.fields }));
+  //   } catch (error) {
+  //     console.error('error:===========', error);
+  //     toast.error('Failed to Create Role');
+  //   }
+  // };
 
   const deleteRoleApi = async (id: string) => {
     try {
@@ -63,5 +75,31 @@ export const useRolesApi = () => {
     }
   };
 
-  return { createRoleApi, getRoleByIdApi, updateRoleApi, deleteRoleApi };
+  const getAllModulesApi = async () => {
+    try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module`, { pageSize: 1000 });
+      const modules = res.data || [];
+      setState(prev => ({ ...prev, modules }));
+      return modules;
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to fetch Modules');
+      throw error;
+    }
+  };
+
+  const getAllFeaturesApi = async () => {
+    try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/feature`, { pageSize: 1000 });
+      const features = res.data || [];
+      setState(prev => ({ ...prev, features }));
+      return features;
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to fetch Features');
+      throw error;
+    }
+  };
+
+  return { createRoleApi, updateRoleApi, deleteRoleApi, getSubscriptionModelByIdApi, getAllModulesApi, getAllFeaturesApi };
 };

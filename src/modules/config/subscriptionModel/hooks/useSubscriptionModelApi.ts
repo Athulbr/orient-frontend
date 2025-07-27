@@ -47,7 +47,7 @@ export const useSubscriptionModelsApi = () => {
 
   // =========================== QUERY LISTS =============================
 
-  const queryModulesApi = async () => {
+  const getAllModulesApi = async () => {
     try {
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module`, { pageSize: 1000 });
       const modules = res.data || [];
@@ -60,7 +60,7 @@ export const useSubscriptionModelsApi = () => {
     }
   };
 
-  const queryFeaturesApi = async () => {
+  const getAllFeaturesApi = async () => {
     try {
       const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/feature`, { pageSize: 1000 });
       const features = res.data || [];
@@ -90,7 +90,7 @@ export const useSubscriptionModelsApi = () => {
     getSubscriptionModelByIdApi,
     updateSubscriptionModelApi,
     deleteSubscriptionModelApi,
-    queryModulesApi,
-    queryFeaturesApi,
+    getAllModulesApi,
+    getAllFeaturesApi,
   };
 };
