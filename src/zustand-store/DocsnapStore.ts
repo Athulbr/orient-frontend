@@ -38,6 +38,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
 
         const createReqObject = {
+          status: 'processing',
           metadata: res,
           extractedData: null,
           pdfFileName: s3Response?.data?.fileName,
@@ -64,6 +65,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             eventSource.close();
             const requestBody = {
               extractedData: data?.result?.extracted_data || {},
+              status: 'extracted',
             };
             const res = await httpRequest(
               'PATCH',
