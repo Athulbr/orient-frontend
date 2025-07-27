@@ -1,11 +1,9 @@
-import { useParams } from 'react-router-dom';
 import { useUserState } from './userContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
 
 export const useUserApiService = () => {
-  const { setState } = useUserState();
-  const { id } = useParams();
+  const { state, setState } = useUserState();
   const toast = useToastStore();
 
   // ============================= CREATE ==================================
@@ -20,9 +18,19 @@ export const useUserApiService = () => {
       toast.error('Failed to Create User');
     }
   };
+  const updateUserApi = async (user: any) => {
+    try {
+      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update/${state.id}`, user);
+      setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: prev.refresh + 1 }));
+      toast.success('User Updated Successfully');
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to Update User');
+    }
+  };
   const deleteUserApiRequest = async (id: string) => {
     try {
-      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/user/delete/${id}`);
+      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/user/delete/${state.id}`);
       setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
       toast.success('User deleted successfully');
     } catch (error) {
@@ -31,5 +39,5 @@ export const useUserApiService = () => {
     }
   };
 
-  return { createUserApi, deleteUserApiRequest };
+  return { createUserApi, updateUserApi, deleteUserApiRequest };
 };

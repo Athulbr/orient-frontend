@@ -56,6 +56,8 @@ export const TableBody: FC = () => {
           )}
           {columns.map(column => {
             if (column.hidden) return null;
+            if (column.header === 'action' && !injectedData.updatePermission && !injectedData.deletePermission) return null;
+
             return (
               <td key={column.key as string} className="px-2 py-4 xl:px-5">
                 <div
@@ -127,12 +129,12 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
 
   return (
     <div className={`ml-2 flex gap-4 ${settings.editButton ? 'ml-2' : 'ml-6'}`}>
-      {settings.editButton && (
+      {settings.editButton && injectedData.updatePermission && (
         <Tooltip text="Edit" position="bottom">
           <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={18} />
         </Tooltip>
       )}
-      {settings.deleteButton && (
+      {settings.deleteButton && injectedData.deletePermission && (
         <Tooltip text="Delete" position="bottom">
           <Trash2 onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={18} />
         </Tooltip>

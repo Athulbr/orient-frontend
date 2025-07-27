@@ -36,10 +36,14 @@ export const useLoginPageApi = () => {
       if (res?.data?.accessToken) {
         window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
         window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
-        const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 });
-        const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
-        window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(tablebuilderesponse?.data));
-        window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
+        window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+
+        const resp = await Promise.all([
+          httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
+          httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 }),
+        ]);
+        window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+        window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
         toast.success('Logged in successfully');
 
         window?.location?.replace('/');
@@ -74,11 +78,15 @@ export const useLoginPageApi = () => {
         if (res.data?.accessToken) {
           window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
           window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-
+          window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+          const resp = await Promise.all([
+            httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
+            httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 }),
+          ]);
+          window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+          window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
           toast.success('Logged in successfully');
-          setTimeout(() => {
-            window?.location?.replace('/');
-          }, 500);
+          window?.location?.replace('/');
         } else {
           setState(prev => ({ ...prev, authError: 'Authentication failed. Please try again.' }));
         }

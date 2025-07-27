@@ -10,12 +10,14 @@ export interface UserStateIF {
   loading: boolean;
   id: string;
   refresh: number;
+  user: any;
 }
 const initialState = {
   showCreateDialog: false,
   loading: false,
   id: '',
   refresh: 1,
+  user: null,
 };
 
 const ListUserPage: React.FC = () => {

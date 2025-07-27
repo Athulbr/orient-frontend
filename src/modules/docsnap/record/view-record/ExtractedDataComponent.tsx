@@ -100,28 +100,28 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
     }
   }, [state.selectedTableName]);
 
-  useEffect(() => {
-    if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
-      const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-      const eventSource = new EventSource(
-        `${import.meta.env.VITE_PYTHON_URL}/ai/${state.record?.metadata?.stream_url}?token=Bearer ${JSON.parse(accessToken)}`
-      );
-      eventSource.addEventListener('task_update', (event: any) => {
-        const data = JSON.parse(event.data);
-        setData(data);
-        if (data.status === 'Complete') {
-          eventSource.close();
-          getRecordApiById(state.record?._id);
-        }
-      });
-      eventSource.onerror = () => {
-        eventSource.close();
-      };
-    }
-  }, [state.record]);
+  // useEffect(() => {
+  //   if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
+  //     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+  //     const eventSource = new EventSource(
+  //       `${import.meta.env.VITE_PYTHON_URL}/ai/${state.record?.metadata?.stream_url}?token=Bearer ${JSON.parse(accessToken)}`
+  //     );
+  //     eventSource.addEventListener('task_update', (event: any) => {
+  //       const data = JSON.parse(event.data);
+  //       setData(data);
+  //       if (data.status === 'Complete') {
+  //         eventSource.close();
+  //         getRecordApiById(state.record?._id);
+  //       }
+  //     });
+  //     eventSource.onerror = () => {
+  //       eventSource.close();
+  //     };
+  //   }
+  // }, [state.record]);
 
   if (!state.record) return <LoadingDataSpinner />;
-  if (!state.record?.extractedData) return <ProgressLoader progress={data?.progress || 0} currentStep={data?.current_step || ''} />;
+  if (state.record?.status === 'processing') return <LoadingDataSpinner text="Processing..." />;
   if (state.loadingData) return <LoadingDataSpinner />;
 
   return (

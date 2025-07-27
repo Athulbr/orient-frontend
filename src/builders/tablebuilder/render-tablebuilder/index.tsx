@@ -14,6 +14,8 @@ interface PropsIF {
   refresh?: number;
   disableLoader?: boolean;
   updatedQuery?: (query: any) => any;
+  deletePermission?: boolean;
+  updatePermission?: boolean;
 }
 
 export const RenderTablebuilder: React.FC<PropsIF> = ({
@@ -26,6 +28,8 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
   refresh,
   disableLoader,
   updatedQuery,
+  deletePermission,
+  updatePermission,
 }) => {
   const [state, setState] = useState<TablebuilderStateIF>(tablebuilderInitialState);
   return (
@@ -34,7 +38,17 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
         state,
         setState,
         settings,
-        injectedData: { customUI, updatedQuery, customFunctions, fluidHeight, externalFilters, actionButtons, disableLoader },
+        injectedData: {
+          customUI,
+          updatedQuery,
+          customFunctions,
+          fluidHeight,
+          externalFilters,
+          actionButtons,
+          disableLoader,
+          deletePermission,
+          updatePermission,
+        },
       }}
     >
       <Table refresh={refresh} />

@@ -9,6 +9,8 @@ interface InjectedDataIF {
   actionButtons?: { label: string; action: () => void; loading?: boolean }[];
   disableLoader?: boolean;
   updatedQuery?: (query: any) => any;
+  deletePermission?: boolean;
+  updatePermission?: boolean;
 }
 
 const TablebuilderStateContext = createContext<
