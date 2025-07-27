@@ -1,1 +1,1 @@
-.
+frontend-v2 .
