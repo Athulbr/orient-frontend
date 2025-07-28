@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { RecordStatusCustomUI } from './components/RecordStatusCustomUI';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
@@ -10,6 +10,9 @@ export const ListRecordComponent: React.FC = () => {
   const { state, setState } = useListRecordPageState();
   const navigate = useNavigate();
   const { deleteRecordApi } = useListRecordApi();
+  const [params] = useSearchParams();
+
+  console.log('params:===========', params.get('status'));
 
   const { refreshRecord, extractionQueue } = useDocsnapStore();
 
@@ -30,11 +33,12 @@ export const ListRecordComponent: React.FC = () => {
   const customUI = {
     recordStatus: RecordStatusCustomUI,
   };
+  const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
   return (
     <UseTablebuilder
       disableLoader={extractionQueue.length > 0}
       customUI={customUI}
-      externalFilters={{ deleted: false }}
+      externalFilters={{ deleted: false, ...selectedFilter }}
       refresh={state.refresh}
       name="List Record Table"
       fluidHeight

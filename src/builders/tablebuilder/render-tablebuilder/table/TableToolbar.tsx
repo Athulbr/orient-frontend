@@ -38,6 +38,7 @@ function Filters() {
   const { settings, state, setState } = useTablebuilderState();
   const { getDataFromApi } = useFetchDataFromApi();
   const { activeFilters } = state;
+  const { injectedData } = useTablebuilderState();
 
   // Update active filters
   const updateActiveFilter = useCallback(
@@ -63,24 +64,28 @@ function Filters() {
 
   return (
     <>
-      {settings.filters.map((filter, index) => (
-        <SingleSelect
-          key={filter.key}
-          options={[
-            {
-              label: `All ${filter.key.charAt(0).toUpperCase() + filter.key.slice(1)}`,
-              value: '',
-            },
-            ...filter.options.map(option => ({ label: option, value: option })),
-          ]}
-          value={activeFilters[index]?.value || ''}
-          onValueChange={value => {
-            const newFilters = [...activeFilters];
-            newFilters[index] = value ? { key: filter.key, value } : { key: '', value: '' };
-            updateActiveFilter(newFilters);
-          }}
-        />
-      ))}
+      {settings.filters.map((filter, index) => {
+        const found = injectedData.externalFilters[filter.key];
+        return (
+          <SingleSelect
+            key={filter.key}
+            options={[
+              {
+                label: `All ${filter.key.charAt(0).toUpperCase() + filter.key.slice(1)}`,
+                value: '',
+              },
+              ...filter.options.map(option => ({ label: option, value: option })),
+            ]}
+            value={activeFilters[index]?.value || (found ? found : '')}
+            onValueChange={value => {
+              const newFilters = [...activeFilters];
+              newFilters[index] = value ? { key: filter.key, value } : { key: '', value: '' };
+              updateActiveFilter(newFilters);
+            }}
+            disabled={Boolean(found)}
+          />
+        );
+      })}
     </>
   );
 }

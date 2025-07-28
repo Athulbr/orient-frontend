@@ -2,10 +2,12 @@ import { ChevronRight, ThumbsUp, CheckCircle, Clock, AlertCircle, FileWarning } 
 import { useDashboardState } from '../hooks/dashboardContext';
 import { useEffect } from 'react';
 import { useDashboardApi } from '../hooks/useDashboardApi';
+import { useNavigate } from 'react-router-dom';
 
 export const StatusCardComponent = () => {
   const { state, setState } = useDashboardState();
   const { getStatusCountApi } = useDashboardApi();
+  const navigate = useNavigate();
 
   console.log('state.statusCounts:===========', state.statusCounts);
 
@@ -22,6 +24,7 @@ export const StatusCardComponent = () => {
           <ThumbsUp className="text-[#53c31c]" size={28} />
         </span>
       ),
+      navigateTo: '/docsnap/record/list?status=submitted',
     },
     {
       label: 'Ready to Review',
@@ -31,6 +34,7 @@ export const StatusCardComponent = () => {
           <CheckCircle className="text-blue-500" size={28} />
         </span>
       ),
+      navigateTo: '/docsnap/record/list?status=extracted',
     },
     {
       label: 'In Progress',
@@ -40,6 +44,7 @@ export const StatusCardComponent = () => {
           <Clock className="text-yellow-500" size={28} />
         </span>
       ),
+      navigateTo: '/docsnap/record/list?status=processing',
     },
     {
       label: 'Invalid Files',
@@ -49,6 +54,7 @@ export const StatusCardComponent = () => {
           <FileWarning className="text-red-500" size={28} />
         </span>
       ),
+      navigateTo: '/docsnap/record/list?status=invalid',
     },
     {
       label: 'Failed Files',
@@ -58,6 +64,7 @@ export const StatusCardComponent = () => {
           <AlertCircle className="text-red-500" size={28} />
         </span>
       ),
+      navigateTo: '/docsnap/record/list?status=failed',
     },
   ];
 
@@ -93,7 +100,11 @@ export const StatusCardComponent = () => {
       {/* <div className="border-b" /> */}
       <div className="flex h-full flex-col gap-y-4">
         {statusItems.map((item, idx) => (
-          <div key={item.label} className="flex min-h-17 flex-1 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition">
+          <div
+            onClick={() => navigate(item.navigateTo)}
+            key={item.label}
+            className="flex min-h-17 flex-1 cursor-pointer items-center justify-between rounded-xl border bg-white px-5 transition"
+          >
             <div className="flex items-center gap-3">
               {item.icon}
               <div className="flex flex-col gap-1">
