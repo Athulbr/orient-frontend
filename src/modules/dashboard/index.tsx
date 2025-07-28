@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
@@ -6,10 +6,9 @@ import { StatusCardComponent } from './components/StatusCard';
 import { UploadDocumentComponent } from '../docsnap/upload-document';
 import { CreateTemplateComponent } from '../docsnap/template/list-template/components/CreateTemplateDialog';
 import { TemplateCardListComponent } from './components/TemplateCardList';
-import { usePreventBackNavigation } from '../../components/PreventBackNavigation';
+import { useBackButtonOverride } from '../../hooks/useBackButtonOverride';
 
 export interface DashboardStateIF {
-  totalRecords: number;
   totalTemplates: number;
   records: any[];
   templates: any[];
@@ -22,10 +21,11 @@ export interface DashboardStateIF {
   isDashboard: boolean;
   predefinedTemplates: any[];
   loadingPredefinedTemplates: boolean;
+  statusCounts: any;
+  loadingStatusCounts: boolean;
 }
 
 const initialState = {
-  totalRecords: 0,
   totalTemplates: 0,
   isDashboard: true,
   records: [],
@@ -38,10 +38,13 @@ const initialState = {
   refresh: 1,
   predefinedTemplates: [],
   loadingPredefinedTemplates: false,
+  statusCounts: null,
+  loadingStatusCounts: false,
 };
 
 const DashboardPage: FC = () => {
   const [state, setState] = useState<DashboardStateIF>(initialState);
+  useBackButtonOverride('/');
 
   return (
     <DashboardStateProvider value={{ state, setState }}>

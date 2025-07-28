@@ -192,12 +192,12 @@ const settings = [
     name: 'Docsnap',
     icon: Book,
     items: [
-      {
-        name: 'Projects',
-        icon: ListOrdered,
-        path: '/config/project/list',
-        key: 'project',
-      },
+      // {
+      //   name: 'Projects',
+      //   icon: ListOrdered,
+      //   path: '/config/project/list',
+      //   key: 'project',
+      // },
 
       {
         name: 'Comments',

@@ -1,18 +1,10 @@
-import { useParams } from 'react-router-dom';
 import { useRoleState } from './roleContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useRolesApi = () => {
   const { state, setState } = useRoleState();
-  const { id } = useParams();
   const toast = useToastStore();
-
-  useEffect(() => {
-    if (!id) return;
-    setState(prev => ({ ...prev, projectId: id }));
-  }, [id]);
 
   // ============================= CREATE ==================================
 
@@ -43,7 +35,15 @@ export const useRolesApi = () => {
     try {
       setState(prev => ({ ...prev, loading: true }));
       const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/role/update/${state.id}`, role);
-      setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        showCreateDialog: false,
+        showViewDialog: false,
+        showCreatePage: false,
+        id: '',
+        refresh: state.refresh + 1,
+      }));
       toast.success('Role Updated Successfully');
     } catch (error) {
       console.error('error:===========', error);

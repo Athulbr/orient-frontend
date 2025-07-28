@@ -12,9 +12,19 @@ export const useDashboardApi = () => {
     try {
       setState(prev => ({ ...prev, loadingRecords: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 10, filters: { deleted: false } });
-      setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
+      setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
       window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
       return true;
+    } catch (error) {
+      toast.error('Failed to fetch record');
+    }
+  };
+  const getStatusCountApi = async () => {
+    try {
+      setState(prev => ({ ...prev, loadingStatusCounts: true }));
+      const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/status/count`);
+      setState(prev => ({ ...prev, loadingStatusCounts: false, statusCounts: { ...res.data[0], total: res.total } }));
+      console.log('res.data:===========', res.data);
     } catch (error) {
       toast.error('Failed to fetch record');
     }
@@ -48,5 +58,5 @@ export const useDashboardApi = () => {
     }
   };
 
-  return { getRecordsApi, getPredefinedTemplatesApi, getTemplatesApi };
+  return { getRecordsApi, getStatusCountApi, getPredefinedTemplatesApi, getTemplatesApi };
 };

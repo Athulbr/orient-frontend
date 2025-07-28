@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { useViewRecordState, ViewRecordStateProvider } from './hooks/viewRecordContext';
+import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ViewRecordStateProvider } from './hooks/viewRecordContext';
 import { TabViewContainer } from './components/TabViewContainer';
 import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
@@ -7,6 +8,7 @@ import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
 import { PreviewComponent } from './PreviewComponent';
 import { InvoiceGenerator } from './components/InvoiceGenerator';
+import { useBackButtonOverride } from '../../../../hooks/useBackButtonOverride';
 
 interface WirePoints {
   x1: number;
@@ -87,6 +89,7 @@ const ViewRecordPage: React.FC = () => {
   const [state, setState] = useState<ViewRecordStateIF>(initialState);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  useBackButtonOverride('/');
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>

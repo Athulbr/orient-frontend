@@ -303,28 +303,7 @@ const RightContainer: React.FC = () => {
 };
 
 const ViewRoleComponent: React.FC = () => {
-  const { state, setState } = useRoleState();
-  const { updateRoleApi } = useRolesApi();
-  const toast = useToastStore();
-
-  const handleUpdateRole = async () => {
-    if (!state.role) return;
-
-    try {
-      await updateRoleApi({
-        ...state.role,
-        // Ensure we only send the necessary fields to the API
-        name: state.role.name,
-        description: state.role.description,
-        features: state.role.features,
-      });
-
-      toast.success('Role updated successfully');
-    } catch (error) {
-      console.error('Error updating role:', error);
-      toast.error('Failed to update role');
-    }
-  };
+  const { state } = useRoleState();
 
   if (!state.role) {
     return (
