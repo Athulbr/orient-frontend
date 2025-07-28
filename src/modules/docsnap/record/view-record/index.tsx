@@ -89,7 +89,7 @@ const ViewRecordPage: React.FC = () => {
   const [state, setState] = useState<ViewRecordStateIF>(initialState);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  useBackButtonOverride('/');
+  useBackButtonOverride('/docsnap/record/list');
 
   return (
     <ViewRecordStateProvider value={{ state, setState }}>
