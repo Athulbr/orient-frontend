@@ -33,7 +33,7 @@ export const useSignupPageApi = () => {
     const emailError = validateEmail(state.email);
     const passwordError = validatePassword(state.password);
     const confirmPasswordError = validateConfirmPassword(state.password, state.confirmPassword);
-    if (emailError || passwordError) {
+    if (firstNameError || lastNameError || emailError || passwordError || confirmPasswordError) {
       setState(prev => ({
         ...prev,
         fieldError: { firstName: firstNameError, lastName: lastNameError, email: emailError, password: passwordError, confirmPassword: confirmPasswordError },
