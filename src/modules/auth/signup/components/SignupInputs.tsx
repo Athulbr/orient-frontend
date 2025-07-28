@@ -59,12 +59,12 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
       />
       <MuiPasswordTextField
         errorMessage={state.fieldError.confirmPassword}
-        label="ConfirmPassword"
+        label="Confirm Password"
         value={state.confirmPassword}
         onChange={e => setState(prev => ({ ...prev, confirmPassword: e.target.value }))}
         onKeyDown={handleKeyDown}
       />
-      <p
+      <div
         tabIndex={0}
         // onClick={() => navigate('/auth/forgot-password')}
         className="flex w-fit items-center gap-2 p-2 text-[12px] text-gray-400 hover:text-gray-700 active:border-gray-400 active:outline-gray-400"
@@ -81,7 +81,7 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
         </label>
         <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Terms of Service</span> and
         <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Privacy Policy</span>
-      </p>
+      </div>
       <Button disabled={!state.termsOfService || state.loading} onClick={signupWithEmailAndPassword} className="bg-foreground-800 mt-2">
         {state.loading && <Spinner size={16} />} {state.loading ? 'SIGNING UP...' : 'SIGN UP'}
       </Button>
