@@ -6,6 +6,7 @@ import { OAuthButtons } from './components/OAuthButtons';
 import { LoginRedirectText } from '../signup/components/LoginRedirectText';
 import { SignupPageStateProvider } from './hooks/SignupPageStateProvider';
 import { SignupInputs } from './components/SignupInputs';
+import TermsAndConditionsDialog from './components/TermsAndConditionsDialog';
 
 export interface SignupPageStateIF {
   firstName: string;
@@ -26,6 +27,7 @@ export interface SignupPageStateIF {
   isSubmitClicked: boolean;
   termsOfService: boolean;
   signUpSuccess: boolean;
+  termsAndConditionsDialog: boolean;
 }
 const initialState = {
   firstName: '',
@@ -46,6 +48,7 @@ const initialState = {
   isSubmitClicked: false,
   termsOfService: false,
   signUpSuccess: false,
+  termsAndConditionsDialog: false,
 };
 const SignupPage: FC = () => {
   const [state, setState] = useState<SignupPageStateIF>(initialState);
@@ -63,6 +66,7 @@ const SignupPage: FC = () => {
             <LoginRedirectText />
           </>
         )}
+        <TermsAndConditionsDialog />
       </div>
     </SignupPageStateProvider>
   );

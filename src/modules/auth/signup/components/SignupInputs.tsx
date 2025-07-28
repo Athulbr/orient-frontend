@@ -67,7 +67,7 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
       <div
         tabIndex={0}
         // onClick={() => navigate('/auth/forgot-password')}
-        className="flex w-fit items-center gap-2 p-2 text-[12px] text-gray-400 hover:text-gray-700 active:border-gray-400 active:outline-gray-400"
+        className="flex w-fit items-center gap-2 p-2 py-3 text-sm text-gray-400 hover:text-gray-700 active:border-gray-400 active:outline-gray-400"
       >
         <input
           checked={state.termsOfService}
@@ -79,8 +79,12 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
         <label htmlFor="checkbox" className="cursor-pointer text-gray-400">
           I agree to the
         </label>
-        <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Terms of Service</span> and
-        <span className="cursor-pointer text-blue-500 hover:text-blue-700 hover:underline">Privacy Policy</span>
+        <span
+          onClick={() => setState(prev => ({ ...prev, termsAndConditionsDialog: true }))}
+          className="cursor-pointer text-sky-500 hover:text-sky-700 hover:underline"
+        >
+          Terms and Conditions
+        </span>
       </div>
       <Button
         disabled={!state.termsOfService || state.loading || !state.email || !state.password || !state.confirmPassword || !state.firstName || !state.lastName}
