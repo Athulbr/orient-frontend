@@ -1,66 +1,32 @@
 export const RecordStatusCustomUI = (row: any) => {
   if (row?.data?.status === 'processing') {
     return (
-      <div className="w-fit cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
+      <div className="w-fit cursor-pointer rounded-lg border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
         Processing
       </div>
     );
   }
+  if (row?.data?.status === 'extracted') {
+    return (
+      <div className="w-fit cursor-pointer rounded-lg border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-500 hover:bg-blue-100 hover:text-blue-700">
+        Review
+      </div>
+    );
+  }
+  if (row?.data?.status === 'submitted') {
+    return (
+      <div className="w-fit cursor-pointer rounded-lg border-green-100 bg-green-50 px-3 py-1 text-xs font-semibold text-green-500 hover:bg-green-100 hover:text-green-700">
+        Submitted
+      </div>
+    );
+  }
+  if (row?.data?.status === 'failed') {
+    return (
+      <div className="w-fit cursor-pointer rounded-lg border-red-100 bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 hover:bg-red-100 hover:text-red-700">
+        Failed
+      </div>
+    );
+  }
 
-  return <div className="">-</div>;
+  return <div className="pl-5">-</div>;
 };
-
-// export const RecordStatusCustomUI = (row: any) => {
-//   const [data, setData] = useState<any>(null);
-
-//   const streamUrl = row?.data?.metadata?.stream_url;
-
-//   useEffect(() => {
-//     if (!streamUrl || row?.data?.extractedData) return;
-//     const connect = () => {
-//       const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-//       const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${streamUrl}?token=Bearer ${JSON.parse(accessToken)}`);
-
-//       eventSource.addEventListener('task_update', (event: any) => {
-//         const data = JSON.parse(event.data);
-//         setData(data);
-//         if (data.status === 'PENDING') {
-//           eventSource.close();
-//         }
-//       });
-//       eventSource.onerror = (error: any) => {
-//         eventSource.close();
-//       };
-//     };
-//     connect();
-//   }, [streamUrl, row?.data?.extractedData]);
-
-//   if (row?.data?.extractedData || data?.status === 'Complete') {
-//     return (
-//       <div className="w-fit cursor-pointer rounded-lg border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-500 hover:bg-blue-100 hover:text-blue-700">
-//         Review
-//       </div>
-//     );
-//   }
-//   if (!streamUrl) {
-//     return <div className="font-semibold text-red-400">Failed</div>;
-//   }
-
-//   return (
-//     <div className="w-fit cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 hover:bg-amber-100 hover:text-amber-700">
-//       Processing
-//     </div>
-//   );
-
-//   return (
-//     <div className="flex flex-col">
-//       <div className="text-[10px] text-amber-500">{data?.current_step || ''}</div>
-//       <div className="flex items-center gap-2">
-//         <div className="h-[6px] w-32 rounded-full bg-gray-200">
-//           <div className="h-full rounded-full bg-amber-500 transition-all duration-300" style={{ width: `${data?.progress || 0}%` }} />
-//         </div>
-//         <span className="text-[10px] text-gray-600">{data?.progress || 0}%</span>
-//       </div>
-//     </div>
-//   );
-// };

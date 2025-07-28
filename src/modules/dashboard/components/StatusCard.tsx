@@ -1,8 +1,65 @@
 import { ChevronRight, ThumbsUp, CheckCircle, Clock, AlertCircle, FileWarning } from 'lucide-react';
 import { useDashboardState } from '../hooks/dashboardContext';
+import { useEffect } from 'react';
+import { useDashboardApi } from '../hooks/useDashboardApi';
 
 export const StatusCardComponent = () => {
-  const { state } = useDashboardState();
+  const { state, setState } = useDashboardState();
+  const { getStatusCountApi } = useDashboardApi();
+
+  console.log('state.statusCounts:===========', state.statusCounts);
+
+  useEffect(() => {
+    getStatusCountApi();
+  }, []);
+
+  const statusItems = [
+    {
+      label: 'Processed Documents',
+      count: state.statusCounts?.submitted || 0,
+      icon: (
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+          <ThumbsUp className="text-[#53c31c]" size={28} />
+        </span>
+      ),
+    },
+    {
+      label: 'Ready to Review',
+      count: state.statusCounts?.extracted || 0,
+      icon: (
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+          <CheckCircle className="text-blue-500" size={28} />
+        </span>
+      ),
+    },
+    {
+      label: 'In Progress',
+      count: state.statusCounts?.processing || 0,
+      icon: (
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
+          <Clock className="text-yellow-500" size={28} />
+        </span>
+      ),
+    },
+    {
+      label: 'Invalid Files',
+      count: state.statusCounts?.invalid || 0,
+      icon: (
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+          <FileWarning className="text-red-500" size={28} />
+        </span>
+      ),
+    },
+    {
+      label: 'Failed Files',
+      count: state.statusCounts?.failed || 0,
+      icon: (
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+          <AlertCircle className="text-red-500" size={28} />
+        </span>
+      ),
+    },
+  ];
 
   if (!state.loadingRecords && state.records?.length === 0) {
     return (
@@ -21,14 +78,14 @@ export const StatusCardComponent = () => {
         <div className="text-gray-800">Quick Summary</div>
       </div>
       <div className="mb-1 flex items-center justify-between rounded-xl border bg-white px-4 py-4 xl:py-[17px]">
-        {state.loadingRecords || !state.totalRecords ? (
+        {state.loadingStatusCounts ? (
           <>
             <div className="h-7 w-18 animate-pulse rounded bg-gray-200" />
             <div className="h-5 w-30 animate-pulse rounded bg-gray-200" />
           </>
         ) : (
           <>
-            <div className="text-[24px]">{state.totalRecords}</div>
+            <div className="text-[24px]">{state.statusCounts?.total}</div>
             <div className="text-sm font-light text-gray-500">Total Documents</div>
           </>
         )}
@@ -40,7 +97,7 @@ export const StatusCardComponent = () => {
             <div className="flex items-center gap-3">
               {item.icon}
               <div className="flex flex-col gap-1">
-                {state.loadingRecords || !state.totalRecords ? (
+                {state.loadingStatusCounts ? (
                   <>
                     <div className="h-[15px] w-30 animate-pulse rounded bg-gray-200" />
                     <div className="h-[16px] w-10 animate-pulse rounded bg-gray-200" />
@@ -60,51 +117,3 @@ export const StatusCardComponent = () => {
     </div>
   );
 };
-
-const statusItems = [
-  {
-    label: 'Processed Documents',
-    count: 350,
-    icon: (
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-        <ThumbsUp className="text-[#53c31c]" size={28} />
-      </span>
-    ),
-  },
-  {
-    label: 'Ready to Review',
-    count: 660,
-    icon: (
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-        <CheckCircle className="text-blue-500" size={28} />
-      </span>
-    ),
-  },
-  {
-    label: 'In Progress',
-    count: 910,
-    icon: (
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-        <Clock className="text-yellow-500" size={28} />
-      </span>
-    ),
-  },
-  {
-    label: 'Invalid Files',
-    count: 421,
-    icon: (
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-        <FileWarning className="text-red-500" size={28} />
-      </span>
-    ),
-  },
-  {
-    label: 'Failed Files',
-    count: 120,
-    icon: (
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-        <AlertCircle className="text-red-500" size={28} />
-      </span>
-    ),
-  },
-];

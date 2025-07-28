@@ -1,18 +1,10 @@
-import { useParams } from 'react-router-dom';
 import { useTenantState } from './tenantContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useTenantsApi = () => {
   const { state, setState } = useTenantState();
-  const { id } = useParams();
   const toast = useToastStore();
-
-  useEffect(() => {
-    if (!id) return;
-    setState(prev => ({ ...prev, projectId: id }));
-  }, [id]);
 
   // ============================= CREATE ==================================
 

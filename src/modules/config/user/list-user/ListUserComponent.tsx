@@ -15,7 +15,7 @@ export const ListUserComponent: React.FC = () => {
   ];
   const customFunctions = {
     editClickHandler: (row: any) => {
-      setState(prev => ({ ...prev, showCreateDialog: true, id: row._id }));
+      setState(prev => ({ ...prev, showCreateDialog: true, id: row._id, user: row }));
     },
     deleteClickHandler: (row: any) => {
       deleteUserApiRequest(row._id);

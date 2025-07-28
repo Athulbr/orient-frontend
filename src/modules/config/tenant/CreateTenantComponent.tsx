@@ -22,7 +22,7 @@ const CreateTenantComponent: React.FC<CreateTenantComponentIF> = () => {
           planRef: data.subscriptionPlan,
           startDate: '2025-09-06T18:30:00.000Z',
           endDate: '2025-08-07T18:30:00.000Z',
-          nextBillingDate: '2025-08-07T18:30:00.000Z',
+          nextBillingDate: '2025-08-07T18:30:00.000Z', // TODO: change this
         },
         name: data.name,
         domain: data.domain,

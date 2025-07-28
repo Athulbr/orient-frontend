@@ -14,6 +14,8 @@ interface UseTablebuilderPropsIF {
   refresh?: number;
   disableLoader?: boolean;
   updatedQuery?: (query: any) => any;
+  deletePermission?: boolean;
+  updatePermission?: boolean;
 }
 
 export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
@@ -26,6 +28,8 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
   refresh,
   disableLoader,
   updatedQuery,
+  deletePermission,
+  updatePermission,
 }) => {
   const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
   useEffect(() => {
@@ -69,6 +73,8 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
         refresh={refresh}
         disableLoader={disableLoader}
         updatedQuery={updatedQuery}
+        deletePermission={deletePermission}
+        updatePermission={updatePermission}
       />
     </div>
   );

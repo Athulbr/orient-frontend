@@ -45,7 +45,11 @@ const Table: React.FC<TableIF> = ({ refresh = 1 }) => {
           <TableHeader />
           {state.loading && (state.data.length === 0 || !injectedData.disableLoader) ? null : <TableBody />}
         </table>
-        {state.loading && (state.data.length === 0 || !injectedData.disableLoader) && <FullScreenLoader />}
+        {state.loading && (state.data.length === 0 || !injectedData.disableLoader) ? (
+          <FullScreenLoader />
+        ) : !state.loading && state.data.length === 0 ? (
+          <div className="flex h-full items-center justify-center text-sm text-gray-400">🤗 &nbsp;No Data Found</div>
+        ) : null}
       </div>
       <TableFooter />
     </div>

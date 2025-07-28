@@ -1,13 +1,11 @@
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
-import { useEffect } from 'react';
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
-import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 
 export function TableHeader() {
   const { settings, state, setState } = useTablebuilderState();
   const { rowSelection, columns } = settings;
   const { selectedIds, data, sorts } = state;
-  const { getDataFromApi } = useFetchDataFromApi();
+  const { injectedData } = useTablebuilderState();
 
   const selectable = rowSelection.showRowSelection;
 
@@ -32,6 +30,8 @@ export function TableHeader() {
         )}
         {columns.map(column => {
           if (column.hidden) return null;
+          if (column.header === 'action' && !injectedData.updatePermission && !injectedData.deletePermission) return null;
+
           return (
             <th
               key={column.key as string}
