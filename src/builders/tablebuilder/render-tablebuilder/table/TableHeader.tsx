@@ -36,7 +36,7 @@ export function TableHeader() {
             <th
               key={column.key as string}
               scope="col"
-              className={`sticky top-0 z-1 h-14 bg-gray-50 px-2 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase xl:px-5 ${
+              className={`sticky top-0 z-1 h-14 bg-gray-50 px-2 py-3 text-left text-xs font-medium tracking-wider text-nowrap text-gray-500 uppercase xl:px-5 ${
                 column.sortable ? 'cursor-pointer select-none' : ''
               }`}
               // onClick={column.sortable ? e => handleSort(column.key, e.shiftKey) : undefined} todo
