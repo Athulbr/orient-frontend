@@ -14,9 +14,18 @@ interface SelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  hidden?: boolean;
 }
 
-export const SingleSelect: React.FC<SelectProps> = ({ value, options, onValueChange, placeholder = 'Select an option', className = '', disabled = false }) => {
+export const SingleSelect: React.FC<SelectProps> = ({
+  value,
+  options,
+  onValueChange,
+  placeholder = 'Select an option',
+  className = '',
+  disabled = false,
+  hidden = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
 
@@ -33,6 +42,8 @@ export const SingleSelect: React.FC<SelectProps> = ({ value, options, onValueCha
   }, []);
 
   const selectedOption = options.find(option => option.value === value);
+
+  if (hidden) return null;
 
   return (
     <div ref={selectRef} className={`relative ${className}`}>

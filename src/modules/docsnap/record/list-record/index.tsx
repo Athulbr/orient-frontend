@@ -5,7 +5,7 @@ import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
 import FileUploadDialogComponent from './components/FileUploadDialogComponent';
 import { PromptFieldIF } from '../../document';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 interface Project {
   _id: string;
@@ -55,11 +55,18 @@ const initialState = {
 const ListRecordPage: React.FC = () => {
   const [state, setState] = useState<ListRecordPageStateIF>(initialState);
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
+
   return (
     <ListRecordPageStateProvider value={{ state, setState }}>
       <PageContainer className="gap-4 p-6">
         <Breadcrumbs page="listRecord" />
-        <PageNameComponent name="List of Records" showBackButton customGoBackFunction={() => navigate('/')} />
+        <PageNameComponent
+          name={`List of ${selectedFilter.status ? selectedFilter.status?.charAt(0).toUpperCase() + selectedFilter.status?.slice(1) : 'All'} Records`}
+          showBackButton
+          customGoBackFunction={() => navigate('/')}
+        />
         <ListRecordComponent />
         <FileUploadDialogComponent />
       </PageContainer>

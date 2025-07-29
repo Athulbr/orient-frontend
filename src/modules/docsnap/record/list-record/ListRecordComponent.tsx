@@ -12,8 +12,6 @@ export const ListRecordComponent: React.FC = () => {
   const { deleteRecordApi } = useListRecordApi();
   const [params] = useSearchParams();
 
-  console.log('params:===========', params.get('status'));
-
   const { refreshRecord, extractionQueue } = useDocsnapStore();
 
   useEffect(() => {

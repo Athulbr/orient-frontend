@@ -4,6 +4,8 @@ import { Button } from '../../../../../components/Button';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
+import { AlertDialog } from '../../../../../components/alert/AlertDialog';
+import { useAlertStore } from '../../../../../components/alert/AlertStore';
 interface PropsIF {
   template?: any;
   onClickUpload?: () => void;
@@ -15,14 +17,25 @@ interface PropsIF {
 export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis }) => {
   const toast = useToastStore();
   const navigate = useNavigate();
+  const { showAlert } = useAlertStore();
 
   const handleDropdownOptionChange = async (option: string) => {
-    if (option === 'Delete') {
-      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/template/delete/${template._id}`);
-      if (res) {
+    const deleteTemplateApi = async (id: string) => {
+      try {
+        const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/template/delete/${id}`);
         refreshPage && refreshPage();
         toast.success('Template deleted successfully');
+      } catch (error) {
+        console.error('error:===========', error);
+        toast.error('Failed to delete Template');
       }
+    };
+    if (option === 'Delete') {
+      showAlert({
+        alertText: 'Are you sure you want to delete this template?',
+        primaryButtonText: 'Delete',
+        onPrimaryAction: () => deleteTemplateApi(template._id),
+      });
     }
   };
 

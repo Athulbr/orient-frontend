@@ -45,7 +45,7 @@ const ListTemplatePage: React.FC = () => {
         <PageNameComponent name="List of Templates" showBackButton>
           <PageActionsComponent />
         </PageNameComponent>
-        <div className="w-full flex-1 flex-col overflow-y-auto bg-red-200">
+        <div className="w-full flex-1 flex-col overflow-y-auto">
           <ListTemplateComponent />
         </div>
       </PageContainer>

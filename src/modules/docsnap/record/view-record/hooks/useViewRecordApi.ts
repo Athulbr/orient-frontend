@@ -5,7 +5,6 @@ import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
 import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
-// import { template } from 'lodash';
 
 export const useViewRecordApi = () => {
   const { state, setState } = useViewRecordState();
@@ -27,16 +26,18 @@ export const useViewRecordApi = () => {
     const uint8Array = new Uint8Array(imageData);
     const getFileType = await fileTypeFromBuffer(uint8Array);
     let pdfFile: any;
-    let imageUrl;
+    let imageUrlArray;
     if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
       pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
-      imageUrl = [URL.createObjectURL(pdfFile).toString()];
+      imageUrlArray = [URL.createObjectURL(pdfFile).toString()];
     } else {
       pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
-      imageUrl = await convertPdfToImages(pdfFile);
+      imageUrlArray = await convertPdfToImages(pdfFile);
     }
 
-    setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
+    console.log('imageUrlArray:===========', imageUrlArray);
+
+    setState(prev => ({ ...prev, loadingS3File: false, images: imageUrlArray }));
   };
 
   const getRecordApiById = async (id: string) => {

@@ -82,7 +82,7 @@ function Filters() {
               newFilters[index] = value ? { key: filter.key, value } : { key: '', value: '' };
               updateActiveFilter(newFilters);
             }}
-            disabled={Boolean(found)}
+            hidden={Boolean(found)}
           />
         );
       })}
