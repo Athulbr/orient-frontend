@@ -35,13 +35,19 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
 
   const addLineItem = () => {
     // Get the column names from the first row to create the same structure
+
+    const crnt = ['Item', 'Description', 'Quantity', 'UM', 'Delivery Date', 'Price', 'Net Amount'];
+
     const firstRow = Object.values(state.arrayFields[0])[0] || {};
 
-    const columnNames = Object.keys(firstRow);
+    let columnNames = Object.keys(firstRow);
     if (columnNames.length === 0) {
-      toast.error('Table must have at least one row to add a new row');
-      return;
+      const lineItems = state.record?.templateId?.fields?.find((item: any) => item.name === 'line items');
+      if (lineItems?.subFields) {
+        columnNames = lineItems.subFields.map((item: any) => item.name);
+      }
     }
+    console.log('columnNames:===========', columnNames);
     // Create a new row object with the same column structure
     const newRow: { [key: string]: { value: string } } = {};
     columnNames.forEach(columnName => {

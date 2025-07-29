@@ -39,7 +39,7 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
         {/* Left */}
         <div className="flex w-full max-w-100 flex-col items-center gap-4 overflow-hidden px-4">
           <div className="h-[20vh] min-h-50 w-[20vh] min-w-50 rounded-full bg-slate-200 p-[2vh]">
-            <CircleUserRound strokeWidth={1.4} className="h-full w-full text-gray-400" />
+            {/* <CircleUserRound strokeWidth={1.4} className="h-full w-full text-gray-400" /> */}
           </div>
           <Button onClick={() => setOpenDialog(true)}>Update Profile Picture</Button>
           <nav className="flex w-full flex-1 flex-col overflow-hidden">

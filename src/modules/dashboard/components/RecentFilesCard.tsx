@@ -22,12 +22,14 @@ const RecentFilesCardComponent: React.FC = () => {
     <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
       <div className="flex items-center justify-between px-4 pt-6">
         <h5 className="text-gray-800">Recent Files</h5>
-        <span
-          onClick={() => navigate('/docsnap/record/list')}
-          className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
-        >
-          View All <ChevronRight size={14} className="text-sky-600" />
-        </span>
+        {state.records.length > 0 && (
+          <span
+            onClick={() => navigate('/docsnap/record/list')}
+            className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
+          >
+            View All <ChevronRight size={14} className="text-sky-600" />
+          </span>
+        )}
       </div>
       {state.loadingRecords ? (
         <SkeletonLoader />

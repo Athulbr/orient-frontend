@@ -287,7 +287,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
       ) : (
         <div
           ref={imageContainerRef}
-          className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-100 pt-8 pb-50 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
+          className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 pb-50 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
         >
           {state.images.map((imgSrc, index) => (
             <div

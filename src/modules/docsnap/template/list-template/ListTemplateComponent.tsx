@@ -32,7 +32,7 @@ const ListTemplateComponent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+    <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
       {state.templates.map((template: any, idx: number) => (
         <TemplateCardComponent
           onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
