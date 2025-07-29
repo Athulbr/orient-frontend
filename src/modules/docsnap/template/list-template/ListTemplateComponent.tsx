@@ -30,6 +30,13 @@ const ListTemplateComponent: React.FC = () => {
       </div>
     );
   }
+  if (!state.loadingTemplates && state.templates.length === 0) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className="text-gray-500">🤗 &nbsp;No templates found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>

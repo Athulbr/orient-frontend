@@ -45,7 +45,9 @@ const ListTemplatePage: React.FC = () => {
         <PageNameComponent name="List of Templates" showBackButton>
           <PageActionsComponent />
         </PageNameComponent>
-        <ListTemplateComponent />
+        <div className="w-full flex-1 flex-col overflow-y-auto bg-red-200">
+          <ListTemplateComponent />
+        </div>
       </PageContainer>
       <CreateTemplateComponent state={state} setState={setState} />
       {state.showUploadDocumentDialog && (

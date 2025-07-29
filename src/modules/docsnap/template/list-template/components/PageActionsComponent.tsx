@@ -15,7 +15,7 @@ const PageActionsComponent: React.FC = () => {
           className="w-full flex-1 px-4 text-sm outline-none"
           placeholder="Search"
         />
-        {state.searchText && <CircleX className="text-gray-400" size={18} onClick={() => setState({ ...state, searchText: '' })} />}
+        {state.searchText && <CircleX className="cursor-pointer text-gray-400" size={18} onClick={() => setState({ ...state, searchText: '' })} />}
       </div>
       <Button onClick={() => setState({ ...state, showCreateTemplateDialog: true })} startIcon={<Plus size={18} />}>
         Create Template
