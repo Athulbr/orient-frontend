@@ -14,8 +14,8 @@ interface UseTablebuilderPropsIF {
   refresh?: number;
   disableLoader?: boolean;
   updatedQuery?: (query: any) => any;
-  deletePermission?: boolean;
-  updatePermission?: boolean;
+  deletePermission?: string;
+  updatePermission?: string;
 }
 
 export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({

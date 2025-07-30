@@ -29,7 +29,14 @@ const ListCommentPage: React.FC<ListCommentPageIF> = () => {
   return (
     <PageContainer className="gap-4">
       <PageNameComponent name="Comment List" />
-      <UseTablebuilder name="List Comments" customFunctions={customFunctions} fluidHeight customUI={customUI} />
+      <UseTablebuilder
+        name="List Comments"
+        customFunctions={customFunctions}
+        fluidHeight
+        customUI={customUI}
+        deletePermission="delete:comment"
+        updatePermission="update:comment"
+      />
     </PageContainer>
   );
 };

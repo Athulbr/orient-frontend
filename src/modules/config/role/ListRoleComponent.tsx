@@ -40,6 +40,8 @@ export const ListRoleComponent: React.FC = () => {
       customFunctions={customFunctions}
       customUI={customUI}
       actionButtons={actionButtons}
+      deletePermission="delete:role"
+      updatePermission="update:role"
     />
   );
 };

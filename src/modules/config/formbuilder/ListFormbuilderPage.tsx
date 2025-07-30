@@ -76,6 +76,8 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
         fluidHeight
         actionButtons={actionButtons}
         customFunctions={customFunctions}
+        deletePermission="delete:formbuilder"
+        updatePermission="update:formbuilder"
       />
     </PageContainer>
   );

@@ -7,8 +7,10 @@ import { usePermissionStore } from './zustand-store/PermissionStore';
 
 export const App: React.FC = () => {
   const { setPermissions } = usePermissionStore();
+  const permissions = window.sessionStorage.getItem('permissions') || '[]';
   useEffect(() => {
-    setPermissions(['create:template', 'read:template', 'update:template', 'delete:template']);
+    setPermissions(['read:user', 'update:user', 'delete:user', 'delete:record']);
+    // setPermissions(JSON.parse(permissions));
   }, []);
   return (
     <div className="h-screen w-screen">

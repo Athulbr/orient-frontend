@@ -6,6 +6,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog } from '../../../../../components/alert/AlertDialog';
 import { useAlertStore } from '../../../../../components/alert/AlertStore';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 interface PropsIF {
   template?: any;
   onClickUpload?: () => void;
@@ -18,6 +19,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
   const toast = useToastStore();
   const navigate = useNavigate();
   const { showAlert } = useAlertStore();
+  const { checkPermission } = usePermissionStore();
 
   const handleDropdownOptionChange = async (option: string) => {
     const deleteTemplateApi = async (id: string) => {
@@ -68,8 +70,9 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
           </div>
         </div>
         {/* Upload Button Row */}
-        <div className="mt-auto flex w-full justify-end">
-          <div className="h-8 w-24 animate-pulse rounded bg-gray-200" />
+        <div className="mt-auto flex w-full justify-between">
+          <div className="h-7 w-24 animate-pulse rounded bg-gray-200" />
+          <div className="h-7 w-24 animate-pulse rounded bg-gray-200" />
         </div>
       </div>
     );
@@ -110,10 +113,16 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       </div>
       {/* Upload Button Row */}
       <div className="flex w-full justify-between gap-2">
-        <Button outlined startIcon={<Edit size={14} className="text-gray-500" />} onClick={() => navigate(`/docsnap/template/update/${template._id}`)} small>
+        <Button
+          permission="update:template"
+          outlined
+          startIcon={<Edit size={14} className="text-gray-500" />}
+          onClick={() => navigate(`/docsnap/template/update/${template._id}`)}
+          small
+        >
           Edit Fields
         </Button>
-        <Button startIcon={<Upload size={14} />} onClick={onClickUpload} small>
+        <Button permission="extract:document" startIcon={<Upload size={14} />} onClick={onClickUpload} small>
           Upload
         </Button>
       </div>

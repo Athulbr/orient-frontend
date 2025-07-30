@@ -41,6 +41,8 @@ export const ListTenantComponent: React.FC = () => {
       customFunctions={customFunctions}
       customUI={customUI}
       actionButtons={actionButtons}
+      deletePermission="delete:tenant"
+      updatePermission="update:tenant"
     />
   );
 };

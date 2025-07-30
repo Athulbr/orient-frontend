@@ -14,11 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../../components/BackButton';
 import Spinner from '../../../../components/Spinner';
 import { useTablebuilderSettings } from '../hooks/useTablebuilderSettingsContext';
+import { useTablebuilderState } from '../../../../modules/config/tablebuilder/hooks/tablebuilderContext';
 interface PropsIF {
   id?: string;
 }
 export const TableSettings: React.FC<PropsIF> = ({ id }) => {
   const navigate = useNavigate();
+  const { setState } = useTablebuilderState();
 
   const { getTablebuilderByIdApi, createTablebuilderApi, updateTablebuilderApi } = useFetchCreateTB();
   const [showBot, setShowBot] = useState(false);
@@ -33,7 +35,7 @@ export const TableSettings: React.FC<PropsIF> = ({ id }) => {
     <div className="flex w-120 resize-x flex-col overflow-y-auto [&::-webkit-scrollbar]:w-1">
       <div className="sticky top-0 left-0 z-1 flex items-center justify-between bg-white pb-2">
         <div className="flex items-start gap-2 text-xl text-gray-800">
-          <BackButton onClick={() => navigate(-1)} />
+          <BackButton onClick={() => setState(prev => ({ ...prev, createDialog: false }))} />
           Table Builder
         </div>
         <div className="flex gap-2">

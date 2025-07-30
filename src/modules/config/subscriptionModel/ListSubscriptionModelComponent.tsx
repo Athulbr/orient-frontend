@@ -51,6 +51,8 @@ export const ListSubscriptionModelComponent: React.FC = () => {
       customFunctions={customFunctions}
       customUI={customUI}
       actionButtons={actionButtons}
+      deletePermission="delete:subscriptionModel"
+      updatePermission="update:subscriptionModel"
     />
   );
 };

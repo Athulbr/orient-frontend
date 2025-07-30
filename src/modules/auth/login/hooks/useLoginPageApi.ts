@@ -44,6 +44,24 @@ export const useLoginPageApi = () => {
         ]);
         window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
         window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
+        const permissions = [
+          'create:template',
+          'read:template',
+          'delete:template',
+          'update:template',
+          'extract:document',
+          'read:user',
+          'read:module',
+          'read:feature',
+          'read:role',
+          'read:tenant',
+          'read:subscription-model',
+          'read:formbuilder',
+          'read:tablebuilder',
+          'read:comment',
+          'read:prompt-tuning',
+        ];
+        window?.sessionStorage?.setItem('permissions', JSON.stringify(permissions));
         toast.success('Logged in successfully');
 
         window?.location?.replace('/');

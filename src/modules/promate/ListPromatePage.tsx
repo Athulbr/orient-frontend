@@ -32,7 +32,14 @@ const ListPromatePage: React.FC<ListPromatePageIF> = () => {
   return (
     <PageContainer className="gap-4">
       <PageNameComponent name="Promate List" />
-      <UseTablebuilder name="List Comments" customFunctions={customFunctions} fluidHeight customUI={customUI} />
+      <UseTablebuilder
+        name="List Comments"
+        customFunctions={customFunctions}
+        fluidHeight
+        customUI={customUI}
+        deletePermission="delete:promate"
+        updatePermission="update:promate"
+      />
     </PageContainer>
   );
 };

@@ -295,29 +295,67 @@ const ExportButton = () => {
         // Filter data to only include selected rows
         const filtered = data.filter(row => selectedIds.includes(row._id));
         dataToExport = filterDataByColumns(filtered);
+        if (dataToExport.length === 0) {
+          return;
+        }
+        // Convert data to CSV string
+        const headers = Object.keys(dataToExport[0]).join(',');
+        const rows = dataToExport.map(row => Object.values(row).join(','));
+        const csv = [headers, ...rows].join('\n');
+
+        // Create blob and download
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `table-export-${new Date().getTime()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
       } else if (value === 'all') {
-        dataToExport = filterDataByColumns(data);
+        // `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+
+        const downloadXlsxFile = async () => {
+          const recordId = 'export';
+          const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+
+          let exportURL = '';
+          // Update this condition based on your tenant settings
+          const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
+          console.log('user:===========', user);
+          if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
+            exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+          } else {
+            exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export`;
+          }
+
+          const response = await fetch(exportURL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
+            },
+            body: JSON.stringify({ recordId }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const blob = await response.blob();
+
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `table-export-${new Date().getTime()}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        };
+        downloadXlsxFile();
       }
-
-      if (dataToExport.length === 0) {
-        return;
-      }
-
-      // Convert data to CSV string
-      const headers = Object.keys(dataToExport[0]).join(',');
-      const rows = dataToExport.map(row => Object.values(row).join(','));
-      const csv = [headers, ...rows].join('\n');
-
-      // Create blob and download
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `table-export-${new Date().getTime()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
     },
     [data, selectedIds, filterDataByColumns]
   );

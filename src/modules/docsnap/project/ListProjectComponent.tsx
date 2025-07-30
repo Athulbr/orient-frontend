@@ -40,6 +40,8 @@ export const ListProjectComponent: React.FC = () => {
       customFunctions={customFunctions}
       customUI={customUI}
       actionButtons={actionButtons}
+      deletePermission="delete:project"
+      updatePermission="update:project"
     />
   );
 };

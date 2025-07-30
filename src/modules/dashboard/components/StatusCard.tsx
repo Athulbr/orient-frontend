@@ -9,8 +9,6 @@ export const StatusCardComponent = () => {
   const { getStatusCountApi } = useDashboardApi();
   const navigate = useNavigate();
 
-  console.log('state.statusCounts:===========', state.statusCounts);
-
   useEffect(() => {
     getStatusCountApi();
   }, []);

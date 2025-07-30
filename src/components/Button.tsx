@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect, useRef, ButtonHTMLAttributes } from 'react';
 import { cn } from '../global-utils/twMerge';
+import { usePermissionStore } from '../zustand-store/PermissionStore';
 
 interface ButtonPropsIF extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
@@ -12,6 +13,7 @@ interface ButtonPropsIF extends ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disableRipple?: boolean;
+  permission?: string;
   ref?: React.RefObject<HTMLButtonElement>;
 }
 
@@ -80,10 +82,12 @@ export const Button = ({
   onClick,
   disableRipple = false,
   ref,
+  permission,
   ...rest
 }: ButtonPropsIF) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { addRipple, RippleEffect } = Waves();
+  const { checkPermission } = usePermissionStore();
 
   // Handle ref prop in React 19 style
   useEffect(() => {
@@ -124,6 +128,8 @@ export const Button = ({
   const disabledClasses = disabled ? 'opacity-50 cursor-default' : 'cursor-pointer';
 
   const activeClasses = 'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1';
+
+  if (permission && !checkPermission(permission)) return null;
 
   return (
     <button

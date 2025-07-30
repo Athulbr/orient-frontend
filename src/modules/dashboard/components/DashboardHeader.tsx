@@ -13,11 +13,13 @@ export const DashboardHeaderComponent: FC = () => {
       <div className="flex-1 text-xl lg:text-2xl">
         Welcome to Makez.Ai, <span className="capitalize">{user?.firstName}</span>
       </div>
-      {checkPermission('create:template') && (
-        <Button startIcon={<Plus strokeWidth={1.5} size={18} />} onClick={() => setState({ ...state, showCreateTemplateDialog: true })}>
-          Create Template
-        </Button>
-      )}
+      <Button
+        permission="create:template"
+        startIcon={<Plus strokeWidth={1.5} size={18} />}
+        onClick={() => setState({ ...state, showCreateTemplateDialog: true })}
+      >
+        Create Template
+      </Button>
     </section>
   );
 };

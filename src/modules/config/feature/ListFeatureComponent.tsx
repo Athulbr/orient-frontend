@@ -42,6 +42,8 @@ export const ListFeatureComponent: React.FC = () => {
       customUI={customUI}
       actionButtons={actionButtons}
       externalFilters={{ isActive: true }}
+      deletePermission="delete:feature"
+      updatePermission="update:feature"
     />
   );
 };

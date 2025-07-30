@@ -1,11 +1,13 @@
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 
 export function TableHeader() {
   const { settings, state, setState } = useTablebuilderState();
   const { rowSelection, columns } = settings;
   const { selectedIds, data, sorts } = state;
   const { injectedData } = useTablebuilderState();
+  const { checkPermission } = usePermissionStore();
 
   const selectable = rowSelection.showRowSelection;
 
@@ -30,7 +32,7 @@ export function TableHeader() {
         )}
         {columns.map(column => {
           if (column.hidden) return null;
-          if (column.header === 'action' && !injectedData.updatePermission && !injectedData.deletePermission) return null;
+          if (column.header === 'Actions' && !checkPermission(injectedData.deletePermission) && !checkPermission(injectedData.updatePermission)) return null;
 
           return (
             <th

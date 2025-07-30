@@ -84,7 +84,14 @@ const UpdatedFieldsListPage: React.FC = () => {
     <PromptTuningStateProvider value={{ state, setState }}>
       <PageContainer className="">
         <PageNameComponent name="Updated Fields" />
-        <UseTablebuilder name="Prompt Tuning Table" updatedQuery={updatedQuery} customFunctions={customFunctions} fluidHeight />
+        <UseTablebuilder
+          name="Prompt Tuning Table"
+          updatedQuery={updatedQuery}
+          customFunctions={customFunctions}
+          fluidHeight
+          deletePermission="delete:promptTuning"
+          updatePermission="update:promptTuning"
+        />
       </PageContainer>
       <PromptTuningDialogComponent />
     </PromptTuningStateProvider>

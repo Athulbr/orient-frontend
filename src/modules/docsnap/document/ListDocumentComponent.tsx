@@ -37,6 +37,8 @@ export const ListDocumentComponent: React.FC = () => {
       customFunctions={customFunctions}
       customUI={customUI}
       actionButtons={actionButtons}
+      deletePermission="delete:document"
+      updatePermission="update:document"
     />
   );
 };

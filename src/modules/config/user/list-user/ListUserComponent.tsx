@@ -26,7 +26,16 @@ export const ListUserComponent: React.FC = () => {
     status: UserStatusCustomUI,
   };
   return (
-    <UseTablebuilder name="list user" refresh={state.refresh} fluidHeight customFunctions={customFunctions} customUI={customUI} actionButtons={actionButtons} />
+    <UseTablebuilder
+      name="list user"
+      refresh={state.refresh}
+      fluidHeight
+      customFunctions={customFunctions}
+      customUI={customUI}
+      actionButtons={actionButtons}
+      deletePermission="delete:user"
+      updatePermission="update:user"
+    />
   );
 };
 

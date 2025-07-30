@@ -41,6 +41,8 @@ export const ListRecordComponent: React.FC = () => {
         name="List Record Table"
         fluidHeight
         customFunctions={customFunctions}
+        deletePermission="delete:record"
+        updatePermission="update:record"
       />
     </div>
   );

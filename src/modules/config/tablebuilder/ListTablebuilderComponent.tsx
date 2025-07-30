@@ -31,8 +31,8 @@ const ListTablebuilderComponent: React.FC<ListTablebuilderComponentIF> = () => {
   };
   return (
     <UseTablebuilder
-      deletePermission
-      updatePermission
+      deletePermission="delete:tablebuilder"
+      updatePermission="update:tablebuilder"
       name="list tablebuilder"
       refresh={state.refresh}
       fluidHeight

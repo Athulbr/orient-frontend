@@ -5,9 +5,11 @@ import { Edit, Trash, Trash2 } from 'lucide-react';
 import { formatDate } from '../utils/formatDate';
 import { useAlertStore } from '../../../../components/alert/AlertStore';
 import Tooltip from '../../../../components/Tooltip';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 
 export const TableBody: FC = () => {
   const { injectedData, settings, state, setState } = useTablebuilderState();
+  const { checkPermission } = usePermissionStore();
 
   const { customFunctions, customUI } = injectedData;
 
@@ -56,13 +58,13 @@ export const TableBody: FC = () => {
           )}
           {columns.map(column => {
             if (column.hidden) return null;
-            if (column.header === 'action' && !injectedData.updatePermission && !injectedData.deletePermission) return null;
+            if (column.header === 'Actions' && !checkPermission(injectedData.updatePermission) && !checkPermission(injectedData.deletePermission)) return null;
 
             return (
               <td key={column.key as string} className="px-2 py-4 xl:px-5">
                 <div
                   title={row[column.key]}
-                  className={`w-fit max-w-[300px] min-w-[120px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative animate-pulse after:absolute after:top-0 after:left-0 after:w-full after:rounded-sm after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
+                  className={`w-fit max-w-[300px] min-w-[80px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm ${column.capitalize ? 'capitalize' : ''} ${false ? "relative animate-pulse after:absolute after:top-0 after:left-0 after:w-full after:rounded-sm after:bg-gray-200 after:text-gray-200 after:content-['.']" : ''} `}
                 >
                   {column.dateUI ? (
                     <div>{formatDate(row[column.key])}</div>
@@ -102,6 +104,7 @@ interface ActionButtonsIF {
 
 const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
   const { injectedData, setState, state } = useTablebuilderState();
+  const { checkPermission } = usePermissionStore();
   const { customFunctions } = injectedData;
   const alert = useAlertStore();
 
@@ -129,12 +132,12 @@ const ActionButtons: React.FC<ActionButtonsIF> = ({ settings, row }) => {
 
   return (
     <div className={`ml-2 flex gap-4 ${settings.editButton ? 'ml-2' : 'ml-6'}`}>
-      {settings.editButton && injectedData.updatePermission && (
+      {settings.editButton && checkPermission(injectedData.updatePermission) && (
         <Tooltip text="Edit" position="bottom">
           <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={18} />
         </Tooltip>
       )}
-      {settings.deleteButton && injectedData.deletePermission && (
+      {settings.deleteButton && checkPermission(injectedData.deletePermission) && (
         <Tooltip text="Delete" position="bottom">
           <Trash2 onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={18} />
         </Tooltip>
