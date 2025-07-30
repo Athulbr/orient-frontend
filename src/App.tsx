@@ -9,7 +9,7 @@ export const App: React.FC = () => {
   const { setPermissions } = usePermissionStore();
   const permissions = window.sessionStorage.getItem('permissions') || '[]';
   useEffect(() => {
-    setPermissions(['read:user', 'update:user', 'delete:user', 'delete:record']);
+    setPermissions(['read:user', 'update:user', 'delete:user', 'delete:record', 'create:template', 'update:template', 'delete:template', 'extract:document']);
     // setPermissions(JSON.parse(permissions));
   }, []);
   return (

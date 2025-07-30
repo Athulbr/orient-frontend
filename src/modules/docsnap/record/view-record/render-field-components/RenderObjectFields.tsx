@@ -31,12 +31,16 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                     return { ...prev, objectFields: updated };
                   });
                 };
+
+                const fields = state.record?.templateId?.fields;
+                const field = fields.find((item: any) => item.jsonKey === key);
+                const subField = Object.values(field).find((item: any) => true);
                 return (
                   <InputField
                     key={fieldId}
                     label={formatFieldLabel(subKey)}
                     jsonKey={subKey}
-                    value={value?.value || ''}
+                    value={`${value?.value}`}
                     confidence={`${value?.confidence * 100}`}
                     checked={value?.checked}
                     disabled={state.loadingS3File || state.reExtracting}

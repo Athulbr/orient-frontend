@@ -101,10 +101,10 @@ const ConfirmForgotPasswordPage: React.FC<ConfirmForgotPasswordPageIF> = () => {
       setLoading(true);
 
       // TODO: Replace with actual API call
-      const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot-password/verify`, { email, token, newPassword: password });
+      const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password/verify`, { email, token, password });
 
       toast.success('Password reset successfully!');
-      // navigate('/login');
+      navigate('/login');
     } catch (err) {
       console.error('Password reset failed:', err);
       setError('Failed to reset password. Please try again.');
@@ -124,9 +124,7 @@ const ConfirmForgotPasswordPage: React.FC<ConfirmForgotPasswordPageIF> = () => {
         {error && (
           <div className="rounded-md bg-red-50 p-4">
             <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-500">{error}</h3>
-              </div>
+              <h3 className="text-sm text-red-500">{error}</h3>
             </div>
           </div>
         )}

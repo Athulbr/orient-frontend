@@ -15,9 +15,9 @@ const startApp = async () => {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string}>
       <MsalProvider instance={msalInstance}>
         <BrowserRouter>
-          <StrictMode>
-            <App />
-          </StrictMode>
+          {/* <StrictMode> */}
+          <App />
+          {/* </StrictMode> */}
         </BrowserRouter>
       </MsalProvider>
     </GoogleOAuthProvider>

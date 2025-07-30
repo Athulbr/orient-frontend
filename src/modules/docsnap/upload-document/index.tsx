@@ -1,17 +1,29 @@
+import { useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
 import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
+import httpRequest from '../../../global-utils/httpRequest';
 interface UploadDocumentComponentIF {
-  template?: string;
+  template?: any;
   closeDialog: () => void;
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
   const { addToExtraction } = useDocsnapStore();
+  const [templateData, setTemplateData] = useState<any>(null);
   const navigate = useNavigate();
+  useEffect(() => {
+    const getTemplate = async () => {
+      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${template._id}`);
+      setTemplateData(res.data);
+    };
+    if (template?._id) {
+      getTemplate();
+    }
+  }, [template?._id]);
   const onFileDrop = (files: FileList) => {
-    addToExtraction(files, template || '');
+    addToExtraction(files, templateData || '');
     navigate('/docsnap/record/list');
     closeDialog();
   };

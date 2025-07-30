@@ -79,7 +79,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
   }
 
   if (!template) return null;
-  const { name, uploaded, pending, approved } = template;
+  const { total, submitted, extracted } = template.count;
 
   return (
     <div
@@ -89,7 +89,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     >
       {/* Title and Menu Row */}
       <div className="mb-2.5 flex w-full items-start justify-between">
-        <div className="text truncate pr-2 font-semibold text-gray-800">{name}</div>
+        <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
         <Dropdown options={['Delete']} onChange={handleDropdownOptionChange}>
           <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
             <MoreVertical size={18} />
@@ -99,16 +99,16 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       {/* Stats Row */}
       <div className="mb-2 flex w-full justify-between">
         <div className="flex flex-col items-end">
-          <span className="text-xs text-gray-500">Uploaded</span>
-          <span className="mt-0.5 font-semibold text-gray-600">{uploaded || 0}</span>
+          <span className="text-xs text-gray-500">Total</span>
+          <span className="mt-0.5 font-semibold text-gray-600">{total || 0}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-xs text-gray-500">Pending</span>
-          <span className="mt-0.5 font-semibold text-gray-600">{pending || 0}</span>
+          <span className="text-xs text-gray-500">Extracted</span>
+          <span className="mt-0.5 font-semibold text-gray-600">{extracted || 0}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-xs text-gray-500">Approved</span>
-          <span className="mt-0.5 font-semibold text-gray-600">{approved || 0}</span>
+          <span className="text-xs text-gray-500">Submitted</span>
+          <span className="mt-0.5 font-semibold text-gray-600">{submitted || 0}</span>
         </div>
       </div>
       {/* Upload Button Row */}
