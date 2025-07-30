@@ -35,8 +35,6 @@ export const useViewRecordApi = () => {
       imageUrlArray = await convertPdfToImages(pdfFile);
     }
 
-    console.log('imageUrlArray:===========', imageUrlArray);
-
     setState(prev => ({ ...prev, loadingS3File: false, images: imageUrlArray }));
   };
 
@@ -124,7 +122,7 @@ export const useViewRecordApi = () => {
     } finally {
       setState(prev => ({ ...prev, loadingData: false }));
     }
-  }
+  };
 
   const updateRecordApiById = async () => {
     try {
@@ -213,7 +211,16 @@ export const useViewRecordApi = () => {
     }
   };
 
-  return { getRecordApiById, sendMessage, updateRecordApiById, submitRecordApi, updateExtractedData, generateInvoiceWithAI, createRequestedNewField, createComment };
+  return {
+    getRecordApiById,
+    sendMessage,
+    updateRecordApiById,
+    submitRecordApi,
+    updateExtractedData,
+    generateInvoiceWithAI,
+    createRequestedNewField,
+    createComment,
+  };
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {

@@ -24,7 +24,6 @@ export const useDashboardApi = () => {
       setState(prev => ({ ...prev, loadingStatusCounts: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/status/count`);
       setState(prev => ({ ...prev, loadingStatusCounts: false, statusCounts: { ...res.data[0], total: res.total } }));
-      console.log('res.data:===========', res.data);
     } catch (error) {
       toast.error('Failed to fetch record');
     }

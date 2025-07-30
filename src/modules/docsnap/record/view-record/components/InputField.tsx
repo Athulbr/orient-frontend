@@ -67,7 +67,14 @@ export const InputField = ({
         />
         <div className="mr-1">
           {checked ? (
-            <CircleCheck onClick={e => checkClickHandler?.(false)} className="cursor-pointer text-green-500 hover:text-green-600" size={16} />
+            <CircleCheck
+              onClick={e => {
+                e.stopPropagation();
+                checkClickHandler?.(false);
+              }}
+              className="cursor-pointer text-green-500 hover:text-green-600"
+              size={16}
+            />
           ) : (
             <Eye onClick={e => checkClickHandler?.(true)} className="cursor-pointer text-orange-400 hover:text-orange-500" size={16} />
           )}

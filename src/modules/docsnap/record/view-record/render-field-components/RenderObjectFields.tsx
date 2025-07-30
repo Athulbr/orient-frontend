@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useMemo } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
@@ -32,13 +32,17 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                   });
                 };
 
-                const fields = state.record?.templateId?.fields;
-                const field = fields.find((item: any) => item.jsonKey === key);
-                const subField = Object.values(field).find((item: any) => true);
+                const label = useMemo(() => {
+                  const fields = state.record?.templateId?.fields;
+                  const field = fields?.find((item: any) => item.jsonKey === key);
+                  const subField = field?.subFields?.find((item: any) => item.jsonKey === subKey);
+                  return subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey);
+                }, [key, subKey]);
+
                 return (
                   <InputField
                     key={fieldId}
-                    label={formatFieldLabel(subKey)}
+                    label={label}
                     jsonKey={subKey}
                     value={`${value?.value}`}
                     confidence={`${value?.confidence * 100}`}
@@ -77,6 +81,13 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                           hoveredOnArrayField: false,
                           bbox: null,
                           wire: null,
+                          objectFields: {
+                            ...prev.objectFields,
+                            [key]: {
+                              ...prev.objectFields[key],
+                              [subKey]: { ...prev.objectFields[key][subKey], checked: true },
+                            },
+                          },
                         }));
                       }
                     }}

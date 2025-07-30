@@ -323,7 +323,6 @@ const ExportButton = () => {
           let exportURL = '';
           // Update this condition based on your tenant settings
           const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-          console.log('user:===========', user);
           if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
             exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
           } else {

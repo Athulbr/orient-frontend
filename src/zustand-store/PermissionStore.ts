@@ -38,7 +38,6 @@ export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
       })
       .filter((setting): setting is SettingsIF => setting !== null); // Type-safe filter to remove null values
 
-    console.log(allowedSettings);
     set({ permissions, settings: allowedSettings });
   },
 }));

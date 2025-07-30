@@ -29,7 +29,6 @@ const PreventBackNavigation: React.FC<PreventBackNavigationProps> = ({ onBack, e
     };
 
     const handlePopState = (event: PopStateEvent) => {
-      console.log('running:===========', 'running');
       if (!enabled || isPreventingRef.current) return;
 
       isPreventingRef.current = true;
