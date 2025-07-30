@@ -10,6 +10,8 @@ interface ExportButtonPropsIF {
 
 export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true }) => {
   const { state } = useViewRecordState();
+  const userData = window?.sessionStorage?.getItem('user');
+  const user = userData ? JSON.parse(userData) : null;
   const arrays: any = {};
   state.tableNames.forEach((item, index) => {
     arrays[item] = state.arrayFields[index];
@@ -32,7 +34,15 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
     const recordId = state.record?._id;
     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
 
-    const response = await fetch(`${import.meta.env.VITE_NODE_URL}/api/idp/history/export`, {
+    let exportURL = '';
+    // Update this condition based on your tenant settings
+    if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
+      exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+    } else {
+      exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export`;
+    }
+
+    const response = await fetch(exportURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
