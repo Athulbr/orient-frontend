@@ -110,6 +110,11 @@ export const useLoginPageApi = () => {
       console.error('Sign In issue---->', e);
     });
   };
+  const forgotPasswordApi = async () => {
+    try {
+      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password`, { email: state.email });
+    } catch (error) {}
+  };
 
   // ============================= Return ==================================
   return { loginWithEmailAndPassword, loginWithGoogle, loginWithMSAL };
