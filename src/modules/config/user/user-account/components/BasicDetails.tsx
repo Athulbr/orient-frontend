@@ -24,7 +24,7 @@ export const BasicDetailsComponent = () => {
       </DetailsCard>
       <DetailsCard>
         <DetailsCardItem label="Email" value={state.user?.email} />
-        <DetailsCardItem label="Role" value={state.user?.role} />
+        <DetailsCardItem label="Role" value={state.user?.role.name} />
         <DetailsCardItem label="Account Status" value={state.user?.active ? 'Active' : 'Inactive'} />
         <DetailsCardItem label="Email Verification" value={state.user?.verified ? 'Verified' : 'Not Verified'} />
         <DetailsCardItem label="Member Since" value={formatDateString(state.user?.createdAt)} />
