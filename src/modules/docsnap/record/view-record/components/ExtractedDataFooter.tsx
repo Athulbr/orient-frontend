@@ -15,12 +15,9 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
   const navigate = useNavigate();
   const toast = useToastStore();
   const { setState } = useViewRecordState();
-  const { updateRecordApiById, updateExtractedData, getRecordApiById } = useViewRecordApi();
-  const handleSubmit = () => {
-    setTimeout(() => {
-      toast.success('Record submitted successfully');
-      navigate('/docsnap/record/list');
-    }, 3000);
+  const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi } = useViewRecordApi();
+  const handleSubmit = async () => {
+    await submitRecordApi();
   };
 
   const handleReExtract = async () => {

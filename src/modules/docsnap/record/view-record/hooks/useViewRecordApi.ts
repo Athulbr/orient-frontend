@@ -105,6 +105,27 @@ export const useViewRecordApi = () => {
     }));
   };
 
+  const submitRecordApi = async () => {
+    try {
+      const payload = {
+        apiResponse: state?.record?.extractedData,
+        recordId: state?.record?._id,
+        extractedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
+        name: state?.record?.name,
+      };
+      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/rehab/create`, payload);
+      toast.success('Record submitted successfully');
+      navigate('/docsnap/record/list');
+    } catch (error) {
+      console.error('error:===========', error);
+      toast.error('Failed to update Record');
+      navigate('/docsnap/record/list');
+    } finally {
+      setState(prev => ({ ...prev, loadingData: false }));
+    }
+  }
+
   const updateRecordApiById = async () => {
     try {
       const payload = {
@@ -192,7 +213,7 @@ export const useViewRecordApi = () => {
     }
   };
 
-  return { getRecordApiById, sendMessage, updateRecordApiById, updateExtractedData, generateInvoiceWithAI, createRequestedNewField, createComment };
+  return { getRecordApiById, sendMessage, updateRecordApiById, submitRecordApi, updateExtractedData, generateInvoiceWithAI, createRequestedNewField, createComment };
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
