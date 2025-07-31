@@ -30,7 +30,7 @@ export const useUserApiService = () => {
   };
   const deleteUserApiRequest = async (id: string) => {
     try {
-      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/user/delete/${state.id}`);
+      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/user/delete/${id}`);
       setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
       toast.success('User deleted successfully');
     } catch (error) {

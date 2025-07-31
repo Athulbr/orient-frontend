@@ -18,7 +18,7 @@ export const ListRoleComponent: React.FC = () => {
   const customFunctions = {
     rowClickHandler: (row: any) => {
       setState(prev => ({ ...prev, showViewDialog: true, id: row._id, role: row }));
-      getSubscriptionModelByIdApi('686deeaadce3739db2bee37a'); // TODO
+      getSubscriptionModelByIdApi(row.tenant?.subscription?.planRef);
       getAllModulesApi();
       getAllFeaturesApi();
     },

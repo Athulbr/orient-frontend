@@ -49,7 +49,7 @@ export const TableSettings: React.FC<PropsIF> = ({ id }) => {
           )}
           <div
             onClick={() => (id ? updateTablebuilderApi(id) : createTablebuilderApi())}
-            className="flex h-10 cursor-pointer items-center rounded-md border px-4 text-sm text-gray-800 hover:border hover:bg-gray-100"
+            className="flex h-10 cursor-pointer items-center gap-2 rounded-md border px-4 text-sm text-gray-800 hover:border hover:bg-gray-100"
           >
             {builder.loading && <Spinner size={20} />}
             {id ? 'Update' : 'Create'}

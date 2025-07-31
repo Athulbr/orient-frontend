@@ -4,6 +4,7 @@ import { FieldIF, FormBuilderContextType, FormSettingsIF } from '../../interface
 import { httpAiRequest } from '../../utils/functions/httpAiRequest';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import httpRequest from '../../../../global-utils/httpRequest';
 
 const FormBuilderContext = createContext<FormBuilderContextType | undefined>(undefined);
 
@@ -52,6 +53,9 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
         fields,
         settings: formSettings,
       });
+
+      const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
+      window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
       toast.success('Formbuilder updated successfully');
       navigate('/config/formbuilder/list');
       return true;

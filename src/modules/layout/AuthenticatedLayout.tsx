@@ -41,9 +41,10 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
 
   const updateRolePermission = async () => {
     const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/role/${user?.role?._id}`);
-    console.log('res.data?.features:===========', res.data?.features);
-    // setPermissions( res.data?.features);
-    setPermissions(permissions);
+    const features = res.data?.features.map((feature: any) => {
+      return feature.key;
+    });
+    setPermissions(features);
   };
 
   useEffect(() => {

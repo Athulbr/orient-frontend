@@ -18,8 +18,8 @@ export const ListFeatureComponent: React.FC = () => {
 
   const customFunctions = {
     rowClickHandler: (row: any) => {
-      setState(prev => ({ ...prev, showViewDialog: true, id: row._id }));
-      getFeatureByIdApi(row._id);
+      // setState(prev => ({ ...prev, showViewDialog: true, id: row._id }));
+      // getFeatureByIdApi(row._id);
     },
     editClickHandler: (row: any) => {
       setState(prev => ({ ...prev, showCreateDialog: true, feature: row, id: row._id }));

@@ -38,7 +38,7 @@ export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancel
   }[columns];
 
   return (
-    <div className={`flex flex-wrap px-2 pt-4`}>
+    <div className={`flex flex-wrap px-4 pt-6`}>
       {fieldsArray.map((item, index) => {
         const Component = mapRenderComponents[item.type];
         if (Component) {

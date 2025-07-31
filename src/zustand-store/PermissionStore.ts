@@ -14,6 +14,7 @@ interface SettingsIF {
 
 interface PermissionStoreIF {
   permissions: string[];
+  user: any;
   settings: SettingsIF[];
   checkPermission: (permission?: string) => boolean;
   setPermissions: (permissions: string[]) => void;
@@ -21,15 +22,23 @@ interface PermissionStoreIF {
 
 export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
   permissions: [],
+  user: {},
   settings: [],
   checkPermission: (permission?: string) => {
+    const { user } = get();
+    if (user?.role?.name === 'superadmin') return true;
     if (!permission) return false;
     return get().permissions.includes(permission);
   },
   setPermissions: (permissions: string[]) => {
+    const user = JSON.parse(window.sessionStorage.getItem('user') || '{}');
+    set({ user });
     const allowedSettings = allSettings
       .map((setting: SettingsIF) => {
-        const items = setting.items.filter((item: { permission: string }) => permissions.includes(item.permission));
+        const items = setting.items.filter((item: { permission: string }) => {
+          if (user?.role?.name === 'superadmin') return true;
+          return permissions.includes(item.permission);
+        });
         if (items.length === 0) return null;
         return {
           ...setting,
