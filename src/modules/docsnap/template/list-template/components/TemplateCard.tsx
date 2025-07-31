@@ -99,16 +99,16 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
       {/* Stats Row */}
       <div className="mb-2 flex w-full justify-between">
         <div className="flex flex-col items-end">
-          <span className="text-xs text-gray-500">Total</span>
-          <span className="mt-0.5 font-semibold text-gray-600">{total || 0}</span>
+          <span className="text-xs text-gray-500">Submitted</span>
+          <span className="mt-0.5 font-semibold text-gray-600">{submitted || 0}</span>
         </div>
         <div className="flex flex-col items-end">
           <span className="text-xs text-gray-500">Extracted</span>
           <span className="mt-0.5 font-semibold text-gray-600">{extracted || 0}</span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-xs text-gray-500">Submitted</span>
-          <span className="mt-0.5 font-semibold text-gray-600">{submitted || 0}</span>
+          <span className="text-xs text-gray-500">Total</span>
+          <span className="mt-0.5 font-semibold text-gray-600">{total || 0}</span>
         </div>
       </div>
       {/* Upload Button Row */}
