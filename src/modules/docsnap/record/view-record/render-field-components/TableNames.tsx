@@ -17,7 +17,7 @@ export const TableNames: FC = () => {
               <button
                 key={index}
                 onFocus={() => {
-                  setState(prev => ({ ...prev, selectedTableName: prev.selectedTableName === name ? '' : name }));
+                  setState(prev => ({ ...prev, selectedTableName: name }));
                 }}
                 onClick={() => {
                   setState(prev => ({ ...prev, selectedTableName: prev.selectedTableName === name ? '' : name }));
