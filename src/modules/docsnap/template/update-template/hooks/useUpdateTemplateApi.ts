@@ -17,7 +17,7 @@ export const useUpdateTemplatePageApi = () => {
       return true;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch template list');
     }
   };
   const getTemplateApi = async (id: string) => {
@@ -29,7 +29,7 @@ export const useUpdateTemplatePageApi = () => {
       return res.data;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch template');
     }
   };
   const createTemplateApi = async (requestBody: any) => {

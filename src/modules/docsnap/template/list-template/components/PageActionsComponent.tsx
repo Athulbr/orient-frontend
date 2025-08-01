@@ -1,9 +1,16 @@
 import { Search, Plus, CircleX } from 'lucide-react';
 import { useTemplateState } from '../hooks/templateContext';
 import { Button } from '../../../../../components/Button';
+import { useListTemplatePageApi } from '../hooks/useTemplateApi';
 
 const PageActionsComponent: React.FC = () => {
   const { state, setState } = useTemplateState();
+  const { getPredefinedTemplatesApi } = useListTemplatePageApi();
+
+  const handleCreateTemplate = () => {
+    setState({ ...state, showCreateTemplateDialog: true });
+    getPredefinedTemplatesApi();
+  };
 
   return (
     <div className="flex w-full justify-end gap-4">
@@ -17,7 +24,7 @@ const PageActionsComponent: React.FC = () => {
         />
         {state.searchText && <CircleX className="cursor-pointer text-gray-400" size={18} onClick={() => setState({ ...state, searchText: '' })} />}
       </div>
-      <Button permission="create:template" onClick={() => setState({ ...state, showCreateTemplateDialog: true })} startIcon={<Plus size={18} />}>
+      <Button permission="create:template" onClick={handleCreateTemplate} startIcon={<Plus size={18} />}>
         Create Template
       </Button>
     </div>

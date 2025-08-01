@@ -13,11 +13,10 @@ export const useViewTemplateApi = () => {
       setState(prev => ({ ...prev, loadingTemplates: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, { pageSize: 100 });
       setState(prev => ({ ...prev }));
-      toast.success('Template fetched successfully');
       return true;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch template list');
     }
   };
   const getTemplateByIdApi = async (id: string) => {
@@ -25,11 +24,10 @@ export const useViewTemplateApi = () => {
       setState(prev => ({ ...prev, loadingTemplate: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${id}`);
       setState(prev => ({ ...prev, templateFields: res.data?.fields, template: res.data, loadingTemplate: false }));
-      toast.success('Template fetched successfully');
       return res.data;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch template');
     }
   };
 

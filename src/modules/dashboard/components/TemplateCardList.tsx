@@ -50,7 +50,6 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
   useEffect(() => {
     getTemplatesApi();
-    getPredefinedTemplatesApi();
   }, []);
 
   // Calculate how many template cards to show (reserve 1 slot for "View All")

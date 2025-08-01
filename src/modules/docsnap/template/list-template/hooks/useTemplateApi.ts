@@ -17,7 +17,7 @@ export const useListTemplatePageApi = () => {
       return true;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch template list');
     }
   };
   const getPredefinedTemplatesApi = async () => {
@@ -29,7 +29,7 @@ export const useListTemplatePageApi = () => {
       return true;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch predefined template list');
     }
   };
   const getTemplateApi = async (id: string) => {
@@ -41,7 +41,7 @@ export const useListTemplatePageApi = () => {
       return true;
     } catch (error) {
       console.error('error:===========', error);
-      toast.error('Failed to create template');
+      toast.error('Failed to fetch template');
     }
   };
   // const createTemplateApi = async (requestBody: any) => {

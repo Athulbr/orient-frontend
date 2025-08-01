@@ -39,7 +39,7 @@ export const useDashboardApi = () => {
       setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data, totalPredefinedTemplates: res.total }));
       return true;
     } catch (error) {
-      toast.error('Failed to fetch predefined template');
+      toast.error('Failed to fetch predefined template list');
     }
   };
   const getTemplatesApi = async () => {
@@ -53,7 +53,7 @@ export const useDashboardApi = () => {
       setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data, totalTemplates: res.total }));
       return true;
     } catch (error) {
-      toast.error('Failed to fetch predefined template');
+      toast.error('Failed to fetch template list');
     }
   };
 

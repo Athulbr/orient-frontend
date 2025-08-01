@@ -9,7 +9,6 @@ const ListTemplateComponent: React.FC = () => {
 
   useEffect(() => {
     getTemplatesApi();
-    getPredefinedTemplatesApi();
   }, []);
 
   useEffect(() => {
