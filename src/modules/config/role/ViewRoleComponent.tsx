@@ -141,7 +141,7 @@ const RightContainer: React.FC = () => {
     .filter((group: { module: Module; features: Feature[] }) => group.features.length > 0);
 
   const assignFeature = (featureId: string) => {
-    if (!roleFeatures.includes(featureId)) {
+    if (!roleFeatures.some((f: any) => (typeof f === 'string' ? f === featureId : f._id === featureId))) {
       setState(prev => ({
         ...prev,
         role: {
@@ -157,7 +157,9 @@ const RightContainer: React.FC = () => {
       ...prev,
       role: {
         ...prev.role,
-        features: prev.role.features.filter((id: string) => id !== featureId),
+        features: prev.role.features.filter(
+          (f: any) => (typeof f === 'string' ? f !== featureId : f._id !== featureId)
+        ),
       },
     }));
   };

@@ -3,18 +3,10 @@ import { FC } from 'react';
 import { Button } from '../../../components/Button';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
-import { useDashboardApi } from '../hooks/useDashboardApi';
-import Spinner from '../../../components/Spinner';
 
 export const DashboardHeaderComponent: FC = () => {
   const { state, setState } = useDashboardState();
   const { user } = usePermissionStore();
-  const { getPredefinedTemplatesApi } = useDashboardApi();
-
-  const handleCreateTemplate = async () => {
-    await getPredefinedTemplatesApi();
-    setState({ ...state, showCreateTemplateDialog: true });
-  };
 
   return (
     <section className="flex w-full items-center justify-between gap-y-4 px-2">
@@ -23,8 +15,8 @@ export const DashboardHeaderComponent: FC = () => {
       </div>
       <Button
         permission="create:template"
-        startIcon={state.loadingPredefinedTemplates ? <Spinner size={18} /> : <Plus strokeWidth={1.5} size={18} />}
-        onClick={handleCreateTemplate}
+        startIcon={<Plus strokeWidth={1.5} size={18} />}
+        onClick={() => setState({ ...state, showCreateTemplateDialog: true })}
       >
         Create Template
       </Button>

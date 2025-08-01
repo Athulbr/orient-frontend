@@ -23,6 +23,7 @@ export interface DashboardStateIF {
   loadingPredefinedTemplates: boolean;
   statusCounts: any;
   loadingStatusCounts: boolean;
+  test: any[];
 }
 
 const initialState = {
@@ -40,11 +41,12 @@ const initialState = {
   loadingPredefinedTemplates: false,
   statusCounts: null,
   loadingStatusCounts: false,
+  test: [],
 };
 
 const DashboardPage: FC = () => {
   const [state, setState] = useState<DashboardStateIF>(initialState);
-  useBackButtonOverride('/');
+  // useBackButtonOverride('/');
 
   return (
     <DashboardStateProvider value={{ state, setState }}>

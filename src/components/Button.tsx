@@ -123,7 +123,7 @@ export const Button = ({
 
   const colorClasses = outlined
     ? 'bg-white border-1 border-gray-300 text-sm text-gray-800 hover:bg-gray-100'
-    : 'bg-primary-500 text-white border text-sm hover:bg-colorPrimary hover:font-normal';
+    : 'bg-primary-500 text-white border text-sm hover:bg-colorPrimary hover:text-gray-200';
 
   const disabledClasses = disabled ? 'opacity-50 cursor-default' : 'cursor-pointer';
 

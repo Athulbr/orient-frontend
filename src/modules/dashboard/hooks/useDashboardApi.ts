@@ -32,11 +32,11 @@ export const useDashboardApi = () => {
     try {
       setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/pre-template`, {
-        pageSize: 15,
+        pageSize: 50,
         custom: true,
         filters: { deleted: false },
       });
-      setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data, totalPredefinedTemplates: res.total }));
+      setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data }));
       return true;
     } catch (error) {
       toast.error('Failed to fetch predefined template list');
