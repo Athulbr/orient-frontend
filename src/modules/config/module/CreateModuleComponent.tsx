@@ -19,6 +19,7 @@ const CreateModuleComponent: React.FC<CreateModuleComponentIF> = () => {
       existingData={state.module || {}}
       onSubmit={e => (state.module ? updateModuleApi(e) : createModuleApi(e))}
       closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', module: null }))}
+      loadingPrimaryButton={state.loading}
     />
   );
 };

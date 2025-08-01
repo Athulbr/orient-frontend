@@ -14,9 +14,20 @@ interface UseFormbuilderIF {
   closeDialog: () => void;
   onSubmit: (fields: FieldIF[]) => void;
   loading?: boolean;
+  loadingPrimaryButton?: boolean;
 }
 
-export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name, closeDialog, onSubmit, existingData = null, className, title, loading }) => {
+export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
+  isOpen = true,
+  name,
+  closeDialog,
+  onSubmit,
+  existingData = null,
+  className,
+  title,
+  loading,
+  loadingPrimaryButton,
+}) => {
   const [fields, setFields] = useState<FieldIF[]>([]);
   const [hasError, setHasError] = useState(false);
   const [settings, setSettings] = useState({
@@ -72,7 +83,13 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({ isOpen = true, name
 
   return (
     <DialogComponent loading={loading || fields.length === 0} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
-      <RenderForm fields={fields} submitClickHandler={onSubmit} cancelClickHandler={closeDialog} columns={settings.columns} />
+      <RenderForm
+        fields={fields}
+        loadingPrimaryButton={loadingPrimaryButton}
+        submitClickHandler={onSubmit}
+        cancelClickHandler={closeDialog}
+        columns={settings.columns}
+      />
     </DialogComponent>
   );
 };
