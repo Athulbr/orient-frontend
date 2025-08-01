@@ -14,6 +14,7 @@ const CreateUserComponent: React.FC = ({}) => {
       onSubmit={state.id ? updateUserApi : createUserApi}
       existingData={state.id ? state.user : {}}
       closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', user: null }))}
+      loadingPrimaryButton={state.loading}
     />
   );
 };

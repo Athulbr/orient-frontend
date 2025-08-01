@@ -2,15 +2,17 @@ import { use, useEffect, useState } from 'react';
 import { mapRenderComponents, validateAllFields } from './MapRenderComponents';
 import { FieldIF, FormSettingsIF } from '../interface';
 import { Button } from '../../../components/Button';
+import Spinner from '../../../components/Spinner';
 
 interface RenderFormIF {
   fields: FieldIF[];
   submitClickHandler: (fields: FieldIF[]) => void;
   cancelClickHandler: () => void;
   columns?: number;
+  loadingPrimaryButton?: boolean;
 }
 
-export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancelClickHandler, submitClickHandler }) => {
+export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancelClickHandler, submitClickHandler, loadingPrimaryButton }) => {
   const [fieldsArray, setFields] = useState<FieldIF[]>([]);
   // const [fieldsArray, setFields] = useState<FieldIF[]>(fields.map(field => ({ ...field })));
 
@@ -59,7 +61,9 @@ export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancel
           <Button onClick={cancelClickHandler} outlined>
             Cancel
           </Button>
-          <Button onClick={submitHandler}>Submit</Button>
+          <Button startIcon={loadingPrimaryButton ? <Spinner size={18} /> : null} onClick={submitHandler}>
+            {loadingPrimaryButton ? 'Submitting...' : 'Submit'}
+          </Button>
         </div>
       ) : null}
     </div>
