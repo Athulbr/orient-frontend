@@ -32,7 +32,7 @@ export function convertJSON(reference: PromptFieldIF[]): Record<string, any> {
       baseField.fields = transformSubFields(subFields);
     } else if (subFields && dataType === 'list') {
       baseField.is_list = true;
-      baseField.item_fields = transformSubFields(subFields);
+      baseField.fields = transformSubFields(subFields);
     }
     if (!excludeExtraction) {
       transformed.fields[jsonKey] = baseField;
