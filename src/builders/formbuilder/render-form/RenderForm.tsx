@@ -3,6 +3,7 @@ import { mapRenderComponents, validateAllFields } from './MapRenderComponents';
 import { FieldIF, FormSettingsIF } from '../interface';
 import { Button } from '../../../components/Button';
 import Spinner from '../../../components/Spinner';
+import { cn } from '../../../global-utils/twMerge';
 
 interface RenderFormIF {
   fields: FieldIF[];
@@ -10,9 +11,10 @@ interface RenderFormIF {
   cancelClickHandler: () => void;
   columns?: number;
   loadingPrimaryButton?: boolean;
+  className?: string;
 }
 
-export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancelClickHandler, submitClickHandler, loadingPrimaryButton }) => {
+export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancelClickHandler, submitClickHandler, loadingPrimaryButton, className }) => {
   const [fieldsArray, setFields] = useState<FieldIF[]>([]);
   // const [fieldsArray, setFields] = useState<FieldIF[]>(fields.map(field => ({ ...field })));
 
@@ -40,7 +42,7 @@ export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancel
   }[columns];
 
   return (
-    <div className={`flex flex-wrap px-4 pt-6`}>
+    <div className={cn('flex flex-wrap px-4 pt-6', className)}>
       {fieldsArray.map((item, index) => {
         const Component = mapRenderComponents[item.type];
         if (Component) {

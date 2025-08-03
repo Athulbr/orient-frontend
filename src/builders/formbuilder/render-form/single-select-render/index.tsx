@@ -44,9 +44,13 @@ export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, f
 
   let options = config.optionSourceType === 'from API' ? optionList : config.optionSourceType === 'from code' ? [] : config.options;
 
+  if (!value) {
+    field.value = config.defaultValue;
+  }
+
   return (
     <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={apiError || errorMessage || ''}>
-      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={value} options={options || []} />
+      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={field.value} options={options || []} />
     </InputWrapper>
   );
 };

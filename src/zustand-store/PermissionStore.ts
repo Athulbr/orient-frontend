@@ -136,12 +136,6 @@ const allSettings: SettingsIF[] = [
     name: 'Docsnap',
     iconName: 'Book',
     items: [
-      // {
-      //   name: 'Projects',
-      //   iconName: ListOrdered,
-      //   path: '/config/project/list',
-      //   key: 'project',
-      // },
       {
         name: 'Comments',
         iconName: 'MessageSquareText',
@@ -155,6 +149,19 @@ const allSettings: SettingsIF[] = [
         path: '/config/prompt-tuning',
         key: 'prompt-tuning',
         permission: 'read:prompt-tuning',
+      },
+    ],
+  },
+  {
+    name: 'Workspace Settings',
+    iconName: 'Settings',
+    items: [
+      {
+        name: 'User Preference',
+        iconName: 'MessageSquareText',
+        path: '/config/user-preference',
+        key: 'user-preference',
+        permission: 'read:user-preference',
       },
     ],
   },

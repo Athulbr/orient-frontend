@@ -51,6 +51,7 @@ const settingTypes = new Map<string, React.FC<any>>([
   ['placeholder', TextInput],
   ['redirectUrl', TextInput],
   ['regularExpression', TextInput],
+  ['defaultValue', TextInput],
 
   //Date input
   ['minimumDate', DateInput],

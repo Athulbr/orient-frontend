@@ -3,11 +3,13 @@ import { useDashboardState } from '../hooks/dashboardContext';
 import { useEffect } from 'react';
 import { useDashboardApi } from '../hooks/useDashboardApi';
 import { useNavigate } from 'react-router-dom';
+import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 
 export const StatusCardComponent = () => {
   const { state, setState } = useDashboardState();
   const { getStatusCountApi } = useDashboardApi();
   const navigate = useNavigate();
+  const { checkPermission } = usePermissionStore();
 
   useEffect(() => {
     getStatusCountApi();
@@ -66,6 +68,16 @@ export const StatusCardComponent = () => {
     },
   ];
 
+  if (!checkPermission('read:record')) {
+    return (
+      <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 lg:order-1 lg:h-full lg:w-100">
+        <div className="flex items-center justify-between">
+          <div className="text-gray-800">Quick Summary</div>
+        </div>
+        <div className="flex flex-1 items-center justify-center text-sm text-gray-400">You do not have permission to view quick summary</div>
+      </div>
+    );
+  }
   if (!state.loadingRecords && state.records?.length === 0) {
     return (
       <div className="order-[-1] flex h-fit w-full flex-col gap-y-4 rounded-2xl border border-[#F9F0FF] bg-white px-5 py-6 lg:order-1 lg:h-full lg:w-100">

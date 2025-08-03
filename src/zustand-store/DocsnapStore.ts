@@ -35,49 +35,78 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
           use_latest: false,
         };
         if (template.enableOcr) requestBody.ocr_engine = 'doctr';
-        const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+        const extractionEngine = window.localStorage.getItem('extractionEngine');
+        // =================== NODE ===================
+        if (extractionEngine === 'node') {
+          const createReqObject = {
+            status: 'processing',
+            metadata: {},
+            extractedData: null,
+            s3FileName: s3Response?.data?.fileName,
+            name: s3Response?.data?.fileName,
+            templateId: template._id,
+            documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf',
+          };
 
-        const createReqObject = {
-          status: 'processing',
-          metadata: res,
-          extractedData: null,
-          pdfFileName: s3Response?.data?.fileName,
-          name: s3Response?.data?.fileName,
-          templateId: template._id,
-          documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf',
-        };
+          const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+          set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
 
-        const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
-        set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item)) });
-
-        const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
-        if (!processingFiles.length) {
-          set({ refreshRecord: get().refreshRecord + 1 });
-        }
-
-        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
-
-        eventSource.addEventListener('task_update', async (event: any) => {
-          const data = JSON.parse(event.data);
-          set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item)) });
-          if (data.current_step === 'Complete') {
-            eventSource.close();
-            const requestBody = {
-              extractedData: data?.result?.extracted_data || {},
-              status: 'extracted',
-            };
-            const res = await httpRequest(
-              'PATCH',
-              `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
-              requestBody
-            );
-            const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-            if (!processingFiles.length) {
-              set({ refreshRecord: get().refreshRecord + 1 });
-            }
+          const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, requestBody);
+          const patchRequestBody = {
+            extractedData: res.data,
+            status: 'extracted',
+          };
+          await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`, patchRequestBody);
+          const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+          if (!processingFiles.length) {
+            set({ refreshRecord: get().refreshRecord + 1 });
           }
-        });
+          // =================== NODE ===================
+        } else {
+          const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+
+          const createReqObject = {
+            status: 'processing',
+            metadata: res,
+            extractedData: null,
+            pdfFileName: s3Response?.data?.fileName,
+            name: s3Response?.data?.fileName,
+            templateId: template._id,
+            documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf',
+          };
+
+          const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+          set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item)) });
+
+          const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
+          if (!processingFiles.length) {
+            set({ refreshRecord: get().refreshRecord + 1 });
+          }
+
+          const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+          const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+          eventSource.addEventListener('task_update', async (event: any) => {
+            const data = JSON.parse(event.data);
+            set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item)) });
+            if (data.current_step === 'Complete') {
+              eventSource.close();
+              const requestBody = {
+                extractedData: data?.result?.extracted_data || {},
+                status: 'extracted',
+              };
+              const res = await httpRequest(
+                'PATCH',
+                `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                requestBody
+              );
+              const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+              if (!processingFiles.length) {
+                set({ refreshRecord: get().refreshRecord + 1 });
+              }
+            }
+          });
+        }
       } catch (error) {
         set({ extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item)) });
       }

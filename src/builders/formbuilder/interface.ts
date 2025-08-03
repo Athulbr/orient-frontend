@@ -49,6 +49,7 @@ export interface FieldConfigIF {
   dynamicKey?: string;
   optionSourceType?: 'static' | 'from code' | 'from API';
   apiEndpoint?: string;
+  defaultValue?: string;
 
   defaultChecked?: boolean;
   expectUnchecked?: boolean;

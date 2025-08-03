@@ -1,13 +1,10 @@
-import { ChevronRight, Edit, MoreVertical, Upload } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { useDashboardApi } from '../hooks/useDashboardApi';
-import { Button } from '../../../components/Button';
-import { Dropdown } from '../../../components/Dropdown';
-import { useToastStore } from '../../../components/toast/ToastStore';
-import httpRequest from '../../../global-utils/httpRequest';
 import { TemplateCardComponent } from '../../docsnap/template/list-template/components/TemplateCard';
+import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 
 interface TemplateCardsComponentIF {
   test?: string;
@@ -17,6 +14,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
   const { state, setState } = useDashboardState();
   const [cardsPerRow, setCardsPerRow] = useState(4);
   const { getTemplatesApi, getPredefinedTemplatesApi } = useDashboardApi();
+  const { checkPermission } = usePermissionStore();
 
   // Calculate how many cards can fit based on screen width
   const calculateCardsPerRow = useCallback(() => {
@@ -59,7 +57,11 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
   return (
     <div className="relative">
-      {state.loadingTemplates ? (
+      {!checkPermission('read:record') ? (
+        <div className="flex h-full min-h-40 w-full flex-col items-center justify-center rounded-2xl bg-white text-sm text-gray-400">
+          You do not have permission to view templates
+        </div>
+      ) : state.loadingTemplates ? (
         <div className="flex min-h-40 gap-6">
           {Array.from({ length: cardsPerRow }).map((_, idx) => (
             <TemplateCardComponent key={idx} isLoading flexBasis={`${100 / cardsPerRow}%`} />

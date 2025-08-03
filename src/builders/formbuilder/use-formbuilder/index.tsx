@@ -3,11 +3,11 @@ import { DialogComponent } from '../../../components/DialogComponent';
 import httpRequest from '../../../global-utils/httpRequest';
 import { RenderForm } from '../render-form/RenderForm';
 import { FieldIF } from '../interface';
-import FullScreenLoader from '../../../components/FullScreenLoader';
 
 interface UseFormbuilderIF {
   isOpen?: boolean;
   className?: string;
+  renderFormClassName?: string;
   existingData?: Record<string, any> | null;
   name: string;
   title?: string;
@@ -15,6 +15,7 @@ interface UseFormbuilderIF {
   onSubmit: (fields: FieldIF[]) => void;
   loading?: boolean;
   loadingPrimaryButton?: boolean;
+  showInDialog?: boolean;
 }
 
 export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
@@ -24,9 +25,11 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
   onSubmit,
   existingData = null,
   className,
+  renderFormClassName,
   title,
   loading,
   loadingPrimaryButton,
+  showInDialog = true,
 }) => {
   const [fields, setFields] = useState<FieldIF[]>([]);
   const [hasError, setHasError] = useState(false);
@@ -79,6 +82,18 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
 
   if (hasError) {
     return null;
+  }
+  if (!showInDialog) {
+    return (
+      <RenderForm
+        fields={fields}
+        loadingPrimaryButton={loadingPrimaryButton}
+        submitClickHandler={onSubmit}
+        cancelClickHandler={closeDialog}
+        columns={settings.columns}
+        className="px-0"
+      />
+    );
   }
 
   return (

@@ -7,9 +7,11 @@ import { useDashboardState } from '../hooks/dashboardContext';
 import { formatDate } from '../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
 import SkeletonLoader from './SkeletonLoader';
 import { RecordStatusCustomUI } from '../../docsnap/record/list-record/components/RecordStatusCustomUI';
+import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 
 const RecentFilesCardComponent: React.FC = () => {
   const { state, setState } = useDashboardState();
+  const { checkPermission } = usePermissionStore();
 
   const navigate = useNavigate();
   const { getRecordsApi } = useDashboardApi();
@@ -21,7 +23,7 @@ const RecentFilesCardComponent: React.FC = () => {
   return (
     <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
       <div className="flex items-center justify-between px-4 pt-6">
-        <h5 className="text-gray-800">Recent Files</h5>
+        <div className="text-gray-800">Recent Files</div>
         {state.records.length > 0 && (
           <span
             onClick={() => navigate('/docsnap/record/list')}
@@ -31,7 +33,9 @@ const RecentFilesCardComponent: React.FC = () => {
           </span>
         )}
       </div>
-      {state.loadingRecords ? (
+      {!checkPermission('read:record') ? (
+        <div className="flex h-full w-full flex-col items-center justify-center text-sm text-gray-400">You do not have permission to view recent files</div>
+      ) : state.loadingRecords ? (
         <SkeletonLoader />
       ) : state.records.length > 0 ? (
         <div className="h-full overflow-y-hidden">
@@ -63,7 +67,9 @@ const RecentFilesCardComponent: React.FC = () => {
           </table>
         </div>
       ) : (
-        <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-gray-400">Your recently uploaded files will appear here</div>
+        <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-sm text-gray-400">
+          Your recently uploaded files will appear here
+        </div>
       )}
     </div>
   );
