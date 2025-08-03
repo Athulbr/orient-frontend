@@ -36,6 +36,9 @@ export const PlainTextRender: React.FC<InputFieldRenderPropsIF> = ({ index, fiel
       return updatedFields;
     });
   };
+  if (!value) {
+    field.value = config.defaultValue;
+  }
 
   return (
     <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={errorMessage || ''}>

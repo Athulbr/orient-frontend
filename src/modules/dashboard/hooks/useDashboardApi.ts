@@ -1,15 +1,18 @@
 import { useToastStore } from '../../../components/toast/ToastStore';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useDashboardState } from './dashboardContext';
+import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 
 export const useDashboardApi = () => {
   const { setState } = useDashboardState();
   const toast = useToastStore();
+  const { checkPermission } = usePermissionStore();
 
   // ============================= CREATE DASHBOARD ==================================
 
   const getRecordsApi = async () => {
     try {
+      // if (!checkPermission('read:record')) return;
       setState(prev => ({ ...prev, loadingRecords: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 10, filters: { deleted: false } });
       setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
@@ -21,6 +24,7 @@ export const useDashboardApi = () => {
   };
   const getStatusCountApi = async () => {
     try {
+      // if (!checkPermission('read:record')) return;
       setState(prev => ({ ...prev, loadingStatusCounts: true }));
       const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/status/count`);
       setState(prev => ({ ...prev, loadingStatusCounts: false, statusCounts: { ...res.data[0], total: res.total } }));
@@ -30,6 +34,7 @@ export const useDashboardApi = () => {
   };
   const getPredefinedTemplatesApi = async () => {
     try {
+      // if (!checkPermission('read:template')) return;
       setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
       const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/pre-template`, {
         pageSize: 50,

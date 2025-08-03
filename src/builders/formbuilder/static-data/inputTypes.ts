@@ -22,6 +22,7 @@ export const inputTypes: FieldIF[] = [
       regularExpression: '',
       hidden: false,
       disabled: false,
+      defaultValue: '',
     },
   },
   {
@@ -266,6 +267,7 @@ export const inputTypes: FieldIF[] = [
       options: [], // Ex: [{label:"Apple", value:"apple"}]
       hidden: false,
       disabled: false,
+      defaultValue: '',
     },
   },
   {

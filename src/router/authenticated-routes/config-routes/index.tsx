@@ -34,6 +34,7 @@ import {
   Component as ComponentIcon, // Rename to avoid conflict
 } from 'lucide-react';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
+import UserPreferencePage from '../../../modules/config/workspace-settings/UserPreferencePage';
 
 const ConfigRoutes = () => {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ const ConfigRoutes = () => {
               <Route path="/project/list" element={<ListProjectPage />} />
               <Route path="/prompt-tuning" element={<UpdatedFieldsListPage />} />
               <Route path="/user/list" element={<ListUserPage />} />
+              <Route path="/user-preference" element={<UserPreferencePage />} />
               <Route path="/comment/*" element={<ListCommentPage />} />
               <Route path="/*" element={<NotFoundPage />} />
             </Routes>
