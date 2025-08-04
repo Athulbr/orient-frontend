@@ -1,10 +1,13 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { useViewRecordState } from './viewRecordContext';
-import { useToastStore } from '../../../../../components/toast/ToastStore';
-import httpRequest from '../../../../../global-utils/httpRequest';
-import { fileTypeFromBuffer } from 'file-type';
-import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
-import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
+import { useNavigate, useParams } from "react-router-dom";
+import { useViewRecordState } from "./viewRecordContext";
+import { useToastStore } from "../../../../../components/toast/ToastStore";
+import httpRequest from "../../../../../global-utils/httpRequest";
+import { fileTypeFromBuffer } from "file-type";
+import {
+  convertPdfToImages,
+  filterExtractedDataForInvoiceGeneration,
+} from "../utils";
+import { useS3DocumentsStore } from "../../../../../zustand-store/useStoredDocuments";
 
 export const useViewRecordApi = () => {
   const { state, setState } = useViewRecordState();
@@ -16,62 +19,97 @@ export const useViewRecordApi = () => {
   // ============================= Get Record By Id ==================================
 
   const getAndConvertDocumentToImage = async (pdfFileName: string) => {
-    setState(prev => ({ ...prev, loadingS3File: true }));
+    setState((prev) => ({ ...prev, loadingS3File: true }));
     const s3Response = await getS3File(pdfFileName);
     const imageData = s3Response?.data?.Body?.data;
     if (!imageData) {
-      toast.error('S3 document not found');
+      toast.error("S3 document not found");
       return;
     }
     const uint8Array = new Uint8Array(imageData);
     const getFileType = await fileTypeFromBuffer(uint8Array);
     let pdfFile: any;
     let imageUrlArray;
-    if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
-      pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+    if (getFileType?.mime && getFileType?.mime !== "application/pdf") {
+      pdfFile = await binaryToFile(
+        uint8Array,
+        `image.${getFileType.ext}`,
+        getFileType?.mime
+      );
       imageUrlArray = [URL.createObjectURL(pdfFile).toString()];
     } else {
-      pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+      pdfFile = await binaryToFile(
+        uint8Array,
+        `document.${getFileType?.ext}`,
+        getFileType?.mime
+      );
       imageUrlArray = await convertPdfToImages(pdfFile);
     }
 
-    setState(prev => ({ ...prev, loadingS3File: false, images: imageUrlArray }));
+    setState((prev) => ({
+      ...prev,
+      loadingS3File: false,
+      images: imageUrlArray,
+    }));
   };
 
   const getRecordApiById = async (id: string) => {
     try {
-      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
-
-      getAndConvertDocumentToImage(res.data.pdfFileName);
+      setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest(
+        "GET",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`
+      );
+      if (res.data.imageFileNames) {
+        setState((prev) => ({
+          ...prev,
+          loadingS3File: false,
+          images: res.data.imageFileNames,
+        }));
+      } else {
+        getAndConvertDocumentToImage(res.data.pdfFileName);
+      }
       const objectFields: Record<string, any> = {};
       const arrayFields: Record<string, any>[] = [];
       const tableNames: string[] = [];
       if (res.data.extractedData) {
-        const extractedData = JSON.parse(JSON.stringify(res.data.extractedData));
+        const extractedData = JSON.parse(
+          JSON.stringify(res.data.extractedData)
+        );
         // const extractedData = sampleExtractedData;
         Object.entries(extractedData).forEach(([key, value]: any) => {
           if (Array.isArray(value)) {
             // its array
             arrayFields.push(value);
             tableNames.push(key);
-          } else if (typeof value === 'object' && value !== null && value?.value === undefined) {
+          } else if (
+            typeof value === "object" &&
+            value !== null &&
+            value?.value === undefined
+          ) {
             // its object
             objectFields[key] = value;
           }
         });
       }
-      setState(prev => ({ ...prev, record: res.data, objectFields, arrayFields, tableNames, loadingData: false }));
+      setState((prev) => ({
+        ...prev,
+        record: res.data,
+        objectFields,
+        arrayFields,
+        tableNames,
+        loadingData: false,
+      }));
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to get Record');
+      console.error("error:===========", error);
+      toast.error("Failed to get Record");
     } finally {
-      setState(prev => ({ ...prev, loadingData: false }));
+      setState((prev) => ({ ...prev, loadingData: false }));
     }
   };
 
   const sendMessage = async (message: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       chatLoading: true,
       messages: [
@@ -88,9 +126,13 @@ export const useViewRecordApi = () => {
       botName: state.record?.pdfFileName,
     };
 
-    const response: any = await httpRequest('POST', `https://demo.makez.ai/chatbot/query`, requestBody);
+    const response: any = await httpRequest(
+      "POST",
+      `https://demo.makez.ai/chatbot/query`,
+      requestBody
+    );
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       chatLoading: false,
       messages: [
@@ -109,19 +151,26 @@ export const useViewRecordApi = () => {
       const payload = {
         apiResponse: state?.record?.extractedData,
         recordId: state?.record?._id,
-        extractedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
+        extractedData: {
+          ...state?.objectFields,
+          line_items: state?.arrayFields[0],
+        },
         name: state?.record?.name,
       };
-      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/rehab/create`, payload);
-      toast.success('Record submitted successfully');
-      navigate('/docsnap/record/list');
+      setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest(
+        "POST",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/history/rehab/create`,
+        payload
+      );
+      toast.success("Record submitted successfully");
+      navigate("/docsnap/record/list");
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to update Record');
-      navigate('/docsnap/record/list');
+      console.error("error:===========", error);
+      toast.error("Failed to update Record");
+      navigate("/docsnap/record/list");
     } finally {
-      setState(prev => ({ ...prev, loadingData: false }));
+      setState((prev) => ({ ...prev, loadingData: false }));
     }
   };
 
@@ -132,64 +181,92 @@ export const useViewRecordApi = () => {
         extractedData: state?.record?.extractedData,
         metadata: state?.record?.metadata,
         fileName: state?.record?.name,
-        updatedData: { ...state?.objectFields, line_items: state?.arrayFields[0] },
+        updatedData: {
+          ...state?.objectFields,
+          line_items: state?.arrayFields[0],
+        },
       };
 
-      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
-      toast.success('Record updated successfully');
-      navigate('/');
+      setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest(
+        "PATCH",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`,
+        payload
+      );
+      toast.success("Record updated successfully");
+      navigate("/");
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to update Record');
+      console.error("error:===========", error);
+      toast.error("Failed to update Record");
     } finally {
-      setState(prev => ({ ...prev, loadingData: false }));
+      setState((prev) => ({ ...prev, loadingData: false }));
     }
   };
   const updateExtractedData = async (extractedData: any) => {
     try {
-      setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, { extractedData });
-      toast.success('Record updated successfully');
+      setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
+      const res: any = await httpRequest(
+        "PATCH",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`,
+        { extractedData }
+      );
+      toast.success("Record updated successfully");
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to update Record');
+      console.error("error:===========", error);
+      toast.error("Failed to update Record");
     } finally {
-      setState(prev => ({ ...prev, loadingData: false }));
+      setState((prev) => ({ ...prev, loadingData: false }));
     }
   };
   const generateInvoiceWithAI = async () => {
     try {
-      const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
-      setState(prev => ({ ...prev, generatingInvoice: true }));
+      const filteredData = filterExtractedDataForInvoiceGeneration(
+        state.record?.extractedData
+      );
+      setState((prev) => ({ ...prev, generatingInvoice: true }));
       // test
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`, {
-        purchaseOrder: filteredData,
-      });
-      setState(prev => ({ ...prev, invoiceContent: res.invoice || 'Error generating invoice' }));
-      toast.success('Invoice generated successfully');
+      const res: any = await httpRequest(
+        "POST",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`,
+        {
+          purchaseOrder: filteredData,
+        }
+      );
+      setState((prev) => ({
+        ...prev,
+        invoiceContent: res.invoice || "Error generating invoice",
+      }));
+      toast.success("Invoice generated successfully");
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to generate Invoice');
+      console.error("error:===========", error);
+      toast.error("Failed to generate Invoice");
     } finally {
-      setState(prev => ({ ...prev, generatingInvoice: false }));
+      setState((prev) => ({ ...prev, generatingInvoice: false }));
     }
   };
   const createRequestedNewField = async (description: string) => {
     try {
       const requestBody = {
         description,
-        requestType: 'field',
+        requestType: "field",
         document: state.record?.templateId._id, // TODO: update this
       };
-      setState(prev => ({ ...prev, creatingRequest: true }));
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`, requestBody);
-      toast.success('Request created successfully');
+      setState((prev) => ({ ...prev, creatingRequest: true }));
+      const res: any = await httpRequest(
+        "POST",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`,
+        requestBody
+      );
+      toast.success("Request created successfully");
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to create Request');
+      console.error("error:===========", error);
+      toast.error("Failed to create Request");
     } finally {
-      setState(prev => ({ ...prev, creatingRequest: false, requestNewFieldDialog: false }));
+      setState((prev) => ({
+        ...prev,
+        creatingRequest: false,
+        requestNewFieldDialog: false,
+      }));
     }
   };
   const createComment = async (comment: string, jsonKey: string) => {
@@ -199,15 +276,19 @@ export const useViewRecordApi = () => {
         comment,
         templateId: state.record?.templateId._id,
       };
-      setState(prev => ({ ...prev, creatingRequest: true }));
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`, requestBody);
+      setState((prev) => ({ ...prev, creatingRequest: true }));
+      const res: any = await httpRequest(
+        "POST",
+        `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`,
+        requestBody
+      );
 
-      toast.success('Comment created successfully');
+      toast.success("Comment created successfully");
     } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to create Comment');
+      console.error("error:===========", error);
+      toast.error("Failed to create Comment");
     } finally {
-      setState(prev => ({ ...prev, creatingRequest: false }));
+      setState((prev) => ({ ...prev, creatingRequest: false }));
       return true;
     }
   };
@@ -224,352 +305,410 @@ export const useViewRecordApi = () => {
   };
 };
 
-export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
+export const binaryToFile = async (
+  binaryData: Uint8Array,
+  fileName: string,
+  mimeType: string = "application/pdf"
+): Promise<File> => {
   const blob = new Blob([binaryData], { type: mimeType });
   return new File([blob], fileName, { type: mimeType });
 };
 
 const sampleExtractedData = {
-  basic_info: {
-    po_number: {
-      value: 'HC7536',
+  basic_details: {
+    purchase_agent: {
+      value: "Nathan Baumert",
+      confidence: 0.9875,
       bbox: {
-        x_min: 0.7717647059,
-        y_min: 0.2272727273,
-        x_max: 0.8282352941,
-        y_max: 0.2363636364,
+        x_min: "0.154248366",
+        y_min: "0.7156565657",
+        x_max: "0.2091503268",
+        y_max: "0.7242424242",
       },
       page: 1,
-      confidence: 0.9889,
+      similarity: 1,
     },
     contact_email: {
-      value: 'purchasing@hebronlions.org',
+      value: "nathan.baumert@va.gov",
+      confidence: 0.9821,
       bbox: {
-        x_min: 0.622745098,
-        y_min: 0.4048484848,
-        x_max: 0.8478431373,
-        y_max: 0.4193939394,
+        x_min: "0.5215686275",
+        y_min: "0.2964646465",
+        x_max: "0.7183006536",
+        y_max: "0.3106060606",
       },
       page: 1,
-      confidence: 0.9863,
+      similarity: 1,
     },
-    phone_number: {
-      value: '(770) 963-9250',
+    po_number: {
+      value: "636-R4K813",
+      confidence: 0.9777,
       bbox: {
-        x_min: 0.3952941176,
-        y_min: 0.8527272727,
-        x_max: 0.4925490196,
-        y_max: 0.8636363636,
+        x_min: "0.5934640523",
+        y_min: "0.0813131313",
+        x_max: "0.6588235294",
+        y_max: "0.0914141414",
       },
-      page: 1,
-      confidence: 0.9783,
+      page: 2,
+      similarity: 1,
     },
-    subtotal: {
-      value: 2374.33,
+    from_location: {
+      value: "IOWA CITY (636A8/121)",
+      confidence: 0.9924,
       bbox: {
-        x_min: 0.8525490196,
-        y_min: 0.6757575758,
-        x_max: 0.9074509804,
-        y_max: 0.6836363636,
+        x_min: "0.5562091503",
+        y_min: "0.1590909091",
+        x_max: "0.5869281046",
+        y_max: "0.1712121212",
       },
-      page: 1,
-      confidence: 0.9545,
+      page: 3,
+      similarity: 1,
     },
-    tax: {
-      value: 0,
-      bbox: {
-        x_min: 0.8807843137,
-        y_min: 0.7151515152,
-        x_max: 0.9082352941,
-        y_max: 0.7236363636,
-      },
+    contract_number: {
+      value: null,
+      confidence: 0,
+      bbox: null,
       page: 1,
-      confidence: 0.9905,
-    },
-    shipping_cost: {
-      value: 301.19,
-      bbox: {
-        x_min: 0.8650980392,
-        y_min: 0.6951515152,
-        x_max: 0.9074509804,
-        y_max: 0.703030303,
-      },
-      page: 1,
-      confidence: 0.9845,
-    },
-    total_amount: {
-      value: 2675.52,
-      bbox: {
-        x_min: 0.8533333333,
-        y_min: 0.7351515152,
-        x_max: 0.9082352941,
-        y_max: 0.7454545455,
-      },
-      page: 1,
-      confidence: 0.9893,
+      similarity: 0,
     },
     quote_id: {
-      value: 'QT61005MD',
-      bbox: {
-        x_min: 0.0925490196,
-        y_min: 0.4678787879,
-        x_max: 0.182745098,
-        y_max: 0.4763636364,
-      },
+      value: "",
+      confidence: 0,
+      bbox: null,
       page: 1,
-      confidence: 0.9753,
+      similarity: 0,
     },
-  },
-  ship_to: {
-    name: {
-      value: 'Hebron Christian Academy',
+    subtotal: {
+      value: 2550,
+      confidence: 0.9566,
       bbox: {
-        x_min: 0.0933333333,
-        y_min: 0.3248484848,
-        x_max: 0.302745098,
-        y_max: 0.336969697,
+        x_min: "0.8307189542",
+        y_min: "0.3676767677",
+        x_max: "0.8869281046",
+        y_max: "0.3767676768",
       },
-      page: 1,
-      confidence: 0.9761,
+      page: 3,
+      similarity: 1,
     },
-    attn: {
-      value: 'Cassie Snow',
-      bbox: {
-        x_min: 0.137254902,
-        y_min: 0.3460606061,
-        x_max: 0.2392156863,
-        y_max: 0.3557575758,
-      },
+    tax: {
+      value: "",
+      confidence: 0,
+      bbox: null,
       page: 1,
-      confidence: 0.9638,
+      similarity: 0,
     },
-    street: {
-      value: '2965 Old Peachtree Rd',
+    total_amount: {
+      value: 2550,
+      confidence: 0.9671,
       bbox: {
-        x_min: 0.0925490196,
-        y_min: 0.3660606061,
-        x_max: 0.2752941176,
-        y_max: 0.3757575758,
+        x_min: "0.722875817",
+        y_min: "0.6525252525",
+        x_max: "0.7568627451",
+        y_max: "0.6626262626",
       },
-      page: 1,
-      confidence: 0.9835,
+      page: 2,
+      similarity: 1,
     },
-    city: {
-      value: 'Dacula',
-      bbox: {
-        x_min: 0.0933333333,
-        y_min: 0.3848484848,
-        x_max: 0.1458823529,
-        y_max: 0.3975757576,
-      },
-      page: 1,
-      confidence: 0.9889,
+    shipping_cost: {
+      value: 0,
+      confidence: 0.9566,
+      bbox: null,
+      page: 2,
+      similarity: 1,
     },
-    state: {
-      value: 'GA',
-      bbox: {
-        x_min: 0.1568627451,
-        y_min: 0.3848484848,
-        x_max: 0.1803921569,
-        y_max: 0.3963636364,
-      },
-      page: 1,
-      confidence: 0.9846,
-    },
-    zip: {
-      value: '30019',
-      bbox: {
-        x_min: 0.1850980392,
-        y_min: 0.3836363636,
-        x_max: 0.2337254902,
-        y_max: 0.3963636364,
-      },
-      page: 1,
-      confidence: 0.9821,
+    discount: {
+      value: 0,
+      confidence: 0.9614,
+      bbox: null,
+      page: 2,
+      similarity: 1,
     },
   },
   bill_to: {
-    name: {
-      value: 'Hebron Christian Academy',
+    bill_to_name: {
+      value: "Nathan Baumert",
+      confidence: 0.9875,
       bbox: {
-        x_min: 0.6235294118,
-        y_min: 0.3242424242,
-        x_max: 0.8321568627,
-        y_max: 0.3381818182,
+        x_min: "0.154248366",
+        y_min: "0.7156565657",
+        x_max: "0.2091503268",
+        y_max: "0.7242424242",
       },
       page: 1,
-      confidence: 0.9744,
-    },
-    attn: {
-      value: 'Cory Johns',
-      bbox: {
-        x_min: 0.662745098,
-        y_min: 0.3460606061,
-        x_max: 0.7521568627,
-        y_max: 0.3581818182,
-      },
-      page: 1,
-      confidence: 0.975,
+      similarity: 1,
     },
     street: {
-      value: '775 Dacula Rd',
+      value: "601 Highway 6 West",
+      confidence: 0.9924,
       bbox: {
-        x_min: 0.622745098,
-        y_min: 0.3660606061,
-        x_max: 0.7388235294,
-        y_max: 0.3757575758,
+        x_min: "0.5444444444",
+        y_min: "0.1762626263",
+        x_max: "0.6006535948",
+        y_max: "0.1863636364",
       },
-      page: 1,
-      confidence: 0.9835,
+      page: 3,
+      similarity: 1,
     },
     city: {
-      value: 'Dacula',
+      value: "Iowa City",
+      confidence: 0.9924,
       bbox: {
-        x_min: 0.622745098,
-        y_min: 0.3848484848,
-        x_max: 0.6768627451,
-        y_max: 0.3975757576,
+        x_min: "0.5562091503",
+        y_min: "0.1590909091",
+        x_max: "0.5869281046",
+        y_max: "0.1712121212",
       },
-      page: 1,
-      confidence: 0.9887,
+      page: 3,
+      similarity: 1,
     },
     state: {
-      value: 'GA',
+      value: "IA",
+      confidence: 0.9906,
       bbox: {
-        x_min: 0.6870588235,
-        y_min: 0.3848484848,
-        x_max: 0.7105882353,
-        y_max: 0.396969697,
+        x_min: "0.5836601307",
+        y_min: "0.1883838384",
+        x_max: "0.5993464052",
+        y_max: "0.1984848485",
       },
-      page: 1,
-      confidence: 0.9866,
+      page: 3,
+      similarity: 1,
     },
     zip: {
-      value: '30019',
+      value: "52246",
+      confidence: 0.9877,
       bbox: {
-        x_min: 0.7160784314,
-        y_min: 0.3842424242,
-        x_max: 0.7639215686,
-        y_max: 0.396969697,
+        x_min: "0.6078431373",
+        y_min: "0.1883838384",
+        x_max: "0.6509803922",
+        y_max: "0.1984848485",
+      },
+      page: 3,
+      similarity: 1,
+    },
+    phone_number: {
+      value: "319-338-0581",
+      confidence: 0.9821,
+      bbox: {
+        x_min: "0.5130718954",
+        y_min: "0.201010101",
+        x_max: "0.6111111111",
+        y_max: "0.2095959596",
+      },
+      page: 3,
+      similarity: 1,
+    },
+    bill_to_company: {
+      value: "IOWA CITY VAMC",
+      confidence: 0.9924,
+      bbox: {
+        x_min: "0.5562091503",
+        y_min: "0.1590909091",
+        x_max: "0.5869281046",
+        y_max: "0.1712121212",
+      },
+      page: 3,
+      similarity: 1,
+    },
+  },
+  ship_to: {
+    ship_to_company: {
+      value: "",
+      confidence: 0,
+      bbox: null,
+      page: 1,
+      similarity: 0,
+    },
+    name: {
+      value: "Roger Rydstrom",
+      confidence: 0.9912,
+      bbox: {
+        x_min: "0.145751634",
+        y_min: "0.5151515152",
+        x_max: "0.2071895425",
+        y_max: "0.5287878788",
+      },
+      page: 4,
+      similarity: 1,
+    },
+    street: {
+      value: "3 Russell Slade Blvd #431",
+      confidence: 0.9925,
+      bbox: {
+        x_min: "0.0908496732",
+        y_min: "0.3954545455",
+        x_max: "0.1745098039",
+        y_max: "0.4060606061",
+      },
+      page: 4,
+      similarity: 1,
+    },
+    city: {
+      value: "Coralville",
+      confidence: 0.9925,
+      bbox: {
+        x_min: "0.0908496732",
+        y_min: "0.3954545455",
+        x_max: "0.1745098039",
+        y_max: "0.4060606061",
+      },
+      page: 4,
+      similarity: 1,
+    },
+    state: {
+      value: "IA",
+      confidence: 0.9906,
+      bbox: {
+        x_min: "0.5836601307",
+        y_min: "0.1883838384",
+        x_max: "0.5993464052",
+        y_max: "0.1984848485",
+      },
+      page: 4,
+      similarity: 1,
+    },
+    zip: {
+      value: "52241",
+      confidence: 0.991,
+      bbox: {
+        x_min: "0.2359477124",
+        y_min: "0.3954545455",
+        x_max: "0.2797385621",
+        y_max: "0.4060606061",
+      },
+      page: 4,
+      similarity: 1,
+    },
+    phone_number: {
+      value: "239-216-3677",
+      confidence: 0.9846,
+      bbox: {
+        x_min: "0.1222222222",
+        y_min: "0.4070707071",
+        x_max: "0.1869281046",
+        y_max: "0.4186868687",
+      },
+      page: 4,
+      similarity: 1,
+    },
+  },
+  card_info: {
+    name: {
+      value: "Nathan Baumert",
+      confidence: 0.9875,
+      bbox: {
+        x_min: "0.154248366",
+        y_min: "0.7156565657",
+        x_max: "0.2091503268",
+        y_max: "0.7242424242",
       },
       page: 1,
-      confidence: 0.9797,
+      similarity: 1,
+    },
+    card_number: {
+      value: "4716401000489473",
+      confidence: 0.9896,
+      bbox: {
+        x_min: "0.0810457516",
+        y_min: "0.7888888889",
+        x_max: "0.2176470588",
+        y_max: "0.7974747475",
+      },
+      page: 2,
+      similarity: 1,
+    },
+    expiration_date: {
+      value: "07/26",
+      confidence: 0.9197,
+      bbox: {
+        x_min: "0.2320261438",
+        y_min: "0.4707070707",
+        x_max: "0.2836601307",
+        y_max: "0.4818181818",
+      },
+      page: 1,
+      similarity: 1,
+    },
+    cvv: {
+      value: "825",
+      confidence: 0.9716,
+      bbox: {
+        x_min: "0.1555555556",
+        y_min: "0.4888888889",
+        x_max: "0.1869281046",
+        y_max: "0.497979798",
+      },
+      page: 1,
+      similarity: 1,
     },
   },
   line_items: [
     {
       sku_number: {
-        value: 'CLI-80110-60',
+        value: "JHI-MPCA210400",
+        confidence: 0.9931,
         bbox: {
-          x_min: 0.0925490196,
-          y_min: 0.5290909091,
-          x_max: 0.1788235294,
-          y_max: 0.5363636364,
+          x_min: "0.2019607843",
+          y_min: "0.1777777778",
+          x_max: "0.2359477124",
+          y_max: "0.1853535354",
         },
-        page: 1,
-        confidence: 0.9842,
+        page: 3,
+        similarity: 1,
+      },
+      rehab_id: {
+        value: "",
+        confidence: 0,
+        bbox: null,
+        page: 3,
+        similarity: 0,
       },
       description: {
-        value: 'Power Adult Changing Table with Open Base by Clinton Industries Power Changing Table Models - 60-inch Changing Table',
+        value: "PATIENT FLOOR LIFT - MANGAR EAGLE LIF",
+        confidence: 0.9945,
         bbox: {
-          x_min: 0.2650980392,
-          y_min: 0.5157575758,
-          x_max: 0.6078431373,
-          y_max: 0.5521212121,
+          x_min: "0.3366013072",
+          y_min: "0.3676767677",
+          x_max: "0.3973856209",
+          y_max: "0.3767676768",
         },
-        page: 1,
-        confidence: 0.9845,
+        page: 3,
+        similarity: 1,
       },
       quantity: {
         value: 1,
+        confidence: 0.9915,
         bbox: {
-          x_min: 0.6768627451,
-          y_min: 0.5290909091,
-          x_max: 0.6823529412,
-          y_max: 0.5357575758,
+          x_min: "0.5444444444",
+          y_min: "0.3282828283",
+          x_max: "0.6169934641",
+          y_max: "0.3388888889",
         },
-        page: 1,
-        confidence: 0.9636,
+        page: 3,
+        similarity: 1,
       },
       unit_price: {
-        value: 1699.33,
+        value: 2550,
+        confidence: 0.9566,
         bbox: {
-          x_min: 0.7176470588,
-          y_min: 0.5284848485,
-          x_max: 0.7811764706,
-          y_max: 0.5375757576,
+          x_min: "0.8307189542",
+          y_min: "0.3676767677",
+          x_max: "0.8869281046",
+          y_max: "0.3767676768",
         },
-        page: 1,
-        confidence: 0.9722,
+        page: 3,
+        similarity: 1,
       },
       total_price: {
-        value: 1699.33,
+        value: 2550,
+        confidence: 0.9566,
         bbox: {
-          x_min: 0.8454901961,
-          y_min: 0.5290909091,
-          x_max: 0.9074509804,
-          y_max: 0.5363636364,
+          x_min: "0.8307189542",
+          y_min: "0.3676767677",
+          x_max: "0.8869281046",
+          y_max: "0.3767676768",
         },
-        page: 1,
-        confidence: 0.9748,
-      },
-    },
-    {
-      sku_number: {
-        value: 'CLI-RESBUS',
-        bbox: {
-          x_min: 0.0925490196,
-          y_min: 0.5781818182,
-          x_max: 0.177254902,
-          y_max: 0.5860606061,
-        },
-        page: 1,
-        confidence: 0.9813,
-      },
-      description: {
-        value:
-          'Power Adult Changing Table with Open Base by Clinton Industries Delivery Method - Lift Gate - Ship to My Home Address or Business Facility without Receiving Dock - Curbside Delivery',
-        bbox: {
-          x_min: 0.2650980392,
-          y_min: 0.5587878788,
-          x_max: 0.4909803922,
-          y_max: 0.6072727273,
-        },
-        page: 1,
-        confidence: 0.9812,
-      },
-      quantity: {
-        value: 1,
-        bbox: {
-          x_min: 0.6768627451,
-          y_min: 0.5781818182,
-          x_max: 0.6831372549,
-          y_max: 0.5854545455,
-        },
-        page: 1,
-        confidence: 0.9698,
-      },
-      unit_price: {
-        value: 675,
-        bbox: {
-          x_min: 0.7294117647,
-          y_min: 0.5781818182,
-          x_max: 0.7803921569,
-          y_max: 0.5860606061,
-        },
-        page: 1,
-        confidence: 0.9821,
-      },
-      total_price: {
-        value: 675,
-        bbox: {
-          x_min: 0.857254902,
-          y_min: 0.5781818182,
-          x_max: 0.9090196078,
-          y_max: 0.5866666667,
-        },
-        page: 1,
-        confidence: 0.98115,
+        page: 3,
+        similarity: 1,
       },
     },
   ],
