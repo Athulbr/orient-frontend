@@ -5,43 +5,43 @@ import PageContainer from '../../components/PageContainer';
 import { StatusCustomUI } from '../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
 
 interface ListPromatePageIF {
-  test?: string;
+    test?: string;
 }
 
 const ListPromatePage: React.FC<ListPromatePageIF> = () => {
-  const navigate = useNavigate();
-  const actionButtons = [
-    {
-      label: 'Create Promate',
-      action: () => {
-        navigate('/config/promate/create');
-      },
-    },
-  ];
-  const customFunctions = {
-    rowClickHandler: (row: Record<string, string>) => {
-      navigate(`/config/promate/update/${row._id}`);
-    },
-    editClickHandler: () => {
-      alert('vinayak');
-    },
-  };
-  const customUI = {
-    status: StatusCustomUI,
-  };
-  return (
-    <PageContainer className="gap-4">
-      <PageNameComponent name="Promate List" />
-      <UseTablebuilder
-        name="List Comments"
-        customFunctions={customFunctions}
-        fluidHeight
-        customUI={customUI}
-        deletePermission="delete:promate"
-        updatePermission="update:promate"
-      />
-    </PageContainer>
-  );
+    const navigate = useNavigate();
+    const actionButtons = [
+        {
+            label: 'Create Promate',
+            action: () => {
+                navigate('/config/promate/create');
+            }
+        }
+    ];
+    const customFunctions = {
+        rowClickHandler: (row: Record<string, string>) => {
+            navigate(`/config/promate/update/${row._id}`);
+        },
+        editClickHandler: () => {
+            alert('vinayak');
+        }
+    };
+    const customUI = {
+        status: StatusCustomUI
+    };
+    return (
+        <PageContainer className="gap-4">
+            <PageNameComponent name="Promate List" />
+            <UseTablebuilder
+                name="List Comments"
+                customFunctions={customFunctions}
+                fluidHeight
+                customUI={customUI}
+                deletePermission="delete:promate"
+                updatePermission="update:promate"
+            />
+        </PageContainer>
+    );
 };
 
 export default ListPromatePage;

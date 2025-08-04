@@ -4,15 +4,15 @@ import UnauthenticatedRoutes from './unauthenticated-routes';
 import AuthenticatedLayout from '../modules/layout/AuthenticatedLayout';
 
 const IndexRouter: React.FC = () => {
-  const accessToken = window?.sessionStorage?.getItem('accessToken') || '';
+    const accessToken = window?.sessionStorage?.getItem('accessToken') || '';
 
-  return accessToken ? (
-    <AuthenticatedLayout>
-      <AuthenticatedRoutes />
-    </AuthenticatedLayout>
-  ) : (
-    <UnauthenticatedRoutes />
-  );
+    return accessToken ? (
+        <AuthenticatedLayout>
+            <AuthenticatedRoutes />
+        </AuthenticatedLayout>
+    ) : (
+        <UnauthenticatedRoutes />
+    );
 };
 
 export default IndexRouter;

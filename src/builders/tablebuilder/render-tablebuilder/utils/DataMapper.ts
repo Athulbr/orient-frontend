@@ -1,20 +1,20 @@
 export function dataMapper(obj: any, path: string[]) {
-  try {
-    const result = path.reduce((current, key) => {
-      if (current === undefined || current === null) {
-        throw new Error('Invalid path');
-      }
+    try {
+        const result = path.reduce((current, key) => {
+            if (current === undefined || current === null) {
+                throw new Error('Invalid path');
+            }
 
-      return current[key];
-    }, obj);
+            return current[key];
+        }, obj);
 
-    if (result === undefined || result === null) {
-      return 'error';
+        if (result === undefined || result === null) {
+            return 'error';
+        }
+
+        // Convert result to string
+        return String(result);
+    } catch (error) {
+        return 'error';
     }
-
-    // Convert result to string
-    return String(result);
-  } catch (error) {
-    return 'error';
-  }
 }

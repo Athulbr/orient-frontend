@@ -4,45 +4,45 @@ import { useModuleState } from './hooks/moduleContext';
 import { useModulesApi } from './hooks/useModuleApi';
 
 export const ListModuleComponent: React.FC = () => {
-  const { setState, state } = useModuleState();
-  const { getModuleByIdApi, deleteModuleApi } = useModulesApi();
+    const { setState, state } = useModuleState();
+    const { getModuleByIdApi, deleteModuleApi } = useModulesApi();
 
-  const actionButtons = [
-    {
-      label: 'Create Module',
-      action: () => {
-        setState(prev => ({ ...prev, showCreateDialog: true }));
-      },
-    },
-  ];
+    const actionButtons = [
+        {
+            label: 'Create Module',
+            action: () => {
+                setState(prev => ({ ...prev, showCreateDialog: true }));
+            }
+        }
+    ];
 
-  const customFunctions = {
-    rowClickHandler: (row: any) => {
-      setState(prev => ({ ...prev, showViewDialog: true, id: row._id }));
-      getModuleByIdApi(row._id);
-    },
-    editClickHandler: (row: any) => {
-      setState(prev => ({ ...prev, showCreateDialog: true, module: row, id: row._id }));
-    },
-    deleteClickHandler: (row: any) => {
-      deleteModuleApi(row._id);
-    },
-  };
+    const customFunctions = {
+        rowClickHandler: (row: any) => {
+            setState(prev => ({ ...prev, showViewDialog: true, id: row._id }));
+            getModuleByIdApi(row._id);
+        },
+        editClickHandler: (row: any) => {
+            setState(prev => ({ ...prev, showCreateDialog: true, module: row, id: row._id }));
+        },
+        deleteClickHandler: (row: any) => {
+            deleteModuleApi(row._id);
+        }
+    };
 
-  const customUI = {
-    status: StatusCustomUI,
-  };
+    const customUI = {
+        status: StatusCustomUI
+    };
 
-  return (
-    <UseTablebuilder
-      name="List Module Table"
-      fluidHeight
-      refresh={state.refresh}
-      customFunctions={customFunctions}
-      customUI={customUI}
-      actionButtons={actionButtons}
-      deletePermission="delete:module"
-      updatePermission="update:module"
-    />
-  );
+    return (
+        <UseTablebuilder
+            name="List Module Table"
+            fluidHeight
+            refresh={state.refresh}
+            customFunctions={customFunctions}
+            customUI={customUI}
+            actionButtons={actionButtons}
+            deletePermission="delete:module"
+            updatePermission="update:module"
+        />
+    );
 };

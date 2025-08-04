@@ -10,21 +10,21 @@ const SignUpPage = lazy(() => import('../../modules/auth/signup'));
 const ConfirmSignUpPage = lazy(() => import('../../modules/auth/confirm-signup'));
 
 const AuthRoutes = () => {
-  return (
-    <Suspense fallback={<FullScreenLoader />}>
-      <AuthLayoutComponent>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/forgot-password/verify/:email/:token" element={<ConfirmForgotPasswordPage />} />
-          <Route path="/signup/verify/:email/:token" element={<ConfirmSignUpPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/*" element={<Navigate to="/auth/login" replace />} />
-        </Routes>
-      </AuthLayoutComponent>
-    </Suspense>
-  );
+    return (
+        <Suspense fallback={<FullScreenLoader />}>
+            <AuthLayoutComponent>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/forgot-password/verify/:email/:token" element={<ConfirmForgotPasswordPage />} />
+                    <Route path="/signup/verify/:email/:token" element={<ConfirmSignUpPage />} />
+                    <Route path="/signup" element={<SignUpPage />} />
+                    <Route path="/" element={<LoginPage />} />
+                    <Route path="/*" element={<Navigate to="/auth/login" replace />} />
+                </Routes>
+            </AuthLayoutComponent>
+        </Suspense>
+    );
 };
 
 export default AuthRoutes;

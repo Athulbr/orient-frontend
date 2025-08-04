@@ -1,7 +1,7 @@
 interface ViewTenantComponentIF {
-  test?: string;
+    test?: string;
 }
 
 export const ViewTenantComponent: React.FC<ViewTenantComponentIF> = () => {
-  return <div className="">ViewTenantComponent</div>;
+    return <div className="">ViewTenantComponent</div>;
 };

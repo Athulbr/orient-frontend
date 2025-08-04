@@ -5,14 +5,14 @@ const projectStateContext = createContext<ProjectContextIF | undefined>(undefine
 export const ProjectStateProvider = projectStateContext.Provider;
 
 export const useProjectState = () => {
-  const context = useContext(projectStateContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(projectStateContext);
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
 };
 
 interface ProjectContextIF {
-  state: ProjectStateIF;
-  setState: React.Dispatch<React.SetStateAction<ProjectStateIF>>;
+    state: ProjectStateIF;
+    setState: React.Dispatch<React.SetStateAction<ProjectStateIF>>;
 }

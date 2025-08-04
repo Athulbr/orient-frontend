@@ -55,10 +55,10 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         };
 
                         const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                        set({ refreshRecord: get().refreshRecord + 1 });
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                         });
-                        set({ refreshRecord: get().refreshRecord + 1 });
 
                         const body = {
                             s3FileName: s3Response?.data?.fileName,
@@ -93,6 +93,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         };
 
                         const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                        set({ refreshRecord: get().refreshRecord + 1 });
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                         });

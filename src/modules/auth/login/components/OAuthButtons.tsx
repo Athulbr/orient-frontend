@@ -8,19 +8,19 @@ import MicrosoftLogin from './msal';
 import ProfileContent from './profileContent';
 
 export const OAuthButtons: FC = () => {
-  const { loginWithGoogle, loginWithMSAL } = useLoginPageApi();
-  const { state } = useLoginPageState();
-  // const isAuthenticated = useIsAuthenticated();
+    const { loginWithGoogle, loginWithMSAL } = useLoginPageApi();
+    const { state } = useLoginPageState();
+    // const isAuthenticated = useIsAuthenticated();
 
-  return (
-    <section className="mt-8 flex w-full gap-4">
-      <Button className="w-full" outlined onClick={() => loginWithGoogle()} disabled={state.oAuthLoading}>
-        <GoogleIcon /> Google {state.oAuthLoading && <Spinner size={16} />}
-      </Button>
-      <MicrosoftLogin>{/* <ProfileContent data="auth" /> */}</MicrosoftLogin>
-      {/* <Button className="w-full" outlined onClick={() => loginWithMSAL()} disabled={state.oAuthLoading}>
+    return (
+        <section className="mt-8 flex w-full gap-4">
+            <Button className="w-full" outlined onClick={() => loginWithGoogle()} disabled={state.oAuthLoading}>
+                <GoogleIcon /> Google {state.oAuthLoading && <Spinner size={16} />}
+            </Button>
+            <MicrosoftLogin>{/* <ProfileContent data="auth" /> */}</MicrosoftLogin>
+            {/* <Button className="w-full" outlined onClick={() => loginWithMSAL()} disabled={state.oAuthLoading}>
         <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
       </Button> */}
-    </section>
-  );
+        </section>
+    );
 };

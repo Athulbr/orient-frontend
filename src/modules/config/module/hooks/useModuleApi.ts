@@ -5,67 +5,67 @@ import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
 
 export const useModulesApi = () => {
-  const { state, setState } = useModuleState();
-  const { id } = useParams();
-  const toast = useToastStore();
+    const { state, setState } = useModuleState();
+    const { id } = useParams();
+    const toast = useToastStore();
 
-  useEffect(() => {
-    if (!id) return;
-    setState(prev => ({ ...prev, projectId: id }));
-  }, [id]);
+    useEffect(() => {
+        if (!id) return;
+        setState(prev => ({ ...prev, projectId: id }));
+    }, [id]);
 
-  // ============================= CREATE ==================================
+    // ============================= CREATE ==================================
 
-  const createModuleApi = async (payload: any) => {
-    try {
-      setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module/create`, payload);
-      setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
-      toast.success('Module Created Successfully');
-    } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to Create Module');
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  };
+    const createModuleApi = async (payload: any) => {
+        try {
+            setState(prev => ({ ...prev, loading: true }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module/create`, payload);
+            setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
+            toast.success('Module Created Successfully');
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to Create Module');
+        } finally {
+            setState(prev => ({ ...prev, loading: false }));
+        }
+    };
 
-  const updateModuleApi = async (module: any) => {
-    try {
-      setState(prev => ({ ...prev, loading: true }));
-      const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/module/update/${state.id}`, module);
-      setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
-      toast.success('Module Updated Successfully');
-    } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to Update Module');
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  };
+    const updateModuleApi = async (module: any) => {
+        try {
+            setState(prev => ({ ...prev, loading: true }));
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/module/update/${state.id}`, module);
+            setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
+            toast.success('Module Updated Successfully');
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to Update Module');
+        } finally {
+            setState(prev => ({ ...prev, loading: false }));
+        }
+    };
 
-  const getModuleByIdApi = async (id: string) => {
-    try {
-      const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/module/${id}`);
-      toast.success('Module fetched successfully');
-      setState(prev => ({ ...prev, module: res.data, fields: res.data.fields }));
-    } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to fetch Module');
-    }
-  };
+    const getModuleByIdApi = async (id: string) => {
+        try {
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/module/${id}`);
+            toast.success('Module fetched successfully');
+            setState(prev => ({ ...prev, module: res.data, fields: res.data.fields }));
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to fetch Module');
+        }
+    };
 
-  const deleteModuleApi = async (id: string) => {
-    try {
-      const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/module/delete/${id}`);
-      setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
-      toast.success('Module deleted successfully');
-      return true;
-    } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Failed to delete Module');
-    }
-  };
+    const deleteModuleApi = async (id: string) => {
+        try {
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/module/delete/${id}`);
+            setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
+            toast.success('Module deleted successfully');
+            return true;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to delete Module');
+        }
+    };
 
-  return { createModuleApi, getModuleByIdApi, updateModuleApi, deleteModuleApi };
+    return { createModuleApi, getModuleByIdApi, updateModuleApi, deleteModuleApi };
 };

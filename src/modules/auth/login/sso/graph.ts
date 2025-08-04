@@ -5,17 +5,17 @@ import { graphConfig } from './msal-config';
  * @param accessToken
  */
 export async function callMsGraph(accessToken: string): Promise<any> {
-  const headers = new Headers();
-  const bearer = `Bearer ${accessToken}`;
+    const headers = new Headers();
+    const bearer = `Bearer ${accessToken}`;
 
-  headers.append('Authorization', bearer);
+    headers.append('Authorization', bearer);
 
-  const options = {
-    method: 'GET',
-    headers: headers,
-  };
+    const options = {
+        method: 'GET',
+        headers: headers
+    };
 
-  return fetch(graphConfig.graphMeEndpoint, options)
-    .then(response => response.json())
-    .catch(error => console.error(error));
+    return fetch(graphConfig.graphMeEndpoint, options)
+        .then(response => response.json())
+        .catch(error => console.error(error));
 }

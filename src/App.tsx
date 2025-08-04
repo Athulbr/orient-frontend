@@ -5,13 +5,13 @@ import IndexRouter from './router';
 import FullScreenLoader from './components/FullScreenLoader';
 
 export const App: React.FC = () => {
-  return (
-    <div className="h-screen w-screen">
-      <IndexRouter />
-      <Suspense fallback={<FullScreenLoader />}>
-        <GlobalAlert />
-        <ToastContainer />
-      </Suspense>
-    </div>
-  );
+    return (
+        <div className="h-screen w-screen">
+            <IndexRouter />
+            <Suspense fallback={<FullScreenLoader />}>
+                <GlobalAlert />
+                <ToastContainer />
+            </Suspense>
+        </div>
+    );
 };

@@ -7,31 +7,31 @@ import { useNavigate } from 'react-router-dom';
 import { UserDetailsComponent } from './UserDetailsComponent';
 
 export interface UserAccountStateIF {
-  user: any | null;
-  loadingUser: boolean;
-  updateNameDialog: boolean;
-  updatePasswordDialog: boolean;
+    user: any | null;
+    loadingUser: boolean;
+    updateNameDialog: boolean;
+    updatePasswordDialog: boolean;
 }
 const initialState = {
-  user: null,
-  loadingUser: false,
-  updateNameDialog: false,
-  updatePasswordDialog: false,
+    user: null,
+    loadingUser: false,
+    updateNameDialog: false,
+    updatePasswordDialog: false
 };
 
 const UserAccountDetailsPage: React.FC = () => {
-  const [state, setState] = useState<UserAccountStateIF>(initialState);
-  const navigate = useNavigate();
+    const [state, setState] = useState<UserAccountStateIF>(initialState);
+    const navigate = useNavigate();
 
-  return (
-    <UserAccountStateProvider value={{ state, setState }}>
-      <PageContainer className="gap-4 pt-6">
-        <Breadcrumbs page="UserAccount" className="px-7" />
-        <PageNameComponent className="border-b px-6 pb-4" name="Account Details" showBackButton customGoBackFunction={() => navigate('/')} />
-        <UserDetailsComponent />
-      </PageContainer>
-    </UserAccountStateProvider>
-  );
+    return (
+        <UserAccountStateProvider value={{ state, setState }}>
+            <PageContainer className="gap-4 pt-6">
+                <Breadcrumbs page="UserAccount" className="px-7" />
+                <PageNameComponent className="border-b px-6 pb-4" name="Account Details" showBackButton customGoBackFunction={() => navigate('/')} />
+                <UserDetailsComponent />
+            </PageContainer>
+        </UserAccountStateProvider>
+    );
 };
 
 export default UserAccountDetailsPage;

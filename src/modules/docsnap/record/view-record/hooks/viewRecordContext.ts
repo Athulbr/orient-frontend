@@ -5,14 +5,14 @@ const viewRecordStateContext = createContext<ViewRecordContextIF | undefined>(un
 export const ViewRecordStateProvider = viewRecordStateContext.Provider;
 
 export const useViewRecordState = () => {
-  const context = useContext(viewRecordStateContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(viewRecordStateContext);
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
 };
 
 interface ViewRecordContextIF {
-  state: ViewRecordStateIF;
-  setState: React.Dispatch<React.SetStateAction<ViewRecordStateIF>>;
+    state: ViewRecordStateIF;
+    setState: React.Dispatch<React.SetStateAction<ViewRecordStateIF>>;
 }

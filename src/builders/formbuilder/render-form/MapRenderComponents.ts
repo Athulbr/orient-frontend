@@ -40,59 +40,59 @@ import { validateFile } from './file-render';
 import { validateSignature } from './signature-render';
 
 export const mapRenderComponents: { [key: string]: React.FC<any> } = {
-  plain_text: PlainTextRender,
-  number: NumberRender,
-  email: EmailRender,
-  password: PasswordRender,
-  phone_number: PhoneNumberRender,
-  multiline_text: MultilineTextRender,
-  date: DateRender,
-  time: TimeRender,
-  color: ColorRender,
-  rating: RatingRender,
-  checkbox: CheckboxRender,
-  url: UrlRender,
-  image: ImageRender,
-  file: FileRender,
-  signature: SignatureRender,
-  single_select: SingleSelectRender,
-  multi_select: MultiSelectRender,
-  multi_string: MultiStringRender,
-  section_header: SectionHeaderRender,
+    plain_text: PlainTextRender,
+    number: NumberRender,
+    email: EmailRender,
+    password: PasswordRender,
+    phone_number: PhoneNumberRender,
+    multiline_text: MultilineTextRender,
+    date: DateRender,
+    time: TimeRender,
+    color: ColorRender,
+    rating: RatingRender,
+    checkbox: CheckboxRender,
+    url: UrlRender,
+    image: ImageRender,
+    file: FileRender,
+    signature: SignatureRender,
+    single_select: SingleSelectRender,
+    multi_select: MultiSelectRender,
+    multi_string: MultiStringRender,
+    section_header: SectionHeaderRender
 };
 
 const validationFunctionsMap: { [key: string]: (value: any, config: any) => string | undefined } = {
-  plain_text: validatePlainText,
-  multiline_text: validatePlainText,
-  number: validateNumber,
-  email: validateEmail,
-  password: validatePassword,
-  url: validateUrl,
-  phone_number: validatePhoneNumber,
-  date: validateDate,
-  time: validateTime,
-  color: validateColor, // No validation
-  rating: validateRating,
-  checkbox: validateCheckbox,
-  image: validateImage,
-  file: validateFile,
-  signature: validateSignature,
-  single_select: validateSingleSelect,
-  multi_select: validateMultiSelect,
-  multi_string: validateMultiString,
-  section_header: validateSectionHeader, // No validation
+    plain_text: validatePlainText,
+    multiline_text: validatePlainText,
+    number: validateNumber,
+    email: validateEmail,
+    password: validatePassword,
+    url: validateUrl,
+    phone_number: validatePhoneNumber,
+    date: validateDate,
+    time: validateTime,
+    color: validateColor, // No validation
+    rating: validateRating,
+    checkbox: validateCheckbox,
+    image: validateImage,
+    file: validateFile,
+    signature: validateSignature,
+    single_select: validateSingleSelect,
+    multi_select: validateMultiSelect,
+    multi_string: validateMultiString,
+    section_header: validateSectionHeader // No validation
 };
 
 export const validateAllFields = (fields: FieldIF[], setFields: Dispatch<SetStateAction<FieldIF[]>>): boolean => {
-  // Validate all fields first and create a new array with validation results
-  const validatedFields = fields.map(field => ({
-    ...field,
-    errorMessage: validationFunctionsMap[field.type](field.value, field.config),
-  }));
+    // Validate all fields first and create a new array with validation results
+    const validatedFields = fields.map(field => ({
+        ...field,
+        errorMessage: validationFunctionsMap[field.type](field.value, field.config)
+    }));
 
-  // Update the state once with all validations applied
-  setFields(validatedFields);
+    // Update the state once with all validations applied
+    setFields(validatedFields);
 
-  // Return whether all fields are valid
-  return validatedFields.every(field => field.errorMessage === '');
+    // Return whether all fields are valid
+    return validatedFields.every(field => field.errorMessage === '');
 };

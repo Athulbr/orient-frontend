@@ -5,14 +5,14 @@ const documentStateContext = createContext<DocumentContextIF | undefined>(undefi
 export const DocumentStateProvider = documentStateContext.Provider;
 
 export const useDocumentState = () => {
-  const context = useContext(documentStateContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(documentStateContext);
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
 };
 
 interface DocumentContextIF {
-  state: DocumentStateIF;
-  setState: React.Dispatch<React.SetStateAction<DocumentStateIF>>;
+    state: DocumentStateIF;
+    setState: React.Dispatch<React.SetStateAction<DocumentStateIF>>;
 }

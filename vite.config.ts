@@ -5,39 +5,39 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  preview: {
-    allowedHosts: ['dev.makez.ai', 'app.makez.ai', 'atl-xfactr-web.maximtech.com', 'xfactr-web.rehabmart.com', 'demo.makez.ai'],
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/test/setup.ts',
-        '**/*.d.ts',
-        '**/*.config.{js,ts}',
-        '**/vite.config.ts',
-        'dist/',
-        'coverage/',
-        '**/*.test.{js,ts,jsx,tsx}',
-        '**/*.spec.{js,ts,jsx,tsx}',
-        '**/main.tsx',
-        '**/index.tsx',
-      ],
-      include: ['src/**/*.{js,ts,jsx,tsx}'],
-      thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
-        },
-      },
+    plugins: [react(), tailwindcss()],
+    preview: {
+        allowedHosts: ['dev.makez.ai', 'app.makez.ai', 'atl-xfactr-web.maximtech.com', 'xfactr-web.rehabmart.com', 'demo.makez.ai']
     },
-  },
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: './src/test/setup.ts',
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json', 'html'],
+            exclude: [
+                'node_modules/',
+                'src/test/setup.ts',
+                '**/*.d.ts',
+                '**/*.config.{js,ts}',
+                '**/vite.config.ts',
+                'dist/',
+                'coverage/',
+                '**/*.test.{js,ts,jsx,tsx}',
+                '**/*.spec.{js,ts,jsx,tsx}',
+                '**/main.tsx',
+                '**/index.tsx'
+            ],
+            include: ['src/**/*.{js,ts,jsx,tsx}'],
+            thresholds: {
+                global: {
+                    branches: 80,
+                    functions: 80,
+                    lines: 80,
+                    statements: 80
+                }
+            }
+        }
+    }
 });

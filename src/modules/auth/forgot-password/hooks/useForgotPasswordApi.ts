@@ -4,45 +4,45 @@ import httpRequest from '../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 
 export const useForgotPasswordApi = () => {
-  const { state, setState } = useForgotPasswordState();
-  const toast = useToastStore();
+    const { state, setState } = useForgotPasswordState();
+    const toast = useToastStore();
 
-  const handleForgotPassword = async () => {
-    setState(prev => ({ ...prev, isSubmitClicked: true }));
+    const handleForgotPassword = async () => {
+        setState(prev => ({ ...prev, isSubmitClicked: true }));
 
-    // Validate email
-    const emailError = validateEmail(state.email);
-    if (emailError) {
-      setState(prev => ({
-        ...prev,
-        fieldError: { ...prev.fieldError, email: emailError },
-      }));
-      return;
-    }
+        // Validate email
+        const emailError = validateEmail(state.email);
+        if (emailError) {
+            setState(prev => ({
+                ...prev,
+                fieldError: { ...prev.fieldError, email: emailError }
+            }));
+            return;
+        }
 
-    setState(prev => ({ ...prev, loading: true, error: '' }));
+        setState(prev => ({ ...prev, loading: true, error: '' }));
 
-    try {
-      const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password`, { email: state.email });
+        try {
+            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password`, { email: state.email });
 
-      if (response.success) {
-        setState(prev => ({ ...prev, success: true }));
-        toast.success('Password reset link sent to your email');
-      } else {
-        throw new Error(response.message || 'Failed to send reset link');
-      }
-    } catch (error: any) {
-      console.error('Forgot password error:', error);
-      setState(prev => ({
-        ...prev,
-        error: 'Failed to send reset link. Please try again.',
-      }));
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  };
+            if (response.success) {
+                setState(prev => ({ ...prev, success: true }));
+                toast.success('Password reset link sent to your email');
+            } else {
+                throw new Error(response.message || 'Failed to send reset link');
+            }
+        } catch (error: any) {
+            console.error('Forgot password error:', error);
+            setState(prev => ({
+                ...prev,
+                error: 'Failed to send reset link. Please try again.'
+            }));
+        } finally {
+            setState(prev => ({ ...prev, loading: false }));
+        }
+    };
 
-  return {
-    handleForgotPassword,
-  };
+    return {
+        handleForgotPassword
+    };
 };

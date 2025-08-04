@@ -5,58 +5,58 @@ import CustomSelect from './SelectInput';
 import httpRequest from '../../../../global-utils/httpRequest';
 
 export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, setFields, inputWrapperClassName }) => {
-  const field = fields[index];
-  const { config, value, errorMessage } = field;
-  const [focus, setFocus] = useState(false);
-  const [optionList, setOptionList] = useState([]);
-  const [apiError, setApiError] = useState('');
+    const field = fields[index];
+    const { config, value, errorMessage } = field;
+    const [focus, setFocus] = useState(false);
+    const [optionList, setOptionList] = useState([]);
+    const [apiError, setApiError] = useState('');
 
-  useEffect(() => {
-    if (config.optionSourceType === 'from API') {
-      const getOptions = async () => {
-        try {
-          const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}${config.apiEndpoint}`);
-          setOptionList(res.data);
-        } catch (error) {
-          setApiError('Failed to fetch options');
+    useEffect(() => {
+        if (config.optionSourceType === 'from API') {
+            const getOptions = async () => {
+                try {
+                    const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}${config.apiEndpoint}`);
+                    setOptionList(res.data);
+                } catch (error) {
+                    setApiError('Failed to fetch options');
+                }
+            };
+            getOptions();
         }
-      };
-      getOptions();
+    }, [config.optionSourceType]);
+
+    const handleBlur = () => {
+        setFields(prev => {
+            const updatedFields = [...prev];
+            updatedFields[index] = { ...field, errorMessage: validateSingleSelect(value, config) };
+            return updatedFields;
+        });
+        setFocus(false);
+    };
+
+    const handleChange = (newValue: string) => {
+        setFields(prev => {
+            const updatedFields = [...prev];
+            updatedFields[index] = { ...field, value: newValue, errorMessage: validateSingleSelect(newValue, config) };
+            return updatedFields;
+        });
+    };
+
+    let options = config.optionSourceType === 'from API' ? optionList : config.optionSourceType === 'from code' ? [] : config.options;
+
+    if (!value) {
+        field.value = config.defaultValue;
     }
-  }, [config.optionSourceType]);
 
-  const handleBlur = () => {
-    setFields(prev => {
-      const updatedFields = [...prev];
-      updatedFields[index] = { ...field, errorMessage: validateSingleSelect(value, config) };
-      return updatedFields;
-    });
-    setFocus(false);
-  };
-
-  const handleChange = (newValue: string) => {
-    setFields(prev => {
-      const updatedFields = [...prev];
-      updatedFields[index] = { ...field, value: newValue, errorMessage: validateSingleSelect(newValue, config) };
-      return updatedFields;
-    });
-  };
-
-  let options = config.optionSourceType === 'from API' ? optionList : config.optionSourceType === 'from code' ? [] : config.options;
-
-  if (!value) {
-    field.value = config.defaultValue;
-  }
-
-  return (
-    <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={apiError || errorMessage || ''}>
-      <CustomSelect onBlur={handleBlur} onChange={handleChange} value={field.value} options={options || []} />
-    </InputWrapper>
-  );
+    return (
+        <InputWrapper className={inputWrapperClassName} focus={focus} field={field} error={apiError || errorMessage || ''}>
+            <CustomSelect onBlur={handleBlur} onChange={handleChange} value={field.value} options={options || []} />
+        </InputWrapper>
+    );
 };
 
 export const validateSingleSelect = (value: string, config: FieldConfigIF): string => {
-  if (config.mandatory && !value) return 'This field is required.';
+    if (config.mandatory && !value) return 'This field is required.';
 
-  return '';
+    return '';
 };

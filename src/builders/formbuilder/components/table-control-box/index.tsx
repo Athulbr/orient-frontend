@@ -6,21 +6,21 @@ import BackButton from '../../../../components/BackButton';
 import { useNavigate } from 'react-router-dom';
 
 export interface PropsIF {
-  children?: ReactNode;
-  pageName?: string;
+    children?: ReactNode;
+    pageName?: string;
 }
 
 const PageActionBox: React.FC<PropsIF> = ({ children, pageName }) => {
-  const navigate = useNavigate();
-  return (
-    <div className={style.tableControlBox}>
-      <div className={style.tableName}>
-        <BackButton onClick={() => navigate(-1)} />
-        {pageName}
-      </div>
-      <div className={style.tableControl}>{children}</div>
-    </div>
-  );
+    const navigate = useNavigate();
+    return (
+        <div className={style.tableControlBox}>
+            <div className={style.tableName}>
+                <BackButton onClick={() => navigate(-1)} />
+                {pageName}
+            </div>
+            <div className={style.tableControl}>{children}</div>
+        </div>
+    );
 };
 
 export default PageActionBox;

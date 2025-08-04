@@ -6,38 +6,38 @@ import { useLoginPageState } from '../hooks/LoginPageStateProvider';
 import Spinner from '../../../../components/Spinner';
 
 const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
-  const { instance } = useMsal();
-  const { state } = useLoginPageState();
+    const { instance } = useMsal();
+    const { state } = useLoginPageState();
 
-  const loginWithMicrosoft = async () => {
-    console.info('Login with Microsoft initiated');
-    instance.loginRedirect(loginRequest).catch(e => {
-      console.error('Sign In issue---->', e);
-    });
-  };
+    const loginWithMicrosoft = async () => {
+        console.info('Login with Microsoft initiated');
+        instance.loginRedirect(loginRequest).catch(e => {
+            console.error('Sign In issue---->', e);
+        });
+    };
 
-  const handleLogout = () => {
-    instance.logoutRedirect({
-      postLogoutRedirectUri: '/',
-    });
-  };
+    const handleLogout = () => {
+        instance.logoutRedirect({
+            postLogoutRedirectUri: '/'
+        });
+    };
 
-  return (
-    <>
-      <AuthenticatedTemplate>
-        <Button className="w-full" outlined onClick={handleLogout} disabled={state.oAuthLoading}>
-          <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
-        </Button>
-      </AuthenticatedTemplate>
-      <UnauthenticatedTemplate>
-        <Button className="w-full" outlined onClick={loginWithMicrosoft} disabled={state.oAuthLoading}>
-          <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
-        </Button>
-      </UnauthenticatedTemplate>
+    return (
+        <>
+            <AuthenticatedTemplate>
+                <Button className="w-full" outlined onClick={handleLogout} disabled={state.oAuthLoading}>
+                    <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
+                </Button>
+            </AuthenticatedTemplate>
+            <UnauthenticatedTemplate>
+                <Button className="w-full" outlined onClick={loginWithMicrosoft} disabled={state.oAuthLoading}>
+                    <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
+                </Button>
+            </UnauthenticatedTemplate>
 
-      {children}
-    </>
-  );
+            {children}
+        </>
+    );
 };
 
 export default MicrosoftLogin;

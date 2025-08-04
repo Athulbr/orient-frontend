@@ -5,14 +5,14 @@ const promptTuningStateContext = createContext<PromptTuningContextIF | undefined
 export const PromptTuningStateProvider = promptTuningStateContext.Provider;
 
 export const usePromptTuningState = () => {
-  const context = useContext(promptTuningStateContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(promptTuningStateContext);
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
 };
 
 interface PromptTuningContextIF {
-  state: PromptTuningStateIF;
-  setState: React.Dispatch<React.SetStateAction<PromptTuningStateIF>>;
+    state: PromptTuningStateIF;
+    setState: React.Dispatch<React.SetStateAction<PromptTuningStateIF>>;
 }

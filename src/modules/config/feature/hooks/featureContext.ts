@@ -5,14 +5,14 @@ const featureStateContext = createContext<FeatureContextIF | undefined>(undefine
 export const FeatureStateProvider = featureStateContext.Provider;
 
 export const useFeatureState = () => {
-  const context = useContext(featureStateContext);
-  if (!context) {
-    throw new Error('useFeatureContext must be used within a FeatureStateProvider');
-  }
-  return context;
+    const context = useContext(featureStateContext);
+    if (!context) {
+        throw new Error('useFeatureContext must be used within a FeatureStateProvider');
+    }
+    return context;
 };
 
 interface FeatureContextIF {
-  state: FeatureStateIF;
-  setState: React.Dispatch<React.SetStateAction<FeatureStateIF>>;
+    state: FeatureStateIF;
+    setState: React.Dispatch<React.SetStateAction<FeatureStateIF>>;
 }
