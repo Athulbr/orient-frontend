@@ -3,10 +3,7 @@ import { useViewRecordState } from "./viewRecordContext";
 import { useToastStore } from "../../../../../components/toast/ToastStore";
 import httpRequest from "../../../../../global-utils/httpRequest";
 import { fileTypeFromBuffer } from "file-type";
-import {
-  convertPdfToImages,
-  filterExtractedDataForInvoiceGeneration,
-} from "../utils";
+import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from "../utils";
 import { useS3DocumentsStore } from "../../../../../zustand-store/useStoredDocuments";
 
 export const useViewRecordApi = () => {
@@ -31,18 +28,10 @@ export const useViewRecordApi = () => {
     let pdfFile: any;
     let imageUrlArray;
     if (getFileType?.mime && getFileType?.mime !== "application/pdf") {
-      pdfFile = await binaryToFile(
-        uint8Array,
-        `image.${getFileType.ext}`,
-        getFileType?.mime
-      );
+      pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
       imageUrlArray = [URL.createObjectURL(pdfFile).toString()];
     } else {
-      pdfFile = await binaryToFile(
-        uint8Array,
-        `document.${getFileType?.ext}`,
-        getFileType?.mime
-      );
+      pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
       imageUrlArray = await convertPdfToImages(pdfFile);
     }
 
@@ -56,10 +45,7 @@ export const useViewRecordApi = () => {
   const getRecordApiById = async (id: string) => {
     try {
       setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest(
-        "GET",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`
-      );
+      const res: any = await httpRequest("GET", `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
       if (res.data.imageFileNames) {
         setState((prev) => ({
           ...prev,
@@ -73,20 +59,14 @@ export const useViewRecordApi = () => {
       const arrayFields: Record<string, any>[] = [];
       const tableNames: string[] = [];
       if (res.data.extractedData) {
-        const extractedData = JSON.parse(
-          JSON.stringify(res.data.extractedData)
-        );
+        const extractedData = JSON.parse(JSON.stringify(res.data.extractedData));
         // const extractedData = sampleExtractedData;
         Object.entries(extractedData).forEach(([key, value]: any) => {
           if (Array.isArray(value)) {
             // its array
             arrayFields.push(value);
             tableNames.push(key);
-          } else if (
-            typeof value === "object" &&
-            value !== null &&
-            value?.value === undefined
-          ) {
+          } else if (typeof value === "object" && value !== null && value?.value === undefined) {
             // its object
             objectFields[key] = value;
           }
@@ -126,11 +106,7 @@ export const useViewRecordApi = () => {
       botName: state.record?.pdfFileName,
     };
 
-    const response: any = await httpRequest(
-      "POST",
-      `https://demo.makez.ai/chatbot/query`,
-      requestBody
-    );
+    const response: any = await httpRequest("POST", `https://demo.makez.ai/chatbot/query`, requestBody);
 
     setState((prev) => ({
       ...prev,
@@ -158,11 +134,7 @@ export const useViewRecordApi = () => {
         name: state?.record?.name,
       };
       setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest(
-        "POST",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/history/rehab/create`,
-        payload
-      );
+      const res: any = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/api/idp/history/rehab/create`, payload);
       toast.success("Record submitted successfully");
       navigate("/docsnap/record/list");
     } catch (error) {
@@ -188,11 +160,7 @@ export const useViewRecordApi = () => {
       };
 
       setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest(
-        "PATCH",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`,
-        payload
-      );
+      const res: any = await httpRequest("PATCH", `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
       toast.success("Record updated successfully");
       navigate("/");
     } catch (error) {
@@ -205,11 +173,7 @@ export const useViewRecordApi = () => {
   const updateExtractedData = async (extractedData: any) => {
     try {
       setState((prev) => ({ ...prev, loadingData: true, loadingS3File: true }));
-      const res: any = await httpRequest(
-        "PATCH",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`,
-        { extractedData }
-      );
+      const res: any = await httpRequest("PATCH", `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, { extractedData });
       toast.success("Record updated successfully");
     } catch (error) {
       console.error("error:===========", error);
@@ -220,18 +184,12 @@ export const useViewRecordApi = () => {
   };
   const generateInvoiceWithAI = async () => {
     try {
-      const filteredData = filterExtractedDataForInvoiceGeneration(
-        state.record?.extractedData
-      );
+      const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
       setState((prev) => ({ ...prev, generatingInvoice: true }));
       // test
-      const res: any = await httpRequest(
-        "POST",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`,
-        {
-          purchaseOrder: filteredData,
-        }
-      );
+      const res: any = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`, {
+        purchaseOrder: filteredData,
+      });
       setState((prev) => ({
         ...prev,
         invoiceContent: res.invoice || "Error generating invoice",
@@ -252,11 +210,7 @@ export const useViewRecordApi = () => {
         document: state.record?.templateId._id, // TODO: update this
       };
       setState((prev) => ({ ...prev, creatingRequest: true }));
-      const res: any = await httpRequest(
-        "POST",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`,
-        requestBody
-      );
+      const res: any = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`, requestBody);
       toast.success("Request created successfully");
     } catch (error) {
       console.error("error:===========", error);
@@ -277,11 +231,7 @@ export const useViewRecordApi = () => {
         templateId: state.record?.templateId._id,
       };
       setState((prev) => ({ ...prev, creatingRequest: true }));
-      const res: any = await httpRequest(
-        "POST",
-        `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`,
-        requestBody
-      );
+      const res: any = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`, requestBody);
 
       toast.success("Comment created successfully");
     } catch (error) {
@@ -305,11 +255,7 @@ export const useViewRecordApi = () => {
   };
 };
 
-export const binaryToFile = async (
-  binaryData: Uint8Array,
-  fileName: string,
-  mimeType: string = "application/pdf"
-): Promise<File> => {
+export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = "application/pdf"): Promise<File> => {
   const blob = new Blob([binaryData], { type: mimeType });
   return new File([blob], fileName, { type: mimeType });
 };
