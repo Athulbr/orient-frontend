@@ -47,6 +47,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         columnNames = lineItems.subFields.map((item: any) => item.name);
       }
     }
+    console.log('columnNames:===========', columnNames);
     // Create a new row object with the same column structure
     const newRow: { [key: string]: { value: string } } = {};
     columnNames.forEach(columnName => {
