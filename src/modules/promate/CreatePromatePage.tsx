@@ -1,9 +1,9 @@
 interface CreatePromatePageIF {
-  test?: string;
+    test?: string;
 }
 
 const CreatePromatePage: React.FC<CreatePromatePageIF> = () => {
-  return <div className="">CreatePromatePage</div>;
+    return <div className="">CreatePromatePage</div>;
 };
 
 export default CreatePromatePage;

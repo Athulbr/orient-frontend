@@ -5,14 +5,14 @@ import FullScreenLoader from '../../components/FullScreenLoader';
 import UserAccountDetailsPage from '../../modules/config/user/user-account';
 
 const UserRoutes = () => {
-  return (
-    <Suspense fallback={<FullScreenLoader />}>
-      <Routes>
-        <Route path="/account/:id" element={<UserAccountDetailsPage />} />
-        <Route path="/*" element={<NotFoundPage />} />
-      </Routes>
-    </Suspense>
-  );
+    return (
+        <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+                <Route path="/account/:id" element={<UserAccountDetailsPage />} />
+                <Route path="/*" element={<NotFoundPage />} />
+            </Routes>
+        </Suspense>
+    );
 };
 
 export default UserRoutes;

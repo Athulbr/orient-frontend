@@ -5,14 +5,14 @@ const viewTemplateContext = createContext<ViewTemplateContextIF | undefined>(und
 export const ViewTemplateStateProvider = viewTemplateContext.Provider;
 
 export const useViewTemplateState = () => {
-  const context = useContext(viewTemplateContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(viewTemplateContext);
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
 };
 
 interface ViewTemplateContextIF {
-  state: ViewTemplateStateIF;
-  setState: React.Dispatch<React.SetStateAction<ViewTemplateStateIF>>;
+    state: ViewTemplateStateIF;
+    setState: React.Dispatch<React.SetStateAction<ViewTemplateStateIF>>;
 }

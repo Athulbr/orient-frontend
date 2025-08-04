@@ -3,23 +3,23 @@ import { useRoleState } from './hooks/roleContext';
 import { useRolesApi } from './hooks/useRoleApi';
 
 interface CreteRoleComponentIF {
-  test?: string;
+    test?: string;
 }
 
 const CreteRoleComponent: React.FC<CreteRoleComponentIF> = () => {
-  const { state, setState } = useRoleState();
-  const { createRoleApi, updateRoleApi } = useRolesApi();
-  return (
-    <UseFormbuilder
-      isOpen={state.showCreateDialog}
-      title={state.role ? 'Update Role' : 'Create Role'}
-      name="Create Role Form"
-      className="w-130"
-      existingData={state.role || {}}
-      onSubmit={e => (state.role ? updateRoleApi(e) : createRoleApi(e))}
-      closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', role: null }))}
-    />
-  );
+    const { state, setState } = useRoleState();
+    const { createRoleApi, updateRoleApi } = useRolesApi();
+    return (
+        <UseFormbuilder
+            isOpen={state.showCreateDialog}
+            title={state.role ? 'Update Role' : 'Create Role'}
+            name="Create Role Form"
+            className="w-130"
+            existingData={state.role || {}}
+            onSubmit={e => (state.role ? updateRoleApi(e) : createRoleApi(e))}
+            closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', role: null }))}
+        />
+    );
 };
 
 export default CreteRoleComponent;

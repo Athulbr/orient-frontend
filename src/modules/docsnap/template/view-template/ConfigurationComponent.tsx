@@ -1,7 +1,7 @@
 interface ConfigurationComponentIF {
-  test?: string;
+    test?: string;
 }
 
 export const ConfigurationComponent: React.FC<ConfigurationComponentIF> = () => {
-  return <div className="">ConfigurationComponent</div>;
+    return <div className="">ConfigurationComponent</div>;
 };

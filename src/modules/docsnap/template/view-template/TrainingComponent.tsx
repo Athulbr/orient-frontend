@@ -1,7 +1,7 @@
 interface TrainingComponentIF {
-  test?: string;
+    test?: string;
 }
 
 export const TrainingComponent: React.FC<TrainingComponentIF> = () => {
-  return <div className="">TrainingComponent</div>;
+    return <div className="">TrainingComponent</div>;
 };

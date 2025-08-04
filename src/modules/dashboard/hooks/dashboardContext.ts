@@ -5,14 +5,14 @@ const dashboardStateContext = createContext<DashboardContextIF | undefined>(unde
 export const DashboardStateProvider = dashboardStateContext.Provider;
 
 export const useDashboardState = () => {
-  const context = useContext(dashboardStateContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
+    const context = useContext(dashboardStateContext);
+    if (!context) {
+        throw new Error('useAppContext must be used within an AppProvider');
+    }
+    return context;
 };
 
 interface DashboardContextIF {
-  state: DashboardStateIF;
-  setState: React.Dispatch<React.SetStateAction<DashboardStateIF>>;
+    state: DashboardStateIF;
+    setState: React.Dispatch<React.SetStateAction<DashboardStateIF>>;
 }

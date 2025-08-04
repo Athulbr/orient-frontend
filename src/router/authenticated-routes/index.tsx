@@ -9,18 +9,18 @@ import DocSnapRoutes from './DocSnapRoutes';
 import UserRoutes from './UserRoutes';
 
 const AuthenticatedRoutes = () => {
-  return (
-    <Suspense fallback={<FullScreenLoader />}>
-      <Routes>
-        <Route path="/docsnap/*" element={<DocSnapRoutes />} />
-        <Route path="/promate/*" element={<PromateRoutes />} />
-        <Route path="/user/*" element={<UserRoutes />} />
-        <Route path="/config/*" element={<ConfigRoutes />} />
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/*" element={<NotFoundPage />} />
-      </Routes>
-    </Suspense>
-  );
+    return (
+        <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+                <Route path="/docsnap/*" element={<DocSnapRoutes />} />
+                <Route path="/promate/*" element={<PromateRoutes />} />
+                <Route path="/user/*" element={<UserRoutes />} />
+                <Route path="/config/*" element={<ConfigRoutes />} />
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/*" element={<NotFoundPage />} />
+            </Routes>
+        </Suspense>
+    );
 };
 
 export default AuthenticatedRoutes;

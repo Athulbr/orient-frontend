@@ -5,77 +5,77 @@ import { TablebuilderSettingsIF } from '../interface';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 
 interface UseTablebuilderPropsIF {
-  fluidHeight?: boolean;
-  name: string;
-  customUI?: Record<string, ({ data }: { data: any }) => JSX.Element>;
-  externalFilters?: Record<string, any>;
-  customFunctions?: Record<string, (row: any, data: any) => void>;
-  actionButtons?: { label: string; action: () => void }[];
-  refresh?: number;
-  disableLoader?: boolean;
-  updatedQuery?: (query: any) => any;
-  deletePermission?: string;
-  updatePermission?: string;
+    fluidHeight?: boolean;
+    name: string;
+    customUI?: Record<string, ({ data }: { data: any }) => JSX.Element>;
+    externalFilters?: Record<string, any>;
+    customFunctions?: Record<string, (row: any, data: any) => void>;
+    actionButtons?: { label: string; action: () => void }[];
+    refresh?: number;
+    disableLoader?: boolean;
+    updatedQuery?: (query: any) => any;
+    deletePermission?: string;
+    updatePermission?: string;
 }
 
 export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
-  name,
-  customUI,
-  customFunctions,
-  fluidHeight,
-  externalFilters,
-  actionButtons,
-  refresh,
-  disableLoader,
-  updatedQuery,
-  deletePermission,
-  updatePermission,
+    name,
+    customUI,
+    customFunctions,
+    fluidHeight,
+    externalFilters,
+    actionButtons,
+    refresh,
+    disableLoader,
+    updatedQuery,
+    deletePermission,
+    updatePermission
 }) => {
-  const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
-  useEffect(() => {
-    const tablebuilder = window?.sessionStorage?.getItem('tablebuilder');
-    if (tablebuilder) {
-      const data = JSON.parse(tablebuilder);
-      const tableData = data.find((item: any) => item.name === name);
-      if (tableData) {
-        // console.info('Retreived tablebuilder data from cache');
-        setSettings(tableData.settings);
-        return;
-      }
-    }
-    const getTableSettings = async () => {
-      try {
-        const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/name`, { name });
-        setSettings(res?.data?.settings);
-      } catch (error: any) {
-        console.error('error.message:===========', error.message);
-      }
-    };
-    getTableSettings();
-  }, [name]);
+    const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
+    useEffect(() => {
+        const tablebuilder = window?.sessionStorage?.getItem('tablebuilder');
+        if (tablebuilder) {
+            const data = JSON.parse(tablebuilder);
+            const tableData = data.find((item: any) => item.name === name);
+            if (tableData) {
+                // console.info('Retreived tablebuilder data from cache');
+                setSettings(tableData.settings);
+                return;
+            }
+        }
+        const getTableSettings = async () => {
+            try {
+                const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/name`, { name });
+                setSettings(res?.data?.settings);
+            } catch (error: any) {
+                console.error('error.message:===========', error.message);
+            }
+        };
+        getTableSettings();
+    }, [name]);
 
-  if (!settings)
+    if (!settings)
+        return (
+            <div className="flex h-full w-full flex-col items-center justify-center">
+                <FullScreenLoader />
+            </div>
+        );
+
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center">
-        <FullScreenLoader />
-      </div>
+        <div className="flex h-full w-full overflow-y-auto">
+            <RenderTablebuilder
+                settings={settings}
+                customUI={customUI}
+                customFunctions={customFunctions}
+                fluidHeight={fluidHeight}
+                externalFilters={externalFilters}
+                actionButtons={actionButtons}
+                refresh={refresh}
+                disableLoader={disableLoader}
+                updatedQuery={updatedQuery}
+                deletePermission={deletePermission}
+                updatePermission={updatePermission}
+            />
+        </div>
     );
-
-  return (
-    <div className="flex h-full w-full overflow-y-auto">
-      <RenderTablebuilder
-        settings={settings}
-        customUI={customUI}
-        customFunctions={customFunctions}
-        fluidHeight={fluidHeight}
-        externalFilters={externalFilters}
-        actionButtons={actionButtons}
-        refresh={refresh}
-        disableLoader={disableLoader}
-        updatedQuery={updatedQuery}
-        deletePermission={deletePermission}
-        updatePermission={updatePermission}
-      />
-    </div>
-  );
 };

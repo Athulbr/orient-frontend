@@ -8,20 +8,20 @@ import { MsalProvider } from '@azure/msal-react';
 import { msalInstance, initializeMsal } from './modules/auth/login/sso/msal-service';
 
 const startApp = async () => {
-  await initializeMsal();
+    await initializeMsal();
 
-  const root = createRoot(document.getElementById('root')!);
-  root.render(
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string}>
-      <MsalProvider instance={msalInstance}>
-        <BrowserRouter>
-          {/* <StrictMode> */}
-          <App />
-          {/* </StrictMode> */}
-        </BrowserRouter>
-      </MsalProvider>
-    </GoogleOAuthProvider>
-  );
+    const root = createRoot(document.getElementById('root')!);
+    root.render(
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID as string}>
+            <MsalProvider instance={msalInstance}>
+                <BrowserRouter>
+                    <StrictMode>
+                        <App />
+                    </StrictMode>
+                </BrowserRouter>
+            </MsalProvider>
+        </GoogleOAuthProvider>
+    );
 };
 
 startApp();

@@ -5,74 +5,74 @@ import Spinner from '../../../components/Spinner';
 import { useToastStore } from '../../../components/toast/ToastStore';
 
 const ConfirmSignUpPage: React.FC = () => {
-  const { email, token } = useParams();
-  const [loading, setLoading] = useState(false);
-  const toast = useToastStore();
+    const { email, token } = useParams();
+    const [loading, setLoading] = useState(false);
+    const toast = useToastStore();
 
-  const verifySignupToken = async () => {
-    try {
-      setLoading(true);
-      const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/signup/verify`, { email, firstLoginToken: token });
-      if (res?.data?.accessToken) {
-        window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
-        window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
-        const resp = await Promise.all([
-          httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
-          httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 }),
-        ]);
-        window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
-        window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
-        toast.success('Verification successful');
-        window?.location?.replace('/');
-      } else {
-        toast.error('Verification failed. Please try again');
-      }
-    } catch (error) {
-      console.error('error:===========', error);
-      toast.error('Verification failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const verifySignupToken = async () => {
+        try {
+            setLoading(true);
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/signup/verify`, { email, firstLoginToken: token });
+            if (res?.data?.accessToken) {
+                window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
+                window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                const resp = await Promise.all([
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 })
+                ]);
+                window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+                window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
+                toast.success('Verification successful');
+                window?.location?.replace('/');
+            } else {
+                toast.error('Verification failed. Please try again');
+            }
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Verification failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  useEffect(() => {
-    if (!email || !token) return;
-    verifySignupToken();
-  }, [email, token]);
+    useEffect(() => {
+        if (!email || !token) return;
+        verifySignupToken();
+    }, [email, token]);
 
-  return (
-    <div className="mt-10 w-full max-w-md space-y-6 rounded-xl bg-white p-8">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Email Verification</h1>
-        <p className="mt-2 text-gray-600">We're verifying your email address</p>
-      </div>
-
-      <div className="space-y-4">
-        {email && (
-          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
-            <p className="text-sm font-medium text-blue-800">Email Address</p>
-            <p className="mt-1 text-blue-700">{email}</p>
-          </div>
-        )}
-
-        {token && (
-          <div className="rounded-lg border border-green-100 bg-green-50 p-4">
-            <p className="text-sm font-medium text-green-800">Verification Code</p>
-            <p className="mt-1 truncate font-mono tracking-wider text-green-700">{token}</p>
-          </div>
-        )}
-
-        {loading && (
-          <div className="pt-4">
-            <div className="flex items-center justify-center">
-              <Spinner size={20} />
+    return (
+        <div className="mt-10 w-full max-w-md space-y-6 rounded-xl bg-white p-8">
+            <div className="text-center">
+                <h1 className="text-2xl font-bold text-gray-900">Email Verification</h1>
+                <p className="mt-2 text-gray-600">We're verifying your email address</p>
             </div>
-            <p className="mt-3 text-center text-sm text-gray-500">Verifying your information...</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+
+            <div className="space-y-4">
+                {email && (
+                    <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                        <p className="text-sm font-medium text-blue-800">Email Address</p>
+                        <p className="mt-1 text-blue-700">{email}</p>
+                    </div>
+                )}
+
+                {token && (
+                    <div className="rounded-lg border border-green-100 bg-green-50 p-4">
+                        <p className="text-sm font-medium text-green-800">Verification Code</p>
+                        <p className="mt-1 truncate font-mono tracking-wider text-green-700">{token}</p>
+                    </div>
+                )}
+
+                {loading && (
+                    <div className="pt-4">
+                        <div className="flex items-center justify-center">
+                            <Spinner size={20} />
+                        </div>
+                        <p className="mt-3 text-center text-sm text-gray-500">Verifying your information...</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 };
 
 export default ConfirmSignUpPage;

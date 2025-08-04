@@ -5,85 +5,85 @@ import { Dropdown } from '../../../../../components/Dropdown';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 
 interface ExportButtonPropsIF {
-  showExportButton?: boolean;
+    showExportButton?: boolean;
 }
 
 export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true }) => {
-  const { state } = useViewRecordState();
-  const userData = window?.sessionStorage?.getItem('user');
-  const user = userData ? JSON.parse(userData) : null;
-  const arrays: any = {};
-  state.tableNames.forEach((item, index) => {
-    arrays[item] = state.arrayFields[index];
-  });
-  const extractedData = {
-    ...state.objectFields,
-    ...arrays,
-  };
-  const downloadJSONFile = () => {
-    const jsonString = JSON.stringify(extractedData);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${state.record?.name}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-  const downloadXlsxFile = async () => {
-    const recordId = state.record?._id;
-    const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-
-    let exportURL = '';
-    // Update this condition based on your tenant settings
-    if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
-      exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
-    } else {
-      exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export`;
-    }
-
-    const response = await fetch(exportURL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
-      },
-      body: JSON.stringify({ recordId }),
+    const { state } = useViewRecordState();
+    const userData = window?.sessionStorage?.getItem('user');
+    const user = userData ? JSON.parse(userData) : null;
+    const arrays: any = {};
+    state.tableNames.forEach((item, index) => {
+        arrays[item] = state.arrayFields[index];
     });
+    const extractedData = {
+        ...state.objectFields,
+        ...arrays
+    };
+    const downloadJSONFile = () => {
+        const jsonString = JSON.stringify(extractedData);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${state.record?.name}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+    const downloadXlsxFile = async () => {
+        const recordId = state.record?._id;
+        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+        let exportURL = '';
+        // Update this condition based on your tenant settings
+        if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
+            exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+        } else {
+            exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export`;
+        }
 
-    const blob = await response.blob();
+        const response = await fetch(exportURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
+            },
+            body: JSON.stringify({ recordId })
+        });
 
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${state.record?.name?.split('.pdf')[0]}.xlsx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-  const onChangeOption = (value: string) => {
-    if (value === 'JSON') {
-      downloadJSONFile();
-    }
-    if (value === 'XLSX') {
-      downloadXlsxFile();
-    }
-  };
-  if (!showExportButton) return;
-  return (
-    <Dropdown onChange={onChangeOption} options={['XLSX', 'JSON']}>
-      {/* ISSUE:Button is preventing (e.preventDefault()) */}
-      <button
-        disabled={state.reExtracting}
-        className={`${state.reExtracting ? 'text-gray-400' : 'text-gray-700'} rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-light hover:bg-gray-100`}
-      >
-        Export
-      </button>
-    </Dropdown>
-  );
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${state.record?.name?.split('.pdf')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
+    const onChangeOption = (value: string) => {
+        if (value === 'JSON') {
+            downloadJSONFile();
+        }
+        if (value === 'XLSX') {
+            downloadXlsxFile();
+        }
+    };
+    if (!showExportButton) return;
+    return (
+        <Dropdown onChange={onChangeOption} options={['XLSX', 'JSON']}>
+            {/* ISSUE:Button is preventing (e.preventDefault()) */}
+            <button
+                disabled={state.reExtracting}
+                className={`${state.reExtracting ? 'text-gray-400' : 'text-gray-700'} rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-light hover:bg-gray-100`}
+            >
+                Export
+            </button>
+        </Dropdown>
+    );
 };

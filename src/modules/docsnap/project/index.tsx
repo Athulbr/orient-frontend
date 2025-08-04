@@ -6,34 +6,34 @@ import CreateProjectComponent from './CreateProjectComponent';
 import { ListProjectComponent } from './ListProjectComponent';
 
 export interface ProjectStateIF {
-  showCreateDialog: boolean;
-  loading: boolean;
-  id: string;
-  refresh: number;
-  project: any | null;
-  loadingProject: boolean;
+    showCreateDialog: boolean;
+    loading: boolean;
+    id: string;
+    refresh: number;
+    project: any | null;
+    loadingProject: boolean;
 }
 const initialState = {
-  showCreateDialog: false,
-  loading: false,
-  id: '',
-  refresh: 1,
-  project: null,
-  loadingProject: false,
+    showCreateDialog: false,
+    loading: false,
+    id: '',
+    refresh: 1,
+    project: null,
+    loadingProject: false
 };
 
 const ListProjectPage: React.FC = () => {
-  const [state, setState] = useState<ProjectStateIF>(initialState);
+    const [state, setState] = useState<ProjectStateIF>(initialState);
 
-  return (
-    <ProjectStateProvider value={{ state, setState }}>
-      <PageContainer className="gap-4">
-        <PageNameComponent name="Project List" />
-        <ListProjectComponent />
-        <CreateProjectComponent />
-      </PageContainer>
-    </ProjectStateProvider>
-  );
+    return (
+        <ProjectStateProvider value={{ state, setState }}>
+            <PageContainer className="gap-4">
+                <PageNameComponent name="Project List" />
+                <ListProjectComponent />
+                <CreateProjectComponent />
+            </PageContainer>
+        </ProjectStateProvider>
+    );
 };
 
 export default ListProjectPage;
