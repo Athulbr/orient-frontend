@@ -8,6 +8,7 @@ import { formatDate } from '../../../builders/tablebuilder/render-tablebuilder/u
 import SkeletonLoader from './SkeletonLoader';
 import { RecordStatusCustomUI } from '../../docsnap/record/list-record/components/RecordStatusCustomUI';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
+import { Polink } from '../../docsnap/record/list-record/ListRecordComponent';
 
 const RecentFilesCardComponent: React.FC = () => {
     const { state, setState } = useDashboardState();
@@ -48,6 +49,7 @@ const RecentFilesCardComponent: React.FC = () => {
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Type</th>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
+                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">PO Link</th>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
                             </tr>
                         </thead>
@@ -61,6 +63,9 @@ const RecentFilesCardComponent: React.FC = () => {
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
                                         <RecordStatusCustomUI data={row} />
+                                    </td>
+                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
+                                        <Polink data={row} />
                                     </td>
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
