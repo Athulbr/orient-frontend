@@ -19,6 +19,11 @@ export const ListRecordComponent: React.FC = () => {
         setState(prev => ({ ...prev, refresh: refreshRecord }));
     }, [refreshRecord]);
 
+    const onClickPOLink = (e: any, row: any) => {
+        e.stopPropagation();
+        window.open('https://www.google.com', '_blank');
+    };
+
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
             navigate(`/docsnap/record/view/${row._id}`);
@@ -32,14 +37,9 @@ export const ListRecordComponent: React.FC = () => {
         recordStatus: RecordStatusCustomUI,
         poLink: (row: any) => {
             return (
-                <a
-                    href={row?.poLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700"
-                >
+                <div onClick={e => onClickPOLink(e, row)} className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700">
                     PO Link
-                </a>
+                </div>
             );
         }
     };
