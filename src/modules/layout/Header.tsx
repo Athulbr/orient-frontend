@@ -20,7 +20,8 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const isAuthenticated = useIsAuthenticated();
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
-    const logOut = () => {
+    const logOut = async () => {
+        const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/logout`, {});
         toast.success('Logged out successfully');
         if (isAuthenticated) {
             instance.logoutRedirect({
