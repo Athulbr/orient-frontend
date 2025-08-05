@@ -10,7 +10,7 @@ interface UploadDocumentComponentIF {
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToExtraction } = useDocsnapStore();
+    const { addToExtraction, addToNodeExtraction } = useDocsnapStore();
     const [templateData, setTemplateData] = useState<any>(null);
     const navigate = useNavigate();
     useEffect(() => {
@@ -23,7 +23,13 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         }
     }, [template?._id]);
     const onFileDrop = (files: FileList) => {
-        addToExtraction(files, templateData || '');
+        const extractionEngine = window.localStorage.getItem('extractionEngine');
+        if (extractionEngine === 'node') {
+            addToNodeExtraction(files, templateData || '');
+        } else {
+            addToExtraction(files, templateData || '');
+        }
+
         navigate('/docsnap/record/list');
         closeDialog();
     };
