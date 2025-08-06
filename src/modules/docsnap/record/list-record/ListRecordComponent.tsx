@@ -5,6 +5,7 @@ import { useListRecordPageState } from './hooks/listRecordPageContext';
 import { useListRecordApi } from './hooks/useListRecordApi';
 import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { useEffect } from 'react';
+import DealerListComponent from './components/DealerSelectionComponent';
 
 export const Polink = (row: any) => {
     const onClickPOLink = (e: any, row: any) => {
@@ -46,18 +47,83 @@ export const ListRecordComponent: React.FC = () => {
         recordStatus: RecordStatusCustomUI,
         poLink: Polink
     };
+
+    const actionButtons = [
+        {
+            label: 'Export Record',
+            action: () => {
+                setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+            }
+        }
+    ];
+    const updatedQuery = (query: any) => {
+        setState(prev => ({ ...prev, query }));
+    };
+
+    const downloadXlsxFile = async (payload: any) => {
+        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+
+        let exportURL = '';
+        // Update this condition based on your tenant settings
+        const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
+        exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+
+        const response = await fetch(exportURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `table-export-${new Date().getTime()}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
+
+    const onSubmit = (dealers: any) => {
+        const query = state.query;
+        const payload = {
+            ...query,
+            format: 'xlsx',
+            dealers
+        };
+        downloadXlsxFile(payload);
+    };
+
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     return (
-        <UseTablebuilder
-            disableLoader={extractionQueue.length > 0}
-            customUI={customUI}
-            externalFilters={{ deleted: false, ...selectedFilter }}
-            refresh={state.refresh}
-            name="List Record Table"
-            fluidHeight
-            customFunctions={customFunctions}
-            deletePermission="delete:record"
-            updatePermission="update:record"
-        />
+        <>
+            <UseTablebuilder
+                disableLoader={extractionQueue.length > 0}
+                customUI={customUI}
+                externalFilters={{ deleted: false, ...selectedFilter }}
+                refresh={state.refresh}
+                name="List Record Table"
+                fluidHeight
+                customFunctions={customFunctions}
+                deletePermission="delete:record"
+                updatePermission="update:record"
+                actionButtons={actionButtons}
+                updatedQuery={updatedQuery}
+            />
+            <DealerListComponent
+                onSubmit={onSubmit}
+                isOpen={state.dealerSelectionDialog}
+                closeDialog={() => setState(prev => ({ ...prev, dealerSelectionDialog: false }))}
+            />
+        </>
     );
 };
