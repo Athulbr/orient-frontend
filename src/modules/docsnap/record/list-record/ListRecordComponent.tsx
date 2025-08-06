@@ -6,6 +6,19 @@ import { useListRecordApi } from './hooks/useListRecordApi';
 import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { useEffect } from 'react';
 
+export const Polink = (row: any) => {
+    const onClickPOLink = (e: any, row: any) => {
+        e.stopPropagation();
+        window.open(`${row?.data?.rmResponse?.data?.url}`, '_blank');
+    };
+
+    return (
+        <div onClick={e => onClickPOLink(e, row)} className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700">
+            PO Link
+        </div>
+    );
+};
+
 export const ListRecordComponent: React.FC = () => {
     const { state, setState } = useListRecordPageState();
     const navigate = useNavigate();
@@ -19,11 +32,6 @@ export const ListRecordComponent: React.FC = () => {
         setState(prev => ({ ...prev, refresh: refreshRecord }));
     }, [refreshRecord]);
 
-    const onClickPOLink = (e: any, row: any) => {
-        e.stopPropagation();
-        window.open('https://www.google.com', '_blank');
-    };
-
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
             navigate(`/docsnap/record/view/${row._id}`);
@@ -33,15 +41,10 @@ export const ListRecordComponent: React.FC = () => {
             deleteRecordApi(row._id);
         }
     };
+
     const customUI = {
         recordStatus: RecordStatusCustomUI,
-        poLink: (row: any) => {
-            return (
-                <div onClick={e => onClickPOLink(e, row)} className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700">
-                    PO Link
-                </div>
-            );
-        }
+        poLink: Polink
     };
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     return (
