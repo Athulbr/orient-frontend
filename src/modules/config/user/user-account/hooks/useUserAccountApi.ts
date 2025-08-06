@@ -36,10 +36,10 @@ export const useUserAccountApi = () => {
             setState(prev => ({ ...prev, loadingUser: false }));
         }
     };
-    const updateUserPassword = async (password: string) => {
+    const updateUserPassword = async (data: any) => {
         try {
             setState(prev => ({ ...prev, loadingUser: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update-password/${state.user?._id}`, { password });
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/password/change/${state.user?.email}`, data);
             setState(prev => ({ ...prev, updatePasswordDialog: false, user: res.data }));
             toast.success('Password updated successfully');
             return true;

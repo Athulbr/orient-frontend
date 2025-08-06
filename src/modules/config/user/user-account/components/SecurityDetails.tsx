@@ -8,7 +8,7 @@ export const SecurityDetails = () => {
     const { state, setState } = useUserAccountState();
     const { updateUserPassword } = useUserAccountApi();
     const onSubmit = (data: any) => {
-        updateUserPassword(data.password);
+        updateUserPassword(data);
     };
     return (
         <DetailsCard>

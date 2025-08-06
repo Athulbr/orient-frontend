@@ -3,14 +3,13 @@ import httpUploadRequest from '../global-utils/httpUploadRequest';
 import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 import { usePermissionStore } from './PermissionStore';
-import { Toast } from '../components/toast/Toast';
 
 interface DocsnapStoreIF {
     refreshRecord: number;
     extractionQueue: any[];
     clearExtractionQueue: () => void;
     addToExtraction: (files: FileList, template: any) => Promise<any>;
-    addToNodeExtraction: (files: FileList, template: any) => Promise<any>;
+    addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
 
@@ -184,7 +183,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             return null;
         }
     },
-    addToNodeExtraction: async (files: FileList, template: any) => {
+    addToNodeExtraction: async (files: FileList, template: any, navigate: (path: string) => void) => {
         Array.from(files).forEach(async (file, index) => {
             const sendApiRequest = async () => {
                 try {
@@ -208,8 +207,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         use_latest: false
                     };
                     if (template.enableOcr) requestBody.ocr_engine = 'doctr';
-                    const extractionEngine = window.localStorage.getItem('extractionEngine');
-                    // =================== NODE ===================
                     const createReqObject = {
                         status: 'processing',
                         metadata: {},
@@ -219,71 +216,29 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         templateId: template._id,
                         documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                     };
-
-                    const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
                     set({ refreshRecord: get().refreshRecord + 1 });
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
+                    const body = { template, fileName: s3Response?.data?.fileName, schema: convertedJson.fields, recordId: res.data?._id };
 
-                    const body = {
-                        s3FileName: s3Response?.data?.fileName,
-                        schema: convertedJson.fields
-                    };
-
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, body);
-
-                    const extractedData: any = res.data.extractedData;
-                    // ========Add External Fields=========
-                    const user = usePermissionStore.getState().user;
-
-                    template?.fields?.forEach((section: any) => {
-                        if (section.excludeExtraction) {
-                            section?.subFields?.forEach((subField: any) => {
-                                // Initialize empty value in extractedData for each subField
-                                extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
-                                extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
-                            });
-                        }
-                    });
-
-                    extractedData['extracted_by'] = {
-                        name: {
-                            value: `${user?.firstName} ${user?.lastName}`
-                        },
-                        email: {
-                            value: `${user?.email}`
-                        }
-                    };
-                    const patchRequestBody = {
-                        extractedData,
-                        imageFileNames: res.data?.fileNames || [],
-                        status: 'extracted'
-                    };
-                    await httpRequest(
-                        'PATCH',
-                        `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
-                        patchRequestBody
-                    );
+                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, body);
 
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });
-
+                    set({ refreshRecord: get().refreshRecord + 1 });
                     const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-                    if (!processingFiles.length) {
-                        set({ refreshRecord: get().refreshRecord + 1 });
-                    }
-
-                    // =================== NODE ===================
+                    if (!processingFiles.length) navigate(`/docsnap/record/view/${res.data?._id}`);
                 } catch (error) {
+                    set({ refreshRecord: get().refreshRecord + 1 });
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
                     });
                 }
             };
             setTimeout(() => {
-                console.log('index:===========', index);
                 sendApiRequest();
             }, index * 5000);
         });

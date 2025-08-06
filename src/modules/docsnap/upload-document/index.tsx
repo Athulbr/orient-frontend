@@ -11,8 +11,8 @@ interface UploadDocumentComponentIF {
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
     const { addToExtraction, addToNodeExtraction } = useDocsnapStore();
-    const [templateData, setTemplateData] = useState<any>(null);
     const navigate = useNavigate();
+    const [templateData, setTemplateData] = useState<any>(null);
     useEffect(() => {
         const getTemplate = async () => {
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${template._id}`);
@@ -25,7 +25,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
     const onFileDrop = (files: FileList) => {
         const extractionEngine = window.localStorage.getItem('extractionEngine');
         if (extractionEngine === 'node') {
-            addToNodeExtraction(files, templateData || '');
+            addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
         } else {
             addToExtraction(files, templateData || '');
         }
