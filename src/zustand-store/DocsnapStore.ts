@@ -221,7 +221,12 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
-                    const body = { template, fileName: s3Response?.data?.fileName, schema: convertedJson.fields, recordId: res.data?._id };
+                    const body = {
+                        templateFields: template?.fields,
+                        fileName: s3Response?.data?.fileName,
+                        schema: convertedJson.fields,
+                        recordId: res.data?._id
+                    };
 
                     await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, body);
 

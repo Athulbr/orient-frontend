@@ -25,6 +25,10 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
     const onFileDrop = (files: FileList) => {
         const extractionEngine = window.localStorage.getItem('extractionEngine');
         if (extractionEngine === 'node') {
+            if (!templateData) {
+                alert('Template not found');
+                return;
+            }
             addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
         } else {
             addToExtraction(files, templateData || '');
