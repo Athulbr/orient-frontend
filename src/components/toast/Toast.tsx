@@ -33,7 +33,7 @@ const toastTypeConfig = {
     }
 };
 
-export const Toast: React.FC<ToastProps> = ({ id, message, type, title, duration = 6000, onClose }) => {
+export const Toast: React.FC<ToastProps> = ({ id, message, type, title, duration = 4000, onClose }) => {
     const [progress, setProgress] = useState(100);
     const [isVisible, setIsVisible] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
