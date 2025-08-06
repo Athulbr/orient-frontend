@@ -13,6 +13,10 @@ export const Polink = (row: any) => {
         window.open(`${row?.data?.rmResponse?.data?.url}`, '_blank');
     };
 
+    if (!row?.data?.rmResponse?.data?.url) {
+        return <div className="text-blue-400  pl-6">-</div>;
+    }
+
     return (
         <div onClick={e => onClickPOLink(e, row)} className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700">
             PO Link
@@ -29,7 +33,7 @@ export const ListRecordComponent: React.FC = () => {
     const { refreshRecord, extractionQueue } = useDocsnapStore();
 
     useEffect(() => {
-        if (refreshRecord === 10) return;
+        if (refreshRecord === 100) return;
         setState(prev => ({ ...prev, refresh: refreshRecord }));
     }, [refreshRecord]);
 
