@@ -13,6 +13,8 @@ import { BasicDetailsComponent } from './components/BasicDetails';
 import { SecurityDetails } from './components/SecurityDetails';
 import { SubscriptionDetails } from './components/SubscriptionDetails';
 import { NotificationsDetails } from './components/NotificationDetails';
+import { useS3DocumentsStore } from '../../../../zustand-store/useStoredDocuments';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 interface UserDetailsComponentIF {
     test?: string;
 }
@@ -21,7 +23,11 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [openDialog, setOpenDialog] = useState(false);
     const { id } = useParams();
-    const { logout, getUserApi, updateUserName, updateUserPassword } = useUserAccountApi();
+    const { user } = usePermissionStore();
+    const { uploadS3File, getS3File } = useS3DocumentsStore();
+    const { logout, getUserApi, updateProfilePicture } = useUserAccountApi();
+    const { state, setState } = useUserAccountState();
+    const [profilePicture, setProfilePicture] = useState('');
 
     useEffect(() => {
         if (!id) return;
@@ -32,14 +38,48 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
         if (name === 'Logout') logout();
     };
 
-    const handleUpload = () => {};
+    useEffect(() => {
+        const getFile = async () => {
+            if (!state?.user?.profilePicture) {
+                setProfilePicture(''); // Clear previous value when no profile picture
+                return;
+            }
+
+            try {
+                const awsS3Response = await getS3File(state?.user?.profilePicture);
+
+                // Convert Buffer to Uint8Array
+                const bufferData = new Uint8Array(awsS3Response.data.Body.data);
+
+                // Create blob from buffer
+                const blob = new Blob([bufferData], {
+                    type: awsS3Response.data.ContentType || 'image/jpeg'
+                });
+
+                // Create object URL for the blob
+                const imageUrl = URL.createObjectURL(blob);
+                setProfilePicture(imageUrl);
+            } catch (error) {
+                console.error('Failed to fetch profile picture:', error);
+                setProfilePicture(''); // Reset on error
+            }
+        };
+
+        getFile();
+    }, [state?.user?.profilePicture]);
+
+    const handleUpload = async (files: FileList) => {
+        const s3Response = await uploadS3File(files[0]);
+        await updateProfilePicture(s3Response.fileName);
+    };
     return (
         <div className="h-full w-full p-6 pt-0">
             <div className="flex h-full w-full gap-4">
                 {/* Left */}
                 <div className="flex w-full max-w-100 flex-col items-center gap-4 overflow-hidden px-4">
-                    <div className="h-[20vh] min-h-50 w-[20vh] min-w-50 rounded-full bg-slate-200 p-[2vh]">
+                    <div className="h-40 w-40  overflow-hidden rounded-full bg-slate-200 flex flex-col items-center ">
                         {/* <CircleUserRound strokeWidth={1.4} className="h-full w-full text-gray-400" /> */}
+                        {profilePicture && <img src={profilePicture} alt="profile" className="w-full relative bottom-2 rounded-full" />}
                     </div>
                     <Button onClick={() => setOpenDialog(true)}>Update Profile Picture</Button>
                     <nav className="flex w-full flex-1 flex-col overflow-hidden">
@@ -62,9 +102,9 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
                 {/* Right */}
                 <div className="flex w-full flex-col gap-4 rounded-lg p-4 shadow-lg">{navItems[activeIndex].component}</div>
             </div>
-            <DialogComponent secondaryButtonText="Cancel" primaryButtonText="Save" isOpen={openDialog} closeDialog={() => setOpenDialog(false)}>
+            <DialogComponent isOpen={openDialog} closeDialog={() => setOpenDialog(false)}>
                 <div className="flex h-[50vh] w-[50vw] flex-col gap-4 rounded-lg p-4 shadow-lg">
-                    <DragAndDropFileInput onFileDrop={handleUpload} />
+                    <DragAndDropFileInput accept="image/*" onFileDrop={handleUpload} />
                 </div>
             </DialogComponent>
         </div>

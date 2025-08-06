@@ -110,6 +110,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                                     `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
                                     requestBody
                                 );
+                                set({ refreshRecord: get().refreshRecord + 1 });
+
                                 const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
                                 if (!processingFiles.length) {
                                     set({ refreshRecord: get().refreshRecord + 1 });

@@ -50,6 +50,21 @@ export const useUserAccountApi = () => {
             setState(prev => ({ ...prev, loadingUser: false }));
         }
     };
+    const updateProfilePicture = async (profilePicture: string) => {
+        try {
+            setState(prev => ({ ...prev, loadingUser: true }));
+            alert(profilePicture);
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update/${state.user?._id}`, { profilePicture });
+            setState(prev => ({ ...prev, updateProfilePictureDialog: false, user: res.data }));
+            toast.success('Profile picture updated successfully');
+            return true;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to update profile picture');
+        } finally {
+            setState(prev => ({ ...prev, loadingUser: false }));
+        }
+    };
     const logout = async () => {
         window.sessionStorage.clear();
         toast.success('Logged out successfully');
@@ -58,5 +73,5 @@ export const useUserAccountApi = () => {
         }, 1000);
     };
 
-    return { getUserApi, updateUserName, updateUserPassword, logout };
+    return { getUserApi, updateUserName, updateUserPassword, logout, updateProfilePicture };
 };
