@@ -1,12 +1,16 @@
 import { FileUp } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
+import { useToastStore } from './toast/ToastStore';
 
 interface DragAndDropFileInputProps {
     onFileDrop: (files: FileList) => void;
+    accept?: string;
+    onlyImage?: boolean;
 }
 
-const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop }) => {
+const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop, accept, onlyImage }) => {
     const [dragging, setDragging] = useState(false);
+    const toast = useToastStore();
 
     const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -28,13 +32,15 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
             setDragging(false);
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                const validFiles = Array.from(files).filter(file => file.type.startsWith('application/pdf') || file.type.startsWith('image/'));
+                const validFiles = Array.from(files).filter(file =>
+                    onlyImage ? file.type.startsWith('image/') : file.type.startsWith('application/pdf') || file.type.startsWith('image/')
+                );
                 if (validFiles.length > 0) {
                     const dataTransfer = new DataTransfer();
                     validFiles.forEach(file => dataTransfer.items.add(file));
                     onFileDrop(dataTransfer.files);
                 } else {
-                    alert('Only PDF and image files are allowed');
+                    toast.error(`Only ${!onlyImage ? 'PDF and' : ''} image files are allowed`);
                 }
             }
         },
@@ -48,13 +54,15 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
-            const validFiles = Array.from(files).filter(file => file.type.startsWith('application/pdf') || file.type.startsWith('image/'));
+            const validFiles = Array.from(files).filter(file =>
+                onlyImage ? file.type.startsWith('image/') : file.type.startsWith('application/pdf') || file.type.startsWith('image/')
+            );
             if (validFiles.length > 0) {
                 const dataTransfer = new DataTransfer();
                 validFiles.forEach(file => dataTransfer.items.add(file));
                 onFileDrop(dataTransfer.files);
             } else {
-                alert('Only PDF and image files are allowed');
+                toast.error(`Only ${!onlyImage ? 'PDF and' : ''} image files are allowed`);
                 e.target.value = ''; // Clear the input
             }
         }
@@ -69,7 +77,14 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop 
             onDrop={handleDrop}
             onClick={handleClick}
         >
-            <input accept="application/pdf,image/jpeg,image/png" id="fileInput" type="file" className="hidden" multiple onChange={handleChange} />
+            <input
+                accept={accept || (onlyImage ? 'image/*' : 'application/pdf,image/*')}
+                id="fileInput"
+                type="file"
+                className="hidden"
+                multiple
+                onChange={handleChange}
+            />
             <FileUp strokeWidth={1.5} size={70} className="text-sky-600" />
             <p className="mt-2 font-semibold text-gray-800">Drag & drop </p>
             <div className="">

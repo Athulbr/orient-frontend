@@ -11,12 +11,14 @@ export interface UserAccountStateIF {
     loadingUser: boolean;
     updateNameDialog: boolean;
     updatePasswordDialog: boolean;
+    profilePicture: string;
 }
 const initialState = {
     user: null,
     loadingUser: false,
     updateNameDialog: false,
-    updatePasswordDialog: false
+    updatePasswordDialog: false,
+    profilePicture: ''
 };
 
 const UserAccountDetailsPage: React.FC = () => {
