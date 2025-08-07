@@ -4,6 +4,7 @@ import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
+import { useToastStore } from '../../../components/toast/ToastStore';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -12,6 +13,7 @@ interface UploadDocumentComponentIF {
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
     const { addToExtraction, addToNodeExtraction } = useDocsnapStore();
     const navigate = useNavigate();
+    const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
     useEffect(() => {
         const getTemplate = async () => {
@@ -23,6 +25,10 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         }
     }, [template?._id]);
     const onFileDrop = (files: FileList) => {
+        if (files.length > 3) {
+            toast.error('You can select up to 3 files only.');
+            return;
+        }
         const extractionEngine = window.localStorage.getItem('extractionEngine');
         if (extractionEngine === 'node') {
             if (!templateData) {
