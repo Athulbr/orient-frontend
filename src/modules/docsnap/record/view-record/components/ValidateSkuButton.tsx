@@ -6,7 +6,7 @@ interface ValidateSkuButtonIF {
 }
 export const ValidateSkuButton: FC<ValidateSkuButtonIF> = ({ label, value }) => {
     const onClick = () => {
-        if (label === 'Sku Number') {
+        if (label === 'sku_number') {
             const newWindow = window.open(`https://www.rehabmart.com/search/?q=${value} `, '_blank', 'noopener,noreferrer');
             if (newWindow) newWindow.opener = null;
         } else {
@@ -14,9 +14,9 @@ export const ValidateSkuButton: FC<ValidateSkuButtonIF> = ({ label, value }) => 
             if (newWindow) newWindow.opener = null;
         }
     };
-    if (label !== 'Sku Number' && label !== 'Rehab Id') return null;
+    if ((label !== 'sku_number' && label !== 'rehab_id') || !value) return null;
     return (
-        <span onClick={onClick} className="cursor-pointer pr-2 text-xs text-sky-600 hover:text-sky-800">
+        <span onClick={onClick} className="cursor-pointer w-full flex justify-end pr-2 text-xs text-sky-600 hover:text-sky-800">
             Validate
         </span>
     );

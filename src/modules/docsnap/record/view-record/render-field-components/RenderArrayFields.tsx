@@ -5,6 +5,7 @@ import { formatFieldLabel } from '../utils';
 import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { ValidateSkuButton } from '../components/ValidateSkuButton';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
@@ -230,8 +231,10 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     useEffect(() => {
         adjustTextareaHeight();
     }, [value?.value]);
+    console.log('value:============', value);
     return (
         <td className="border p-1">
+            <ValidateSkuButton label={label} value={value?.value} />
             <textarea
                 data-gramm="false"
                 id={fieldId}
