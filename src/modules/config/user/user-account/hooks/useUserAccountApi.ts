@@ -44,8 +44,8 @@ export const useUserAccountApi = () => {
             toast.success('Password updated successfully');
             return true;
         } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to update password');
+            console.error('error:===========', error instanceof Error ? error.message : 'Failed to update password');
+            toast.error(error instanceof Error ? error.message : 'Failed to update password');
         } finally {
             setState(prev => ({ ...prev, loadingUser: false }));
         }
