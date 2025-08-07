@@ -7,6 +7,7 @@ import FileUploadDialogComponent from './components/FileUploadDialogComponent';
 import { PromptFieldIF } from '../../document';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { Button } from '../../../../components/Button';
 interface Project {
     _id: string;
     name: string;
@@ -70,7 +71,11 @@ const ListRecordPage: React.FC = () => {
                     name={`List of ${selectedFilter.status ? selectedFilter.status?.charAt(0).toUpperCase() + selectedFilter.status?.slice(1) : 'All'} Records`}
                     showBackButton
                     customGoBackFunction={() => navigate('/')}
-                />
+                >
+                    <Button outlined onClick={() => navigate('/docsnap/template/list')}>
+                        Templates
+                    </Button>
+                </PageNameComponent>
                 <ListRecordComponent />
                 <FileUploadDialogComponent />
             </PageContainer>

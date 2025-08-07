@@ -33,8 +33,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     const requestBody: Record<string, any> = {
                         document_type: template.docType || 'other',
                         entity_schema: convertedJson,
-                        include_confidence: true,
-                        include_bbox: true,
+                        include_confidence: false,
+                        include_bbox: false,
                         confidence_threshold: 0.5,
                         s3_file_name: s3Response?.data?.fileName,
                         provider_id: 'azure',
