@@ -41,8 +41,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
 
     const callExtractionApi = async () => {
         await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, {
-            s3FileName: 'PO_VA_636a8-r4k813_2.pdf',
-            schema
+            fileName: 'PO_VA_636a8-r4k813_2.pdf',
+            schema,
+            templateFields: { data: 'data' },
+            recordId: '1234'
         });
     };
 

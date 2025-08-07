@@ -121,7 +121,7 @@ export const ListRecordComponent: React.FC = () => {
                 deletePermission="delete:record"
                 updatePermission="update:record"
                 actionButtons={actionButtons}
-                updatedQuery={updatedQuery}
+                // updatedQuery={updatedQuery}
             />
             <DealerListComponent
                 onSubmit={onSubmit}
