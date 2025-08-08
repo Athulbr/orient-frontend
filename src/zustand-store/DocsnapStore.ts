@@ -44,11 +44,11 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     if (template.enableOcr) requestBody.ocr_engine = 'doctr';
                     // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
-                    // const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+                    const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
 
                     const createReqObject = {
                         status: 'processing',
-                        // metadata: res,
+                        metadata: res,
                         extractedData: null,
                         pdfFileName: s3Response?.data?.fileName,
                         name: s3Response?.data?.fileName,
@@ -67,60 +67,60 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         set({ refreshRecord: get().refreshRecord + 1 });
                     }
 
-                    // const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-                    // const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+                    const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
-                    // eventSource.addEventListener('task_update', async (event: any) => {
-                    //     const data = JSON.parse(event.data);
-                    //     set({
-                    //         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
-                    //     });
-                    //     if (data.current_step === 'Complete') {
-                    //         eventSource.close();
-                    //         try {
-                    //             const extractedData: any = data?.result?.extracted_data || {};
-                    //             // ========Add External Fields=========
+                    eventSource.addEventListener('task_update', async (event: any) => {
+                        const data = JSON.parse(event.data);
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
+                        });
+                        if (data.current_step === 'Complete') {
+                            eventSource.close();
+                            try {
+                                const extractedData: any = data?.result?.extracted_data || {};
+                                // ========Add External Fields=========
 
-                    //             const user = usePermissionStore.getState().user;
+                                const user = usePermissionStore.getState().user;
 
-                    //             template?.fields?.forEach((section: any) => {
-                    //                 if (section.excludeExtraction) {
-                    //                     section?.subFields?.forEach((subField: any) => {
-                    //                         // Initialize empty value in extractedData for each subField
-                    //                         extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
-                    //                         extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
-                    //                     });
-                    //                 }
-                    //             });
+                                template?.fields?.forEach((section: any) => {
+                                    if (section.excludeExtraction) {
+                                        section?.subFields?.forEach((subField: any) => {
+                                            // Initialize empty value in extractedData for each subField
+                                            extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
+                                            extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
+                                        });
+                                    }
+                                });
 
-                    //             extractedData['extracted_by'] = {
-                    //                 name: {
-                    //                     value: `${user?.firstName} ${user?.lastName}`
-                    //                 },
-                    //                 email: {
-                    //                     value: `${user?.email}`
-                    //                 }
-                    //             };
-                    //             const requestBody = {
-                    //                 extractedData,
-                    //                 status: 'extracted'
-                    //             };
-                    //             await httpRequest(
-                    //                 'PATCH',
-                    //                 `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
-                    //                 requestBody
-                    //             );
-                    //             set({ refreshRecord: get().refreshRecord + 1 });
+                                extractedData['extracted_by'] = {
+                                    name: {
+                                        value: `${user?.firstName} ${user?.lastName}`
+                                    },
+                                    email: {
+                                        value: `${user?.email}`
+                                    }
+                                };
+                                const requestBody = {
+                                    extractedData,
+                                    status: 'extracted'
+                                };
+                                await httpRequest(
+                                    'PATCH',
+                                    `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                    requestBody
+                                );
+                                set({ refreshRecord: get().refreshRecord + 1 });
 
-                    //             const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-                    //             if (!processingFiles.length) {
-                    //                 set({ refreshRecord: get().refreshRecord + 1 });
-                    //             }
-                    //         } catch (error) {
-                    //             console.log('error:===========', error);
-                    //         }
-                    //     }
-                    // });
+                                const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+                                if (!processingFiles.length) {
+                                    set({ refreshRecord: get().refreshRecord + 1 });
+                                }
+                            } catch (error) {
+                                console.log('error:===========', error);
+                            }
+                        }
+                    });
                 } catch (error) {
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
@@ -130,7 +130,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             setTimeout(() => {
                 console.log('index:===========', index);
                 sendApiRequest();
-            }, index * 5000);
+            }, index * 10000);
         });
     },
     trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
