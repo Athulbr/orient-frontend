@@ -130,7 +130,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             setTimeout(() => {
                 console.log('index:===========', index);
                 sendApiRequest();
-            }, index * 5000);
+            }, index * 10000);
         });
     },
     trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
