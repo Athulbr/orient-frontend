@@ -6,7 +6,6 @@ import { StatusCardComponent } from './components/StatusCard';
 import { UploadDocumentComponent } from '../docsnap/upload-document';
 import { CreateTemplateComponent } from '../docsnap/template/list-template/components/CreateTemplateDialog';
 import { TemplateCardListComponent } from './components/TemplateCardList';
-import { useBackButtonOverride } from '../../hooks/useBackButtonOverride';
 
 export interface DashboardStateIF {
     totalTemplates: number;

@@ -148,6 +148,16 @@ export const useViewRecordApi = () => {
 
     const updateRecordApiById = async () => {
         try {
+            // Convert arrayFields[0] (Record<string, Record<string, { value: string }>>) to array of row objects
+            const lineItemsRecord = state?.arrayFields[0] || {};
+            const lineItemsArray = Object.values(lineItemsRecord).map(rowObj => {
+                const flatRow: Record<string, any> = {};
+                Object.entries(rowObj).forEach(([col, valObj]) => {
+                    // Copy all properties (value, page, bbox, confidence, etc.)
+                    flatRow[col] = { ...valObj };
+                });
+                return flatRow;
+            });
             const payload = {
                 template: state?.record?.templateId,
                 extractedData: state?.record?.extractedData,
@@ -155,10 +165,9 @@ export const useViewRecordApi = () => {
                 fileName: state?.record?.name,
                 updatedData: {
                     ...state?.objectFields,
-                    line_items: state?.arrayFields[0]
+                    line_items: lineItemsArray
                 }
             };
-
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');

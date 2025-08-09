@@ -36,7 +36,7 @@ export interface ViewRecordStateIF {
     id: string;
     extractedData: Record<string, any>;
     objectFields: Record<string, Record<string, any>>;
-    arrayFields: Array<Record<string, Record<string, any>>>;
+    arrayFields: Array<Record<string, Record<string, { value: string }>>>;
     tableNames: Array<string>;
     wire: WirePoints | null;
     bbox: BboxIF | null;

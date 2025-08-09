@@ -31,6 +31,7 @@ const InputTypeSelectComponent: React.FC<PropsIF> = () => {
                         const IconComponent = iconTypes.get(inputType.type) || iconTypes.get('plain_text');
                         return (
                             <Button
+                                key={index}
                                 large
                                 outlined
                                 className="w-fit text-lg text-gray-700 capitalize"

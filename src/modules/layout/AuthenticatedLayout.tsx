@@ -3,40 +3,15 @@ import SidebarComponent from './Sidebar';
 import HeaderComponent from './Header';
 import httpRequest from '../../global-utils/httpRequest';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
-
+import { useSettingsStore } from '../../zustand-store/SettingsStore';
 interface AuthenticatedLayoutIF {
     children: ReactNode;
 }
 
-const permissions = [
-    'read:user',
-    'update:user',
-    'delete:user',
-    'delete:record',
-    'create:template',
-    'update:template',
-    'delete:template',
-    'extract:document',
-    'read:role',
-    'update:role',
-    'delete:role',
-    'read:module',
-    'update:module',
-    'delete:module',
-    'read:feature',
-    'update:feature',
-    'delete:feature',
-    'read:tenant',
-    'update:tenant',
-    'delete:tenant',
-    'read:subscription-model',
-    'update:subscription-model',
-    'delete:subscription-model'
-];
-
 const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     const [showSidebar, setShowSidebar] = useState(false);
     const { setPermissions } = usePermissionStore();
+    const { getUserSettings } = useSettingsStore();
     const user = JSON.parse(window.sessionStorage.getItem('user') || '{}');
 
     const updateRolePermission = async () => {
@@ -46,9 +21,13 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         });
         setPermissions(features);
     };
+    const updateUserSettingsHandler = async () => {
+        await getUserSettings();
+    };
 
     useEffect(() => {
         updateRolePermission();
+        updateUserSettingsHandler();
     }, []);
 
     return (

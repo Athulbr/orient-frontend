@@ -48,7 +48,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 columnNames = lineItems.subFields.map((item: any) => item.name);
             }
         }
-        console.log('columnNames:===========', columnNames);
         // Create a new row object with the same column structure
         const newRow: { [key: string]: { value: string } } = {};
         columnNames.forEach(columnName => {
@@ -70,10 +69,13 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         const newArrayFields = [...state.arrayFields];
         const currentItem = newArrayFields[mainIndex];
 
-        // Convert the object to entries, filter out the row to delete, and convert back to object
-        const entries = Object.entries(currentItem);
-        const filteredEntries = entries.filter((_, index) => index !== rowIndex);
-        const newItem = Object.fromEntries(filteredEntries);
+        // Convert the object to entries, filter out the row to delete
+        const entries = Object.entries(currentItem).filter((_, index) => index !== rowIndex);
+        // Re-index keys so they are sequential ("0", "1", ...)
+        const newItem: Record<string, typeof entries[0][1]> = {};
+        entries.forEach(([_, value], idx) => {
+            newItem[String(idx)] = value;
+        });
 
         newArrayFields[mainIndex] = newItem;
 
@@ -88,8 +90,8 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
 
     return (
         <>
-            {state.arrayFields.map((item, mainIndex) => {
-                const firstRow = Object.values(item)[0] || {};
+            {state.arrayFields.map((lineItems, mainIndex) => {
+                const firstRow = lineItems[0] || {};
                 const labels = Object.keys(firstRow);
 
                 // const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
@@ -125,14 +127,14 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                 {formatFieldLabel(label)}
                                             </th>
                                         ))}
-                                        {Object.entries(item).length > 1 && <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>}
+                                        {Object.keys(lineItems).length > 1 && <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {Object.entries(item).map(([key, subItem], rowIndex) => (
+                                    {Object.entries(lineItems).map(([key, lineItem], rowIndex) => (
                                         <tr key={rowIndex} className="bg-white">
                                             {labels.map((label, i) => {
-                                                const value = subItem[label];
+                                                const value = lineItem[label];
 
                                                 const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
                                                 return (
@@ -154,29 +156,16 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                             });
                                                         }}
                                                         onMouseEnter={() => {
-                                                            const bbox = value?.bbox;
-                                                            if (bbox) {
-                                                                setState(prev => ({
-                                                                    ...prev,
-                                                                    hoveredFieldId: hoveredFieldId,
-                                                                    pageNumber: value.page ? value.page : prev.pageNumber,
-                                                                    hoveredOnArrayField: true
-                                                                }));
-                                                                updateWire(hoveredFieldId, value.bbox);
-                                                            } else {
-                                                                setState(prev => ({
-                                                                    ...prev,
-                                                                    hoveredFieldId: null,
-                                                                    hoveredOnArrayField: false,
-                                                                    bbox: null,
-                                                                    wire: null
-                                                                }));
-                                                            }
+                                                            setState(prev => ({
+                                                                ...prev,
+                                                                hoveredFieldId: hoveredFieldId,
+                                                                hoveredOnArrayField: true
+                                                            }));
                                                         }}
                                                     />
                                                 );
                                             })}
-                                            {Object.entries(item).length > 1 && (
+                                            {Object.keys(lineItems).length > 1 && (
                                                 <td className="h-full border py-2 pl-9">
                                                     <Trash2
                                                         tabIndex={0}
