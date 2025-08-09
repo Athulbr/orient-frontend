@@ -231,7 +231,6 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     useEffect(() => {
         adjustTextareaHeight();
     }, [value?.value]);
-    console.log('value:============', value);
     return (
         <td className="border p-1">
             <ValidateSkuButton label={label} value={value?.value} />

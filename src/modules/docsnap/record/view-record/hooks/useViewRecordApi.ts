@@ -261,331 +261,67 @@ export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mim
 };
 
 const sampleExtractedData = {
-    basic_details: {
-        purchase_agent: {
-            value: 'Nathan Baumert',
-            bbox: {
-                x_min: 0.2202614379,
-                y_min: 0.4398989899,
-                x_max: 0.3692810458,
-                y_max: 0.448989899
-            },
-            page: '1',
-            confidence: 0.988
-        },
-        contact_email: {
-            value: 'nathan.baumert@va.gov',
-            bbox: {
-                x_min: 0.2111111111,
-                y_min: 0.2106060606,
-                x_max: 0.4065359477,
-                y_max: 0.2252525253
-            },
-            page: '1',
-            confidence: 0.9629
-        },
+    basic_info: {
         po_number: {
-            value: 'R4K813',
+            value: 'HC7536',
+            confidence: 1,
             bbox: {
-                x_min: 0.5718954248,
-                y_min: 0.1141414141,
-                x_max: 0.631372549,
-                y_max: 0.1242424242
+                x_min: 0.7717141544117647,
+                y_min: 0.2255859375,
+                x_max: 0.8311121323529411,
+                y_max: 0.2373046875
             },
-            page: '2',
-            confidence: 0.9728
-        },
-        from_location: {
-            value: 'VAMC Iowa City',
-            bbox: {
-                x_min: 0.0888888889,
-                y_min: 0.1363636364,
-                x_max: 0.1614379085,
-                y_max: 0.147979798
-            },
-            page: '1',
-            confidence: 0.8782
-        },
-        contract_number: {
-            value: ''
-        },
-        tax: {
-            value: ''
-        },
-        total_amount: {
-            value: '2,550.00',
-            bbox: {
-                x_min: 0.7862745098,
-                y_min: 0.6328282828,
-                x_max: 0.8424836601,
-                y_max: 0.6424242424
-            },
-            page: '2',
-            confidence: 0.9839
-        },
-        shipping_cost: {
-            value: '0.00',
-            bbox: {
-                x_min: 0.3705882353,
-                y_min: 0.6545454545,
-                x_max: 0.4,
-                y_max: 0.6636363636
-            },
-            page: '2',
-            confidence: 0.9819
-        },
-        discount: {
-            value: '0.00',
-            bbox: {
-                x_min: 0.3705882353,
-                y_min: 0.6545454545,
-                x_max: 0.4,
-                y_max: 0.6636363636
-            },
-            page: '2',
-            confidence: 0.9819
+            page: 1
         }
     },
-    bill_to: {
-        bill_to_name: {
-            value: 'Nathan Baumert',
-            bbox: {
-                x_min: 0.2202614379,
-                y_min: 0.4398989899,
-                x_max: 0.3692810458,
-                y_max: 0.448989899
-            },
-            page: '1',
-            confidence: 0.988
+    line_items: [
+        {
+            description: {
+                value: '-',
+                confidence: 0.9836,
+                bbox: {
+                    x_min: 0.2643137255,
+                    y_min: 0.5157575758,
+                    x_max: 0.5701960784,
+                    y_max: 0.5812121212
+                },
+                page: 1
+            }
         },
-        street: {
-            value: '601 Highway 6 West',
-            bbox: {
-                x_min: 0.5117647059,
-                y_min: 0.2363636364,
-                x_max: 0.6522875817,
-                y_max: 0.245959596
+        {
+            unit_price: {
+                value: '675.00',
+                confidence: 0.9899,
+                bbox: {
+                    x_min: 0.737254902,
+                    y_min: 0.5775757576,
+                    x_max: 0.7803921569,
+                    y_max: 0.5860606061
+                },
+                page: 1
             },
-            page: '2',
-            confidence: 0.9786
-        },
-        city: {
-            value: 'Iowa City',
-            bbox: {
-                x_min: 0.5117647059,
-                y_min: 0.2484848485,
-                x_max: 0.5758169935,
-                y_max: 0.2585858586
+            total_price: {
+                value: '675.00',
+                confidence: 0.9899,
+                bbox: {
+                    x_min: 0.8650980392,
+                    y_min: 0.5781818182,
+                    x_max: 0.9090196078,
+                    y_max: 0.5866666667
+                },
+                page: 1
             },
-            page: '2',
-            confidence: 0.9867
-        },
-        state: {
-            value: 'IA',
-            bbox: {
-                x_min: 0.5836601307,
-                y_min: 0.2484848485,
-                x_max: 0.6,
-                y_max: 0.2585858586
-            },
-            page: 2,
-            confidence: 0.9918
-        },
-        zip: {
-            value: '52246',
-            bbox: {
-                x_min: 0.608496732,
-                y_min: 0.2484848485,
-                x_max: 0.6516339869,
-                y_max: 0.2585858586
-            },
-            page: 2,
-            confidence: 0.9907
-        },
-        phone_number: {
-            value: '319-338-0581 x6309',
-            bbox: {
-                x_min: 0.5124183007,
-                y_min: 0.2611111111,
-                x_max: 0.6104575163,
-                y_max: 0.2691919192
-            },
-            page: '2',
-            confidence: 0.9732
-        },
-        bill_to_company: {
-            value: 'VAMC Iowa City',
-            bbox: {
-                x_min: 0.0784313725,
-                y_min: 0.1590909091,
-                x_max: 0.5758169935,
-                y_max: 0.2585858586
-            },
-            page: '2',
-            confidence: 0.9848
+            description: {
+                value: 'Delivery',
+                confidence: 0.9836,
+                bbox: {
+                    x_min: 0.2949019608,
+                    y_min: 0.5157575758,
+                    x_max: 0.5701960784,
+                    y_max: 0.5812121212
+                },
+                page: 1
+            }
         }
-    },
-    ship_to: {
-        ship_to_company: {
-            value: 'VETERAN',
-            bbox: {
-                x_min: 0.2326797386,
-                y_min: 0.4712121212,
-                x_max: 0.3176470588,
-                y_max: 0.4803030303
-            },
-            page: 2,
-            confidence: 0.9913
-        },
-        name: {
-            value: 'Roger T Rydstrom',
-            bbox: {
-                x_min: 0.2411764706,
-                y_min: 0.2782828283,
-                x_max: 0.2503267974,
-                y_max: 0.2873737374
-            },
-            page: '3',
-            confidence: 0.9902
-        },
-        street: {
-            value: '3 Russell Slade Blvd #431',
-            bbox: {
-                x_min: 0.091503268,
-                y_min: 0.3712121212,
-                x_max: 0.1,
-                y_max: 0.3797979798
-            },
-            page: '2',
-            confidence: 0.9823
-        },
-        state: {
-            value: 'IA',
-            bbox: {
-                x_min: 0.5836601307,
-                y_min: 0.2484848485,
-                x_max: 0.6,
-                y_max: 0.2585858586
-            },
-            page: 2,
-            confidence: 0.9918
-        },
-        zip: {
-            value: '52241',
-            bbox: {
-                x_min: 0.2359477124,
-                y_min: 0.3954545455,
-                x_max: 0.2797385621,
-                y_max: 0.4060606061
-            },
-            page: 2,
-            confidence: 0.991
-        },
-        phone_number: {
-            value: '239 216-3677',
-            bbox: {
-                x_min: 0.091503268,
-                y_min: 0.4070707071,
-                x_max: 0.1869281046,
-                y_max: 0.4186868687
-            },
-            page: '2',
-            confidence: 0.9838
-        }
-    },
-    card_info: {
-        name: {
-            value: 'Nathan Baumert',
-            bbox: {
-                x_min: 0.2202614379,
-                y_min: 0.4398989899,
-                x_max: 0.3692810458,
-                y_max: 0.448989899
-            },
-            page: '1',
-            confidence: 0.988
-        },
-        card_number: {
-            value: '4716 4010 0048 9473',
-            bbox: {
-                x_min: 0.2522875817,
-                y_min: 0.4555555556,
-                x_max: 0.454248366,
-                y_max: 0.4641414141
-            },
-            page: '1',
-            confidence: 0.9875
-        },
-        expiration_date: {
-            value: '07/26',
-            bbox: {
-                x_min: 0.2320261438,
-                y_min: 0.4707070707,
-                x_max: 0.2836601307,
-                y_max: 0.4818181818
-            },
-            page: 1,
-            confidence: 0.9197
-        },
-        cvv: {
-            value: '825',
-            bbox: {
-                x_min: 0.2098039216,
-                y_min: 0.4888888889,
-                x_max: 0.2405228758,
-                y_max: 0.4974747475
-            },
-            page: 1,
-            confidence: 0.9916
-        }
-    },
-    line_items: {
-        rehab_id: {
-            value: ''
-        },
-        description: {
-            value: 'PATIENT FLOOR LIFT - MANGAR EAGLE LIF',
-            bbox: {
-                x_min: 0.3366013072,
-                y_min: 0.3676767677,
-                x_max: 0.3006535948,
-                y_max: 0.3909090909
-            },
-            page: '3',
-            confidence: 0.9945
-        },
-        quantity: {
-            value: '1',
-            bbox: {
-                x_min: 0.5745098039,
-                y_min: 0.3681818182,
-                x_max: 0.5803921569,
-                y_max: 0.3752525253
-            },
-            page: 3,
-            confidence: 0.9538
-        },
-        unit_price: {
-            value: '2,550.00',
-            bbox: {
-                x_min: 0.8307189542,
-                y_min: 0.3676767677,
-                x_max: 0.8869281046,
-                y_max: 0.3767676768
-            },
-            page: 3,
-            confidence: 0.9566
-        },
-        total_price: {
-            value: '2,550.00',
-            bbox: {
-                x_min: 0.8307189542,
-                y_min: 0.3676767677,
-                x_max: 0.8869281046,
-                y_max: 0.3767676768
-            },
-            page: 3,
-            confidence: 0.9566
-        }
-    }
+    ]
 };
