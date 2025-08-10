@@ -310,12 +310,13 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                                     <Fragment key={`${mainKey}_${mainIndex}`}>
                                         {Object.entries(mainValue).map(([key, field]: any, i: number) => {
                                             const bbox = field?.bbox;
-                                            if (!bbox || field?.page !== index + 1) return null;
+                                            if (!bbox || `${field?.page}` !== `${index + 1}`) return null;
                                             const hoveredFieldId = `objectFields:${mainKey}:${key}`;
+
                                             return (
                                                 <div
                                                     key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
-                                                    className={`${field?.checked ? 'bg-[#53cd1b48]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
+                                                    className={`${field?.checked ? 'bg-[#53cd1b25]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
                                                     style={{
                                                         left: `${bbox.x_min * 100 - 0.4}%`,
                                                         top: `${bbox.y_min * 100 - 0.4}%`,

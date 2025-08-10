@@ -1,26 +1,22 @@
 import { useEffect, useState } from 'react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../global-utils/httpRequest';
+import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 
 interface UserPreferencePageIF {
     test?: string;
 }
 
 const UserPreferencePage: React.FC<UserPreferencePageIF> = () => {
-    const [settings, setSettings] = useState<any>(null);
+    const { submitUserSettings, userSettings, getUserSettings } = useSettingsStore();
+    const [loading, setLoading] = useState(false);
     const onSubmit = async (data: any) => {
-        try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/settings/submit`, {
-                settings: data
-            });
-        } catch (error) {}
+        setLoading(true);
+        await submitUserSettings(data);
+        setLoading(false);
     };
     useEffect(() => {
-        const getSettings = async () => {
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/user/settings/list`);
-            setSettings(res.data.settings);
-        };
-        getSettings();
+        getUserSettings();
     }, []);
     return (
         <div className="h-full w-full">
@@ -33,7 +29,8 @@ const UserPreferencePage: React.FC<UserPreferencePageIF> = () => {
                 isOpen={true}
                 closeDialog={() => {}}
                 onSubmit={onSubmit}
-                existingData={settings}
+                existingData={userSettings}
+                loadingPrimaryButton={loading}
             />
         </div>
     );

@@ -148,6 +148,16 @@ export const useViewRecordApi = () => {
 
     const updateRecordApiById = async () => {
         try {
+            // Convert arrayFields[0] (Record<string, Record<string, { value: string }>>) to array of row objects
+            const lineItemsRecord = state?.arrayFields[0] || {};
+            const lineItemsArray = Object.values(lineItemsRecord).map(rowObj => {
+                const flatRow: Record<string, any> = {};
+                Object.entries(rowObj).forEach(([col, valObj]) => {
+                    // Copy all properties (value, page, bbox, confidence, etc.)
+                    flatRow[col] = { ...valObj };
+                });
+                return flatRow;
+            });
             const payload = {
                 template: state?.record?.templateId,
                 extractedData: state?.record?.extractedData,
@@ -155,10 +165,9 @@ export const useViewRecordApi = () => {
                 fileName: state?.record?.name,
                 updatedData: {
                     ...state?.objectFields,
-                    line_items: state?.arrayFields[0]
+                    line_items: lineItemsArray
                 }
             };
-
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');
@@ -260,4 +269,68 @@ export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mim
     return new File([blob], fileName, { type: mimeType });
 };
 
-const sampleExtractedData = {};
+const sampleExtractedData = {
+    basic_info: {
+        po_number: {
+            value: 'HC7536',
+            confidence: 1,
+            bbox: {
+                x_min: 0.7717141544117647,
+                y_min: 0.2255859375,
+                x_max: 0.8311121323529411,
+                y_max: 0.2373046875
+            },
+            page: 1
+        }
+    },
+    line_items: [
+        {
+            description: {
+                value: '-',
+                confidence: 0.9836,
+                bbox: {
+                    x_min: 0.2643137255,
+                    y_min: 0.5157575758,
+                    x_max: 0.5701960784,
+                    y_max: 0.5812121212
+                },
+                page: 1
+            }
+        },
+        {
+            unit_price: {
+                value: '675.00',
+                confidence: 0.9899,
+                bbox: {
+                    x_min: 0.737254902,
+                    y_min: 0.5775757576,
+                    x_max: 0.7803921569,
+                    y_max: 0.5860606061
+                },
+                page: 1
+            },
+            total_price: {
+                value: '675.00',
+                confidence: 0.9899,
+                bbox: {
+                    x_min: 0.8650980392,
+                    y_min: 0.5781818182,
+                    x_max: 0.9090196078,
+                    y_max: 0.5866666667
+                },
+                page: 1
+            },
+            description: {
+                value: 'Delivery',
+                confidence: 0.9836,
+                bbox: {
+                    x_min: 0.2949019608,
+                    y_min: 0.5157575758,
+                    x_max: 0.5701960784,
+                    y_max: 0.5812121212
+                },
+                page: 1
+            }
+        }
+    ]
+};

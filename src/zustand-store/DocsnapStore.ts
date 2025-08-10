@@ -3,6 +3,7 @@ import httpUploadRequest from '../global-utils/httpUploadRequest';
 import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 import { usePermissionStore } from './PermissionStore';
+import { useS3DocumentsStore } from './useStoredDocuments';
 
 interface DocsnapStoreIF {
     refreshRecord: number;
@@ -25,6 +26,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
                     get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -192,6 +194,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    // useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
@@ -218,7 +221,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                     };
                     const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
-                    set({ refreshRecord: get().refreshRecord + 1 });
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
@@ -234,11 +236,10 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });
-                    set({ refreshRecord: get().refreshRecord + 1 });
                     const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
                     if (!processingFiles.length) navigate(`/docsnap/record/view/${res.data?._id}`);
                 } catch (error) {
-                    set({ refreshRecord: get().refreshRecord + 1 });
+                    // set({ refreshRecord: get().refreshRecord + 1 });
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
                     });
@@ -246,7 +247,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             };
             setTimeout(() => {
                 sendApiRequest();
-            }, index * 5000);
+            }, index * 500);
         });
     }
 }));

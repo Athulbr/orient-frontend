@@ -4,6 +4,8 @@ import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -12,7 +14,9 @@ interface UploadDocumentComponentIF {
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
     const { addToExtraction, addToNodeExtraction } = useDocsnapStore();
     const navigate = useNavigate();
+    const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
+    const { userSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${template._id}`);
@@ -23,7 +27,11 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         }
     }, [template?._id]);
     const onFileDrop = (files: FileList) => {
-        const extractionEngine = window.localStorage.getItem('extractionEngine');
+        if (files.length > 3) {
+            toast.error('You can select up to 3 files only.');
+            return;
+        }
+        const extractionEngine = userSettings?.extractionEngine;
         if (extractionEngine === 'node') {
             if (!templateData) {
                 alert('Template not found');
