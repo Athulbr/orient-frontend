@@ -53,7 +53,6 @@ export const useUserAccountApi = () => {
     const updateProfilePicture = async (profilePicture: string) => {
         try {
             setState(prev => ({ ...prev, loadingUser: true }));
-            alert(profilePicture);
             const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update/${state.user?._id}`, { profilePicture });
             setState(prev => ({ ...prev, updateProfilePictureDialog: false, user: res.data }));
             toast.success('Profile picture updated successfully');

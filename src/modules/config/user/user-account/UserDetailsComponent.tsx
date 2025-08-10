@@ -71,6 +71,7 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
     const handleUpload = async (files: FileList) => {
         const s3Response = await uploadS3File(files[0]);
         await updateProfilePicture(s3Response.fileName);
+        setOpenDialog(false);
     };
     return (
         <div className="h-full w-full p-6 pt-0">

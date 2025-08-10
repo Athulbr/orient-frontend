@@ -120,7 +120,7 @@ export const ListRecordComponent: React.FC = () => {
                 customFunctions={customFunctions}
                 deletePermission="delete:record"
                 updatePermission="update:record"
-                actionButtons={actionButtons}
+                // actionButtons={actionButtons} // Enable based on tenant settings
                 // updatedQuery={updatedQuery}
             />
             <DealerListComponent
