@@ -53,6 +53,19 @@ export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
 
 const allSettings: SettingsIF[] = [
     {
+        name: 'Workspace Settings',
+        iconName: 'Settings',
+        items: [
+            {
+                name: 'User Preference',
+                iconName: 'MessageSquareText',
+                path: '/config/user-preference',
+                key: 'user-preference',
+                permission: 'read:user-preference'
+            }
+        ]
+    },
+    {
         name: 'User Management',
         iconName: 'Users',
         items: [
@@ -149,19 +162,6 @@ const allSettings: SettingsIF[] = [
                 path: '/config/prompt-tuning',
                 key: 'prompt-tuning',
                 permission: 'read:prompt-tuning'
-            }
-        ]
-    },
-    {
-        name: 'Workspace Settings',
-        iconName: 'Settings',
-        items: [
-            {
-                name: 'User Preference',
-                iconName: 'MessageSquareText',
-                path: '/config/user-preference',
-                key: 'user-preference',
-                permission: 'read:user-preference'
             }
         ]
     }

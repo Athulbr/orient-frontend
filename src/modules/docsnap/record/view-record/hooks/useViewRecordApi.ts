@@ -46,15 +46,13 @@ export const useViewRecordApi = () => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
-            if (res.data.imageFileNames) {
+            if (res.data.imageFileNames.length > 0) {
                 const images = await Promise.all(res.data.imageFileNames.map((fileName: string) => getS3File(fileName)));
                 console.log('images', images);
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
-                    images: images.map((image: any) =>
-                        URL.createObjectURL(new Blob([new Uint8Array(image.data.Body.data)], { type: 'image/jpeg' }))
-                    )
+                    images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.data.Body.data)], { type: 'image/jpeg' })))
                 }));
             } else {
                 getAndConvertDocumentToImage(res.data.pdfFileName);
@@ -93,36 +91,23 @@ export const useViewRecordApi = () => {
     };
 
     const sendMessage = async (message: string) => {
-        setState(prev => ({
-            ...prev,
-            chatLoading: true,
-            messages: [
-                ...prev.messages,
-                {
-                    text: message,
-                    userMessage: true
-                }
-            ]
-        }));
-
-        const requestBody = {
-            query: message,
-            botName: state.record?.pdfFileName
-        };
-
+        setState(prev => ({ ...prev, chatLoading: true, messages: [...prev.messages, { text: message, userMessage: true }] }));
+        const requestBody = { query: message, botName: state.record?.pdfFileName };
         const response: any = await httpRequest('POST', `https://demo.makez.ai/chatbot/query`, requestBody);
-
         setState(prev => ({
             ...prev,
             chatLoading: false,
-            messages: [
-                ...prev.messages,
-                {
-                    text: response.answer,
-                    source: response.source_documents,
-                    userMessage: false
-                }
-            ]
+            messages: [...prev.messages, { text: response.answer, source: response.source_documents, userMessage: false }]
+        }));
+    };
+    const sendMessageToNode = async (query: string) => {
+        setState(prev => ({ ...prev, chatLoading: true, messages: [...prev.messages, { text: query, userMessage: true }] }));
+        const requestBody = { query, visionOcrText: state.record?.visionOcrText, chatList: state.messages };
+        const response: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/send-message`, requestBody);
+        setState(prev => ({
+            ...prev,
+            chatLoading: false,
+            messages: [...prev.messages, { text: response.data.response, userMessage: false }]
         }));
     };
 
@@ -264,7 +249,8 @@ export const useViewRecordApi = () => {
         updateExtractedData,
         generateInvoiceWithAI,
         createRequestedNewField,
-        createComment
+        createComment,
+        sendMessageToNode
     };
 };
 
@@ -272,6 +258,11 @@ export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mim
     const blob = new Blob([binaryData], { type: mimeType });
     return new File([blob], fileName, { type: mimeType });
 };
+
+const visionOcrText = [
+    'RehabMart\nTools for the job of living\nwww.rehabmart.com\nOFFICIAL QUOTE\n3651 Mars Hill Rd, Bldg 2400\nWatkinsville, GA 30677\nDate\n7/8/2025\nQuote ID\nQT66607MD\nQuotes Dept: RFQ@rehabmart.com Submit Your PO: QuotePO@rehabmart.com\nBill To\nShip To\nBirmingham VA Medical Center\nSohini Parekh\n700 19th St S\nBirmingham, AL 35294-1927\nRM Rep\nSHIP DATE\nSHIP VIA\nMD\nQty Item Code / $ Amount / Product Description\nBirmingham VA Medical Center\nSohini Parekh\n700 19th St S\nBirmingham, AL 35294-1927\nQUOTE VALID FOR\n30 Days Subject to product availability\nHAU-1428-47-113 --> $5,176.00 Hausmann Hi-Lo Bariatric Mat\nTable with Power Backrest Hausmann Hi-Lo Bariatric Mat Table\nwith Power Backrest - 4 ft. x 7 ft. Bariatric Mat Table with Blue\nUpholstery\nHAU-LOADDOCK --> $450.00 Hausmann Hi-Lo Bariatric Mat\nTable with Power Backrest Delivery Method - Dock-to-Dock\nLoad Dock Delivery (Delivery Driver Will NOT Unload Items)\nFor Businesses with Loading Docks\nProduct URL: https://www.rehabmart.com/product/46255.html\nPrice Each\nAmount\n5,626.00\n5,626.00\nConvenient ways to place your order:\nSubtotal:\n$5,626.00\nCheckout Online at Rehabmart.com using your Custom Quote Code:\nQT66607MD\nCopy/paste this code in shopping cart or use this link:\nhttps://www.rehabmart.com/quotes/QT66607MD\n-\nEmail Your Purchase Order to QuotePO@rehabmart.com\nFax Your Purchase Order to 678-254-1791\nMail a check (payable to Rehabmart.com) for the full amount to the\naddress listed above. Please include your quote number on your check\nand/or a copy of your quote document.\n- ACH Payment Transfer:\nCompany Name: Rehabmart.com\nBank Name: Pinnacle Bank\nRouting Account Number: 061101294\nChecking Account Number: 100031657\nSales Tax:\n$0.00\nPinnacle Bank Phone # 706-283-2854Lift Gate Disclaimer: The\nproduct(s) listed in this quote were quoted for standard freight/',
+    'loading dock delivery. If your delivery location does not have a\nloading dock, then your product(s) must be transferred at the shipping\nterminal from a box trailer truck to a lift gate truck, which is a\nhydraulic-powered platform that moves freight up and down from the\nrear of the truck. The lift gate delivery charge is $250, and this charge\nmust be paid by the customer prior to product delivery.\nAdditional freight costs may apply to your order at the time of\npurchasing your quoted items. Read more:\nhttps://www.rehabmart.com/quotes.asp\nPlease verify the products listed above to confirm this quote represents\nthe exact products you intend to purchase. Make color choices, fabric\nchoices, and choose applicable product options before submitting your\nfinal order.\nTotal:\n$5,626.00\nReturn Policy Notification: All purchase orders are subject to the return policy, order policy, pricing\nerrors policy and restocking fee policy. Please review all Rehabmart policies by visiting our policy\npage at: https://www.rehabmart.com/policies/\nRehabmart.com\nFederal Tax ID: 58-2515167\nSBA Customer ID: P1002610\nHub Zone Certification # 39450\nDUNS #051112832\nGSA 65IIA Contract # 36F79725D0088\nGSA 651IF Contract # 36F79723D0029\nCAGE Code: 56Z51\nQuestions? Quotes Team: RFQ@rehabmart.com | Call: 706-213-1144 / 800-827-8283 | Fax:\n678-254-1791\nTHANK YOU FOR CONSIDERING REHABMART.COM'
+];
 
 const sampleExtractedData = {
     basic_info: {

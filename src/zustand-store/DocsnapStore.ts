@@ -233,7 +233,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         recordId: res.data?._id
                     };
 
-                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, body);
+                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract/v2`, body);
 
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
@@ -270,7 +270,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         fileName: s3Response?.data?.fileName,
                         schema: convertedJson.fields
                     };
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, body);
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract/v3`, body);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });
