@@ -70,7 +70,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     }
 
                     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-                    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+                    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
                     eventSource.addEventListener('task_update', async (event: any) => {
                         const data = JSON.parse(event.data);
@@ -171,8 +171,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     const { value, done } = await reader.read();
 
                     if (done) {
-                        if (!hasError) {
-                        }
+                        // if (!hasError) { }
                         break;
                     }
                 }
