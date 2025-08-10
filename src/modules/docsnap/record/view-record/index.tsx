@@ -36,7 +36,13 @@ export interface ViewRecordStateIF {
     id: string;
     extractedData: Record<string, any>;
     objectFields: Record<string, Record<string, any>>;
-    arrayFields: Array<Record<string, Record<string, { value: string }>>>;
+    arrayFields: Array<Record<string, Record<string, {
+        value: string;
+        page?: number;
+        bbox?: { x_min: number; y_min: number; x_max: number; y_max: number };
+        confidence?: number;
+        [key: string]: any;
+    }>>>;
     tableNames: Array<string>;
     wire: WirePoints | null;
     bbox: BboxIF | null;

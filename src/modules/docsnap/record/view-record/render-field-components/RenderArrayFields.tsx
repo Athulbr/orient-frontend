@@ -72,7 +72,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         // Convert the object to entries, filter out the row to delete
         const entries = Object.entries(currentItem).filter((_, index) => index !== rowIndex);
         // Re-index keys so they are sequential ("0", "1", ...)
-        const newItem: Record<string, typeof entries[0][1]> = {};
+        const newItem: Record<string, (typeof entries)[0][1]> = {};
         entries.forEach(([_, value], idx) => {
             newItem[String(idx)] = value;
         });
@@ -156,11 +156,24 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                             });
                                                         }}
                                                         onMouseEnter={() => {
-                                                            setState(prev => ({
-                                                                ...prev,
-                                                                hoveredFieldId: hoveredFieldId,
-                                                                hoveredOnArrayField: true
-                                                            }));
+                                                            const bbox = value?.bbox;
+                                                            if (bbox) {
+                                                                setState(prev => ({
+                                                                    ...prev,
+                                                                    hoveredFieldId: hoveredFieldId,
+                                                                    pageNumber: value.page ? value.page : prev.pageNumber,
+                                                                    hoveredOnArrayField: true
+                                                                }));
+                                                                updateWire(hoveredFieldId, value.bbox);
+                                                            } else {
+                                                                setState(prev => ({
+                                                                    ...prev,
+                                                                    hoveredFieldId: null,
+                                                                    hoveredOnArrayField: false,
+                                                                    bbox: null,
+                                                                    wire: null
+                                                                }));
+                                                            }
                                                         }}
                                                     />
                                                 );

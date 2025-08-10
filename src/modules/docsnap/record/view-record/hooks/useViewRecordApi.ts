@@ -47,10 +47,14 @@ export const useViewRecordApi = () => {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
             if (res.data.imageFileNames) {
+                const images = await Promise.all(res.data.imageFileNames.map((fileName: string) => getS3File(fileName)));
+                console.log('images', images);
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
-                    images: res.data.imageFileNames
+                    images: images.map((image: any) =>
+                        URL.createObjectURL(new Blob([new Uint8Array(image.data.Body.data)], { type: 'image/jpeg' }))
+                    )
                 }));
             } else {
                 getAndConvertDocumentToImage(res.data.pdfFileName);
@@ -334,3 +338,42 @@ const sampleExtractedData = {
         }
     ]
 };
+
+const images = [
+    {
+        success: true,
+        data: {
+            AcceptRanges: 'bytes',
+            LastModified: '2025-08-10T11:09:19.000Z',
+            ContentLength: 760557,
+            ETag: '"afcbb89b6794d3df322be743b17575f1"',
+            ContentType: 'application/octet-stream',
+            ServerSideEncryption: 'AES256',
+            Metadata: {},
+            Body: {
+                type: 'Buffer',
+                data: [22, 33, 44, 55]
+            }
+        },
+        message: 'File Get Successfully',
+        error: null
+    },
+    {
+        success: true,
+        data: {
+            AcceptRanges: 'bytes',
+            LastModified: '2025-08-10T11:09:19.000Z',
+            ContentLength: 716869,
+            ETag: '"b9c51d6340009978df5770dc7abe0449"',
+            ContentType: 'application/octet-stream',
+            ServerSideEncryption: 'AES256',
+            Metadata: {},
+            Body: {
+                type: 'Buffer',
+                data: [22, 33, 44, 55]
+            }
+        },
+        message: 'File Get Successfully',
+        error: null
+    }
+];
