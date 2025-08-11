@@ -11,6 +11,7 @@ interface DocsnapStoreIF {
     clearExtractionQueue: () => void;
     addToExtraction: (files: FileList, template: any) => Promise<any>;
     addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
+    addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
 
@@ -231,13 +232,49 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         recordId: res.data?._id
                     };
 
-                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, body);
+                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract/v2`, body);
 
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });
                     const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
                     if (!processingFiles.length) navigate(`/docsnap/record/view/${res.data?._id}`);
+                } catch (error) {
+                    // set({ refreshRecord: get().refreshRecord + 1 });
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                    });
+                }
+            };
+            setTimeout(() => {
+                sendApiRequest();
+            }, index * 500);
+        });
+    },
+    addToNodeExtractionMultiPO: async (files: FileList, template: any) => {
+        Array.from(files).forEach(async (file, index) => {
+            const sendApiRequest = async () => {
+                try {
+                    set({
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
+                    });
+                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    // useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
+                    });
+                    const convertedJson = convertJSON(template?.fields || []);
+                    const body = {
+                        template: template,
+                        fileName: s3Response?.data?.fileName,
+                        schema: convertedJson.fields
+                    };
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract/v3`, body);
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
+                    });
+                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+                    if (!processingFiles.length) set({ refreshRecord: get().refreshRecord + 1 });
                 } catch (error) {
                     // set({ refreshRecord: get().refreshRecord + 1 });
                     set({

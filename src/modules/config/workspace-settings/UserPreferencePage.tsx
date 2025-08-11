@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
-import httpRequest from '../../../global-utils/httpRequest';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 
 interface UserPreferencePageIF {

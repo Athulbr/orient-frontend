@@ -12,7 +12,7 @@ interface UploadDocumentComponentIF {
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToExtraction, addToNodeExtraction } = useDocsnapStore();
+    const { addToExtraction, addToNodeExtraction, addToNodeExtractionMultiPO } = useDocsnapStore();
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
@@ -27,17 +27,22 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         }
     }, [template?._id]);
     const onFileDrop = (files: FileList) => {
-        if (files.length > 20) {
+        if (files.length > 3) {
             toast.error('You can select up to 20 files only.');
             return;
         }
         const extractionEngine = userSettings?.extractionEngine;
+        const extractionType = userSettings?.extractionType;
         if (extractionEngine === 'node') {
             if (!templateData) {
                 alert('Template not found');
                 return;
             }
-            addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
+            if (extractionType === 'multiPO') {
+                addToNodeExtractionMultiPO(files, templateData || {});
+            } else {
+                addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
+            }
         } else {
             addToExtraction(files, templateData || '');
         }

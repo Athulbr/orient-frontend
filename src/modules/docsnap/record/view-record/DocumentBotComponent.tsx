@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Button } from '../../../../components/Button';
+import { useSettingsStore } from '../../../../zustand-store/SettingsStore';
 import { ChatContainer } from './components/ChatContainer';
 import { ChatInput } from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
@@ -13,10 +15,20 @@ interface DocumentBotComponentIF {
 
 const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
     const { state, setState } = useViewRecordState();
-    const { sendMessage } = useViewRecordApi();
+    const { sendMessage, sendMessageToNode } = useViewRecordApi();
     const navigate = useNavigate();
+    const { getUserSettings, userSettings } = useSettingsStore();
+
+    useEffect(() => {
+        if (userSettings?.extractionEngine) return;
+        getUserSettings();
+    }, []);
     const sendMessageHandler = async (message: string) => {
-        sendMessage(message);
+        if (userSettings?.extractionEngine === 'node') {
+            sendMessageToNode(message);
+        } else {
+            sendMessage(message);
+        }
     };
     const messages = state.messages;
     return (

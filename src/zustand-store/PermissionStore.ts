@@ -62,6 +62,13 @@ const allSettings: SettingsIF[] = [
                 path: '/config/user/list',
                 key: 'user',
                 permission: 'read:user'
+            },
+            {
+                name: 'User Preference',
+                iconName: 'Users',
+                path: '/config/user-preference',
+                key: 'user-preference',
+                permission: 'read:userPreference'
             }
         ]
     },
@@ -96,6 +103,13 @@ const allSettings: SettingsIF[] = [
         name: 'Billing & Subscriptions',
         iconName: 'Receipt',
         items: [
+            {
+                name: 'Tenant Settings',
+                iconName: 'CalendarCheck',
+                path: '/config/tenant-settings',
+                key: 'tenant-settings',
+                permission: 'read:tenantSettings'
+            },
             {
                 name: 'Tenants',
                 iconName: 'CalendarCheck',
@@ -137,6 +151,13 @@ const allSettings: SettingsIF[] = [
         iconName: 'Book',
         items: [
             {
+                name: 'Docsnap Settings',
+                iconName: 'MessageSquareText',
+                path: '/config/docsnap-settings',
+                key: 'docsnap-settings',
+                permission: 'read:docsnapSettings'
+            },
+            {
                 name: 'Comments',
                 iconName: 'MessageSquareText',
                 path: '/config/comment',
@@ -149,19 +170,6 @@ const allSettings: SettingsIF[] = [
                 path: '/config/prompt-tuning',
                 key: 'prompt-tuning',
                 permission: 'read:prompt-tuning'
-            }
-        ]
-    },
-    {
-        name: 'Workspace Settings',
-        iconName: 'Settings',
-        items: [
-            {
-                name: 'User Preference',
-                iconName: 'MessageSquareText',
-                path: '/config/user-preference',
-                key: 'user-preference',
-                permission: 'read:user-preference'
             }
         ]
     }
