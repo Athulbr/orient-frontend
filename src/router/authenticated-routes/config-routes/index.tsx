@@ -35,6 +35,8 @@ import {
 } from 'lucide-react';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import UserPreferencePage from '../../../modules/config/workspace-settings/UserPreferencePage';
+import TenantSettingsPage from '../../../modules/config/tenant/tenant-settings';
+import DocsnapSettingsPage from '../../../modules/docsnap/docsnap-settings';
 
 const ConfigRoutes = () => {
     const navigate = useNavigate();
@@ -50,6 +52,7 @@ const ConfigRoutes = () => {
                             <Route path="/subscription-model/list" element={<ListSubscriptionModelPage />} />
                             <Route path="/feature/list" element={<ListFeaturePage />} />
                             <Route path="/tenant/list" element={<ListTenantPage />} />
+                            <Route path="/tenant-settings" element={<TenantSettingsPage />} />
                             <Route path="/module/list" element={<ListModulePage />} />
                             <Route path="/formbuilder/*" element={<FormbuilderRoutes />} />
                             <Route path="/tablebuilder/list" element={<ListTablebuilderPage />} />
@@ -58,6 +61,7 @@ const ConfigRoutes = () => {
                             <Route path="/user/list" element={<ListUserPage />} />
                             <Route path="/user-preference" element={<UserPreferencePage />} />
                             <Route path="/comment/*" element={<ListCommentPage />} />
+                            <Route path="/docsnap-settings" element={<DocsnapSettingsPage />} />
                             <Route path="/*" element={<NotFoundPage />} />
                         </Routes>
                     </Suspense>

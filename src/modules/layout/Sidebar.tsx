@@ -13,7 +13,7 @@ import { usePermissionStore } from '../../zustand-store/PermissionStore';
 const DesktopSidebar = () => {
     const navigate = useNavigate();
     const [expandedSidebar, toggleExpandedSidebar] = useToggle();
-    const { settings } = usePermissionStore();
+    const { settings, checkPermission } = usePermissionStore();
 
     const handleNavigation = (path: string) => {
         navigate(path);
@@ -33,7 +33,7 @@ const DesktopSidebar = () => {
                 >
                     {<div className="text-[40px] font-bold text-white">D</div>}
                 </div>
-                {settings.length > 0 && (
+                {settings.length > 0 && checkPermission('read:settings') && (
                     <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 ${expandedSidebar ? 'w-full' : 'items-center text-[10px]'}`}>
                         <NavItem
                             key={configMenuItem.key}

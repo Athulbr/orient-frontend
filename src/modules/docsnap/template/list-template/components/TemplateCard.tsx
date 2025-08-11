@@ -90,11 +90,13 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
             {/* Title and Menu Row */}
             <div className="mb-2.5 flex w-full items-start justify-between">
                 <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
-                <Dropdown options={['Delete']} onChange={handleDropdownOptionChange}>
-                    <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
-                        <MoreVertical size={18} />
-                    </button>
-                </Dropdown>
+                {checkPermission('delete:template') && (
+                    <Dropdown options={['Delete']} onChange={handleDropdownOptionChange}>
+                        <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
+                            <MoreVertical size={18} />
+                        </button>
+                    </Dropdown>
+                )}
             </div>
             {/* Stats Row */}
             <div className="mb-2 flex w-full justify-between">
