@@ -27,7 +27,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         }
     }, [template?._id]);
     const onFileDrop = (files: FileList) => {
-        if (files.length > 3) {
+        if (files.length > 20) {
             toast.error('You can select up to 20 files only.');
             return;
         }
