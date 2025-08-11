@@ -46,8 +46,8 @@ export const useViewRecordApi = () => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
-            if (res.data.imageFileNames.length > 0) {
-                const images = await Promise.all(res.data.imageFileNames.map((fileName: string) => getS3File(fileName)));
+            if (res.data?.imageFileNames?.length > 0) {
+                const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
                 console.log('images', images);
                 setState(prev => ({
                     ...prev,
