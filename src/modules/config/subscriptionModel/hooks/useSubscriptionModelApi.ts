@@ -12,7 +12,7 @@ export const useSubscriptionModelsApi = () => {
 
     const createSubscriptionModelApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/subscription/create`, payload);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/subscription/create`, payload);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Subscription Model Created Successfully');
         } catch (error) {
@@ -24,7 +24,7 @@ export const useSubscriptionModelsApi = () => {
     const updateSubscriptionModelApi = async (subscriptionModel: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/subscription/update/${state.id}`, subscriptionModel);
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/subscription/update/${state.id}`, subscriptionModel);
             setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Subscription Model Updated Successfully');
         } catch (error) {
@@ -36,7 +36,7 @@ export const useSubscriptionModelsApi = () => {
     const getSubscriptionModelByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/subscription/${id}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/subscription/${id}`);
             toast.success('Subscription Model fetched successfully');
             setState(prev => ({ ...prev, loading: false, subscriptionModel: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -49,7 +49,7 @@ export const useSubscriptionModelsApi = () => {
 
     const getAllModulesApi = async () => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module`, { pageSize: 1000 });
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/module`, { pageSize: 1000 });
             const modules = res.data || [];
             setState(prev => ({ ...prev, modules }));
             return modules;
@@ -62,7 +62,7 @@ export const useSubscriptionModelsApi = () => {
 
     const getAllFeaturesApi = async () => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/feature`, { pageSize: 1000 });
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/feature`, { pageSize: 1000 });
             const features = res.data || [];
             setState(prev => ({ ...prev, features }));
             return features;
@@ -75,7 +75,7 @@ export const useSubscriptionModelsApi = () => {
 
     const deleteSubscriptionModelApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/subscription/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/subscription/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Subscription Model deleted successfully');
             return true;

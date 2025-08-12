@@ -11,7 +11,7 @@ export const useUpdateTemplatePageApi = () => {
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, { pageSize: 100 });
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { pageSize: 100 });
             setState(prev => ({ ...prev }));
             // toast.success('Template fetched successfully');
             return true;
@@ -23,7 +23,7 @@ export const useUpdateTemplatePageApi = () => {
     const getTemplateApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplate: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${id}`);
+            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${id}`);
             setState(prev => ({ ...prev, sectionList: res.data?.fields, loadingTemplate: false }));
             // toast.success('Template fetched successfully');
             return res.data;
@@ -34,7 +34,7 @@ export const useUpdateTemplatePageApi = () => {
     };
     const createTemplateApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
             toast.success('Template created successfully');
             return true;
@@ -45,7 +45,7 @@ export const useUpdateTemplatePageApi = () => {
     };
     const updateTemplateApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/update/`, requestBody);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/update/`, requestBody);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
             toast.success('Template updated successfully');
             return true;
@@ -56,7 +56,7 @@ export const useUpdateTemplatePageApi = () => {
     };
     const deleteTemplateApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/template/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/template/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
             toast.success('Template deleted successfully');
             return true;

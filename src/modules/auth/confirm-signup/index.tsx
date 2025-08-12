@@ -12,13 +12,13 @@ const ConfirmSignUpPage: React.FC = () => {
     const verifySignupToken = async () => {
         try {
             setLoading(true);
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/signup/verify`, { email, firstLoginToken: token });
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/signup/verify`, { email, firstLoginToken: token });
             if (res?.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                 const resp = await Promise.all([
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 })
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
                 ]);
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));

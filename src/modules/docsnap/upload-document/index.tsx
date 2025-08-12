@@ -16,21 +16,22 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
-    const { docsnapSettings } = useSettingsStore();
+    const { getDocsnapSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${template._id}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
             setTemplateData(res.data);
         };
         if (template?._id) {
             getTemplate();
         }
     }, [template?._id]);
-    const onFileDrop = (files: FileList) => {
+    const onFileDrop = async (files: FileList) => {
         if (files.length > 20) {
             toast.error('You can select up to 20 files only.');
             return;
         }
+        const docsnapSettings: any = await getDocsnapSettings();
         const extractionEngine = docsnapSettings?.extractionEngine;
         const extractionType = docsnapSettings?.extractionType;
         if (extractionEngine === 'node') {

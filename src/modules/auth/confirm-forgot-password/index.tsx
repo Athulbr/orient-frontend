@@ -101,7 +101,7 @@ const ConfirmForgotPasswordPage: React.FC<ConfirmForgotPasswordPageIF> = () => {
             setLoading(true);
 
             // TODO: Replace with actual API call
-            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password/verify`, { email, token, password });
+            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password/verify`, { email, token, password });
 
             toast.success('Password reset successfully!');
             navigate('/login');

@@ -37,9 +37,9 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
         let exportURL = '';
         // Update this condition based on your tenant settings
         if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
-            exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+            exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
         } else {
-            exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export`;
+            exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export`;
         }
 
         const response = await fetch(exportURL, {

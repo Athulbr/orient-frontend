@@ -27,7 +27,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     set({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
                     get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -59,7 +59,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                     };
 
-                    const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                    const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
                     set({ refreshRecord: get().refreshRecord + 1 });
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
@@ -110,7 +110,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                                 };
                                 await httpRequest(
                                     'PATCH',
-                                    `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                    `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
                                     requestBody
                                 );
                                 set({ refreshRecord: get().refreshRecord + 1 });
@@ -131,7 +131,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                 }
             };
             setTimeout(() => {
-                console.log('index:===========', index);
                 sendApiRequest();
             }, index * 5000);
         });
@@ -143,7 +142,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     set({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
                     get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -176,7 +175,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                     };
 
-                    // const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                    // const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
                     set({ refreshRecord: get().refreshRecord + 1 });
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
@@ -227,7 +226,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                                 // };
                                 // await httpRequest(
                                 //     'PATCH',
-                                //     `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                //     `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
                                 //     requestBody
                                 // );
                                 set({ refreshRecord: get().refreshRecord + 1 });
@@ -248,7 +247,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                 }
             };
             setTimeout(() => {
-                console.log('index:===========', index);
                 sendApiRequest();
             }, index * 5000);
         });
@@ -311,7 +309,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     set({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
                     // useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -338,7 +336,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         templateId: template._id,
                         documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                     };
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
@@ -349,7 +347,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         recordId: res.data?._id
                     };
 
-                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract/v2`, body);
+                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document-extractor/v1`, body);
 
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
@@ -375,7 +373,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     set({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
                     // useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -386,7 +384,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         fileName: s3Response?.data?.fileName,
                         schema: convertedJson.fields
                     };
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract/v3`, body);
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/project/extract/v3`, body);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });

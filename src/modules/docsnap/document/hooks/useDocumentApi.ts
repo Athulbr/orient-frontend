@@ -24,7 +24,7 @@ export const useDocumentsApi = () => {
                 projectId: state.projectId
             };
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/document/create`, payload);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document/create`, payload);
             setState(prev => ({ ...prev, loading: false, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Document Created Successfully');
         } catch (error) {
@@ -41,7 +41,7 @@ export const useDocumentsApi = () => {
                 projectId: state.projectId
             };
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/document/update/${state.id}`, payload);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document/update/${state.id}`, payload);
             setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Document Updated Successfully');
         } catch (error) {
@@ -53,7 +53,7 @@ export const useDocumentsApi = () => {
     const getDocumentByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/document/${id}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/document/${id}`);
             toast.success('Document fetched successfully');
             setState(prev => ({ ...prev, loading: false, document: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -64,7 +64,7 @@ export const useDocumentsApi = () => {
 
     const deleteDocumentApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/idp/document/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/document/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Document deleted successfully');
             return true;

@@ -167,15 +167,3 @@ const aaaa = {
     },
     ocr_info: { engine: 'doctr', include_confidence: true, include_bbox: true, confidence_threshold: 0.9 }
 };
-
-const sampleResponse = {
-    task_id: '76f56ff0-4c8c-41c7-8562-13c0c845fd11',
-    request_id: '16f49985-851f-43c7-85f5-16df60f734a6',
-    status: 'Processing',
-    status_url: '/api/v5/document/tasks/76f56ff0-4c8c-41c7-8562-13c0c845fd11/status',
-    stream_url: '/api/v5/document/tasks/76f56ff0-4c8c-41c7-8562-13c0c845fd11/stream',
-    provider: 'Azure OpenAI',
-    model: 'GPT-4o',
-    ocr_enabled: false,
-    ocr_engine: null
-};

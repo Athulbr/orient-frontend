@@ -14,7 +14,7 @@ export const useDashboardApi = () => {
         try {
             // if (!checkPermission('read:record')) return;
             setState(prev => ({ ...prev, loadingRecords: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history`, { pageSize: 10, filters: { deleted: false } });
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history`, { pageSize: 10, filters: { deleted: false } });
             setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;
@@ -26,7 +26,7 @@ export const useDashboardApi = () => {
         try {
             // if (!checkPermission('read:record')) return;
             setState(prev => ({ ...prev, loadingStatusCounts: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/status/count`);
+            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/history/status/count`);
             setState(prev => ({ ...prev, loadingStatusCounts: false, statusCounts: { ...res.data[0], total: res.total } }));
         } catch (error) {
             toast.error('Failed to fetch record');
@@ -36,7 +36,7 @@ export const useDashboardApi = () => {
         try {
             // if (!checkPermission('read:template')) return;
             setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/pre-template`, {
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/pre-template`, {
                 pageSize: 50,
                 custom: true,
                 filters: { deleted: false }
@@ -50,7 +50,7 @@ export const useDashboardApi = () => {
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template`, {
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
                 pageSize: 15,
                 custom: true,
                 filters: { deleted: false }

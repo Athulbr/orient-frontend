@@ -11,7 +11,7 @@ export const useUserApiService = () => {
     const createUserApi = async (user: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/create`, user);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/create`, user);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: prev.refresh + 1 }));
             toast.success('User Created Successfully');
         } catch (error) {
@@ -24,7 +24,7 @@ export const useUserApiService = () => {
     const updateUserApi = async (user: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update/${state.id}`, user);
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/user/update/${state.id}`, user);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: prev.refresh + 1 }));
             toast.success('User Updated Successfully');
         } catch (error) {
@@ -37,7 +37,7 @@ export const useUserApiService = () => {
     const deleteUserApiRequest = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/user/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/user/delete/${id}`);
             setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
             toast.success('User deleted successfully');
         } catch (error) {

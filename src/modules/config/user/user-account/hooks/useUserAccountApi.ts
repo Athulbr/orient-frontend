@@ -11,7 +11,7 @@ export const useUserAccountApi = () => {
     const getUserApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingUser: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/user/${id}`);
+            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/user/${id}`);
             setState(prev => ({ ...prev, user: res.data }));
             toast.success('UserAccount fetched successfully');
             return true;
@@ -25,7 +25,7 @@ export const useUserAccountApi = () => {
     const updateUserName = async (firstName: string, lastName: string) => {
         try {
             setState(prev => ({ ...prev, loadingUser: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update/${state.user?._id}`, { firstName, lastName });
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/user/update/${state.user?._id}`, { firstName, lastName });
             setState(prev => ({ ...prev, updateNameDialog: false, user: res.data }));
             toast.success('Name updated successfully');
             return true;
@@ -39,7 +39,7 @@ export const useUserAccountApi = () => {
     const updateUserPassword = async (data: any) => {
         try {
             setState(prev => ({ ...prev, loadingUser: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/password/change/${state.user?.email}`, data);
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/user/password/change/${state.user?.email}`, data);
             setState(prev => ({ ...prev, updatePasswordDialog: false, user: res.data }));
             toast.success('Password updated successfully');
             return true;
@@ -53,7 +53,7 @@ export const useUserAccountApi = () => {
     const updateProfilePicture = async (profilePicture: string) => {
         try {
             setState(prev => ({ ...prev, loadingUser: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/user/update/${state.user?._id}`, { profilePicture });
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/user/update/${state.user?._id}`, { profilePicture });
             setState(prev => ({ ...prev, updateProfilePictureDialog: false, user: res.data }));
             toast.success('Profile picture updated successfully');
             return true;

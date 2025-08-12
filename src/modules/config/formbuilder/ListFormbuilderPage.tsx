@@ -22,7 +22,7 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
     const refreshCache = async () => {
         try {
             setRefreshingCache(true);
-            const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
+            const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 });
             window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
             toast.success('Cache refreshed successfully');
         } catch (error) {
@@ -53,7 +53,7 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
         },
         deleteClickHandler: async (row: Record<string, string>) => {
             try {
-                await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${row._id}`);
+                await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/${row._id}`);
                 toast.success('Formbuilder updated successfully');
                 setRefresh(prev => prev + 1);
                 return true;

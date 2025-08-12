@@ -314,7 +314,7 @@ const ExportButton = () => {
                 link.remove();
                 window.URL.revokeObjectURL(url);
             } else if (value === 'all') {
-                // `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+                // `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
 
                 const downloadXlsxFile = async () => {
                     const recordId = 'export';
@@ -324,9 +324,9 @@ const ExportButton = () => {
                     // Update this condition based on your tenant settings
                     const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
                     if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
-                        exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+                        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
                     } else {
-                        exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export`;
+                        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export`;
                     }
 
                     const response = await fetch(exportURL, {

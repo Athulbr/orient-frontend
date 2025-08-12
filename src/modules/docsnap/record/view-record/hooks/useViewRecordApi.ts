@@ -45,7 +45,7 @@ export const useViewRecordApi = () => {
     const getRecordApiById = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/history/${id}`);
+            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/history/${id}`);
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
                 console.log('images', images);
@@ -103,7 +103,7 @@ export const useViewRecordApi = () => {
     const sendMessageToNode = async (query: string) => {
         setState(prev => ({ ...prev, chatLoading: true, messages: [...prev.messages, { text: query, userMessage: true }] }));
         const requestBody = { query, visionOcrText: state.record?.visionOcrText, chatList: state.messages };
-        const response: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/send-message`, requestBody);
+        const response: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/project/send-message`, requestBody);
         setState(prev => ({
             ...prev,
             chatLoading: false,
@@ -123,7 +123,7 @@ export const useViewRecordApi = () => {
                 name: state?.record?.name
             };
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/rehab/create`, payload);
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
             navigate('/docsnap/record/list');
         } catch (error) {
@@ -158,7 +158,7 @@ export const useViewRecordApi = () => {
                 }
             };
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, payload);
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');
             navigate('/');
         } catch (error) {
@@ -171,7 +171,7 @@ export const useViewRecordApi = () => {
     const updateExtractedData = async (extractedData: any) => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/idp/history/update/${id}`, { extractedData });
+            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/update/${id}`, { extractedData });
             toast.success('Record updated successfully');
         } catch (error) {
             console.error('error:===========', error);
@@ -185,7 +185,7 @@ export const useViewRecordApi = () => {
             const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
             setState(prev => ({ ...prev, generatingInvoice: true }));
             // test
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/generate-invoice`, {
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/generate-invoice`, {
                 purchaseOrder: filteredData
             });
             setState(prev => ({
@@ -208,7 +208,7 @@ export const useViewRecordApi = () => {
                 document: state.record?.templateId._id // TODO: update this
             };
             setState(prev => ({ ...prev, creatingRequest: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/request/create`, requestBody);
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/request/create`, requestBody);
             toast.success('Request created successfully');
         } catch (error) {
             console.error('error:===========', error);
@@ -229,7 +229,7 @@ export const useViewRecordApi = () => {
                 templateId: state.record?.templateId._id
             };
             setState(prev => ({ ...prev, creatingRequest: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/comment/create`, requestBody);
+            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/comment/create`, requestBody);
 
             toast.success('Comment created successfully');
         } catch (error) {

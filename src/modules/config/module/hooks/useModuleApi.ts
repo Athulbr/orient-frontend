@@ -19,7 +19,7 @@ export const useModulesApi = () => {
     const createModuleApi = async (payload: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/module/create`, payload);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/module/create`, payload);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Module Created Successfully');
         } catch (error) {
@@ -33,7 +33,7 @@ export const useModulesApi = () => {
     const updateModuleApi = async (module: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/module/update/${state.id}`, module);
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/module/update/${state.id}`, module);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Module Updated Successfully');
         } catch (error) {
@@ -46,7 +46,7 @@ export const useModulesApi = () => {
 
     const getModuleByIdApi = async (id: string) => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/module/${id}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/module/${id}`);
             toast.success('Module fetched successfully');
             setState(prev => ({ ...prev, module: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -57,7 +57,7 @@ export const useModulesApi = () => {
 
     const deleteModuleApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/module/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/module/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Module deleted successfully');
             return true;

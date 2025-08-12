@@ -16,12 +16,12 @@ interface SettingsStoreIF {
     getTenantSettings: () => Promise<void>;
 }
 
-export const useSettingsStore = create<SettingsStoreIF>(set => ({
+export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     // ============================== USER SETTINGS ===============================
     userSettings: {},
     submitUserSettings: async (settings?: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/settings/submit`, {
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/settings/submit`, {
                 settings
             });
             set({ userSettings: settings });
@@ -31,7 +31,7 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     },
     getUserSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/user/settings/list`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/user/settings/list`);
             set({ userSettings: res.data.settings });
         } catch (error) {
             console.log(error);
@@ -41,7 +41,7 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     docsnapSettings: {},
     submitDocsnapSettings: async (settings?: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/settings/submit`, {
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/settings/submit`, {
                 settings
             });
             set({ docsnapSettings: settings });
@@ -51,8 +51,9 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     },
     getDocsnapSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/settings/list`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/settings/list`);
             set({ docsnapSettings: res.data.settings });
+            return res.data.settings;
         } catch (error) {
             console.log(error);
         }
@@ -61,7 +62,7 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     tenantSettings: {},
     submitTenantSettings: async (settings?: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/tenant/settings/submit`, {
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/settings/submit`, {
                 settings
             });
             set({ tenantSettings: settings });
@@ -71,7 +72,7 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     },
     getTenantSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/tenant/settings/list`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list`);
             set({ tenantSettings: res.data.settings });
         } catch (error) {
             console.log(error);

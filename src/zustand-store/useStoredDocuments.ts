@@ -11,7 +11,7 @@ interface S3DocumentsStoreIF {
 export const useS3DocumentsStore = create<S3DocumentsStoreIF>((set, get) => ({
     documents: {},
     uploadS3File: async (file: File) => {
-        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
 
         set(() => {
             return {
@@ -28,7 +28,7 @@ export const useS3DocumentsStore = create<S3DocumentsStoreIF>((set, get) => ({
         if (get().documents[fileName]) {
             return get().documents[fileName];
         } else {
-            const s3Response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/document/get/file`, {
+            const s3Response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document/get/file`, {
                 fileName
             });
             set(() => {

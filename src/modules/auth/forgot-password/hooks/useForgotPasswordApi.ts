@@ -23,7 +23,7 @@ export const useForgotPasswordApi = () => {
         setState(prev => ({ ...prev, loading: true, error: '' }));
 
         try {
-            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password`, { email: state.email });
+            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
 
             if (response.success) {
                 setState(prev => ({ ...prev, success: true }));

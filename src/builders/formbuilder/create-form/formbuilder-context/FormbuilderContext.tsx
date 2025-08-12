@@ -29,7 +29,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
                 toast.error('Form name is required');
                 return;
             }
-            await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder`, {
+            await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder`, {
                 name,
                 fields,
                 settings: formSettings
@@ -48,13 +48,13 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
         try {
             setLoading(true);
 
-            await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`, {
+            await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/${id}`, {
                 name,
                 fields,
                 settings: formSettings
             });
 
-            const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 });
+            const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 });
             window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
             toast.success('Formbuilder updated successfully');
             navigate('/config/formbuilder/list');
@@ -69,7 +69,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
     const getFormbuilderByIdApi = async () => {
         try {
             setLoading(true);
-            const res = await httpAiRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/${id}`);
+            const res = await httpAiRequest('GET', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/${id}`);
             setFields(res?.data.fields);
             setFormSettings(res?.data.settings);
             return res?.data?.name;

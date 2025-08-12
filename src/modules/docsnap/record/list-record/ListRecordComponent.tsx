@@ -74,7 +74,7 @@ export const ListRecordComponent: React.FC = () => {
         let exportURL = '';
         // Update this condition based on your tenant settings
         const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-        exportURL = `${import.meta.env.VITE_NODE_URL}/api/idp/history/export/new`;
+        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
 
         const response = await fetch(exportURL, {
             method: 'POST',

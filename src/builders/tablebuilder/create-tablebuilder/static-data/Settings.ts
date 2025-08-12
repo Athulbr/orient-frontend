@@ -34,7 +34,7 @@ export const filledInitialData: TablebuilderSettingsIF = {
         getUrlFromEnv: true,
         envVariable: 'VITE_NODE_URL',
         url: `${import.meta.env.VITE_NODE_URL}`,
-        endPoint: '/api/',
+        endPoint: '',
         refresh: 1
     },
     filters: [],
@@ -89,7 +89,7 @@ export const emptyInitialData: TablebuilderSettingsIF = {
         getUrlFromEnv: false,
         envVariable: 'VITE_NODE_URL',
         url: `${import.meta.env.VITE_NODE_URL}`,
-        endPoint: '/api/user/query',
+        endPoint: '/user/query',
         refresh: 1
     },
     filters: [],

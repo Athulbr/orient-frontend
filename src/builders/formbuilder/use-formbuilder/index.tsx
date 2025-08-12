@@ -49,7 +49,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                     return;
                 }
             }
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/name`, { name });
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/name`, { name });
             if (fields.length) return;
             setFields(res.data.fields);
             setSettings(res.data.settings);

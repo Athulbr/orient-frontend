@@ -21,7 +21,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
     const logOut = async () => {
-        const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/logout`, {});
+        const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
         toast.success('Logged out successfully');
         if (isAuthenticated) {
             instance.logoutRedirect({
@@ -40,7 +40,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     };
 
     const callExtractionApi = async () => {
-        await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/project/extract`, payload);
+        await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/project/extract`, payload);
     };
 
     return (

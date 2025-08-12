@@ -28,7 +28,7 @@ const ProfileContent: React.FC<any> = ({ data }) => {
                     };
 
                     try {
-                        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, ssoRegistraion);
+                        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/signup`, ssoRegistraion);
                         if (res.data?.accessToken) {
                             window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                             window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));

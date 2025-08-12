@@ -45,7 +45,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
         }
         const getTableSettings = async () => {
             try {
-                const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/name`, { name });
+                const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/name`, { name });
                 setSettings(res?.data?.settings);
             } catch (error: any) {
                 console.error('error.message:===========', error.message);

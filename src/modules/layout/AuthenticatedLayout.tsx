@@ -15,7 +15,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     const user = JSON.parse(window.sessionStorage.getItem('user') || '{}');
 
     const updateRolePermission = async () => {
-        const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/role/${user?.role?._id}`);
+        const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/role/${user?.role?._id}`);
         const features = res.data?.features.map((feature: any) => {
             return feature.key;
         });

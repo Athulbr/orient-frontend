@@ -12,6 +12,7 @@ const DocsnapSettingsPage: React.FC<DocsnapSettingsPageIF> = () => {
     const [loading, setLoading] = useState(false);
     const onSubmit = async (data: any) => {
         setLoading(true);
+        alert('');
         await submitDocsnapSettings(data);
         setLoading(false);
     };

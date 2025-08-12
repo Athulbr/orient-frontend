@@ -13,7 +13,7 @@ export const useFetchCreateTB = () => {
         setBuilder(prev => ({ ...prev, loading: true }));
         const tableName = prompt('Please enter table name', '');
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder`, {
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder`, {
                 name: tableName,
                 settings,
                 description: 'tablebuilder description'
@@ -32,12 +32,12 @@ export const useFetchCreateTB = () => {
     const updateTablebuilderApi = async (id: string) => {
         setBuilder(prev => ({ ...prev, loading: true }));
         try {
-            const res = await httpRequest('PUT', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/${id}`, {
+            const res = await httpRequest('PUT', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/${id}`, {
                 name: builder.name,
                 settings,
                 description: 'tablebuilder description'
             });
-            const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 });
+            const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 });
             window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(tablebuilderesponse?.data));
             toast.success('Tablebuilder Updated Successfully');
         } catch (error) {
@@ -52,7 +52,7 @@ export const useFetchCreateTB = () => {
 
     const getTablebuilderByIdApi = async (id: string) => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/${id}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/${id}`);
             setSettings(res.data.settings);
             setBuilder(prev => ({ ...prev, name: res.data.name }));
             toast.success('Fetched Tablebuilder List Successfully');

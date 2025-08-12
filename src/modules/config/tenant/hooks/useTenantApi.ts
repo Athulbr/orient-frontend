@@ -10,7 +10,7 @@ export const useTenantsApi = () => {
 
     const createTenantApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/tenant/create`, payload);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/create`, payload);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Tenant Created Successfully');
         } catch (error) {
@@ -22,7 +22,7 @@ export const useTenantsApi = () => {
     const updateTenantApi = async (tenant: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/api/tenant/update/${state.id}`, tenant);
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/tenant/update/${state.id}`, tenant);
             setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Tenant Updated Successfully');
         } catch (error) {
@@ -34,7 +34,7 @@ export const useTenantsApi = () => {
     const getTenantByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/tenant/${id}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/${id}`);
             toast.success('Tenant fetched successfully');
             setState(prev => ({ ...prev, loading: false, tenant: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -45,7 +45,7 @@ export const useTenantsApi = () => {
 
     const deleteTenantApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/api/tenant/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/tenant/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Tenant deleted successfully');
             return true;

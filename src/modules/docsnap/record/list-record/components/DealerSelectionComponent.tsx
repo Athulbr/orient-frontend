@@ -28,7 +28,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
     useEffect(() => {
         const getDealerList = async () => {
             try {
-                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/list/dealers`);
+                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/list/dealers`);
                 setDealersData(res.data?.dealers);
             } catch (error) {
                 toast.error('Failed to fetch dealer list');

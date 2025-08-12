@@ -32,15 +32,15 @@ export const useLoginPageApi = () => {
         }
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/login`, { email: state.email, password: state.password });
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/login`, { email: state.email, password: state.password });
             if (res?.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                 window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
 
                 const resp = await Promise.all([
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 })
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
                 ]);
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
@@ -92,14 +92,14 @@ export const useLoginPageApi = () => {
                     email: user.email,
                     sso: true
                 };
-                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/auth/signup`, ssoRegistration);
+                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/signup`, ssoRegistration);
                 if (res.data?.accessToken) {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                     window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
                     const resp = await Promise.all([
-                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/tablebuilder/query`, { pageSize: 1000 }),
-                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/builder/formbuilder/query`, { pageSize: 1000 })
+                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
                     ]);
                     window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                     window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
@@ -130,7 +130,7 @@ export const useLoginPageApi = () => {
     };
     const forgotPasswordApi = async () => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/user/forgot/password`, { email: state.email });
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
         } catch (error) {}
     };
 

@@ -28,7 +28,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             templateId: selectedTemplate._id
         };
         setState({ ...state, loadingCreateTemplate: true });
-        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/template/create`, requestBody);
+        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
         if (state.isDashboard) {
             setState({ ...state, loadingCreateTemplate: false });
             navigate('/docsnap/template/list');
@@ -129,7 +129,7 @@ const FileUploadUIComponent = ({ closeDialog }: { closeDialog: () => void }) => 
     const [uploading, setUploading] = useState(false);
     const onFileDrop = async (files: FileList) => {
         setUploading(true);
-        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, files[0] as File);
+        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, files[0] as File);
         navigate(`/docsnap/template/create/${s3Response.data?.fileName}`);
         closeDialog();
         setUploading(false);
