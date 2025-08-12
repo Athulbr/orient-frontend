@@ -221,6 +221,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
             const [fieldType, fieldKey, subFieldKey, subSubFieldKey] = keysArray;
             setState(prev => {
                 const newState = { ...prev };
+                // @ts-ignore
                 newState.arrayFields[fieldKey][subFieldKey][subSubFieldKey].checked = Boolean(checked);
                 return newState;
             });
@@ -411,7 +412,8 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                                             arrayLength={arrayLength}
                                             isChecked={
                                                 arrayLength === 4
-                                                    ? state.arrayFields[Number(subKey)]?.[subSubKey]?.[label]?.checked || false
+                                                    ? // @ts-ignore
+                                                      state.arrayFields[Number(subKey)]?.[subSubKey]?.[label]?.checked || false
                                                     : arrayLength === 3
                                                       ? // @ts-ignore
                                                         state[mainKey]?.[subKey]?.[subSubKey]?.checked || false
