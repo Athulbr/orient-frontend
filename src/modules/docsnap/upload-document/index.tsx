@@ -12,11 +12,11 @@ interface UploadDocumentComponentIF {
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToExtraction, addToNodeExtraction, addToNodeExtractionMultiPO } = useDocsnapStore();
+    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtraction, addToNodeExtractionMultiPO } = useDocsnapStore();
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
-    const { userSettings } = useSettingsStore();
+    const { docsnapSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/template/${template._id}`);
@@ -31,8 +31,8 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             toast.error('You can select up to 3 files only.');
             return;
         }
-        const extractionEngine = userSettings?.extractionEngine;
-        const extractionType = userSettings?.extractionType;
+        const extractionEngine = docsnapSettings?.extractionEngine;
+        const extractionType = docsnapSettings?.extractionType;
         if (extractionEngine === 'node') {
             if (!templateData) {
                 alert('Template not found');
@@ -44,7 +44,11 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
             }
         } else {
-            addToExtraction(files, templateData || '');
+            if (extractionType === 'singlePO') {
+                addToPythonExtraction(files, templateData || '');
+            } else {
+                addToPythonExtractionMultiPO(files, templateData || {});
+            }
         }
 
         navigate('/docsnap/record/list');

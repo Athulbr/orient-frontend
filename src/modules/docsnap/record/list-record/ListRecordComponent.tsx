@@ -62,6 +62,7 @@ export const ListRecordComponent: React.FC = () => {
     ];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
+        return query;
     };
 
     const downloadXlsxFile = async (payload: any) => {
@@ -100,7 +101,8 @@ export const ListRecordComponent: React.FC = () => {
     const onSubmit = (dealers: any) => {
         const query = state.query;
         const payload = {
-            ...query,
+            startDate: query.startDate,
+            endDate: query.endDate,
             format: 'xlsx',
             dealers
         };
@@ -121,7 +123,7 @@ export const ListRecordComponent: React.FC = () => {
                 deletePermission="delete:record"
                 updatePermission="update:record"
                 actionButtons={actionButtons}
-                // updatedQuery={updatedQuery}
+                updatedQuery={updatedQuery}
             />
             <DealerListComponent
                 onSubmit={onSubmit}

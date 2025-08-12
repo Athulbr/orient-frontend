@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../../../components/Button';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { X } from 'lucide-react';
+import httpRequest from '../../../../../global-utils/httpRequest';
 
 interface SubDealer {
     name: string;
@@ -21,8 +22,20 @@ interface DealerListComponentProps {
 }
 
 const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListComponentProps) => {
-    const [dealersData, setDealersData] = useState<Dealer[]>(dealerList);
+    const [dealersData, setDealersData] = useState<Dealer[]>([]);
     const toast = useToastStore();
+
+    useEffect(() => {
+        const getDealerList = async () => {
+            try {
+                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/list/dealers`);
+                setDealersData(res.data?.dealers);
+            } catch (error) {
+                toast.error('Failed to fetch dealer list');
+            }
+        };
+        getDealerList();
+    }, []);
 
     const [expandedDealer, setExpandedDealer] = useState<string | null>(null);
 

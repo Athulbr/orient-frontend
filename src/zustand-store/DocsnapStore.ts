@@ -9,7 +9,8 @@ interface DocsnapStoreIF {
     refreshRecord: number;
     extractionQueue: any[];
     clearExtractionQueue: () => void;
-    addToExtraction: (files: FileList, template: any) => Promise<any>;
+    addToPythonExtraction: (files: FileList, template: any) => Promise<any>;
+    addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
@@ -19,7 +20,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
     refreshRecord: 1,
     extractionQueue: [],
     clearExtractionQueue: () => set({ extractionQueue: [] }),
-    addToExtraction: async (files: FileList, template: any) => {
+    addToPythonExtraction: async (files: FileList, template: any) => {
         Array.from(files).forEach(async (file, index) => {
             const sendApiRequest = async () => {
                 try {
@@ -27,7 +28,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
-                    useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
                     get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -113,6 +113,123 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                                     `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
                                     requestBody
                                 );
+                                set({ refreshRecord: get().refreshRecord + 1 });
+
+                                const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+                                if (!processingFiles.length) {
+                                    set({ refreshRecord: get().refreshRecord + 1 });
+                                }
+                            } catch (error) {
+                                console.log('error:===========', error);
+                            }
+                        }
+                    });
+                } catch (error) {
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                    });
+                }
+            };
+            setTimeout(() => {
+                console.log('index:===========', index);
+                sendApiRequest();
+            }, index * 5000);
+        });
+    },
+    addToPythonExtractionMultiPO: async (files: FileList, template: any) => {
+        Array.from(files).forEach(async (file, index) => {
+            const sendApiRequest = async () => {
+                try {
+                    set({
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
+                    });
+                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/api/idp/document/upload`, file as File);
+                    get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
+                    });
+                    const convertedJson = convertJSON(template?.fields || []);
+                    const requestBody: Record<string, any> = {
+                        document_type: template.docType || 'other',
+                        entity_schema: convertedJson,
+                        include_confidence: true,
+                        include_bbox: true,
+                        confidence_threshold: 0.5,
+                        s3_file_name: s3Response?.data?.fileName,
+                        provider_id: 'azure',
+                        model_id: 'gpt-4o',
+                        use_latest: false,
+                        template_id: template._id
+                    };
+                    if (template.enableOcr) requestBody.ocr_engine = 'doctr';
+                    // const extractionEngine = window.localStorage.getItem('extractionEngine');
+
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);
+
+                    const createReqObject = {
+                        status: 'processing',
+                        metadata: res,
+                        extractedData: null,
+                        pdfFileName: s3Response?.data?.fileName,
+                        name: s3Response?.data?.fileName,
+                        templateId: template._id,
+                        documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
+                    };
+
+                    // const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/history/create`, createReqObject);
+                    set({ refreshRecord: get().refreshRecord + 1 });
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
+                    });
+
+                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
+                    if (!processingFiles.length) {
+                        set({ refreshRecord: get().refreshRecord + 1 });
+                    }
+
+                    const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+                    eventSource.addEventListener('task_update', async (event: any) => {
+                        const data = JSON.parse(event.data);
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
+                        });
+                        if (data.current_step === 'Complete') {
+                            eventSource.close();
+                            try {
+                                // const extractedData: any = data?.result?.extracted_data || {};
+                                // ========Add External Fields=========
+
+                                // const user = usePermissionStore.getState().user;
+
+                                // template?.fields?.forEach((section: any) => {
+                                //     if (section.excludeExtraction) {
+                                //         section?.subFields?.forEach((subField: any) => {
+                                //             // Initialize empty value in extractedData for each subField
+                                //             extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
+                                //             extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
+                                //         });
+                                //     }
+                                // });
+
+                                // extractedData['extracted_by'] = {
+                                //     name: {
+                                //         value: `${user?.firstName} ${user?.lastName}`
+                                //     },
+                                //     email: {
+                                //         value: `${user?.email}`
+                                //     }
+                                // };
+                                // const requestBody = {
+                                //     extractedData,
+                                //     status: 'extracted'
+                                // };
+                                // await httpRequest(
+                                //     'PATCH',
+                                //     `${import.meta.env.VITE_NODE_URL}/api/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                //     requestBody
+                                // );
                                 set({ refreshRecord: get().refreshRecord + 1 });
 
                                 const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
