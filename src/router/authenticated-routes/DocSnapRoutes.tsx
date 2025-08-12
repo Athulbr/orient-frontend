@@ -1,28 +1,27 @@
-import { Suspense } from 'react';
+import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import FullScreenLoader from '../../components/FullScreenLoader';
-import ListProjectPage from '../../modules/docsnap/project';
-import ListDocumentPage from '../../modules/docsnap/document';
-import ViewRecordPage from '../../modules/docsnap/record/view-record';
-import ListRecordPage from '../../modules/docsnap/record/list-record';
-import ListTemplatePage from '../../modules/docsnap/template/list-template';
-import UpdateTemplatePage from '../../modules/docsnap/template/update-template';
-import ViewTemplatePage from '../../modules/docsnap/template/view-template';
+
+// Lazy load pages
+const ListProjectPage = lazy(() => import('../../modules/docsnap/project'));
+const ListDocumentPage = lazy(() => import('../../modules/docsnap/document'));
+const ViewRecordPage = lazy(() => import('../../modules/docsnap/record/view-record'));
+const ListRecordPage = lazy(() => import('../../modules/docsnap/record/list-record'));
+const ListTemplatePage = lazy(() => import('../../modules/docsnap/template/list-template'));
+const UpdateTemplatePage = lazy(() => import('../../modules/docsnap/template/update-template'));
+const ViewTemplatePage = lazy(() => import('../../modules/docsnap/template/view-template'));
 
 const DocSnapRoutes = () => {
     return (
-        <Suspense fallback={<FullScreenLoader />}>
-            <Routes>
-                <Route path="/project/list" element={<ListProjectPage />} />
-                <Route path="/template/list" element={<ListTemplatePage />} />
-                <Route path="/template/view/:id" element={<ViewTemplatePage />} />
-                <Route path="/template/update/:id" element={<UpdateTemplatePage />} />
-                <Route path="/template/create/:fileName" element={<UpdateTemplatePage />} />
-                <Route path="/document/list/:id" element={<ListDocumentPage />} />
-                <Route path="/record/list" element={<ListRecordPage />} />
-                <Route path="/record/view/:id" element={<ViewRecordPage />} />
-            </Routes>
-        </Suspense>
+        <Routes>
+            <Route path="project/list" element={<ListProjectPage />} />
+            <Route path="template/list" element={<ListTemplatePage />} />
+            <Route path="template/view/:id" element={<ViewTemplatePage />} />
+            <Route path="template/update/:id" element={<UpdateTemplatePage />} />
+            <Route path="template/create/:fileName" element={<UpdateTemplatePage />} />
+            <Route path="document/list/:id" element={<ListDocumentPage />} />
+            <Route path="record/list" element={<ListRecordPage />} />
+            <Route path="record/view/:id" element={<ViewRecordPage />} />
+        </Routes>
     );
 };
 

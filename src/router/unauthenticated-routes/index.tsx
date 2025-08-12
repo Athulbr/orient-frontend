@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import FullScreenLoader from '../../components/FullScreenLoader';
 
+// Lazy load the whole auth module
 const AuthRoutes = lazy(() => import('./AuthRoutes'));
 
 const UnauthenticatedRoutes = () => {
@@ -9,7 +10,8 @@ const UnauthenticatedRoutes = () => {
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="/auth/*" element={<AuthRoutes />} />
-                <Route path="/*" element={<Navigate to="/auth/login" replace />} />
+                {/* Redirect everything else to auth/login */}
+                <Route path="*" element={<Navigate to="/auth/login" replace />} />
             </Routes>
         </Suspense>
     );
