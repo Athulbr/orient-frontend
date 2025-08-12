@@ -41,7 +41,7 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     docsnapSettings: {},
     submitDocsnapSettings: async (settings?: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/docsnap/settings/submit`, {
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/api/idp/settings/submit`, {
                 settings
             });
             set({ docsnapSettings: settings });
@@ -51,7 +51,7 @@ export const useSettingsStore = create<SettingsStoreIF>(set => ({
     },
     getDocsnapSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/docsnap/settings/list`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/api/idp/settings/list`);
             set({ docsnapSettings: res.data.settings });
         } catch (error) {
             console.log(error);
