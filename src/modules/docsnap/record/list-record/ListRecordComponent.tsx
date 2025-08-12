@@ -8,18 +8,21 @@ import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 
 export const Polink = (row: any) => {
+    const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
+    const poId = row?.data?.rmResponse?.data?.id ? row?.data?.rmResponse?.data?.id : row?.data?.rmResponse?.id;
+
     const onClickPOLink = (e: any, row: any) => {
         e.stopPropagation();
-        window.open(`${row?.data?.rmResponse?.data?.url}`, '_blank');
+        window.open(`${rmLink}`, '_blank');
     };
 
-    if (!row?.data?.rmResponse?.data?.url) {
+    if (!rmLink) {
         return <div className="text-blue-400  pl-6">-</div>;
     }
 
     return (
         <div onClick={e => onClickPOLink(e, row)} className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700">
-            PO Link
+            {poId}
         </div>
     );
 };
