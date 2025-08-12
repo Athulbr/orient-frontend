@@ -25,7 +25,6 @@ export const TablebuilderBot = () => {
             setSettings(finalData);
         } catch (error) {
             console.error('Error in sendPrompt:', error);
-            alert(error instanceof Error ? error.message : 'An error occurred');
         } finally {
             setLoading(false);
         }

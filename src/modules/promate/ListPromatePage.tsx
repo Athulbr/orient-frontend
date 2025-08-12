@@ -22,9 +22,7 @@ const ListPromatePage: React.FC<ListPromatePageIF> = () => {
         rowClickHandler: (row: Record<string, string>) => {
             navigate(`/config/promate/update/${row._id}`);
         },
-        editClickHandler: () => {
-            alert('vinayak');
-        }
+        editClickHandler: () => {}
     };
     const customUI = {
         status: StatusCustomUI

@@ -384,7 +384,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         fileName: s3Response?.data?.fileName,
                         schema: convertedJson.fields
                     };
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/project/extract/v3`, body);
+                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document-extractor/v2`, body);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });

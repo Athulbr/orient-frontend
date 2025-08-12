@@ -178,12 +178,7 @@ const PageActionComponent: React.FC = () => {
             {showChatbot && <Chatbot hideChatbot={hideChatbot} messages={messages} handleSendPrompt={handleSendPrompt} chatLoading={chatLoading} />}
 
             <DialogComponent isOpen={showPreview} closeDialog={() => setShowPreview(false)} name="Form Preview" className="w-1/2">
-                <RenderForm
-                    cancelClickHandler={() => setShowPreview(false)}
-                    submitClickHandler={() => alert('Submit Action')}
-                    fields={fields}
-                    columns={formSettings.columns}
-                />
+                <RenderForm cancelClickHandler={() => setShowPreview(false)} submitClickHandler={() => {}} fields={fields} columns={formSettings.columns} />
             </DialogComponent>
 
             <UseFormbuilder

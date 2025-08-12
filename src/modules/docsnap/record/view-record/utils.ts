@@ -1,5 +1,6 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min?url';
+import { useToastStore } from '../../../../components/toast/ToastStore';
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export const formatFieldLabel = (fieldId: string): string => {
@@ -16,6 +17,7 @@ export const convertPdfToImages = async (
         maxPages?: number;
     }
 ): Promise<string[]> => {
+    const toast = useToastStore();
     try {
         const arrayBuffer = await file.arrayBuffer();
         const loadingTask = pdfjsLib.getDocument(arrayBuffer);
@@ -26,7 +28,7 @@ export const convertPdfToImages = async (
         const pagesToRender = Math.min(totalPages, maxPages);
 
         if (totalPages > maxPages) {
-            alert(`PDF has ${totalPages} pages. Only rendering the first ${maxPages} for performance.`);
+            toast.warning(`PDF has ${totalPages} pages. Only rendering the first ${maxPages} for performance.`);
         }
 
         const imagePromises: Promise<string>[] = [];

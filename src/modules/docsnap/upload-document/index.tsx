@@ -36,7 +36,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         const extractionType = docsnapSettings?.extractionType;
         if (extractionEngine === 'node') {
             if (!templateData) {
-                alert('Template not found');
+                toast.error('Template not found');
                 return;
             }
             if (extractionType === 'multiPO') {

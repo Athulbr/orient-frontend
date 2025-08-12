@@ -22,7 +22,6 @@ const ListCommentPage: React.FC<ListCommentPageIF> = () => {
             navigate(`/config/comment/update/${row._id}`);
         },
         editClickHandler: () => {
-            alert('vinayak');
         }
     };
     const customUI = {};
