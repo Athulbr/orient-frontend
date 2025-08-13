@@ -12,7 +12,7 @@ export const httpUploadRequest = async <T = any>(url: string, file: File, token?
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 1000000000);
 
     try {
         const response = await fetch(url, {
