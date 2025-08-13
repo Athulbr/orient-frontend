@@ -9,17 +9,19 @@ import SkeletonLoader from './SkeletonLoader';
 import { RecordStatusCustomUI } from '../../docsnap/record/list-record/components/RecordStatusCustomUI';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import { Polink } from '../../docsnap/record/list-record/ListRecordComponent';
+import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 
 const RecentFilesCardComponent: React.FC = () => {
     const { state, setState } = useDashboardState();
     const { checkPermission } = usePermissionStore();
+    const { refreshRecord } = useDocsnapStore();
 
     const navigate = useNavigate();
     const { getRecordsApi } = useDashboardApi();
 
     useEffect(() => {
         getRecordsApi();
-    }, []);
+    }, [refreshRecord]);
 
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
