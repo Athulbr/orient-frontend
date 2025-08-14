@@ -126,10 +126,10 @@ export const useViewRecordApi = () => {
             const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
             navigate('/docsnap/record/list');
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to update Record');
-            navigate('/docsnap/record/list');
+        } catch (error: any) {
+            console.error('error:===========', error.message);
+            toast.error(error.message || 'Failed to submit Record');
+            // navigate('/docsnap/record/list');
         } finally {
             setState(prev => ({ ...prev, loadingData: false }));
         }
