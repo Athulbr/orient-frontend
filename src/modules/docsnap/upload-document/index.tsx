@@ -45,10 +45,10 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
             }
         } else {
-            if (extractionType === 'singlePO') {
-                addToPythonExtraction(files, templateData || '');
-            } else {
+            if (extractionType === 'multiPO') {
                 addToPythonExtractionMultiPO(files, templateData || {});
+            } else {
+                addToPythonExtraction(files, templateData || '');
             }
         }
 

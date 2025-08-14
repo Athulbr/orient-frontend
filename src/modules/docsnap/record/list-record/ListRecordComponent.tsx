@@ -55,14 +55,18 @@ export const ListRecordComponent: React.FC = () => {
         poLink: Polink
     };
 
-    const actionButtons = [
-        {
-            label: 'Export Record',
-            action: () => {
-                setState(prev => ({ ...prev, dealerSelectionDialog: true }));
-            }
-        }
-    ];
+    const rehabMartTenant = `${import.meta.env.VITE_NODE_URL}`.includes('rehabmart');
+
+    const actionButtons = rehabMartTenant
+        ? []
+        : [
+              {
+                  label: 'Export Record',
+                  action: () => {
+                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                  }
+              }
+          ];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
         return query;
