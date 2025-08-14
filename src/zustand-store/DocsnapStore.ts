@@ -253,7 +253,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
     },
     trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
         try {
-            const response = await fetch(`https://demo.makez.ai/chatbot/upload`, {
+            const response = await fetch(`${import.meta.env.VITE_PYTHON_URL}/chatbot/upload`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
