@@ -93,7 +93,7 @@ export const useViewRecordApi = () => {
     const sendMessage = async (message: string) => {
         setState(prev => ({ ...prev, chatLoading: true, messages: [...prev.messages, { text: message, userMessage: true }] }));
         const requestBody = { query: message, botName: state.record?.pdfFileName };
-        const response: any = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_URL}/chatbot/query`, requestBody);
+        const response: any = await httpRequest('POST', `${import.meta.env.VITE_BASR_URL}/chatbot/query`, requestBody);
         setState(prev => ({
             ...prev,
             chatLoading: false,
