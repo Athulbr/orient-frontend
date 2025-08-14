@@ -132,11 +132,13 @@ export const ListRecordComponent: React.FC = () => {
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
             />
-            <DealerListComponent
-                onSubmit={onSubmit}
-                isOpen={state.dealerSelectionDialog}
-                closeDialog={() => setState(prev => ({ ...prev, dealerSelectionDialog: false }))}
-            />
+            {state.dealerSelectionDialog && (
+                <DealerListComponent
+                    onSubmit={onSubmit}
+                    isOpen={state.dealerSelectionDialog}
+                    closeDialog={() => setState(prev => ({ ...prev, dealerSelectionDialog: false }))}
+                />
+            )}
         </>
     );
 };
