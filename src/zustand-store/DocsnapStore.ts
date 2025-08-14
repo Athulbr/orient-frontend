@@ -4,6 +4,7 @@ import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 import { usePermissionStore } from './PermissionStore';
 import { useS3DocumentsStore } from './useStoredDocuments';
+import { useToastStore } from '../components/toast/ToastStore';
 
 interface DocsnapStoreIF {
     refreshRecord: number;
@@ -124,7 +125,9 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                             }
                         }
                     });
-                } catch (error) {
+                } catch (error: any) {
+                    console.log('error:===========', error);
+                    useToastStore.getState().error(error?.message);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
                     });
