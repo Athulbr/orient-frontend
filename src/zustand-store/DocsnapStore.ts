@@ -12,6 +12,7 @@ interface DocsnapStoreIF {
     addToPythonExtraction: (files: FileList, template: any) => Promise<any>;
     addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
+    addToNodeExtractorV1: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
@@ -390,6 +391,42 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     });
                     const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
                     if (!processingFiles.length) set({ refreshRecord: get().refreshRecord + 1 });
+                } catch (error) {
+                    // set({ refreshRecord: get().refreshRecord + 1 });
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                    });
+                }
+            };
+            setTimeout(() => {
+                sendApiRequest();
+            }, index * 500);
+        });
+    },
+    addToNodeExtractorV1: async (files: FileList, template: any, navigate: (path: string) => void) => {
+        Array.from(files).forEach(async (file, index) => {
+            const sendApiRequest = async () => {
+                try {
+                    set({
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
+                    });
+
+                    const convertedJson = convertJSON(template?.fields || []);
+
+                    const formData = new FormData();
+                    formData.append('schema', JSON.stringify(convertedJson.fields));
+                    formData.append('template', JSON.stringify(template));
+                    formData.append('file', file);
+
+                    fetch(`http://localhost:2800/extract/v1`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
+                    });
+                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
                 } catch (error) {
                     // set({ refreshRecord: get().refreshRecord + 1 });
                     set({

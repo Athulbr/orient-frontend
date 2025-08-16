@@ -122,7 +122,7 @@ export const useViewRecordApi = () => {
                 },
                 name: state?.record?.name
             };
-            setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
+            setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
             navigate('/docsnap/record/list');
