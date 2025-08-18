@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleAlert, CircleX, Expand, Minimize } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronRight, CircleAlert, CircleX } from 'lucide-react';
 import { cn } from '../../../global-utils/twMerge';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import ProgressBar from '../../../components/ProgressBar';
@@ -123,8 +123,8 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 Extraction Status
                 <div className='flex gap-3 items-center'>
                     {minimize ? (
-                        <Expand 
-                            size={18} 
+                        <ChevronRight 
+                            size={22} 
                             className="cursor-pointer text-gray-500 hover:text-gray-700" 
                             onClick={(e) => {
                                 e.preventDefault();
@@ -137,8 +137,8 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                             }}
                         />
                     ) : (
-                        <Minimize 
-                            size={18} 
+                        <ChevronDown 
+                            size={22} 
                             className="cursor-pointer text-gray-500 hover:text-gray-700" 
                             onClick={(e) => {
                                 e.preventDefault();

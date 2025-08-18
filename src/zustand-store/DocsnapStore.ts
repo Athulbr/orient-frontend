@@ -4,6 +4,7 @@ import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 import { usePermissionStore } from './PermissionStore';
 import { minifySchema } from '../global-utils/minifySchema';
+import { useS3Storage } from './S3Storage';
 
 interface DocsnapStoreIF {
     refreshRecord: number;
@@ -371,7 +372,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                        set({
+                    set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
                     const convertedJson = convertJSON(template?.fields || []);
@@ -428,18 +429,21 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         )
                     ]);
                     const response = await res.json();
+                    if (response?.data?.imageFileNames?.length) {
+                        response.data.imageFileNames.map((item: string) => useS3Storage.getState().getS3File(item));
+                    }
                     console.log('response:===========', response);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });
-                    // set({ refreshRecord: get().refreshRecord + 1 });
+                    set({ refreshRecord: get().refreshRecord + 1 });
                 } catch (error) {
                     console.log('error:===========', error);
 
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
                     });
-                    // set({ refreshRecord: get().refreshRecord + 1 });
+                    set({ refreshRecord: get().refreshRecord + 1 });
                 }
             };
             setTimeout(() => {
