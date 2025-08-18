@@ -308,7 +308,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                    // useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
@@ -372,8 +371,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
                     });
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                    // useS3DocumentsStore.getState().getS3File(s3Response?.data?.fileName);
-                    set({
+                        set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
                     });
                     const convertedJson = convertJSON(template?.fields || []);

@@ -1,8 +1,7 @@
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
+import { useS3Storage } from '../../../../../zustand-store/S3Storage';
 import httpRequest from '../../../../../global-utils/httpRequest';
-import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import { useListRecordApi } from '../hooks/useListRecordApi';
@@ -19,7 +18,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
     const { createRecordApi, updateRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine } = useListRecordApi();
     const toast = useToastStore();
     const { updateRefresh } = useViewRecordGlobalStore();
-    const { getS3File } = useS3DocumentsStore();
+    const { getS3File } = useS3Storage();
 
     const analyzeDocument = async (s3FileName: string) => {
         try {

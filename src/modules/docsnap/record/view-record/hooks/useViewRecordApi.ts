@@ -4,21 +4,21 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
-import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
+import { useS3Storage } from '../../../../../zustand-store/S3Storage';
 
 export const useViewRecordApi = () => {
     const { state, setState } = useViewRecordState();
     const { id } = useParams();
     const navigate = useNavigate();
     const toast = useToastStore();
-    const { getS3File } = useS3DocumentsStore();
+    const { getS3File } = useS3Storage();
 
     // ============================= Get Record By Id ==================================
 
     const getAndConvertDocumentToImage = async (pdfFileName: string) => {
         setState(prev => ({ ...prev, loadingS3File: true }));
         const s3Response = await getS3File(pdfFileName);
-        const imageData = s3Response?.data?.Body?.data;
+        const imageData = s3Response?.Body?.data;
         if (!imageData) {
             toast.error('S3 document not found');
             return;
@@ -52,7 +52,7 @@ export const useViewRecordApi = () => {
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
-                    images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.data.Body.data)], { type: 'image/jpeg' })))
+                    images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
                 }));
             } else {
                 getAndConvertDocumentToImage(res.data.pdfFileName);

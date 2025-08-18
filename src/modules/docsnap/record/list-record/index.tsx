@@ -3,7 +3,6 @@ import PageNameComponent from '../../../../components/PageName';
 import { useState } from 'react';
 import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
-import FileUploadDialogComponent from './components/FileUploadDialogComponent';
 import { PromptFieldIF } from '../../document';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -77,7 +76,7 @@ const ListRecordPage: React.FC = () => {
                     </Button>
                 </PageNameComponent>
                 <ListRecordComponent />
-                <FileUploadDialogComponent />
+                {/* <FileUploadDialogComponent /> */}
             </PageContainer>
         </ListRecordPageStateProvider>
     );

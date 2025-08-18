@@ -2,9 +2,9 @@ import { ZoomOut, ZoomIn, Expand, Shrink, Download } from 'lucide-react';
 import BackButton from '../../../../../components/BackButton';
 import { cn } from '../../../../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
-import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { useS3Storage } from '../../../../../zustand-store/S3Storage';
 interface PreviewHeaderComponentProps {
     zoom: number;
     zoomOut: () => void;
@@ -17,7 +17,7 @@ interface PreviewHeaderComponentProps {
 
 export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoomChange, shrinked, shrinkExpandHandler }: PreviewHeaderComponentProps) => {
     const navigate = useNavigate();
-    const { getS3File } = useS3DocumentsStore();
+    const { getS3File } = useS3Storage();
     const { state } = useViewRecordState();
     const toast = useToastStore();
 
@@ -30,13 +30,13 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
 
             const s3Response = await getS3File(state.record.pdfFileName);
 
-            if (!s3Response?.success || !s3Response?.data?.Body?.data) {
+            if (!s3Response?.Body?.data) {
                 toast.error('File not found or invalid response');
                 return;
             }
 
             // Convert the number array to Uint8Array
-            const fileDataArray = s3Response.data.Body.data;
+            const fileDataArray = s3Response.Body.data;
             const fileData = new Uint8Array(fileDataArray);
 
             // Determine MIME type

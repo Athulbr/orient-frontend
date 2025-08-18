@@ -12,12 +12,12 @@ import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder
 import { useParams } from 'react-router-dom';
 import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
-import { useS3DocumentsStore } from '../../../../zustand-store/useStoredDocuments';
 import { fileTypeFromBuffer } from 'file-type';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { convertPdfToImages } from '../../record/view-record/utils';
 import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
+import { useS3Storage } from '../../../../zustand-store/S3Storage';
 
 export const FieldsContainer: React.FC = () => {
     const { state, setState } = useUpdateTemplateState();
@@ -30,8 +30,8 @@ export const FieldsContainer: React.FC = () => {
         if (!fileName) return;
         const getFileAndConvertToImages = async () => {
             setState(prev => ({ ...prev, loadingS3File: true }));
-            const s3Response = await useS3DocumentsStore.getState().getS3File(fileName);
-            const imageData = s3Response?.data?.Body?.data;
+            const s3Response = await useS3Storage.getState().getS3File(fileName);
+            const imageData = s3Response?.Body?.data;
             if (!imageData) {
                 toast.error('S3 document not found');
                 return;
@@ -58,8 +58,8 @@ export const FieldsContainer: React.FC = () => {
         const getTemplateData = async () => {
             const templateData = await getTemplateApi(id);
             setState(prev => ({ ...prev, loadingS3File: true }));
-            const s3Response = await useS3DocumentsStore.getState().getS3File(templateData?.s3FileName);
-            const imageData = s3Response?.data?.Body?.data;
+            const s3Response = await useS3Storage.getState().getS3File(templateData?.s3FileName);
+            const imageData = s3Response?.Body?.data;
             if (!imageData) {
                 toast.error('S3 document not found');
                 return;

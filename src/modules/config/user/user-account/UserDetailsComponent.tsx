@@ -1,4 +1,4 @@
-import { Bell, CircleUserRound, Edit, LogOut, ShieldCheck, User, UserCircle } from 'lucide-react';
+import { Bell, Edit, LogOut, ShieldCheck } from 'lucide-react';
 import { Button } from '../../../../components/Button';
 import { cn } from '../../../../global-utils/twMerge';
 import { useEffect, useState } from 'react';
@@ -7,14 +7,11 @@ import { useParams } from 'react-router-dom';
 import { useUserAccountState } from './hooks/userAccountContext';
 import { DialogComponent } from '../../../../components/DialogComponent';
 import DragAndDropFileInput from '../../../../components/DragAndDropFileInput';
-import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
-import { FieldIF } from '../../../../builders/formbuilder/interface';
 import { BasicDetailsComponent } from './components/BasicDetails';
 import { SecurityDetails } from './components/SecurityDetails';
 import { SubscriptionDetails } from './components/SubscriptionDetails';
 import { NotificationsDetails } from './components/NotificationDetails';
-import { useS3DocumentsStore } from '../../../../zustand-store/useStoredDocuments';
-import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
+import { useS3Storage } from '../../../../zustand-store/S3Storage';
 interface UserDetailsComponentIF {
     test?: string;
 }
@@ -23,10 +20,9 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [openDialog, setOpenDialog] = useState(false);
     const { id } = useParams();
-    const { user } = usePermissionStore();
-    const { uploadS3File, getS3File } = useS3DocumentsStore();
+    const { uploadS3File, getS3File } = useS3Storage();
     const { logout, getUserApi, updateProfilePicture } = useUserAccountApi();
-    const { state, setState } = useUserAccountState();
+    const { state } = useUserAccountState();
     const [profilePicture, setProfilePicture] = useState('');
 
     useEffect(() => {
@@ -49,11 +45,11 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
                 const awsS3Response = await getS3File(state?.user?.profilePicture);
 
                 // Convert Buffer to Uint8Array
-                const bufferData = new Uint8Array(awsS3Response.data.Body.data);
+                const bufferData = new Uint8Array(awsS3Response.Body.data);
 
                 // Create blob from buffer
                 const blob = new Blob([bufferData], {
-                    type: awsS3Response.data.ContentType || 'image/jpeg'
+                    type: awsS3Response.ContentType || 'image/jpeg'
                 });
 
                 // Create object URL for the blob
