@@ -5,6 +5,7 @@ import { convertJSON } from '../modules/docsnap/record/list-record/utils/convert
 import { usePermissionStore } from './PermissionStore';
 import { useS3DocumentsStore } from './useStoredDocuments';
 import { useToastStore } from '../components/toast/ToastStore';
+import { minifySchema } from '../global-utils/minifySchema';
 
 interface DocsnapStoreIF {
     refreshRecord: number;
@@ -13,6 +14,7 @@ interface DocsnapStoreIF {
     addToPythonExtraction: (files: FileList, template: any) => Promise<any>;
     addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
+    addToNodeExtractorV1: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
@@ -62,14 +64,11 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
 
                     const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
                     set({ refreshRecord: get().refreshRecord + 1 });
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
 
-                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
-                    if (!processingFiles.length) {
-                        set({ refreshRecord: get().refreshRecord + 1 });
-                    }
+                    // const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
+                    // if (!processingFiles.length) {
+                    //     set({ refreshRecord: get().refreshRecord + 1 });
+                    // }
 
                     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
                     const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
@@ -135,7 +134,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             };
             setTimeout(() => {
                 sendApiRequest();
-            }, index * 5000);
+            }, index * 100);
         });
     },
     addToPythonExtractionMultiPO: async (files: FileList, template: any) => {
@@ -403,6 +402,55 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             setTimeout(() => {
                 sendApiRequest();
             }, index * 500);
+        });
+    },
+    addToNodeExtractorV1: async (files: FileList, template: any, navigate: (path: string) => void) => {
+        Array.from(files).forEach(async (file, index) => {
+            const sendApiRequest = async () => {
+                try {
+                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }] });
+
+                    const convertedJson = convertJSON(template?.fields || []);
+                    const minifiedSchema = minifySchema(convertedJson.fields);
+
+                    const formData = new FormData();
+                    formData.append('schema', JSON.stringify(minifiedSchema));
+                    formData.append('templateId', template._id);
+                    formData.append('file', file);
+
+                    const [res] = await Promise.all([
+                        fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V1, {
+                            method: 'POST',
+                            body: formData
+                        }),
+                        setTimeout(
+                            () =>
+                                set({
+                                    extractionQueue: get().extractionQueue.map((item: any) =>
+                                        item.fileName === file.name ? { ...item, status: 'Processing' } : item
+                                    )
+                                }),
+                            4000
+                        )
+                    ]);
+                    const response = await res.json();
+                    console.log('response:===========', response);
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
+                    });
+                    // set({ refreshRecord: get().refreshRecord + 1 });
+                } catch (error) {
+                    console.log('error:===========', error);
+
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                    });
+                    // set({ refreshRecord: get().refreshRecord + 1 });
+                }
+            };
+            setTimeout(() => {
+                sendApiRequest();
+            }, index * 100);
         });
     }
 }));
