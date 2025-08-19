@@ -24,15 +24,17 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const [tenantList, setTenantList] = useState([]);
     const { setSelectedTenant, selectedTenant } = useSettingsStore();
 
+    const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
+
     useEffect(() => {
+        if (user?.role?.name !== 'superadmin') return;
         const getTenantList = async () => {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/option-list`, {});
             setTenantList(res.data);
         };
         getTenantList();
-    }, []);
+    }, [user]);
 
-    const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
     const logOut = async () => {
         const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
         toast.success('Logged out successfully');
@@ -73,7 +75,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                     {/* <LogIn tabIndex={0} onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                     {/* <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
-                    <SingleSelect className='min-w-40' value={selectedTenant} onValueChange={(e) => setSelectedTenant(e)} options={tenantList} />
+                    {user?.role?.name === 'superadmin' && (
+                        <SingleSelect className="min-w-40" value={selectedTenant} onValueChange={e => setSelectedTenant(e)} options={tenantList} />
+                    )}
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">
                             <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
