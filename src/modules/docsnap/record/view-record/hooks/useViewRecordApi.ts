@@ -17,7 +17,7 @@ export const useViewRecordApi = () => {
 
     const getAndConvertDocumentToImage = async (pdfFileName: string) => {
         setState(prev => ({ ...prev, loadingS3File: true }));
-        const s3Response:any = await getS3File(pdfFileName);
+        const s3Response: any = await getS3File(pdfFileName);
         const imageData = s3Response?.Body?.data;
         if (!imageData) {
             toast.error('S3 document not found');
@@ -93,7 +93,7 @@ export const useViewRecordApi = () => {
     const sendMessage = async (message: string) => {
         setState(prev => ({ ...prev, chatLoading: true, messages: [...prev.messages, { text: message, userMessage: true }] }));
         const requestBody = { query: message, botName: state.record?.pdfFileName };
-        const response: any = await httpRequest('POST', `https://demo.makez.ai/chatbot/query`, requestBody);
+        const response: any = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_URL}/chatbot/query`, requestBody);
         setState(prev => ({
             ...prev,
             chatLoading: false,

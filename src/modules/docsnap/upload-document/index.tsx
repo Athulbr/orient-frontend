@@ -16,7 +16,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
-    const { getDocsnapSettings } = useSettingsStore();
+    const { getDocsnapSettings, getTenantSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
@@ -31,9 +31,10 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             toast.error('You can select up to 20 files only.');
             return;
         }
-        const docsnapSettings: any = await getDocsnapSettings();
-        const extractionEngine = docsnapSettings?.extractionEngine;
-        const extractionType = docsnapSettings?.extractionType;
+        // const docsnapSettings: any = await getDocsnapSettings();
+        const tenantSettings: any = await getTenantSettings();
+        const extractionEngine = tenantSettings?.extractionEngine;
+        const extractionType = tenantSettings?.extractionType;
         if (extractionEngine === 'node') {
             if (!templateData) {
                 toast.error('Template not found');
