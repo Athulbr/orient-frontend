@@ -14,6 +14,7 @@ interface DocsnapStoreIF {
     addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     addToNodeExtractorV1: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
+    addToNodeExtractorV2: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
@@ -415,6 +416,58 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
 
                     const [res] = await Promise.all([
                         fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V1, {
+                            method: 'POST',
+                            body: formData
+                        }),
+                        setTimeout(
+                            () =>
+                                set({
+                                    extractionQueue: get().extractionQueue.map((item: any) =>
+                                        item.fileName === file.name ? { ...item, status: 'Processing' } : item
+                                    )
+                                }),
+                            4000
+                        )
+                    ]);
+                    const response = await res.json();
+                    if (response?.data?.imageFileNames?.length) {
+                        response.data.imageFileNames.map((item: string) => useS3Storage.getState().getS3File(item));
+                    }
+                    console.log('response:===========', response);
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
+                    });
+                    set({ refreshRecord: get().refreshRecord + 1 });
+                } catch (error) {
+                    console.log('error:===========', error);
+
+                    set({
+                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                    });
+                    set({ refreshRecord: get().refreshRecord + 1 });
+                }
+            };
+            setTimeout(() => {
+                sendApiRequest();
+            }, index * 100);
+        });
+    },
+    addToNodeExtractorV2: async (files: FileList, template: any, navigate: (path: string) => void) => {
+        Array.from(files).forEach(async (file, index) => {
+            const sendApiRequest = async () => {
+                try {
+                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }] });
+
+                    const convertedJson = convertJSON(template?.fields || []);
+                    const minifiedSchema = minifySchema(convertedJson.fields);
+
+                    const formData = new FormData();
+                    formData.append('schema', JSON.stringify(minifiedSchema));
+                    formData.append('templateId', template._id);
+                    formData.append('file', file);
+
+                    const [res] = await Promise.all([
+                        fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V2, {
                             method: 'POST',
                             body: formData
                         }),

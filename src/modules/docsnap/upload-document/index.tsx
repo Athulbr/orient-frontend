@@ -12,7 +12,7 @@ interface UploadDocumentComponentIF {
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtraction, addToNodeExtractorV1, addToNodeExtractionMultiPO } = useDocsnapStore();
+    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV1, addToNodeExtractorV2 } = useDocsnapStore();
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
@@ -40,7 +40,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 return;
             }
             if (extractionType === 'multiPO') {
-                addToNodeExtractionMultiPO(files, templateData || {});
+                addToNodeExtractorV2(files, templateData || {}, (path: string) => navigate(path));
             } else {
                 addToNodeExtractorV1(files, templateData || '', (path: string) => navigate(path));
                 // addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
