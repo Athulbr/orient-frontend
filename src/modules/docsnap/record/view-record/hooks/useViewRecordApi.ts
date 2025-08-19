@@ -17,7 +17,7 @@ export const useViewRecordApi = () => {
 
     const getAndConvertDocumentToImage = async (pdfFileName: string) => {
         setState(prev => ({ ...prev, loadingS3File: true }));
-        const s3Response = await getS3File(pdfFileName);
+        const s3Response:any = await getS3File(pdfFileName);
         const imageData = s3Response?.Body?.data;
         if (!imageData) {
             toast.error('S3 document not found');
