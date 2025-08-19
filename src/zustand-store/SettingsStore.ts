@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import httpRequest from '../global-utils/httpRequest';
+import { useToastStore } from '../components/toast/ToastStore';
 
 interface SettingsStoreIF {
     // ============================== USER SETTINGS ===============================
@@ -12,8 +13,10 @@ interface SettingsStoreIF {
     getDocsnapSettings: () => Promise<void>;
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: any;
+    selectedTenant: any;
     submitTenantSettings: (settings?: any) => Promise<void>;
     getTenantSettings: () => Promise<void>;
+    setSelectedTenant: (tenant: any) => void;
 }
 
 export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
@@ -60,10 +63,16 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: {},
+    selectedTenant: null,
     submitTenantSettings: async (settings?: any) => {
+        if (!get().selectedTenant) {
+            useToastStore.getState().error('Tenant not selected');
+            return;
+        }
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/settings/submit`, {
-                settings
+                settings,
+                tenantId: get().selectedTenant
             });
             set({ tenantSettings: settings });
         } catch (error) {
@@ -72,11 +81,22 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     getTenantSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list`);
+            if (!get().selectedTenant) {
+                useToastStore.getState().error('Tenant not selected');
+                return;
+            }
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list/${get().selectedTenant}`);
+            if (res.data === null) {
+                set({ tenantSettings: {} });
+            }
             set({ tenantSettings: res.data.settings });
         } catch (error) {
             console.log(error);
         }
-    }
+    },
+    setSelectedTenant: (tenant: any) => {
+        set({ selectedTenant: tenant });
+        get().getTenantSettings();
+    },
     // ============================== TENANT SETTINGS ===============================
 }));

@@ -104,18 +104,18 @@ const allSettings: SettingsIF[] = [
         iconName: 'Receipt',
         items: [
             {
-                name: 'Tenant Settings',
-                iconName: 'CalendarCheck',
-                path: '/config/tenant-settings',
-                key: 'tenant-settings',
-                permission: 'read:tenantSettings'
-            },
-            {
                 name: 'Tenants',
                 iconName: 'CalendarCheck',
                 path: '/config/tenant/list',
                 key: 'tenant',
                 permission: 'read:tenant'
+            },
+            {
+                name: 'Tenant Settings',
+                iconName: 'CalendarCheck',
+                path: '/config/tenant-settings',
+                key: 'tenant-settings',
+                permission: 'read:tenantSettings'
             },
             {
                 name: 'Subscription Models',

@@ -7,6 +7,9 @@ import ExtractionFloatingWindow from '../docsnap/upload-document/ExtractionFloat
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { Button } from '../../components/Button';
 import httpRequest from '../../global-utils/httpRequest';
+import { SingleSelect } from '../../components/SingleSelect';
+import { useEffect, useState } from 'react';
+import { useSettingsStore } from '../../zustand-store/SettingsStore';
 
 interface HeaderComponentIF {
     showSidebar?: boolean;
@@ -18,6 +21,16 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const navigate = useNavigate();
     const { instance } = useMsal();
     const isAuthenticated = useIsAuthenticated();
+    const [tenantList, setTenantList] = useState([]);
+    const { setSelectedTenant, selectedTenant } = useSettingsStore();
+
+    useEffect(() => {
+        const getTenantList = async () => {
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/option-list`, {});
+            setTenantList(res.data);
+        };
+        getTenantList();
+    }, []);
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
     const logOut = async () => {
@@ -60,6 +73,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                     {/* <LogIn tabIndex={0} onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                     {/* <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
+                    <SingleSelect className='min-w-40' value={selectedTenant} onValueChange={(e) => setSelectedTenant(e)} options={tenantList} />
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">
                             <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
