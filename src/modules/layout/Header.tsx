@@ -33,7 +33,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             setTenantList(res.data);
         };
         getTenantList();
-    }, [user]);
+    }, []);
 
     const logOut = async () => {
         const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
