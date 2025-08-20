@@ -4,7 +4,7 @@ name: Deploy Frontend to EC2
 on:
   push:
     branches: # Trigger workflow on push to the main branch
-      - main
+      - 
   workflow_dispatch: {} # Allow manual triggering of the workflow
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
     with:
       app_name: 'frontend-v2' # Name of the application to be deployed
       app_port: '8080' # Port on which the application will run
-      branch: 'main'
+      branch: ''
     secrets:
       EC2_HOST_DEV_TEST: ${{ secrets.EC2_HOST_DEV_TEST }} # EC2 host address
       EC2_USER: ${{ secrets.EC2_USER }} # EC2 username
