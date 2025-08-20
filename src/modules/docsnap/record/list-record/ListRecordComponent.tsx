@@ -105,11 +105,10 @@ export const ListRecordComponent: React.FC = () => {
         window.URL.revokeObjectURL(url);
     };
 
-    const onSubmit = (dealers: any) => {
-        const query = state.query;
+    const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
         const payload = {
-            startDate: query.startDate,
-            endDate: query.endDate,
+            startDate,
+            endDate,
             format: 'xlsx',
             dealers
         };

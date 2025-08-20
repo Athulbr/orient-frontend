@@ -12,25 +12,31 @@ export interface UpdateTemplateStateIF {
     loadingS3File: boolean;
     loadingTemplate: boolean;
     images: any[];
+    updatingTemplate: boolean;
+    templateData: any;
+    showCreateForm: boolean;
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
     loadingS3File: false,
     loadingTemplate: false,
-    images: []
+    images: [],
+    updatingTemplate: false,
+    templateData: null,
+    showCreateForm: false
 };
 
-const UpdateTemplatePage: React.FC = () => {
+const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
     const [state, setState] = useState<UpdateTemplateStateIF>(initialState);
 
     return (
         <UpdateTemplateStateProvider value={{ state, setState }}>
             <PageContainer className="gap-4 overflow-hidden p-6 pb-0">
                 <Breadcrumbs page="updateTemplate" />
-                <PageNameComponent name="Update Template" showBackButton />
+                <PageNameComponent name={create ? 'Create Template' : 'Update Template'} showBackButton />
                 <ResizableContainer
                     left={<ImageViewer images={state.images} name="Purchase Order" />}
-                    right={<FieldsContainer />}
+                    right={<FieldsContainer create={create} />}
                     initialLeftWidthPercent={60}
                     minLeftWidthPercent={40}
                     maxLeftWidthPercent={65}
