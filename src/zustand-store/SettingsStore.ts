@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import httpRequest from '../global-utils/httpRequest';
 import { useToastStore } from '../components/toast/ToastStore';
+import { usePermissionStore } from './PermissionStore';
 
 interface SettingsStoreIF {
     // ============================== USER SETTINGS ===============================
@@ -81,15 +82,17 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     getTenantSettings: async () => {
         try {
-            if (!get().selectedTenant) {
+            const tenantId = get().selectedTenant ? get().selectedTenant : usePermissionStore.getState().user?.tenant?._id;
+            if (!tenantId) {
                 useToastStore.getState().error('Tenant not selected');
                 return;
             }
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list/${get().selectedTenant}`);
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list/${tenantId}`);
             if (res.data === null) {
                 set({ tenantSettings: {} });
             }
             set({ tenantSettings: res.data.settings });
+            return res.data.settings;
         } catch (error) {
             console.log(error);
         }
