@@ -1,10 +1,12 @@
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { useUpdateTemplateState } from './updateTemplateContext';
+import { useNavigate } from 'react-router-dom';
 
 export const useUpdateTemplatePageApi = () => {
     const { setState } = useUpdateTemplateState();
     const toast = useToastStore();
+    const navigate = useNavigate();
 
     // ============================= CREATE TEMPLATE ==================================
 
@@ -34,20 +36,24 @@ export const useUpdateTemplatePageApi = () => {
     };
     const createTemplateApi = async (requestBody: any) => {
         try {
+            setState(prev => ({ ...prev, updatingTemplate: true }));
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
-            setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
+            setState(prev => ({ ...prev, showCreateForm: false, id: '', updatingTemplate: false }));
             toast.success('Template created successfully');
+            navigate('/docsnap/template/list');
             return true;
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to create template');
         }
     };
-    const updateTemplateApi = async (requestBody: any) => {
+    const updateTemplateApi = async (id: string, requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/update/`, requestBody);
-            setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
+            setState(prev => ({ ...prev, updatingTemplate: true }));
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/template/update/${id}`, requestBody);
+            setState(prev => ({ ...prev, id: '', showCreateForm: false, updatingTemplate: false }));
             toast.success('Template updated successfully');
+            navigate('/docsnap/template/list');
             return true;
         } catch (error) {
             console.error('error:===========', error);

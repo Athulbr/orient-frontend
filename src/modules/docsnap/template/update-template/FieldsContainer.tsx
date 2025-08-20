@@ -9,7 +9,7 @@ import { useUpdateTemplateState } from './hooks/updateTemplateContext';
 import { Button } from '../../../../components/Button';
 import Tooltip from '../../../../components/Tooltip';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
 import { fileTypeFromBuffer } from 'file-type';
@@ -18,19 +18,21 @@ import { convertPdfToImages } from '../../record/view-record/utils';
 import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useS3Storage } from '../../../../zustand-store/S3Storage';
+import Spinner from '../../../../components/Spinner';
 
-export const FieldsContainer: React.FC = () => {
+export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
 
-    const { getTemplateApi, createTemplateApi } = useUpdateTemplatePageApi();
+    const { getTemplateApi, createTemplateApi, updateTemplateApi } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
     const toast = useToastStore();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!fileName) return;
         const getFileAndConvertToImages = async () => {
             setState(prev => ({ ...prev, loadingS3File: true }));
-            const s3Response:any = await useS3Storage.getState().getS3File(fileName);
+            const s3Response: any = await useS3Storage.getState().getS3File(fileName);
             const imageData = s3Response?.Body?.data;
             if (!imageData) {
                 toast.error('S3 document not found');
@@ -57,8 +59,8 @@ export const FieldsContainer: React.FC = () => {
         if (!id) return;
         const getTemplateData = async () => {
             const templateData = await getTemplateApi(id);
-            setState(prev => ({ ...prev, loadingS3File: true }));
-            const s3Response:any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
+            setState(prev => ({ ...prev, loadingS3File: true, templateData }));
+            const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
             const imageData = s3Response?.Body?.data;
             if (!imageData) {
                 toast.error('S3 document not found');
@@ -112,30 +114,30 @@ export const FieldsContainer: React.FC = () => {
         });
         setState(prev => ({ ...prev, sectionList }));
     };
-    const handleCreateTemplate = () => {
-        const requestBody = {
-            name: 'Purchase 1234',
-            description: 'Updated Description',
-            fields: [],
-            s3FileName: 'PO_VA_539-n44628.pdf',
-            docType: 'purchase_order',
-            active: false,
-            deleted: false,
-            primaryModel: 'openai',
-            secondaryModel: 'gemini',
-            verify: true,
-            automationID: 'wVCp6fW08Z59st3V',
-            enableOcr: true,
-            enableChat: true
-        };
-        createTemplateApi(requestBody);
+    const handleCreateTemplate = (data: any) => {
+            if (create) {
+                const requestBody = {
+                    fields: state.sectionList,
+                    s3FileName: fileName,
+                    ...data
+                };
+                createTemplateApi(requestBody);
+            } else {
+                if (!id) return;
+                const requestBody = {
+                    fields: state.sectionList,
+                    s3FileName: fileName,
+                    ...data
+                };
+                updateTemplateApi(id,requestBody);
+        }
     };
     return (
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
                 Template Fields
-                <Button outlined onClick={handleCreateTemplate}>
-                    Create Template
+                <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
+                    {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
                 </Button>
             </div>
             {state.loadingTemplate ? (
@@ -155,6 +157,16 @@ export const FieldsContainer: React.FC = () => {
                     </div>
                 </section>
             )}
+            <UseFormbuilder
+                title={create ? 'Create Template' : 'Update Template'}
+                isOpen={state.showCreateForm}
+                className="w-[80vw]"
+                name="Create Template Form"
+                closeDialog={() => setState(prev => ({ ...prev, showCreateForm: false }))}
+                onSubmit={handleCreateTemplate}
+                existingData={state.templateData}
+                loadingPrimaryButton={state.updatingTemplate}
+            />
         </div>
     );
 };
@@ -204,6 +216,16 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         setEditSectionDialog(true);
     };
 
+
+    const handleUpdateSection = (data: any) => {
+        // const sampleData={name: 'test', jsonKey: 'test', description: 'aa', instruction: 'aa', excludeExtraction: false, …}
+        const templateData = [...state.sectionList];
+        // Merge incoming section data with existing to avoid losing properties like subFields
+        templateData[mainIndex] = { ...templateData[mainIndex], ...data };
+        setState(prev => ({ ...prev, sectionList: templateData }));
+        setEditSectionDialog(false);
+    };
+
     return (
         <div className="flex w-full cursor-pointer flex-col gap-0.5 rounded border p-1">
             <div onClick={() => setOpened(!opened)} className={`flex w-full items-center justify-between rounded bg-gray-50 p-3`}>
@@ -240,16 +262,15 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     </Button>
                 </div>
             )}
-            {editSectionDialog && (
-                <UseFormbuilder
-                    className="w-130"
-                    title="Field Configuration"
-                    name="Template Section Config Form"
-                    closeDialog={() => setEditSectionDialog(false)}
-                    existingData={state.sectionList[mainIndex]}
-                    onSubmit={() => {}}
-                />
-            )}
+            <UseFormbuilder
+                isOpen={editSectionDialog}
+                className="w-130"
+                title="Field Configuration"
+                name="Template Section Config Form"
+                closeDialog={() => setEditSectionDialog(false)}
+                existingData={{name: section?.name, jsonKey: section?.jsonKey, description: section?.description, instruction: section?.instruction, excludeExtraction: section?.excludeExtraction, isHidden: section?.isHidden, required: section?.required}}
+                onSubmit={handleUpdateSection}
+            />
         </div>
     );
 };
@@ -288,15 +309,6 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
         });
     };
     const updateHidden = (value: boolean) => {
-        // setState(prev => {
-        //   const sectionList = [...prev.sectionList];
-        //   const subFields = [...sectionList[mainIndex].subFields];
-        //   subFields[index].hidden = value;
-
-        //   sectionList[mainIndex].subFields = subFields;
-        //   return { ...prev, sectionList };
-        // });
-
         const templateData = [...state.sectionList];
         const subFields = [...templateData[mainIndex].subFields];
         subFields[index].hidden = value;
@@ -306,6 +318,16 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
         }
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
+    };
+    const handleUpdateField = (data: any) => {
+        // const sampleData={description: 'aqwea', instruction: 'wsa', excludeExtraction: false, isHidden: false, required: true}
+        const templateData = [...state.sectionList];
+        const subFields = [...templateData[mainIndex].subFields];
+        // Merge incoming config with existing field to avoid overwriting base properties like name/jsonKey/dataType
+        subFields[index] = { ...subFields[index], ...data };
+        templateData[mainIndex].subFields = subFields;
+        setState(prev => ({ ...prev, sectionList: templateData }));
+        setShowConfigForm(false);
     };
     return (
         <div className="mt-1 flex items-center gap-2 rounded border bg-white p-2">
@@ -326,16 +348,15 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
             )}
             <LightIconButton Icon={Settings} onClick={() => setShowConfigForm(true)} title="Config" />
             <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
-            {showConfigForm && (
                 <UseFormbuilder
+                isOpen={showConfigForm}
                     className="w-130"
                     title="Field Configuration"
                     name="Template Field Config Form"
                     closeDialog={() => setShowConfigForm(false)}
-                    existingData={state.sectionList[mainIndex].subFields[index] || {}}
-                    onSubmit={() => {}}
+                    existingData={{ hidden: field?.hidden, description: field?.description, instruction: field?.instruction, excludeExtraction: field?.excludeExtraction, isHidden: field?.isHidden, required: field?.required}}
+                    onSubmit={handleUpdateField}
                 />
-            )}
         </div>
     );
 };
