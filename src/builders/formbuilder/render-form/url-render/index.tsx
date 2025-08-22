@@ -18,7 +18,7 @@ export const UrlRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, se
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value.trim();
+        const newValue = e.target.value?.trim();
         setFields(prev => {
             const updatedFields = [...prev];
             updatedFields[index] = { ...field, value: newValue, errorMessage: validateUrl(newValue, config) };
@@ -42,7 +42,7 @@ export const UrlRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, se
 };
 
 export const validateUrl = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-]*)*$/;
     if (!urlRegex.test(value)) return 'Invalid URL format.';
@@ -52,14 +52,14 @@ export const validateUrl = (value: string, config: FieldConfigIF): string => {
         const domain = url.hostname.replace(/^www\./, '');
 
         if (config.onlyDomains) {
-            const allowedDomains = config.onlyDomains.split(',').map(d => d.trim());
+            const allowedDomains = config.onlyDomains.split(',').map(d => d?.trim());
             if (!allowedDomains.includes(domain)) {
                 return `Only URLs from ${config.onlyDomains} are allowed.`;
             }
         }
 
         if (config.exceptDomains) {
-            const blockedDomains = config.exceptDomains.split(',').map(d => d.trim());
+            const blockedDomains = config.exceptDomains.split(',').map(d => d?.trim());
             if (blockedDomains.includes(domain)) {
                 return `URLs from ${config.exceptDomains} are not allowed.`;
             }

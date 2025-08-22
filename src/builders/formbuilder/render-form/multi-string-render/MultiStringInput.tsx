@@ -34,7 +34,7 @@ export const CustomMultiString: React.FC<CustomSelectProps> = ({ value, focus, o
     }, []);
 
     const handleClickAdd = () => {
-        if (!input.trim()) return;
+        if (!input?.trim()) return;
         setIsOpen(true);
         onChange([...value, input]);
         setInput('');
@@ -65,7 +65,7 @@ export const CustomMultiString: React.FC<CustomSelectProps> = ({ value, focus, o
                     type="text"
                     onKeyDown={handleKeyPress}
                 />
-                <span onClick={handleClickAdd} className={`${styles.addButton} ${!input.trim() ? styles.disabledButton : ''}`}>
+                <span onClick={handleClickAdd} className={`${styles.addButton} ${!input?.trim() ? styles.disabledButton : ''}`}>
                     Add
                 </span>
             </div>

@@ -44,7 +44,7 @@ export const EmailRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, 
 };
 
 export const validateEmail = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
     if (!emailRegex.test(value)) return 'Invalid email format.';
@@ -58,7 +58,7 @@ export const validateEmail = (value: string, config: FieldConfigIF): string => {
     }
 
     if (config.exceptDomains) {
-        const restrictedDomains = config.exceptDomains.split(',').map(domain => domain.trim().toLowerCase());
+        const restrictedDomains = config.exceptDomains.split(',').map(domain => domain?.trim().toLowerCase());
         const emailDomain = value.split('@')[1]?.toLowerCase();
         if (restrictedDomains.includes(emailDomain)) {
             return `Emails from ${emailDomain} are not allowed.`;
@@ -66,7 +66,7 @@ export const validateEmail = (value: string, config: FieldConfigIF): string => {
     }
 
     if (config.onlyDomains) {
-        const allowedDomains = config.onlyDomains.split(',').map(domain => domain.trim().toLowerCase());
+        const allowedDomains = config.onlyDomains.split(',').map(domain => domain?.trim().toLowerCase());
         const emailDomain = value.split('@')[1]?.toLowerCase();
         if (!allowedDomains.includes(emailDomain)) {
             return `Only emails from ${allowedDomains.join(', ')} are allowed.`;

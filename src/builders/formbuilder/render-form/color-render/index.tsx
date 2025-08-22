@@ -81,7 +81,7 @@ export const ColorRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, 
 };
 
 export const validateColor = (value: string, config: FieldConfigIF): string => {
-    // if (config.mandatory && !value.trim()) return 'Color selection is required.';
+    // if (config.mandatory && !value?.trim()) return 'Color selection is required.';
 
     // const colorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
     // if (!colorRegex.test(value)) return 'Invalid color format.';
