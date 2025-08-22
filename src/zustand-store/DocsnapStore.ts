@@ -466,6 +466,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     const formData = new FormData();
                     formData.append('schema', JSON.stringify(minifiedSchema));
                     formData.append('templateId', template._id);
+                    formData.append('templateFields', template.fields);
+                    formData.append('extractionType', 'multiplePOWithSegregation');
                     formData.append('file', file);
 
                     const [res] = await Promise.all([
@@ -506,7 +508,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             };
             setTimeout(() => {
                 sendApiRequest();
-            }, index * 100);
+            }, index * 50);
         });
     }
 }));
