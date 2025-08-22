@@ -58,7 +58,7 @@ export const PasswordRender: React.FC<InputFieldRenderPropsIF> = ({ index, field
 };
 
 export const validatePassword = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     if (config.minimumLength && value.length < config.minimumLength) {
         return `Minimum length is ${config.minimumLength} characters.`;

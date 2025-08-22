@@ -98,6 +98,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
         }
     },
     setSelectedTenant: (tenant: any) => {
+        window.sessionStorage.setItem('selectedTenant', tenant);
         set({ selectedTenant: tenant });
         get().getTenantSettings();
     },

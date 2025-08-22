@@ -2,7 +2,7 @@ export const safeJsonParse = <T>(jsonString: string): T | null => {
     try {
         // Remove markdown code block fences (``` or ```json)
         const cleaned = jsonString
-            .trim()
+            ?.trim()
             .replace(/^```(?:json)?/i, '') // remove starting ``` or ```json
             .replace(/```$/, ''); // remove ending ```
 

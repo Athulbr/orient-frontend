@@ -41,7 +41,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
 
     // Memoize the click handler to prevent recreation on every render
     const onClickHandler = useCallback(async () => {
-        if (!`${comment}`.trim()) return;
+        if (!`${comment}`?.trim()) return;
         setLoading(true);
         const res = await createComment(comment, jsonKey);
         if (res) {
@@ -63,7 +63,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
     }, [closeDialog]);
 
     // Memoize computed values
-    const isCommentEmpty = useMemo(() => !`${comment}`.trim(), [comment]);
+    const isCommentEmpty = useMemo(() => !`${comment}`?.trim(), [comment]);
     const buttonText = useMemo(() => (loading ? 'Saving...' : 'Save'), [loading]);
 
     if (!isOpen) return null;

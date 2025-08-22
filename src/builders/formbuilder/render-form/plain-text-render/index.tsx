@@ -57,7 +57,7 @@ export const PlainTextRender: React.FC<InputFieldRenderPropsIF> = ({ index, fiel
 };
 
 export const validatePlainText = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     // Construct allowed character set
     let allowedChars = '';

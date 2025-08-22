@@ -73,7 +73,7 @@ const PageActionComponent: React.FC = () => {
 
     const safeParseJson = (data: string): FieldIF[] => {
         try {
-            return JSON.parse(data.replace(/```(json)?/g, '').trim()) || [];
+            return JSON.parse(data.replace(/```(json)?/g, '')?.trim()) || [];
         } catch (error) {
             console.error('JSON Parsing Error:', error);
             return [];
@@ -136,13 +136,13 @@ const PageActionComponent: React.FC = () => {
 
     const handleSave = () => {
         setShowFieldInputError(true);
-        if (fields.some(item => item.key.trim() === '' || item.label.trim() === '')) return;
+        if (fields.some(item => item.key?.trim() === '' || item.label?.trim() === '')) return;
         setShowNameDialog(true);
     };
 
     const handlePreview = () => {
         setShowFieldInputError(true);
-        if (fields.some(item => item.key.trim() === '' || item.label.trim() === '')) return;
+        if (fields.some(item => item.key?.trim() === '' || item.label?.trim() === '')) return;
         setShowPreview(true);
     };
 
