@@ -460,6 +460,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
 
                     const convertedJson = convertJSON(template?.fields || []);
                     const minifiedSchema = minifySchema(convertedJson.fields);
+                    const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
+
 
                     const formData = new FormData();
                     formData.append('schema', JSON.stringify(minifiedSchema));
@@ -468,6 +470,9 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
 
                     const [res] = await Promise.all([
                         fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V2, {
+                            headers: {
+                                authorization: `Bearer ${JSON.parse(sessionStorageAccessToken)}`
+                            },
                             method: 'POST',
                             body: formData
                         }),

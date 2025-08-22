@@ -6,6 +6,7 @@ import { useListRecordApi } from './hooks/useListRecordApi';
 import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -32,6 +33,8 @@ export const ListRecordComponent: React.FC = () => {
     const navigate = useNavigate();
     const { deleteRecordApi } = useListRecordApi();
     const [params] = useSearchParams();
+    const { checkPermission } = usePermissionStore();
+
 
     const { refreshRecord, extractionQueue } = useDocsnapStore();
 
@@ -55,18 +58,15 @@ export const ListRecordComponent: React.FC = () => {
         poLink: Polink
     };
 
-    const rehabMartTenant = `${import.meta.env.VITE_NODE_URL}`.includes('rehabmart');
 
-    const actionButtons = rehabMartTenant
-        ? []
-        : [
+    const actionButtons = checkPermission('export:record:ardex') ? [
               {
                   label: 'Export Record',
                   action: () => {
                       setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
               }
-          ];
+          ]:[];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
         return query;
