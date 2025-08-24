@@ -38,6 +38,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     }, []);
 
     const logOut = async () => {
+        setTimeout(() => {
+            window.sessionStorage.clear();
+            window?.location?.replace('/');
+        }, 2000);
         const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
         toast.success('Logged out successfully');
         if (isAuthenticated) {
@@ -46,10 +50,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             });
             return;
         }
-        setTimeout(() => {
-            window.sessionStorage.clear();
-            window?.location?.replace('/');
-        }, 500);
     };
     const onChangeDropDown = (e: string) => {
         if (e === 'Logout') logOut();

@@ -26,7 +26,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { getTemplateApi, createTemplateApi, updateTemplateApi } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
     const toast = useToastStore();
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (!fileName) return;
@@ -154,6 +153,10 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                         <Button disableRipple className="min-h-10 w-full" startIcon={<Plus size={16} />} onClick={addNewTable} outlined>
                             Add Table
                         </Button>
+                    </div>
+                    <div className='w-full'>
+                        <textarea rows={5} className="w-full border p-2" id=""></textarea>
+                        <Button className='w-full ' outlined>Generate Fields</Button>
                     </div>
                 </section>
             )}

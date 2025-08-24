@@ -46,17 +46,6 @@ export const useViewRecordApi = () => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/history/${id}`);
-            if (res.data?.imageFileNames?.length > 0) {
-                const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
-                console.log('images', images);
-                setState(prev => ({
-                    ...prev,
-                    loadingS3File: false,
-                    images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
-                }));
-            } else {
-                getAndConvertDocumentToImage(res.data.pdfFileName);
-            }
             const objectFields: Record<string, any> = {};
             const arrayFields: Record<string, any>[] = [];
             const tableNames: string[] = [];
@@ -82,6 +71,18 @@ export const useViewRecordApi = () => {
                 tableNames,
                 loadingData: false
             }));
+            if (res.data?.imageFileNames?.length > 0) {
+                const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
+                console.log('images', images);
+                setState(prev => ({
+                    ...prev,
+                    loadingS3File: false,
+                    images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
+                }));
+            } else {
+                getAndConvertDocumentToImage(res.data.pdfFileName);
+            }
+            
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to get Record');

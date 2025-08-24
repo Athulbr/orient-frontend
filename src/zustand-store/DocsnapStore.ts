@@ -458,16 +458,16 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                 try {
                     set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }] });
 
-                    const convertedJson = convertJSON(template?.fields || []);
-                    const minifiedSchema = minifySchema(convertedJson.fields);
+                    // const convertedJson = convertJSON(template?.fields || []);
+                    // const minifiedSchema = minifySchema(convertedJson.fields);
                     const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
 
 
                     const formData = new FormData();
-                    formData.append('schema', JSON.stringify(minifiedSchema));
+                    // formData.append('schema', JSON.stringify(minifiedSchema));
                     formData.append('templateId', template._id);
-                    formData.append('templateFields', template.fields);
-                    formData.append('extractionType', 'multiplePOWithSegregation');
+                    formData.append('templateFields', JSON.stringify(template?.fields || []));
+                    formData.append('extractionType', 'multiplePOWithSegregationAndGrouping');
                     formData.append('file', file);
 
                     const [res] = await Promise.all([
@@ -489,10 +489,12 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                         )
                     ]);
                     const response = await res.json();
-                    if (response?.data?.imageFileNames?.length) {
-                        response.data.imageFileNames.map((item: string) => useS3Storage.getState().getS3File(item));
-                    }
-                    console.log('response:===========', response);
+                    // if (response?.data?.imageFileNames?.length < 6) {
+                    //     if(get().extractionQueue.length === 1 ){
+                            
+                    //         response.data.imageFileNames.map((item: string) => useS3Storage.getState().getS3File(item));
+                    //     }
+                    // }
                     set({
                         extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
                     });
