@@ -64,7 +64,7 @@ export const validatePassword = (value: string, config: FieldConfigIF): string =
         return `Minimum length is ${config.minimumLength} characters.`;
     }
 
-    if (config.maximumLength && value.length > config.maximumLength) {
+    if (config.maximumLength && value?.length > config.maximumLength) {
         return `Maximum length is ${config.maximumLength} characters.`;
     }
 
