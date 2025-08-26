@@ -45,7 +45,7 @@ export const DateRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, s
 };
 
 export const validateDate = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     const selectedDate = new Date(value);
     const minDate = config.minimumDate ? new Date(config.minimumDate) : null;

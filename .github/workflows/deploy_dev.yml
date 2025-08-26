@@ -1,0 +1,25 @@
+# Workflow for App1 (auth-service/.github/workflows/deploy.yml)
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches: # Trigger workflow on push to the main branch
+      - dev
+  workflow_dispatch: {} # Allow manual triggering of the workflow
+
+jobs:
+  deploy:
+    # Use the reusable workflow for deploying the application
+    uses: rehab-mart/cicd-actions/.github/workflows/reusable-dev2-deploy.yml@main
+    with:
+      app_name: 'frontend-v2' # Name of the application to be deployed
+      app_port: '8080' # Port on which the application will run
+      branch: 'dev'
+    secrets:
+      EC2_HOST_DEV_TEST: ${{ secrets.EC2_HOST_DEV_TEST }} # EC2 host address
+      EC2_USER: ${{ secrets.EC2_USER }} # EC2 username
+      EC2_SSH_KEY_TEST: ${{ secrets.EC2_SSH_KEY_TEST }} # SSH key for accessing the EC2 instance
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }} # Git token for cloning the repository
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      AZURE_API_KEY: ${{ secrets.AZURE_API_KEY }}

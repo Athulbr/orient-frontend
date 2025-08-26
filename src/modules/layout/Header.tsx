@@ -23,6 +23,8 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const isAuthenticated = useIsAuthenticated();
     const [tenantList, setTenantList] = useState([]);
     const { setSelectedTenant, selectedTenant } = useSettingsStore();
+    const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
+
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
 
@@ -36,6 +38,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     }, []);
 
     const logOut = async () => {
+        setTimeout(() => {
+            window.sessionStorage.clear();
+            window?.location?.replace('/');
+        }, 2000);
         const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
         toast.success('Logged out successfully');
         if (isAuthenticated) {
@@ -44,10 +50,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             });
             return;
         }
-        setTimeout(() => {
-            window.sessionStorage.clear();
-            window?.location?.replace('/');
-        }, 500);
     };
     const onChangeDropDown = (e: string) => {
         if (e === 'Logout') logOut();
@@ -76,7 +78,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                     {/* <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
           <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                     {user?.role?.name === 'superadmin' && (
-                        <SingleSelect className="min-w-40" value={selectedTenant} onValueChange={e => setSelectedTenant(e)} options={tenantList} />
+                        <SingleSelect className="min-w-40" value={selectedTenantFromSessionStorage} onValueChange={e => setSelectedTenant(e)} options={[{label: 'All Tenants', value: "all"},...tenantList]} />
                     )}
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">

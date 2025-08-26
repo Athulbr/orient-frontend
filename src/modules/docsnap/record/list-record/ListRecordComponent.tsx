@@ -6,6 +6,7 @@ import { useListRecordApi } from './hooks/useListRecordApi';
 import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -32,6 +33,7 @@ export const ListRecordComponent: React.FC = () => {
     const navigate = useNavigate();
     const { deleteRecordApi } = useListRecordApi();
     const [params] = useSearchParams();
+    const { checkPermission } = usePermissionStore();
 
     const { refreshRecord, extractionQueue } = useDocsnapStore();
 
@@ -55,18 +57,16 @@ export const ListRecordComponent: React.FC = () => {
         poLink: Polink
     };
 
-    const rehabMartTenant = `${import.meta.env.VITE_NODE_URL}`.includes('rehabmart');
-
-    const actionButtons = rehabMartTenant
-        ? []
-        : [
+    const actionButtons = checkPermission('export:record:ardex')
+        ? [
               {
                   label: 'Export Record',
                   action: () => {
                       setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
               }
-          ];
+          ]
+        : [];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
         return query;
@@ -106,12 +106,27 @@ export const ListRecordComponent: React.FC = () => {
     };
 
     const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
+        let formattedStart: string | null = null;
+        let formattedEnd: string | null = null;
+
+        if (startDate) {
+            const s = new Date(startDate);
+            s.setHours(0, 0, 0, 0); // start of day
+            formattedStart = s.toISOString(); // still UTC, but exact 00:00 local
+        }
+
+        if (endDate) {
+            const e = new Date(endDate);
+            e.setHours(23, 59, 59, 999); // end of day
+            formattedEnd = e.toISOString();
+        }
         const payload = {
-            startDate,
-            endDate,
+            startDate: formattedStart,
+            endDate: formattedEnd,
             format: 'xlsx',
             dealers
         };
+
         downloadXlsxFile(payload);
     };
 

@@ -9,7 +9,7 @@ export const ChatInput = ({ sendMessage }: ChatInputProps) => {
     const [input, setInput] = useState('');
 
     const handleSubmit = () => {
-        if (input.trim()) {
+        if (input?.trim()) {
             sendMessage(input);
             setInput('');
         }

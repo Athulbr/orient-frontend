@@ -77,7 +77,7 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
         <div className="flex h-16 items-center justify-between border border-r-0 bg-white px-4">
             <div className="flex items-center gap-2">
                 <BackButton onClick={() => navigate('/docsnap/record/list')} />
-                <span title={name} className="max-w-50 truncate text-lg">
+                <span title={name} className="max-w-80 truncate text-lg">
                     {name}
                 </span>
             </div>

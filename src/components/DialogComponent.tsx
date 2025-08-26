@@ -122,7 +122,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
                             className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:text-gray-500 focus:ring-2 focus:ring-gray-500 focus:outline-none"
                             aria-label="Close dialog"
                         >
-                            <X size={20} />
+                            <X size={20} className="text-black" />
                         </button>
                     </div>
                 )}

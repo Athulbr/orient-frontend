@@ -62,14 +62,14 @@ const FieldListComponent: React.FC = () => {
                                     {field.type.replace(/_/g, ' ')}
                                 </div>
                                 <input
-                                    className={`${style.fieldInput} ${showFieldInputError && !field.label.trim() ? style.inputRequiredError : ''}`}
+                                    className={`${style.fieldInput} ${showFieldInputError && !field.label?.trim() ? style.inputRequiredError : ''}`}
                                     type="text"
                                     placeholder="Label"
                                     value={field.label}
                                     onChange={e => updateFieldLabel(e, index)}
                                 />
                                 <input
-                                    className={`${style.fieldInput} ${showFieldInputError && !field.key.trim() ? style.inputRequiredError : ''}`}
+                                    className={`${style.fieldInput} ${showFieldInputError && !field.key?.trim() ? style.inputRequiredError : ''}`}
                                     type="text"
                                     placeholder="Key"
                                     value={field.key}

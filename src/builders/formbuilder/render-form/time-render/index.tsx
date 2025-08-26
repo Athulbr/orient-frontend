@@ -43,7 +43,7 @@ export const TimeRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, s
 };
 
 export const validateTime = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     if (config.minimumTime && value < config.minimumTime) {
         return `Time must be after ${config.minimumTime}.`;
