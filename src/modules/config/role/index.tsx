@@ -36,7 +36,13 @@ const ListRolePage: React.FC = () => {
     return (
         <RoleStateProvider value={{ state, setState }}>
             {state.showViewDialog ? (
-                <DialogComponent closeDialog={() => setState(prev => ({ ...prev, showViewDialog: false }))} name="Permissions" isOpen className="w-[90vw]">
+                <DialogComponent
+                    closeDialog={() => setState(prev => ({ ...prev, showViewDialog: false }))}
+                    name="Permissions"
+                    disableBlurCloseDialog
+                    isOpen
+                    className="w-[90vw]"
+                >
                     <ViewRoleComponent />
                 </DialogComponent>
             ) : (

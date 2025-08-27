@@ -49,7 +49,7 @@ export const validatePhoneNumber = (value: string, config: FieldConfigIF): strin
     if (config.minimumLength && value.length < config.minimumLength) {
         return `Phone number must be at least ${config.minimumLength} digits.`;
     }
-    if (config.maximumLength && value.length > config.maximumLength) {
+    if (config.maximumLength && value?.length > config.maximumLength) {
         return `Phone number must not exceed ${config.maximumLength} digits.`;
     }
     return '';

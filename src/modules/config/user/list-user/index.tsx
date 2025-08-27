@@ -27,7 +27,7 @@ const ListUserPage: React.FC = () => {
     const navigate = useNavigate();
     useEffect(() => {
         if (settings.length == 0) navigate('/');
-        navigate(settings[0].items[0].path);
+        navigate(settings[0]?.items[0]?.path);
     }, [settings]);
 
     return (
