@@ -14,7 +14,7 @@ interface DocsnapStoreIF {
     addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
     addToNodeExtractorV1: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
-    addToNodeExtractorV2: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
+    addToNodeExtractorV2: (files: FileList, template: any, navigate: (path: string) => void, type:string) => Promise<any>;
     addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
 }
@@ -452,7 +452,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             }, index * 100);
         });
     },
-    addToNodeExtractorV2: async (files: FileList, template: any, navigate: (path: string) => void) => {
+    addToNodeExtractorV2: async (files: FileList, template: any, navigate: (path: string) => void, type:string) => {
         Array.from(files).forEach(async (file, index) => {
             const sendApiRequest = async () => {
                 try {
@@ -467,7 +467,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     // formData.append('schema', JSON.stringify(minifiedSchema));
                     formData.append('templateId', template._id);
                     formData.append('templateFields', JSON.stringify(template?.fields || []));
-                    formData.append('extractionType', 'multiplePOWithSegregationAndGrouping');
+                    formData.append('extractionType', "multiple");
                     formData.append('file', file);
 
                     const [res] = await Promise.all([

@@ -23,33 +23,60 @@ import Spinner from '../../../../components/Spinner';
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
 
-    const { getTemplateApi, createTemplateApi, updateTemplateApi } = useUpdateTemplatePageApi();
+    const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
     const toast = useToastStore();
+    // const [isGenerateApiCalled, setIsGenerateApiCalled] = useState(false);
+    let isGenerateApiCalled=false
 
     useEffect(() => {
         if (!fileName) return;
+
         const getFileAndConvertToImages = async () => {
             setState(prev => ({ ...prev, loadingS3File: true }));
+            
             const s3Response: any = await useS3Storage.getState().getS3File(fileName);
             const imageData = s3Response?.Body?.data;
+
             if (!imageData) {
                 toast.error('S3 document not found');
+                setState(prev => ({ ...prev, loadingS3File: false })); // Ensure loading is turned off
                 return;
             }
+
             const uint8Array = new Uint8Array(imageData);
-            const getFileType = await fileTypeFromBuffer(uint8Array);
+            const fileTypeResult = await fileTypeFromBuffer(uint8Array);
+            
+            if (!fileTypeResult) {
+                toast.error('Could not determine file type.');
+                setState(prev => ({ ...prev, loadingS3File: false }));
+                return;
+            }
+            const { mime, ext } = fileTypeResult;
+            
+            // Handle image and PDF conversion logic
             let pdfFile: any;
-            let imageUrl;
-            if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
-                pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+            let imageUrl: string[];
+            
+            if (mime !== 'application/pdf') {
+                pdfFile = await binaryToFile(uint8Array, `image.${ext}`, mime);
                 imageUrl = [URL.createObjectURL(pdfFile).toString()];
             } else {
-                pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+                pdfFile = await binaryToFile(uint8Array, `document.${ext}`, mime);
                 imageUrl = await convertPdfToImages(pdfFile);
             }
+            if(!isGenerateApiCalled){
+                isGenerateApiCalled=true;
+                generateTemplateFieldsWithAI(uint8Array, mime, fileName);
+            }
+            // Await the upload and state updates
 
-            setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl, sectionList: [] }));
+            setState(prev => ({ 
+                ...prev, 
+                loadingS3File: false, 
+                images: imageUrl, 
+                sectionList: [] 
+            }));
         };
         getFileAndConvertToImages();
     }, [fileName]);
@@ -155,8 +182,8 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                         </Button>
                     </div>
                     <div className='w-full'>
-                        <textarea rows={5} className="w-full border p-2" id=""></textarea>
-                        <Button className='w-full ' outlined>Generate Fields</Button>
+                       {state.sectionList.length>0 && <textarea rows={5} className="w-full border p-2" id=""/>}
+                        <Button disabled={state.generatingTemplateFieldsWithAI} startIcon={state.generatingTemplateFieldsWithAI ? <Spinner size={16} /> : <Plus size={16} />} onClick={()=>updateTemplateFieldsWithAI({})} className='w-full ' outlined>{state.generatingTemplateFieldsWithAI ? 'Generating Fields With AI': 'Generate Fields With AI'}</Button>
                     </div>
                 </section>
             )}
@@ -229,6 +256,12 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         setEditSectionDialog(false);
     };
 
+    const deleteSection = (index: number) => {
+        const sectionList = [...state.sectionList];
+        sectionList.splice(index, 1);
+        setState(prev => ({ ...prev, sectionList }));
+    };
+
     return (
         <div className="flex w-full cursor-pointer flex-col gap-0.5 rounded border p-1">
             <div onClick={() => setOpened(!opened)} className={`flex w-full items-center justify-between rounded bg-gray-50 p-3`}>
@@ -244,7 +277,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     <LightIconButton Icon={ChevronUp} onClick={moveUpSection} title="Move Up" />
                     <LightIconButton Icon={ChevronDown} onClick={moveDownSection} title="Move Down" />
 
-                    <LightIconButton Icon={Trash2} onClick={() => {}} title="Delete" className="hover:text-red-500" />
+                    <LightIconButton Icon={Trash2} onClick={() => deleteSection(mainIndex)} title="Delete" className="hover:text-red-500" />
                 </div>
             </div>
             {opened && (

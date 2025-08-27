@@ -41,9 +41,9 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 return;
             }
             if (extractionType === 'multiPO') {
-                addToNodeExtractorV2(files, templateData || {}, (path: string) => navigate(path));
+                addToNodeExtractorV2(files, templateData || {}, (path: string) => navigate(path), 'multiplePOWithSegregationAndGrouping');
             } else {
-                addToNodeExtractorV1(files, templateData || '', (path: string) => navigate(path));
+                addToNodeExtractorV2(files, templateData || '', (path: string) => navigate(path), 'singlePO');
                 // addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
             }
         } else {
