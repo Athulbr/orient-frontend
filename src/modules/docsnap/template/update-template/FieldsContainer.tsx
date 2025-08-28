@@ -19,6 +19,10 @@ import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useS3Storage } from '../../../../zustand-store/S3Storage';
 import Spinner from '../../../../components/Spinner';
+import { convertTemplateFields } from './utils/convertTemplateFields';
+import { DialogComponent } from '../../../../components/DialogComponent';
+import { TextAreaComponent } from '../../../../components/Textarea';
+import { FieldIF } from '../../../../builders/formbuilder/interface';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
@@ -26,15 +30,16 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
     const toast = useToastStore();
-    // const [isGenerateApiCalled, setIsGenerateApiCalled] = useState(false);
-    let isGenerateApiCalled=false
+
 
     useEffect(() => {
         if (!fileName) return;
 
         const getFileAndConvertToImages = async () => {
             setState(prev => ({ ...prev, loadingS3File: true }));
-            
+
+            generateTemplateFieldsWithAI({ s3FileName: fileName });
+
             const s3Response: any = await useS3Storage.getState().getS3File(fileName);
             const imageData = s3Response?.Body?.data;
 
@@ -46,18 +51,18 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
 
             const uint8Array = new Uint8Array(imageData);
             const fileTypeResult = await fileTypeFromBuffer(uint8Array);
-            
+
             if (!fileTypeResult) {
                 toast.error('Could not determine file type.');
                 setState(prev => ({ ...prev, loadingS3File: false }));
                 return;
             }
             const { mime, ext } = fileTypeResult;
-            
+
             // Handle image and PDF conversion logic
             let pdfFile: any;
             let imageUrl: string[];
-            
+
             if (mime !== 'application/pdf') {
                 pdfFile = await binaryToFile(uint8Array, `image.${ext}`, mime);
                 imageUrl = [URL.createObjectURL(pdfFile).toString()];
@@ -65,17 +70,14 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                 pdfFile = await binaryToFile(uint8Array, `document.${ext}`, mime);
                 imageUrl = await convertPdfToImages(pdfFile);
             }
-            if(!isGenerateApiCalled){
-                isGenerateApiCalled=true;
-                generateTemplateFieldsWithAI(uint8Array, mime, fileName);
-            }
+
             // Await the upload and state updates
 
-            setState(prev => ({ 
-                ...prev, 
-                loadingS3File: false, 
-                images: imageUrl, 
-                sectionList: [] 
+            setState(prev => ({
+                ...prev,
+                loadingS3File: false,
+                images: imageUrl,
+                sectionList: []
             }));
         };
         getFileAndConvertToImages();
@@ -141,21 +143,21 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         setState(prev => ({ ...prev, sectionList }));
     };
     const handleCreateTemplate = (data: any) => {
-            if (create) {
-                const requestBody = {
-                    fields: state.sectionList,
-                    s3FileName: fileName,
-                    ...data
-                };
-                createTemplateApi(requestBody);
-            } else {
-                if (!id) return;
-                const requestBody = {
-                    fields: state.sectionList,
-                    s3FileName: fileName,
-                    ...data
-                };
-                updateTemplateApi(id,requestBody);
+        if (create) {
+            const requestBody = {
+                fields: state.sectionList,
+                s3FileName: fileName,
+                ...data
+            };
+            createTemplateApi(requestBody);
+        } else {
+            if (!id) return;
+            const requestBody = {
+                fields: state.sectionList,
+                s3FileName: fileName,
+                ...data
+            };
+            updateTemplateApi(id, requestBody);
         }
     };
     return (
@@ -181,9 +183,47 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                             Add Table
                         </Button>
                     </div>
-                    <div className='w-full'>
-                       {state.sectionList.length>0 && <textarea rows={5} className="w-full border p-2" id=""/>}
-                        <Button disabled={state.generatingTemplateFieldsWithAI} startIcon={state.generatingTemplateFieldsWithAI ? <Spinner size={16} /> : <Plus size={16} />} onClick={()=>updateTemplateFieldsWithAI({})} className='w-full ' outlined>{state.generatingTemplateFieldsWithAI ? 'Generating Fields With AI': 'Generate Fields With AI'}</Button>
+                    <div className="w-full">
+                        {state.sectionList.length > 0 && (
+                            <textarea
+                                onChange={e => setState(prev => ({ ...prev, userQuery: e.target.value }))}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        if (!state.generatingTemplateFieldsWithAI && !state.updatingTemplateFieldsWithAI) {
+                                            updateTemplateFieldsWithAI({
+                                                existingFields: convertTemplateFields(state.sectionList),
+                                                visionOcrText: state.visionOcrText,
+                                                userQuery: state.userQuery
+                                            });
+                                        }
+                                    }
+                                }}
+                                value={state.userQuery}
+                                rows={5}
+                                className="w-full border p-2"
+                                id=""
+                            />
+                        )}
+                        <Button
+                            disabled={state.generatingTemplateFieldsWithAI || state.updatingTemplateFieldsWithAI}
+                            startIcon={state.generatingTemplateFieldsWithAI || state.updatingTemplateFieldsWithAI ? <Spinner size={16} /> : <Plus size={16} />}
+                            onClick={() =>
+                                updateTemplateFieldsWithAI({
+                                    existingFields: convertTemplateFields(state.sectionList),
+                                    visionOcrText: state.visionOcrText,
+                                    userQuery: state.userQuery
+                                })
+                            }
+                            className="w-full "
+                            outlined
+                        >
+                            {state.generatingTemplateFieldsWithAI
+                                ? 'Generating Fields With AI'
+                                : state.updatingTemplateFieldsWithAI
+                                  ? 'Updating Fields With AI'
+                                  : 'Update Fields With AI'}
+                        </Button>
                     </div>
                 </section>
             )}
@@ -246,7 +286,6 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         setEditSectionDialog(true);
     };
 
-
     const handleUpdateSection = (data: any) => {
         // const sampleData={name: 'test', jsonKey: 'test', description: 'aa', instruction: 'aa', excludeExtraction: false, …}
         const templateData = [...state.sectionList];
@@ -301,10 +340,18 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             <UseFormbuilder
                 isOpen={editSectionDialog}
                 className="w-130"
-                title="Field Configuration"
+                title="Section Configuration"
                 name="Template Section Config Form"
                 closeDialog={() => setEditSectionDialog(false)}
-                existingData={{name: section?.name, jsonKey: section?.jsonKey, description: section?.description, instruction: section?.instruction, excludeExtraction: section?.excludeExtraction, isHidden: section?.isHidden, required: section?.required}}
+                existingData={{
+                    name: section?.name,
+                    jsonKey: section?.jsonKey,
+                    description: section?.description,
+                    instruction: section?.instruction,
+                    excludeExtraction: section?.excludeExtraction,
+                    isHidden: section?.isHidden,
+                    required: section?.required
+                }}
                 onSubmit={handleUpdateSection}
             />
         </div>
@@ -314,6 +361,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
 const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number; mainIndex: number }) => {
     const { state, setState } = useUpdateTemplateState();
     const [showConfigForm, setShowConfigForm] = useState(false);
+    const { regenerateInstructionWithAI } = useUpdateTemplatePageApi();
 
     const updateName = (e: any) => {
         setState(prev => {
@@ -365,6 +413,24 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
         setState(prev => ({ ...prev, sectionList: templateData }));
         setShowConfigForm(false);
     };
+
+    const updateInstructionApi = async (fields: FieldIF[]) => {
+        const guidelinesField = fields.find((field: FieldIF) => field.key === 'guidelines');
+        const instructionField = fields.find((field: FieldIF) => field.key === 'instruction');
+        const updatedInstruction = await regenerateInstructionWithAI({
+            visionOcrText: state.visionOcrText,
+            currentInstruction: instructionField?.value,
+            userQuery: guidelinesField?.value
+        });
+        if (updatedInstruction) {
+            setState(prev => {
+                const sectionList = [...prev.sectionList];
+                sectionList[mainIndex].subFields[index].instruction = updatedInstruction;
+                return { ...prev, sectionList,  };
+            });
+            // setShowConfigForm(false);
+        }
+    };
     return (
         <div className="mt-1 flex items-center gap-2 rounded border bg-white p-2">
             <LightIconButton Icon={GripVertical} onClick={() => {}} title="Drag" />
@@ -384,15 +450,28 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
             )}
             <LightIconButton Icon={Settings} onClick={() => setShowConfigForm(true)} title="Config" />
             <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
-                <UseFormbuilder
+            <UseFormbuilder
                 isOpen={showConfigForm}
-                    className="w-130"
-                    title="Field Configuration"
-                    name="Template Field Config Form"
-                    closeDialog={() => setShowConfigForm(false)}
-                    existingData={{ hidden: field?.hidden, description: field?.description, instruction: field?.instruction, excludeExtraction: field?.excludeExtraction, isHidden: field?.isHidden, required: field?.required}}
-                    onSubmit={handleUpdateField}
-                />
+                className="w-130"
+                title="Field Configuration"
+                name="Template Field Config Form"
+                closeDialog={() => setShowConfigForm(false)}
+                existingData={{
+                    hidden: field?.hidden,
+                    description: field?.description,
+                    instruction: field?.instruction,
+                    excludeExtraction: field?.excludeExtraction,
+                    isHidden: field?.isHidden,
+                    required: field?.required
+                }}
+                onSubmit={handleUpdateField}
+                actionButtonText="Regenerate Instruction"
+                actionButtonClickHandler={(fields: FieldIF[]) => updateInstructionApi(fields)}
+            />
+            {/* <DialogComponent name='Update Instruction' className='p-4 pt-0  w-250' isOpen={showUpdateInstructionDialog} closeDialog={() => setShowUpdateInstructionDialog(false)}>
+                <TextAreaComponent rows={10} placeholder="Instruction" value={query} onChange={(e) => setQuery(e.target.value)} />
+                <Button disabled={!query} className='mt-4' onClick={updateInstructionWithAI} outlined>Submit</Button>
+            </DialogComponent> */}
         </div>
     );
 };

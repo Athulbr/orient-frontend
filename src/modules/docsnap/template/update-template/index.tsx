@@ -16,6 +16,9 @@ export interface UpdateTemplateStateIF {
     templateData: any;
     showCreateForm: boolean;
     generatingTemplateFieldsWithAI: boolean;
+    userQuery:string;
+    updatingTemplateFieldsWithAI:boolean;
+    visionOcrText:string[]    
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
@@ -25,7 +28,10 @@ const initialState: UpdateTemplateStateIF = {
     updatingTemplate: false,
     templateData: null,
     showCreateForm: false,
-    generatingTemplateFieldsWithAI: false
+    generatingTemplateFieldsWithAI: false,
+    userQuery:'',
+    updatingTemplateFieldsWithAI:false,
+    visionOcrText:[]
 };
 
 const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
@@ -35,7 +41,7 @@ const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
         <UpdateTemplateStateProvider value={{ state, setState }}>
             <PageContainer className="gap-4 overflow-hidden p-6 pb-0">
                 <Breadcrumbs page="updateTemplate" />
-                <PageNameComponent name={create ? 'Create Template' : 'Update Template'} showBackButton />
+                <PageNameComponent name={`${create ? 'Create Template' : 'Update Template'}: ${state.templateData?.name || "New Template"}`} showBackButton />
                 <ResizableContainer
                     left={<ImageViewer images={state.images} name="Document" />}
                     right={<FieldsContainer create={create} />}

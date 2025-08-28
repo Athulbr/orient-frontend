@@ -58,6 +58,7 @@ export const useUpdateTemplatePageApi = () => {
             return true;
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, updatingTemplate: false }));
             toast.error('Failed to update Template');
         }
     };
@@ -73,54 +74,56 @@ export const useUpdateTemplatePageApi = () => {
         }
     };
 
-        const generateTemplateFieldsWithAI = async (file: Uint8Array, mimeType: string, fileName:string) => {
-            const formData = new FormData();
-            const fileBlob = new Blob([file], { type: mimeType,  }); // Convert Uint8Array to a Blob
-            formData.append('file', fileBlob, fileName); // 'document' is a generic filename
-    
-            setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true })); // Set loading state before fetch
-            const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
-    
-    
-            try {
-                const res = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS, {
-                    headers: {
-                        authorization: `Bearer ${JSON.parse(sessionStorageAccessToken)}`
-                    },
-                    method: 'POST',
-                    body: formData
-                });
-    
-                const data = await res.json();
-                
-                if (data?.error) {
-                    toast.error(data?.error);
-                    return;
-                }
-                const convertedData = convertLLMResponse(data?.data?.templateFields || {});
-    
-                setState(prev => ({ ...prev, sectionList: convertedData }));
-            } catch (error) {
-                toast.error('An error occurred while generating template fields.');
-            } finally {
-                setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: false })); // Always set loading to false
-            }
-        };
-
-    const updateTemplateFieldsWithAI = async (requestBody: any) => {
+    const generateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody || {});
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
-            console.log('data:===========', data);
-            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false }));
+            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
             toast.success('Template fields generated successfully');
             return true;
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: false }));
             toast.error('Failed to generate template fields');
         }
     };
+    const updateTemplateFieldsWithAI = async (requestBody: any = {}) => {
+        try {
+            setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: true }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_UPDATE_TEMPLATE_FIELDS}`, requestBody);
+            const data = convertLLMResponse(res.data?.templateFields || {});
+            setState(prev => ({ ...prev, sectionList: data, updatingTemplateFieldsWithAI: false, userQuery: '' }));
+            toast.success('Template fields updated successfully');
+            return true;
+        } catch (error) {
+            setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: false }));
+            console.error('error:===========', error);
+            toast.error('Failed to update template fields');
+        }
+    };
+    const regenerateInstructionWithAI = async (requestBody: any = {}) => {
+        try {
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_INSTRUCTION}`, requestBody);
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
+            toast.success('Template fields updated successfully');
+            return res.data?.updatedInstruction;
+        } catch (error) {
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false }));
+            console.error('error:===========', error);
+            toast.error('Failed to update template fields');
+        }
+    };
 
-    return { createTemplateApi, updateTemplateApi, getTemplateApi, deleteTemplateApi, getTemplatesApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI };
+    return {
+        createTemplateApi,
+        updateTemplateApi,
+        getTemplateApi,
+        deleteTemplateApi,
+        getTemplatesApi,
+        generateTemplateFieldsWithAI,
+        updateTemplateFieldsWithAI,
+        regenerateInstructionWithAI
+    };
 };

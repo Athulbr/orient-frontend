@@ -467,7 +467,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                     // formData.append('schema', JSON.stringify(minifiedSchema));
                     formData.append('templateId', template._id);
                     formData.append('templateFields', JSON.stringify(template?.fields || []));
-                    formData.append('extractionType', "multiple");
+                    formData.append('extractionType', "single");
                     formData.append('file', file);
 
                     const [res] = await Promise.all([

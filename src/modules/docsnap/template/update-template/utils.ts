@@ -17,7 +17,7 @@ export function convertLLMResponse(input:any) {
   
       return {
         name: formatName(key),
-        dataType: isArray ? "array" : "object",
+        dataType: isArray ? "list" : "dict",
         jsonKey: key,
         subFields,
         description: key.replace(/_/g, " "),
