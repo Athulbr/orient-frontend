@@ -44,7 +44,8 @@ export const TableBody: FC = () => {
 
     return (
         <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
-            {data.map((row: any, index: number) => (
+            {data.map((row: any, index: number) => {
+                return (
                 <tr
                     onClick={e => rowClickHandler(e, row)}
                     key={index}
@@ -64,6 +65,7 @@ export const TableBody: FC = () => {
                         if (column.hidden) return null;
                         if (column.header === 'Actions' && !checkPermission(injectedData.updatePermission) && !checkPermission(injectedData.deletePermission))
                             return null;
+                        if (injectedData?.hiddenColumns?.includes(column.key)) return null;
 
                         return (
                             <td key={index + 5} className="px-2 py-4 xl:px-5">
@@ -85,7 +87,7 @@ export const TableBody: FC = () => {
                         );
                     })}
                 </tr>
-            ))}
+            )})}
         </tbody>
     );
 };

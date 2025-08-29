@@ -12,11 +12,11 @@ interface UploadDocumentComponentIF {
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV1, addToNodeExtractorV2 } = useDocsnapStore();
+    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV5 } = useDocsnapStore();
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
-    const { getDocsnapSettings, getTenantSettings } = useSettingsStore();
+    const { getTenantSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
@@ -41,9 +41,9 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 return;
             }
             if (extractionType === 'multiPO') {
-                addToNodeExtractorV2(files, templateData || {}, (path: string) => navigate(path), 'multiplePOWithSegregationAndGrouping');
+                addToNodeExtractorV5(files, templateData || {}, (path: string) => navigate(path), 'multiple');
             } else {
-                addToNodeExtractorV2(files, templateData || '', (path: string) => navigate(path), 'singlePO');
+                addToNodeExtractorV5(files, templateData || '', (path: string) => navigate(path), 'single');
                 // addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
             }
         } else {

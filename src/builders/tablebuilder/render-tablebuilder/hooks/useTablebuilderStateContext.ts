@@ -11,6 +11,7 @@ interface InjectedDataIF {
     updatedQuery?: (query: any) => any;
     deletePermission?: string;
     updatePermission?: string;
+    hiddenColumns?: string[];
 }
 
 const TablebuilderStateContext = createContext<
