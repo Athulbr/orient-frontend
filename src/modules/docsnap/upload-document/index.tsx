@@ -27,14 +27,13 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         }
     }, [template?._id]);
     const onFileDrop = async (files: FileList) => {
-        if (files.length > 20) {
-            toast.error('You can select up to 20 files only.');
-            return;
-        }
-        // const docsnapSettings: any = await getDocsnapSettings();
         const tenantSettings: any = await getTenantSettings();
         const extractionEngine = tenantSettings?.extractionEngine;
         const extractionType = tenantSettings?.extractionType;
+        if (files.length > 20 && extractionEngine !== 'node') {
+            toast.error('You can select up to 20 files only.');
+            return;
+        }
         if (extractionEngine === 'node') {
             if (!templateData) {
                 toast.error('Template not found');

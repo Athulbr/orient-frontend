@@ -28,9 +28,17 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         Array.from(files).forEach(async (file, index) => {
             const sendApiRequest = async () => {
                 try {
+                    let timer
                     set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }]
                     });
+                    timer=setInterval(() => {
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) =>
+                                item.fileName === file.name ? { ...item, time: item.time + 1 } : item
+                            )
+                        });
+                    }, 1000)
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
                     get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                     set({
@@ -80,6 +88,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
                         });
                         if (data.current_step === 'Complete') {
+                            clearInterval(timer);
                             eventSource.close();
                             try {
                                 const extractedData: any = data?.result?.extracted_data || {};
@@ -140,9 +149,15 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         Array.from(files).forEach(async (file, index) => {
             const sendApiRequest = async () => {
                 try {
+                    let timer
                     set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }]
                     });
+                    timer=setInterval(() => {
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, time: item.time + 1 } : item))
+                        });
+                    }, 1000)
                     const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
                     get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                     set({
@@ -196,6 +211,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
                         });
                         if (data.current_step === 'Complete') {
+                            clearInterval(timer);
                             eventSource.close();
                             try {
                                 // const extractedData: any = data?.result?.extracted_data || {};
@@ -570,7 +586,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
             };
             setTimeout(() => {
                 sendApiRequest();
-            }, index * 50);
+            }, index * 100);
         });
     }
 }));
