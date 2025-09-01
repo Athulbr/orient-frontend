@@ -74,11 +74,13 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
                 throw new Error(errorData.message || `Request failed with status ${response?.status}`);
             }
 
-            return (await response?.json()) as T;
+            return (await result) as T;
         } finally {
             clearTimeout(timeoutId);
         }
     } catch (error) {
+        console.log('Error in httpRequest:', error);
+
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw new Error('Request timeout');
         }
