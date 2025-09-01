@@ -1,3 +1,5 @@
+import clientLogger from "./clientLog";
+
 const httpRequest = async <T = any>(method: string, url: string, data: Record<string, any> = {}, token?: string): Promise<T> => {
     const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
     const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
@@ -38,17 +40,41 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
                 signal: controller.signal
             });
 
-            clearTimeout(timeoutId);
+            // Parse the body as JSON
+            const result = await response.json();
 
-            if (!response.ok) {
-                const contentType = response.headers.get('content-type');
-                const isJson = contentType?.includes('application/json');
-
-                const errorData = isJson ? await response.json().catch(() => ({})) : {};
-                throw new Error(errorData.message || `Request failed with status ${response.status}`);
+            if (response?.status === 403) {
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } })
+                throw new Error(`Connection error, try again later`);
             }
 
-            return (await response.json()) as T;
+            if (response?.status === 404) {
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
+                throw new Error(`Connection error, try again later`);
+            }
+
+            if (response?.status === 504) {
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
+                throw new Error(`${response?.statusText}`);
+            }
+
+            if (response?.status === 500) {
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
+                const errorMessage = response?.statusText === "" ? "Connection issue, try again later" : response?.statusText;
+                throw new Error(errorMessage);
+            }
+
+            clearTimeout(timeoutId);
+
+            if (!response?.ok) {
+                const contentType = response?.headers.get('content-type');
+                const isJson = contentType?.includes('application/json');
+
+                const errorData = isJson ? await response?.json().catch(() => ({})) : {};
+                throw new Error(errorData.message || `Request failed with status ${response?.status}`);
+            }
+
+            return (await response?.json()) as T;
         } finally {
             clearTimeout(timeoutId);
         }
