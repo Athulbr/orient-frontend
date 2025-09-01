@@ -32,6 +32,7 @@ export function TableHeader() {
                 )}
                 {columns.map((column, index) => {
                     if (column.hidden) return null;
+                    if (injectedData?.hiddenColumns?.includes(column.key)) return null;
                     if (column.header === 'Actions' && !checkPermission(injectedData.deletePermission) && !checkPermission(injectedData.updatePermission))
                         return null;
 

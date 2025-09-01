@@ -16,6 +16,8 @@ interface UseFormbuilderIF {
     loading?: boolean;
     loadingPrimaryButton?: boolean;
     showInDialog?: boolean;
+    actionButtonText?: string;
+    actionButtonClickHandler?: (fields: FieldIF[]) => void;
 }
 
 export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
@@ -29,7 +31,9 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
     title,
     loading,
     loadingPrimaryButton,
-    showInDialog = true
+    showInDialog = true,
+    actionButtonText,
+    actionButtonClickHandler
 }) => {
     const [fields, setFields] = useState<FieldIF[]>([]);
     const [hasError, setHasError] = useState(false);
@@ -104,6 +108,8 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                 submitClickHandler={onSubmit}
                 cancelClickHandler={closeDialog}
                 columns={settings.columns}
+                actionButtonText={actionButtonText}
+                actionButtonClickHandler={actionButtonClickHandler ?(fields)=>actionButtonClickHandler(fields):undefined}
             />
         </DialogComponent>
     );

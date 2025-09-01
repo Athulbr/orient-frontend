@@ -16,6 +16,7 @@ interface PropsIF {
     updatedQuery?: (query: any) => any;
     deletePermission?: string;
     updatePermission?: string;
+    hiddenColumns?: string[];
 }
 
 export const RenderTablebuilder: React.FC<PropsIF> = ({
@@ -29,7 +30,8 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
     disableLoader,
     updatedQuery,
     deletePermission,
-    updatePermission
+    updatePermission,
+    hiddenColumns
 }) => {
     const [state, setState] = useState<TablebuilderStateIF>(tablebuilderInitialState);
     return (
@@ -47,7 +49,8 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
                     actionButtons,
                     disableLoader,
                     deletePermission,
-                    updatePermission
+                    updatePermission,
+                    hiddenColumns
                 }
             }}
         >

@@ -33,7 +33,7 @@ export const ListRecordComponent: React.FC = () => {
     const navigate = useNavigate();
     const { deleteRecordApi } = useListRecordApi();
     const [params] = useSearchParams();
-    const { checkPermission } = usePermissionStore();
+    const { checkPermission, user } = usePermissionStore();
 
     const { refreshRecord, extractionQueue } = useDocsnapStore();
 
@@ -130,6 +130,8 @@ export const ListRecordComponent: React.FC = () => {
         downloadXlsxFile(payload);
     };
 
+    const hiddenColumns = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? [] : ['poLink'];
+
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     return (
         <>
@@ -145,6 +147,7 @@ export const ListRecordComponent: React.FC = () => {
                 updatePermission="update:record"
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
+                hiddenColumns={hiddenColumns}
             />
             {state.dealerSelectionDialog && (
                 <DealerListComponent

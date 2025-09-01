@@ -12,6 +12,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
     const [zoom, setZoom] = useState(100);
     const [shrinked, setShrinked] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { state } = useUpdateTemplateState();
 
     const zoomIn = () => {
         const newZoom = Math.min(zoom + 10, 200);
@@ -68,25 +69,28 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
                 </div>
                 <LightIconButton Icon={Download} onClick={download} title="Download" />
             </div>
-
-            <div
-                ref={containerRef}
-                className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-50 pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
-            >
-                {images.map((imgSrc, index) => (
-                    <div
-                        className="w-fit bg-green-500 shadow-xl shadow-gray-400"
-                        style={{
-                            width: `${zoom - 10}%`,
-                            height: 'auto'
-                        }}
-                        key={index}
-                    >
-                        <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
-                    </div>
-                ))}
-                <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
-            </div>
+            {state.loadingS3File ? (
+                <FullScreenLoader text="Loading Document..." />
+            ) : (
+                <div
+                    ref={containerRef}
+                    className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-50 pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
+                >
+                    {images.map((imgSrc, index) => (
+                        <div
+                            className="w-fit bg-green-500 shadow-xl shadow-gray-400"
+                            style={{
+                                width: `${zoom - 10}%`,
+                                height: 'auto'
+                            }}
+                            key={index}
+                        >
+                            <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
+                        </div>
+                    ))}
+                    <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+                </div>
+            )}
         </div>
     );
 };

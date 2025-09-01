@@ -1,5 +1,6 @@
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
+import { convertLLMResponse } from '../utils';
 import { useUpdateTemplateState } from './updateTemplateContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -57,6 +58,7 @@ export const useUpdateTemplatePageApi = () => {
             return true;
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, updatingTemplate: false }));
             toast.error('Failed to update Template');
         }
     };
@@ -72,5 +74,56 @@ export const useUpdateTemplatePageApi = () => {
         }
     };
 
-    return { createTemplateApi, updateTemplateApi, getTemplateApi, deleteTemplateApi, getTemplatesApi };
+    const generateTemplateFieldsWithAI = async (requestBody: any = {}) => {
+        try {
+            setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
+            const data = convertLLMResponse(res.data?.templateFields || {});
+            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
+            toast.success('Template fields generated successfully');
+            return true;
+        } catch (error) {
+            console.error('error:===========', error);
+            setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: false }));
+            toast.error('Failed to generate template fields');
+        }
+    };
+    const updateTemplateFieldsWithAI = async (requestBody: any = {}) => {
+        try {
+            setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: true }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_UPDATE_TEMPLATE_FIELDS}`, requestBody);
+            const data = convertLLMResponse(res.data?.templateFields || {});
+            setState(prev => ({ ...prev, sectionList: data, updatingTemplateFieldsWithAI: false, userQuery: '' }));
+            toast.success('Template fields updated successfully');
+            return true;
+        } catch (error) {
+            setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: false }));
+            console.error('error:===========', error);
+            toast.error('Failed to update template fields');
+        }
+    };
+    const regenerateInstructionWithAI = async (requestBody: any = {}) => {
+        try {
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_INSTRUCTION}`, requestBody);
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
+            toast.success('Template fields updated successfully');
+            return res.data?.updatedInstruction;
+        } catch (error) {
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false }));
+            console.error('error:===========', error);
+            toast.error('Failed to update template fields');
+        }
+    };
+
+    return {
+        createTemplateApi,
+        updateTemplateApi,
+        getTemplateApi,
+        deleteTemplateApi,
+        getTemplatesApi,
+        generateTemplateFieldsWithAI,
+        updateTemplateFieldsWithAI,
+        regenerateInstructionWithAI
+    };
 };

@@ -19,7 +19,7 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (!windowRef.current) return;
-        
+
         const rect = windowRef.current.getBoundingClientRect();
         setIsDragging(true);
         setDragStart({
@@ -28,21 +28,24 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
         });
     }, []);
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDragging) return;
+    const handleMouseMove = useCallback(
+        (e: MouseEvent) => {
+            if (!isDragging) return;
 
-        const newX = e.clientX - dragStart.x;
-        const newY = e.clientY - dragStart.y;
+            const newX = e.clientX - dragStart.x;
+            const newY = e.clientY - dragStart.y;
 
-        // Constrain to viewport
-        const maxX = window.innerWidth - (windowRef.current?.offsetWidth || 0);
-        const maxY = window.innerHeight - (windowRef.current?.offsetHeight || 0);
+            // Constrain to viewport
+            const maxX = window.innerWidth - (windowRef.current?.offsetWidth || 0);
+            const maxY = window.innerHeight - (windowRef.current?.offsetHeight || 0);
 
-        setPosition({
-            x: Math.max(0, Math.min(newX, maxX)),
-            y: Math.max(0, Math.min(newY, maxY))
-        });
-    }, [isDragging, dragStart]);
+            setPosition({
+                x: Math.max(0, Math.min(newX, maxX)),
+                y: Math.max(0, Math.min(newY, maxY))
+            });
+        },
+        [isDragging, dragStart]
+    );
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
@@ -102,9 +105,9 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
     };
 
     return (
-        <div 
+        <div
             ref={windowRef}
-            className="fixed z-10000 flex w-110 flex-col gap-2 rounded-lg border bg-white shadow-lg shadow-gray-600"
+            className="fixed z-10000 flex w-120 flex-col gap-2 rounded-lg border bg-white shadow-lg shadow-gray-600"
             style={{
                 right: position.x === 0 ? '1rem' : 'auto',
                 bottom: position.x === 0 ? '1rem' : 'auto',
@@ -113,64 +116,61 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 cursor: isDragging ? 'grabbing' : 'default'
             }}
         >
-            <div 
-                className={cn(
-                    "flex w-full items-center justify-between border-b p-4 text-lg font-semibold",
-                    "cursor-grab active:cursor-grabbing select-none"
-                )}
+            <div
+                className={cn('flex w-full items-center justify-between border-b p-4 text-lg font-semibold', 'cursor-grab active:cursor-grabbing select-none')}
                 onMouseDown={handleMouseDown}
             >
                 Extraction Status
-                <div className='flex gap-3 items-center'>
+                <div className="flex gap-3 items-center">
                     {minimize ? (
-                        <ChevronRight 
-                            size={22} 
-                            className="cursor-pointer text-gray-500 hover:text-gray-700" 
-                            onClick={(e) => {
+                        <ChevronRight
+                            size={22}
+                            className="cursor-pointer text-gray-500 hover:text-gray-700"
+                            onClick={e => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 setMinimize(false);
                             }}
-                            onMouseDown={(e) => {
+                            onMouseDown={e => {
                                 e.preventDefault();
                                 e.stopPropagation();
                             }}
                         />
                     ) : (
-                        <ChevronDown 
-                            size={22} 
-                            className="cursor-pointer text-gray-500 hover:text-gray-700" 
-                            onClick={(e) => {
+                        <ChevronDown
+                            size={22}
+                            className="cursor-pointer text-gray-500 hover:text-gray-700"
+                            onClick={e => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 setMinimize(true);
                             }}
-                            onMouseDown={(e) => {
+                            onMouseDown={e => {
                                 e.preventDefault();
                                 e.stopPropagation();
                             }}
                         />
                     )}
-                    <CircleX 
-                        size={20} 
-                        className="cursor-pointer text-gray-500 hover:text-gray-700" 
-                        onClick={(e) => {
+                    <CircleX
+                        size={20}
+                        className="cursor-pointer text-gray-500 hover:text-gray-700"
+                        onClick={e => {
                             e.preventDefault();
                             e.stopPropagation();
                             clearExtractionQueue();
                         }}
-                        onMouseDown={(e) => {
+                        onMouseDown={e => {
                             e.preventDefault();
                             e.stopPropagation();
                         }}
                     />
-                </div> 
+                </div>
             </div>
             {!minimize && (
                 <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto p-4">
                     {extractionQueue.map((file: any, idx: number) => (
                         <div key={idx} className={cn('flex items-center justify-between gap-2')}>
-                            <p className="truncate text-sm">{file.fileName}</p>
+                            <div className="truncate text-sm">{file.fileName}&nbsp;&nbsp;<span className='text-sm text-green-600'>( {file.time}s )</span></div>
                             {getStatusUI(file.status)}
                         </div>
                     ))}
