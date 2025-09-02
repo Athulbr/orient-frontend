@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
+import { useAlertStore } from '../../../components/alert/AlertStore';
 
 interface DocsnapSettingsPageIF {
     test?: string;
@@ -10,10 +11,18 @@ interface DocsnapSettingsPageIF {
 const DocsnapSettingsPage: React.FC<DocsnapSettingsPageIF> = () => {
     const { submitDocsnapSettings, docsnapSettings, getDocsnapSettings } = useSettingsStore();
     const [loading, setLoading] = useState(false);
+    const { showAlert, closeAlert } = useAlertStore();
     const onSubmit = async (data: any) => {
-        setLoading(true);
-        await submitDocsnapSettings(data);
-        setLoading(false);
+        showAlert({
+            alertText: 'Are you sure you want to save this configuration?',
+            primaryButtonText: 'Save',
+            onPrimaryAction: async () => {
+                setLoading(true);
+                await submitDocsnapSettings(data);
+                setLoading(false);
+                closeAlert();
+            }
+        });
     };
     useEffect(() => {
         getDocsnapSettings();

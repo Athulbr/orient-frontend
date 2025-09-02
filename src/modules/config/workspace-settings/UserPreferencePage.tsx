@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
+import { useAlertStore } from '../../../components/alert/AlertStore';
 
 interface UserPreferencePageIF {
     test?: string;
@@ -9,10 +10,18 @@ interface UserPreferencePageIF {
 const UserPreferencePage: React.FC<UserPreferencePageIF> = () => {
     const { submitUserSettings, userSettings, getUserSettings } = useSettingsStore();
     const [loading, setLoading] = useState(false);
+    const { showAlert, closeAlert } = useAlertStore();
     const onSubmit = async (data: any) => {
-        setLoading(true);
-        await submitUserSettings(data);
-        setLoading(false);
+        showAlert({
+            alertText: 'Are you sure you want to save this configuration?',
+            primaryButtonText: 'Save',
+            onPrimaryAction: async () => {
+                setLoading(true);
+                await submitUserSettings(data);
+                setLoading(false);
+                closeAlert();
+            }
+        });
     };
     useEffect(() => {
         getUserSettings();

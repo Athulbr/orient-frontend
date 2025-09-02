@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSettingsStore } from '../../../../zustand-store/SettingsStore';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
+import { useAlertStore } from '../../../../components/alert/AlertStore';
 
 interface TenantSettingsPageIF {
     test?: string;
@@ -8,11 +9,19 @@ interface TenantSettingsPageIF {
 
 const TenantSettingsPage: React.FC<TenantSettingsPageIF> = () => {
     const { submitTenantSettings, tenantSettings, getTenantSettings } = useSettingsStore();
+    const { showAlert, closeAlert } = useAlertStore();
     const [loading, setLoading] = useState(false);
     const onSubmit = async (data: any) => {
-        setLoading(true);
-        await submitTenantSettings(data);
-        setLoading(false);
+        showAlert({
+            alertText: 'Are you sure you want to save this configuration?',
+            primaryButtonText: 'Save',
+            onPrimaryAction: async () => {
+                setLoading(true);
+                await submitTenantSettings(data);
+                setLoading(false);
+                closeAlert();
+            }
+        });
     };
     useEffect(() => {
         getTenantSettings();
