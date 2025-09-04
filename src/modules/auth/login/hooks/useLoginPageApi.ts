@@ -85,7 +85,8 @@ export const useLoginPageApi = () => {
             try {
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('GET', 'https://www.googleapis.com/oauth2/v3/userinfo', {}, response.access_token);
+                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, {}, response?.access_token);
+                console.log('user---------->', user);
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
@@ -131,7 +132,7 @@ export const useLoginPageApi = () => {
     const forgotPasswordApi = async () => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
-        } catch (error) {}
+        } catch (error) { }
     };
 
     // ============================= Return ==================================

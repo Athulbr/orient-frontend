@@ -42,15 +42,14 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             instance.logoutRedirect({
                 postLogoutRedirectUri: import.meta.env.VITE_BASR_URL || 'https://demo.makez.ai'
             });
-            return;
         } else {
             const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
-            toast.success('Logged out successfully');
-            setTimeout(() => {
-                window.sessionStorage.clear();
-                window?.location?.replace('/');
-            }, 2000);
         }
+        toast.success('Logged out successfully');
+        setTimeout(() => {
+            window.sessionStorage.clear();
+            window?.location?.replace('/');
+        }, 2000);
     };
     const onChangeDropDown = (e: string) => {
         if (e === 'Logout') logOut();

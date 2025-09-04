@@ -76,9 +76,13 @@ export const useSignupPageApi = () => {
     const signupWithGoogle = useGoogleLogin({
         onSuccess: async (response: any) => {
             try {
+
+                console.log('response.access_token', response);
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('GET', 'https://www.googleapis.com/oauth2/v3/userinfo', {}, response.access_token);
+                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, {}, response.access_token);
+                console.log('user---------->', user);
+
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
