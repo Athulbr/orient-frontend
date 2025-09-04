@@ -97,7 +97,8 @@ export const useLoginPageApi = () => {
                 if (res.data?.accessToken) {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-                    window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+                    window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                    // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
                     const resp = await Promise.all([
                         httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
                         httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
