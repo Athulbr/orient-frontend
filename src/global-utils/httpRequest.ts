@@ -42,6 +42,11 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
 
             // Parse the body as JSON
             const result = await response.json();
+            if (response?.status === 401) {
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } })
+                window.sessionStorage.clear();
+                window?.location?.replace('/');
+            }
 
             if (response?.status === 403) {
                 clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } })

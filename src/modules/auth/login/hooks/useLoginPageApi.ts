@@ -85,8 +85,7 @@ export const useLoginPageApi = () => {
             try {
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, {}, response?.access_token);
-                console.log('user---------->', user);
+                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, { access_token: response?.access_token });
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,

@@ -76,27 +76,30 @@ export const useSignupPageApi = () => {
     const signupWithGoogle = useGoogleLogin({
         onSuccess: async (response: any) => {
             try {
-
-                console.log('response.access_token', response);
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, {}, response.access_token);
-                console.log('user---------->', user);
+                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, { access_token: response?.access_token });
 
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
-                    email: user.email
+                    email: user.email,
+                    sso: true
                 };
                 const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/signup`, ssoRegistration);
                 if (res.data?.accessToken) {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-
+                    window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                    // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+                    const resp = await Promise.all([
+                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
+                    ]);
+                    window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+                    window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                     toast.success('Logged in successfully');
-                    setTimeout(() => {
-                        window?.location?.replace('/');
-                    }, 500);
+                    window?.location?.replace('/');
                 } else {
                     setState(prev => ({ ...prev, authError: 'Authentication failed. Please try again.' }));
                 }
