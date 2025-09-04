@@ -21,8 +21,8 @@ export const OAuthButtons: FC = () => {
                 <ProfileContent data="auth" />
             </MicrosoftLogin>
             {/* <Button className="w-full" outlined onClick={() => loginWithMSAL()} disabled={state.oAuthLoading}>
-        <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
-      </Button> */}
+                <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
+            </Button> */}
         </section>
     );
 };
