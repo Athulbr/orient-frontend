@@ -6,14 +6,17 @@ import { usePermissionStore } from './PermissionStore';
 interface SettingsStoreIF {
     // ============================== USER SETTINGS ===============================
     userSettings: any;
+    userSettingResponse: string;
     submitUserSettings: (settings?: any) => Promise<void>;
     getUserSettings: () => Promise<void>;
     // ============================== DOCSNAP SETTINGS ===============================
     docsnapSettings: any;
+    docsnapSettingResponse: string;
     submitDocsnapSettings: (settings?: any) => Promise<void>;
     getDocsnapSettings: () => Promise<void>;
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: any;
+    tenantSettingResponse: string;
     selectedTenant: any;
     submitTenantSettings: (settings?: any) => Promise<void>;
     getTenantSettings: () => Promise<void>;
@@ -23,12 +26,13 @@ interface SettingsStoreIF {
 export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     // ============================== USER SETTINGS ===============================
     userSettings: {},
+    userSettingResponse: "",
     submitUserSettings: async (settings?: any) => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/settings/submit`, {
                 settings
             });
-            set({ userSettings: settings });
+            set({ userSettings: settings, userSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
             console.log(error);
         }
@@ -43,12 +47,13 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== DOCSNAP SETTINGS ===============================
     docsnapSettings: {},
+    docsnapSettingResponse: "",
     submitDocsnapSettings: async (settings?: any) => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/settings/submit`, {
                 settings
             });
-            set({ docsnapSettings: settings });
+            set({ docsnapSettings: settings, docsnapSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
             console.log(error);
         }
@@ -64,6 +69,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: {},
+    tenantSettingResponse: "",
     selectedTenant: null,
     submitTenantSettings: async (settings?: any) => {
         if (!get().selectedTenant) {
@@ -75,7 +81,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
                 settings,
                 tenantId: get().selectedTenant
             });
-            set({ tenantSettings: settings });
+            set({ tenantSettings: settings, tenantSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
             console.log(error);
         }

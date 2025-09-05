@@ -85,7 +85,7 @@ export const useLoginPageApi = () => {
             try {
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('GET', 'https://www.googleapis.com/oauth2/v3/userinfo', {}, response.access_token);
+                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, { access_token: response?.access_token });
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
@@ -96,7 +96,8 @@ export const useLoginPageApi = () => {
                 if (res.data?.accessToken) {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-                    window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+                    window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                    // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
                     const resp = await Promise.all([
                         httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
                         httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
@@ -131,7 +132,7 @@ export const useLoginPageApi = () => {
     const forgotPasswordApi = async () => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
-        } catch (error) {}
+        } catch (error) { }
     };
 
     // ============================= Return ==================================
