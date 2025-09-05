@@ -1,20 +1,23 @@
 import { FC } from 'react';
 import GoogleIcon from '../../../../assets/svg-icons/GoogleIcon';
-import { useSignupPageApi } from '../hooks/useSignupPageApi';
 import Spinner from '../../../../components/Spinner';
-import { useSignupPageState } from '../hooks/SignupPageStateProvider';
+import { useLoginPageApi } from '../../login/hooks/useLoginPageApi';
+import { useLoginPageState } from '../../login/hooks/LoginPageStateProvider';
+import MicrosoftLogin from '../../login/components/msal';
+import ProfileContent from '../../login/components/profileContent';
+import { Button } from '../../../../components/Button';
 
 export const OAuthButtons: FC = () => {
-    const { signupWithGoogle } = useSignupPageApi();
-    const { state } = useSignupPageState();
+    const { loginWithGoogle, loginWithMSAL } = useLoginPageApi();
+    const { state } = useLoginPageState();
     return (
-        <section className="mt-8 w-full">
-            <button
-                onClick={() => signupWithGoogle()}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-1 p-2 text-sm text-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+        <section className="mt-8 w-full gap-4">
+            <Button className="w-full" outlined onClick={() => loginWithGoogle()} disabled={state.oAuthLoading}>
                 <GoogleIcon /> Google {state.oAuthLoading && <Spinner size={16} />}
-            </button>
+            </Button>
+            <MicrosoftLogin>
+                <ProfileContent data="auth" />
+            </MicrosoftLogin>
         </section>
     );
 };
