@@ -17,7 +17,7 @@ export const SignupInputs: React.FC<SignupInputsIF> = () => {
     const { signupWithEmailAndPassword } = useSignupPageApi();
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && state.termsAndConditionsDialog) {
             signupWithEmailAndPassword();
         }
     };

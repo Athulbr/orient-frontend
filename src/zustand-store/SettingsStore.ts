@@ -6,17 +6,17 @@ import { usePermissionStore } from './PermissionStore';
 interface SettingsStoreIF {
     // ============================== USER SETTINGS ===============================
     userSettings: any;
-    userSettingResponse: any;
+    userSettingResponse: string;
     submitUserSettings: (settings?: any) => Promise<void>;
     getUserSettings: () => Promise<void>;
     // ============================== DOCSNAP SETTINGS ===============================
     docsnapSettings: any;
-    docsnapSettingResponse: any;
+    docsnapSettingResponse: string;
     submitDocsnapSettings: (settings?: any) => Promise<void>;
     getDocsnapSettings: () => Promise<void>;
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: any;
-    tenantSettingResponse: any;
+    tenantSettingResponse: string;
     selectedTenant: any;
     submitTenantSettings: (settings?: any) => Promise<void>;
     getTenantSettings: () => Promise<void>;
@@ -26,7 +26,7 @@ interface SettingsStoreIF {
 export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     // ============================== USER SETTINGS ===============================
     userSettings: {},
-    userSettingResponse: {},
+    userSettingResponse: "",
     submitUserSettings: async (settings?: any) => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/settings/submit`, {
@@ -47,7 +47,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== DOCSNAP SETTINGS ===============================
     docsnapSettings: {},
-    docsnapSettingResponse: {},
+    docsnapSettingResponse: "",
     submitDocsnapSettings: async (settings?: any) => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/settings/submit`, {
@@ -69,7 +69,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: {},
-    tenantSettingResponse: {},
+    tenantSettingResponse: "",
     selectedTenant: null,
     submitTenantSettings: async (settings?: any) => {
         if (!get().selectedTenant) {
