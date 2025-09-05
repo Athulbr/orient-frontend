@@ -5,10 +5,14 @@ import httpRequest from '../../../../global-utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../../login/sso/msal-config';
 
 export const useSignupPageApi = () => {
     const { state, setState } = useSignupPageState();
     const toast = useToastStore();
+    const { instance, accounts } = useMsal();
+
     const navigate = useNavigate();
 
     // ============================= UseEffect ==================================
@@ -72,14 +76,13 @@ export const useSignupPageApi = () => {
         }
     };
 
-    // ============================= signup With Google ==================================
+    // ============================= login With Google ==================================
     const signupWithGoogle = useGoogleLogin({
         onSuccess: async (response: any) => {
             try {
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
                 const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, { access_token: response?.access_token });
-
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
@@ -104,18 +107,26 @@ export const useSignupPageApi = () => {
                     setState(prev => ({ ...prev, authError: 'Authentication failed. Please try again.' }));
                 }
             } catch (error: any) {
-                console.error('Google signup error:', error);
-                setState(prev => ({ ...prev, authError: 'Failed to signup with Google. Please try again.' }));
+                console.error('Google login error:', error);
+                setState(prev => ({ ...prev, authError: 'Failed to login with Google. Please try again.' }));
             } finally {
                 setState(prev => ({ ...prev, oAuthLoading: false }));
             }
         },
         onError: error => {
-            console.error('Google Signup Failed:', error);
+            console.error('Google Login Failed:', error);
             setState(prev => ({ ...prev, oAuthLoading: false, authError: 'Failed to connect to Google. Please try again.' }));
         }
     });
 
+    // ============================= login With MSAL ==================================
+    const loginWithMSAL = async () => {
+        console.info('Login with Microsoft initiated');
+        instance.loginRedirect(loginRequest).catch(e => {
+            console.error('Sign In issue---->', e);
+        });
+    };
+
     // ============================= Return ==================================
-    return { signupWithEmailAndPassword, signupWithGoogle };
+    return { signupWithEmailAndPassword, signupWithGoogle, loginWithMSAL };
 };
