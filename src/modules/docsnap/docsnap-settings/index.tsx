@@ -3,15 +3,17 @@ import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 import { useAlertStore } from '../../../components/alert/AlertStore';
+import { useToastStore } from '../../../components/toast/ToastStore';
 
 interface DocsnapSettingsPageIF {
     test?: string;
 }
 
 const DocsnapSettingsPage: React.FC<DocsnapSettingsPageIF> = () => {
-    const { submitDocsnapSettings, docsnapSettings, getDocsnapSettings } = useSettingsStore();
+    const { submitDocsnapSettings, docsnapSettings, getDocsnapSettings, docsnapSettingResponse } = useSettingsStore();
     const [loading, setLoading] = useState(false);
     const { showAlert, closeAlert } = useAlertStore();
+    const toast = useToastStore();
     const onSubmit = async (data: any) => {
         showAlert({
             alertText: 'Are you sure you want to save this configuration?',
@@ -20,6 +22,7 @@ const DocsnapSettingsPage: React.FC<DocsnapSettingsPageIF> = () => {
                 setLoading(true);
                 await submitDocsnapSettings(data);
                 setLoading(false);
+                toast.success(docsnapSettingResponse);
                 closeAlert();
             }
         });
