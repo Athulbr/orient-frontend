@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import RenderFormbuilderForm from '../../../components/render-formbuilder-form';
 import { useEffect, useState } from 'react';
-import useTranscriptGroupStore from '../../../store/transcriptGroupStore';
+import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 
 interface PropsIF {
     update?: boolean;

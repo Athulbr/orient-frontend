@@ -4,16 +4,9 @@ import useTranscriptGroupStore, { transcriptGroupIF } from '../../zustand-store/
 import convertDateFormat from '../../global-utils/convert-date-format';
 import TableDeleteButton from '../../components/table-delete-button';
 import { Pencil, Eye } from 'lucide-react';
-// import RichEditorIcon from '../../../icon-components/RichEditor';
-// import TableDeleteButton from '../../../components/table-delete-button';
-// import convertDateFormat from '../../../utils/functions/convert-date-format';
-// import Table from '../../../components/table';
-// import TableHead from '../../../components/table/tableHead';
-// import TableBody from '../../../components/table/tableBody';
-// import useAuthStore from '../../../store/authStore';
-// import { useEffect, useState } from 'react';
-// import useTranscriptGroupStore, { transcriptGroupIF } from '../../../store/transcriptGroupStore';
-// import ViewIcon from '../../../icon-components/ViewIcon';
+import Table from '../../components/table';
+import TableHead from '../../components/table/tableHead';
+import TableBody from '../../components/table/tableBody';
 
 interface PropsIF {
     startIndex: number;

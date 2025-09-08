@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../auth/AuthStore';
 import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 import TranscriptTableComponent from './table';
-import TableControlBox from '../../builders/formbuilder/components/table-control-box';
 import { Button } from '../../components/Button';
 import { PlusIcon } from 'lucide-react';
+import TableSearch from '../../components/table-search';
+import TableRow from '../../components/table-row';
+import TableControlBox from '../../components/table-control-box';
+import { tableRowOptions } from '../../global-utils/static-data';
 
 const TranscriptListPage = () => {
     const navigate = useNavigate();
@@ -41,7 +44,7 @@ const TranscriptListPage = () => {
                 <TableRow
                     options={tableRowOptions}
                     row={`${tableRows}`}
-                    setRow={size => {
+                    setRow={(size: string) => {
                         setCurrentPage(1);
                         setTableRows(size);
                     }}
