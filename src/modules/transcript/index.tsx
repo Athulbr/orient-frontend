@@ -5,6 +5,8 @@ import { useAuthStore } from '../auth/AuthStore';
 import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 import TranscriptTableComponent from './table';
 import TableControlBox from '../../builders/formbuilder/components/table-control-box';
+import { Button } from '../../components/Button';
+import { PlusIcon } from 'lucide-react';
 
 const TranscriptListPage = () => {
     const navigate = useNavigate();
@@ -44,25 +46,28 @@ const TranscriptListPage = () => {
                         setTableRows(size);
                     }}
                 />
-                {permissions?.transcript?.create && (
+                <Button onClick={() => navigate('/transcripts/record')} startIcon={<PlusIcon fill="white" />}>
+                    Create
+                </Button>
+                {/* {permissions?.transcript?.create && (
                     <Button onClick={() => navigate('/transcripts/record')} startIcon={<PlusIcon fill="white" />}>
                         Create
                     </Button>
-                )}
+                )} */}
             </TableControlBox>
 
             <div className="max-h-[calc(100vh-185px)] overflow-y-scroll">
                 <TranscriptTableComponent startIndex={Number(tableRows) * currentPage - Number(tableRows)} />
             </div>
 
-            {!initialLoading && (
+            {/* {!initialLoading && (
                 <Pagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(total / Number(tableRows))}
                     onPageChange={pageNumber => setCurrentPage(pageNumber)}
                     loading={loading}
                 />
-            )}
+            )} */}
         </div>
     );
 };

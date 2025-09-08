@@ -1,10 +1,5 @@
 import JSZip from 'jszip';
-
-interface TranscriptionData {
-  filename: string;
-  content: string;
-}
-
+import { TranscriptionData } from '../modules/transcript/interface';
 
 /**
  * Processes a ZIP file response containing text files

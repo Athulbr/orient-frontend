@@ -30,9 +30,9 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                 try {
                     let timer
                     set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }]
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }]
                     });
-                    timer=setInterval(() => {
+                    timer = setInterval(() => {
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) =>
                                 item.fileName === file.name ? { ...item, time: item.time + 1 } : item
@@ -151,9 +151,9 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                 try {
                     let timer
                     set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }]
+                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }]
                     });
-                    timer=setInterval(() => {
+                    timer = setInterval(() => {
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, time: item.time + 1 } : item))
                         });
@@ -533,7 +533,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
         Array.from(files).forEach(async (file, index) => {
             const sendApiRequest = async () => {
                 try {
-                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }] });
+                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }] });
 
                     const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
 
@@ -552,7 +552,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
                             method: 'POST',
                             body: formData
                         }),
-                        timer=setInterval(() => {
+                        timer = setInterval(() => {
                             set({
                                 extractionQueue: get().extractionQueue.map((item: any) =>
                                     item.fileName === file.name ? { ...item, time: item.time + 1 } : item

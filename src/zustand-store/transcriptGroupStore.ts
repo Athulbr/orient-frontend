@@ -1,9 +1,5 @@
 import { create } from "zustand";
-import httpRequest from "../utils/functions/http-request";
-import { ModuleIF } from "./moduleStore";
-import { SelectOptionIF } from "../interface/component.interface";
-import { useToastStore } from "./useToastStore";
-import { deleteErrorMessage, deleteSuccessMessage, updateSuccessMessage } from "../utils/functions/toast-message";
+import httpRequest from "../global-utils/httpRequest";
 
 export interface transcriptGroupIF {
   _id: string;
@@ -52,7 +48,7 @@ const useTranscriptGroupStore = create<RoleState>((set, get) => ({
   updateTranscript: async (payload, id) => {
     try {
       await httpRequest("PATCH", `${import.meta.env.VITE_API_URL}/ml/api/audiogroup/update/${id}`, payload);
-      useToastStore.getState().showToast("success", updateSuccessMessage(""), 50);
+      // useToastStore.getState().showToast("success", updateSuccessMessage(""), 50);
       await get().getTranscripts();
       return true;
     } catch (error) {
@@ -91,11 +87,11 @@ const useTranscriptGroupStore = create<RoleState>((set, get) => ({
     set({ deleting: id });
     try {
       await httpRequest("DELETE", `${import.meta.env.VITE_API_URL}/ml/api/audiogroup/delete/${id}`);
-      useToastStore.getState().showToast("success", deleteSuccessMessage("Record"));
+      // useToastStore.getState().showToast("success", deleteSuccessMessage("Record"));
       await get().getTranscripts(); // Refresh after deletion
       return true;
     } catch (error) {
-      useToastStore.getState().showToast("error", deleteErrorMessage("Record"));
+      // useToastStore.getState().showToast("error", deleteErrorMessage("Record"));
       return false;
     } finally {
       set({ deleting: "" });
@@ -122,7 +118,7 @@ const useTranscriptGroupStore = create<RoleState>((set, get) => ({
       }
 
       while (true) {
-        const { value, done } = await reader?.read();
+        const { value, done } = await reader.read();
         if (value) {
           set({ extractedData: value })
           return value;

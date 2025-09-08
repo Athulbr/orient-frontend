@@ -1,16 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import RichEditorIcon from '../../../icon-components/RichEditor';
-import TableDeleteButton from '../../../components/table-delete-button';
-import convertDateFormat from '../../../utils/functions/convert-date-format';
-import Table from '../../../components/table';
-import TableHead from '../../../components/table/tableHead';
-import TableBody from '../../../components/table/tableBody';
-import useAuthStore from '../../../store/authStore';
 import { useEffect, useState } from 'react';
-import useTranscriptGroupStore, { transcriptGroupIF } from '../../../store/transcriptGroupStore';
-import ViewIcon from '../../../icon-components/ViewIcon';
-
-import style from './transcript-table.module.css';
+import useTranscriptGroupStore, { transcriptGroupIF } from '../../zustand-store/transcriptGroupStore';
+import convertDateFormat from '../../global-utils/convert-date-format';
+import TableDeleteButton from '../../components/table-delete-button';
+import { Pencil, Eye } from 'lucide-react';
+// import RichEditorIcon from '../../../icon-components/RichEditor';
+// import TableDeleteButton from '../../../components/table-delete-button';
+// import convertDateFormat from '../../../utils/functions/convert-date-format';
+// import Table from '../../../components/table';
+// import TableHead from '../../../components/table/tableHead';
+// import TableBody from '../../../components/table/tableBody';
+// import useAuthStore from '../../../store/authStore';
+// import { useEffect, useState } from 'react';
+// import useTranscriptGroupStore, { transcriptGroupIF } from '../../../store/transcriptGroupStore';
+// import ViewIcon from '../../../icon-components/ViewIcon';
 
 interface PropsIF {
     startIndex: number;
@@ -18,7 +21,6 @@ interface PropsIF {
 
 const TranscriptTableComponent: React.FC<PropsIF> = ({ startIndex }) => {
     const navigate = useNavigate();
-    const { permissions } = useAuthStore();
     const { getTranscripts, transcripts, deleteTranscript, initialLoading, deleting } = useTranscriptGroupStore();
     const [transcriptData, setTranscriptData] = useState<transcriptGroupIF[]>();
 
@@ -56,19 +58,17 @@ const TranscriptTableComponent: React.FC<PropsIF> = ({ startIndex }) => {
             <td className="capitalize">{item.name}</td>
             <td className="pl-5">{convertDateFormat(item.createdAt)}</td>
             <td className="pl-5">{convertDateFormat(item.updatedAt)}</td>
-            <td className={`flex gap-1 ${!permissions?.transcript?.update && !permissions?.transcript?.delete ? 'pl-6' : 'pl-1'} cursor-pointer`}>
-                {permissions?.transcript?.update && (
-                    <span onClick={(e: React.MouseEvent<HTMLTableRowElement>) => editClickHandler(e, item._id)}>
-                        <RichEditorIcon />
-                    </span>
-                )}
-                <TableDeleteButton hide={!permissions?.transcript?.delete} name={item.name} id={item._id} onClick={deleteHandler} deleting={deleting} />
+            <td className={`flex gap-1 pl-6cursor-pointer`}>
+                <span onClick={(e: React.MouseEvent<HTMLTableRowElement>) => editClickHandler(e, item._id)}>
+                    <Pencil />
+                </span>
+                <TableDeleteButton hide={false} name={item.name} id={item._id} onClick={deleteHandler} deleting={deleting} />
                 {/* Tooltip */}
                 <span
                     className="relative inline-block cursor-pointer group"
                     onClick={(e: React.MouseEvent<HTMLTableRowElement>) => viewClickHandler(e, item._id)}
                 >
-                    <ViewIcon />
+                    <Eye />
                     <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
                         View
                     </span>

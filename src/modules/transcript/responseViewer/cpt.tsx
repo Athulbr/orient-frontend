@@ -1,10 +1,6 @@
 import { FileText, AlertCircle } from 'lucide-react';
 import Spinner from '../../../components/Spinner';
-
-interface TranscriptionData {
-    filename: string;
-    content: string;
-}
+import { TranscriptionData } from '../interface';
 
 interface TranscriptCptProps {
     isProcessing: boolean;
