@@ -3,590 +3,446 @@ import httpUploadRequest from '../global-utils/httpUploadRequest';
 import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 import { usePermissionStore } from './PermissionStore';
-import { minifySchema } from '../global-utils/minifySchema';
-import { useS3Storage } from './S3Storage';
+
+interface ExtractionItem {
+    fileName: string;
+    status: string;
+    time: number;
+}
 
 interface DocsnapStoreIF {
     refreshRecord: number;
-    extractionQueue: any[];
+    extractionQueue: ExtractionItem[];
     clearExtractionQueue: () => void;
+    // Python
     addToPythonExtraction: (files: FileList, template: any) => Promise<any>;
     addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
-    addToNodeExtraction: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
-    addToNodeExtractorV1: (files: FileList, template: any, navigate: (path: string) => void) => Promise<any>;
-    addToNodeExtractorV2: (files: FileList, template: any, navigate: (path: string) => void, type: string) => Promise<any>;
-    addToNodeExtractorV5: (files: FileList, template: any, navigate: (path: string) => void, type: string) => Promise<any>;
-    addToNodeExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
+    // Node Js
+    addToNodeExtractorV1: (files: FileList, template: any) => Promise<void>;
 }
 
-export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => ({
-    refreshRecord: 1,
-    extractionQueue: [],
-    clearExtractionQueue: () => set({ extractionQueue: [] }),
-    addToPythonExtraction: async (files: FileList, template: any) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
-                try {
-                    let timer
-                    set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }]
-                    });
-                    timer=setInterval(() => {
-                        set({
-                            extractionQueue: get().extractionQueue.map((item: any) =>
-                                item.fileName === file.name ? { ...item, time: item.time + 1 } : item
-                            )
-                        });
-                    }, 1000)
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                    get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
-                    });
-                    const convertedJson = convertJSON(template?.fields || []);
-                    const requestBody: Record<string, any> = {
-                        document_type: template.docType || 'other',
-                        entity_schema: convertedJson,
-                        include_confidence: true,
-                        include_bbox: true,
-                        confidence_threshold: 0.5,
-                        s3_file_name: s3Response?.data?.fileName,
-                        provider_id: 'azure',
-                        model_id: 'gpt-4o',
-                        use_latest: false
-                    };
-                    if (template.enableOcr) requestBody.ocr_engine = 'doctr';
-                    // const extractionEngine = window.localStorage.getItem('extractionEngine');
-
-                    const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
-
-                    const createReqObject = {
-                        status: 'processing',
-                        metadata: res,
-                        extractedData: null,
-                        pdfFileName: s3Response?.data?.fileName,
-                        name: s3Response?.data?.fileName,
-                        templateId: template._id,
-                        documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
-                    };
-
-                    const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
-                    set({ refreshRecord: get().refreshRecord + 1 });
-
-                    // const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
-                    // if (!processingFiles.length) {
-                    //     set({ refreshRecord: get().refreshRecord + 1 });
-                    // }
-
-                    const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-                    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
-
-                    eventSource.addEventListener('task_update', async (event: any) => {
-                        const data = JSON.parse(event.data);
-                        set({
-                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
-                        });
-                        if (data.current_step === 'Complete') {
-                            clearInterval(timer);
-                            eventSource.close();
-                            try {
-                                const extractedData: any = data?.result?.extracted_data || {};
-                                // ========Add External Fields=========
-
-                                const user = usePermissionStore.getState().user;
-
-                                template?.fields?.forEach((section: any) => {
-                                    if (section.excludeExtraction) {
-                                        section?.subFields?.forEach((subField: any) => {
-                                            // Initialize empty value in extractedData for each subField
-                                            extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
-                                            extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
-                                        });
-                                    }
-                                });
-
-                                extractedData['extracted_by'] = {
-                                    name: {
-                                        value: `${user?.firstName} ${user?.lastName}`
-                                    },
-                                    email: {
-                                        value: `${user?.email}`
-                                    }
-                                };
-                                const requestBody = {
-                                    extractedData,
-                                    status: 'extracted'
-                                };
-                                await httpRequest(
-                                    'PATCH',
-                                    `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
-                                    requestBody
-                                );
-                                set({ refreshRecord: get().refreshRecord + 1 });
-
-                                const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-                                if (!processingFiles.length) {
-                                    set({ refreshRecord: get().refreshRecord + 1 });
-                                }
-                            } catch (error) {
-                                console.log('error:===========', error);
-                            }
-                        }
-                    });
-                } catch (error) {
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
-                }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 100);
+export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
+    const updateQueue = (fileName: string, changes: Partial<ExtractionItem>) => {
+        set({
+            extractionQueue: get().extractionQueue.map(item => (item.fileName === fileName ? { ...item, ...changes } : item))
         });
-    },
-    addToPythonExtractionMultiPO: async (files: FileList, template: any) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
+    };
+
+    const removeCompletedFiles = () => {
+        set({
+            extractionQueue: get().extractionQueue.filter(i => i.status !== 'Complete')
+        });
+    };
+
+    const startTimer = (fileName: string) => {
+        return setInterval(() => {
+            updateQueue(fileName, {
+                time: (get().extractionQueue.find(i => i.fileName === fileName)?.time || 0) + 1
+            });
+        }, 1000);
+    };
+
+    const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, fileName: string, timer: any) => {
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
                 try {
-                    let timer
-                    set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }]
-                    });
-                    timer=setInterval(() => {
-                        set({
-                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, time: item.time + 1 } : item))
-                        });
-                    }, 1000)
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                    get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
-                    });
-                    const convertedJson = convertJSON(template?.fields || []);
-                    const requestBody: Record<string, any> = {
-                        document_type: template.docType || 'other',
-                        entity_schema: convertedJson,
-                        include_confidence: true,
-                        include_bbox: true,
-                        confidence_threshold: 0.5,
-                        s3_file_name: s3Response?.data?.fileName,
-                        provider_id: 'azure',
-                        model_id: 'gpt-4o',
-                        use_latest: false,
-                        template_id: template._id
-                    };
-                    if (template.enableOcr) requestBody.ocr_engine = 'doctr';
-                    // const extractionEngine = window.localStorage.getItem('extractionEngine');
+                    const parsed = JSON.parse(line);
+                    const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
 
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);
+                    if (parsed.status === 'Complete') {
+                        clearInterval(timer);
+                        if (processingFiles.length < 2) {
+                            set({ refreshRecord: get().refreshRecord + 1 });
+                        }
+                        updateQueue(fileName, { status: 'Complete' });
+                    } else if (parsed.status === 'error') {
+                        clearInterval(timer);
+                        if (processingFiles.length < 2) {
+                            set({ refreshRecord: get().refreshRecord + 1 });
+                        }
+                        updateQueue(fileName, { status: 'failed' });
+                    } else if (parsed.status) {
+                        if (processingFiles.length < 2) {
+                            set({ refreshRecord: get().refreshRecord + 1 });
+                        }
+                        updateQueue(fileName, { status: parsed.status });
+                    }
+                } catch (err) {
+                    clearInterval(timer);
+                    const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
 
-                    const createReqObject = {
-                        status: 'processing',
-                        metadata: res,
-                        extractedData: null,
-                        pdfFileName: s3Response?.data?.fileName,
-                        name: s3Response?.data?.fileName,
-                        templateId: template._id,
-                        documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
-                    };
-
-                    // const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
-                    set({ refreshRecord: get().refreshRecord + 1 });
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
-
-                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
-                    if (!processingFiles.length) {
+                    if (processingFiles.length < 2) {
                         set({ refreshRecord: get().refreshRecord + 1 });
                     }
-
-                    const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-                    const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
-
-                    eventSource.addEventListener('task_update', async (event: any) => {
-                        const data = JSON.parse(event.data);
-                        set({
-                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: data.status } : item))
-                        });
-                        if (data.current_step === 'Complete') {
-                            clearInterval(timer);
-                            eventSource.close();
-                            try {
-                                // const extractedData: any = data?.result?.extracted_data || {};
-                                // ========Add External Fields=========
-
-                                // const user = usePermissionStore.getState().user;
-
-                                // template?.fields?.forEach((section: any) => {
-                                //     if (section.excludeExtraction) {
-                                //         section?.subFields?.forEach((subField: any) => {
-                                //             // Initialize empty value in extractedData for each subField
-                                //             extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
-                                //             extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
-                                //         });
-                                //     }
-                                // });
-
-                                // extractedData['extracted_by'] = {
-                                //     name: {
-                                //         value: `${user?.firstName} ${user?.lastName}`
-                                //     },
-                                //     email: {
-                                //         value: `${user?.email}`
-                                //     }
-                                // };
-                                // const requestBody = {
-                                //     extractedData,
-                                //     status: 'extracted'
-                                // };
-                                // await httpRequest(
-                                //     'PATCH',
-                                //     `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
-                                //     requestBody
-                                // );
-                                set({ refreshRecord: get().refreshRecord + 1 });
-
-                                const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-                                if (!processingFiles.length) {
-                                    set({ refreshRecord: get().refreshRecord + 1 });
-                                }
-                            } catch (error) {
-                                console.log('error:===========', error);
-                            }
-                        }
-                    });
-                } catch (error) {
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
+                    updateQueue(fileName, { status: 'failed' });
+                    console.error('Failed to parse JSON line:', err, line);
                 }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 5000);
-        });
-    },
-    trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
+            }
+        }
+        clearInterval(timer);
+    };
+
+    const sendApiRequest = async (file: File, template: any) => {
+        const timer = startTimer(file.name);
+
         try {
-            const response = await fetch(`${import.meta.env.VITE_PYTHON_URL}/chatbot/upload`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    source: [
-                        {
-                            name: s3fileName,
-                            fileType: 'application/pdf',
-                            url: s3Url,
-                            active: true
-                        }
-                    ],
-                    botName: s3fileName || 'Testbot'
-                })
+            const active = get().extractionQueue.filter(i => i.status !== 'Complete');
+            set({
+                extractionQueue: [...active, { fileName: file.name, status: 'Uploading', time: 0 }]
             });
 
-            // Check if the response is ok
-            if (!response.ok) {
-                return null;
-            }
+            const token = window?.sessionStorage?.getItem('accessToken') || '';
+            const formData = new FormData();
+            formData.append('template', JSON.stringify(template));
+            formData.append('extractionType', 'single');
+            formData.append('file', file);
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-                return null;
-            }
 
-            const decoder = new TextDecoder();
-            let hasError = false;
+            const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V2, {
+                method: 'POST',
+                headers: { authorization: `Bearer ${JSON.parse(token)}` },
+                body: formData
+            });
 
-            try {
-                while (true) {
-                    const { value, done } = await reader.read();
+            if (!response.body) throw new Error('ReadableStream not supported');
 
-                    if (done) {
-                        // if (!hasError) { }
-                        break;
-                    }
-                }
-            } catch (streamError) {
-                console.error('Stream reading error:', streamError);
-                hasError = true;
-            } finally {
-                reader.releaseLock();
-            }
+            const reader = response.body.getReader();
+            await processStream(reader, file.name, timer);
         } catch (error) {
-            console.error('Training error:', error);
-            return null;
+            console.error('Streaming error:', error);
+            clearInterval(timer);
+            updateQueue(file.name, { status: 'failed' });
         }
-    },
-    addToNodeExtraction: async (files: FileList, template: any, navigate: (path: string) => void) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
-                try {
-                    set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
-                    });
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
-                    });
-                    const convertedJson = convertJSON(template?.fields || []);
-                    const requestBody: Record<string, any> = {
-                        document_type: template.docType || 'other',
-                        entity_schema: convertedJson,
-                        include_confidence: true,
-                        include_bbox: true,
-                        confidence_threshold: 0.5,
-                        s3_file_name: s3Response?.data?.fileName,
-                        provider_id: 'azure',
-                        model_id: 'gpt-4o',
-                        use_latest: false
-                    };
-                    if (template.enableOcr) requestBody.ocr_engine = 'doctr';
-                    const createReqObject = {
-                        status: 'processing',
-                        metadata: {},
-                        extractedData: null,
-                        pdfFileName: s3Response?.data?.fileName,
-                        name: s3Response?.data?.fileName,
-                        templateId: template._id,
-                        documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
-                    };
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
-                    });
-                    const body = {
-                        templateFields: template?.fields,
-                        fileName: s3Response?.data?.fileName,
-                        schema: convertedJson.fields,
-                        recordId: res.data?._id
-                    };
+    };
 
-                    await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document-extractor/v1`, body);
+    return {
+        refreshRecord: 1,
+        extractionQueue: [],
+        clearExtractionQueue: () => set({ extractionQueue: [] }),
 
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
-                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-                    if (!processingFiles.length) navigate(`/docsnap/record/view/${res.data?._id}`);
-                } catch (error) {
-                    // set({ refreshRecord: get().refreshRecord + 1 });
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
-                }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 500);
-        });
-    },
-    addToNodeExtractionMultiPO: async (files: FileList, template: any) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
-                try {
-                    set({
-                        extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }]
-                    });
-                    const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
-                    });
-                    const convertedJson = convertJSON(template?.fields || []);
-                    const body = {
-                        template: template,
-                        fileName: s3Response?.data?.fileName,
-                        schema: convertedJson.fields
-                    };
-                    const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document-extractor/v2`, body);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
-                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
-                    if (!processingFiles.length) set({ refreshRecord: get().refreshRecord + 1 });
-                } catch (error) {
-                    // set({ refreshRecord: get().refreshRecord + 1 });
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
-                }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 500);
-        });
-    },
-    addToNodeExtractorV1: async (files: FileList, template: any, navigate: (path: string) => void) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
-                try {
-                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }] });
+        // ================================================= Python =====================================================
 
-                    const convertedJson = convertJSON(template?.fields || []);
-                    const minifiedSchema = minifySchema(convertedJson.fields);
-
-                    const formData = new FormData();
-                    formData.append('schema', JSON.stringify(minifiedSchema));
-                    formData.append('templateId', template._id);
-                    formData.append('file', file);
-
-                    const [res] = await Promise.all([
-                        fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V1, {
-                            method: 'POST',
-                            body: formData
-                        }),
-                        setTimeout(
-                            () =>
-                                set({
-                                    extractionQueue: get().extractionQueue.map((item: any) =>
-                                        item.fileName === file.name ? { ...item, status: 'Processing' } : item
-                                    )
-                                }),
-                            4000
-                        )
-                    ]);
-                    const response = await res.json();
-                    if (response?.data?.imageFileNames?.length) {
-                        response.data.imageFileNames.map((item: string) => useS3Storage.getState().getS3File(item));
-                    }
-                    console.log('response:===========', response);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
-                    set({ refreshRecord: get().refreshRecord + 1 });
-                } catch (error) {
-                    console.log('error:===========', error);
-
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
-                    set({ refreshRecord: get().refreshRecord + 1 });
-                }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 100);
-        });
-    },
-    addToNodeExtractorV2: async (files: FileList, template: any, navigate: (path: string) => void, type: string) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
-                try {
-                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading' }] });
-
-                    // const convertedJson = convertJSON(template?.fields || []);
-                    // const minifiedSchema = minifySchema(convertedJson.fields);
-                    const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
-
-                    const formData = new FormData();
-                    // formData.append('schema', JSON.stringify(minifiedSchema));
-                    formData.append('templateId', template._id);
-                    formData.append('templateFields', JSON.stringify(template?.fields || []));
-                    formData.append('extractionType', 'single');
-                    formData.append('file', file);
-
-                    const [res] = await Promise.all([
-                        fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V2, {
-                            headers: {
-                                authorization: `Bearer ${JSON.parse(sessionStorageAccessToken)}`
-                            },
-                            method: 'POST',
-                            body: formData
-                        }),
-                        setTimeout(
-                            () =>
-                                set({
-                                    extractionQueue: get().extractionQueue.map((item: any) =>
-                                        item.fileName === file.name ? { ...item, status: 'Processing' } : item
-                                    )
-                                }),
-                            4000
-                        )
-                    ]);
-                    const response = await res.json();
-                    // if (response?.data?.imageFileNames?.length < 6) {
-                    //     if(get().extractionQueue.length === 1 ){
-
-                    //         response.data.imageFileNames.map((item: string) => useS3Storage.getState().getS3File(item));
-                    //     }
-                    // }
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
-                    set({ refreshRecord: get().refreshRecord + 1 });
-                } catch (error) {
-                    console.log('error:===========', error);
-
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
-                    set({ refreshRecord: get().refreshRecord + 1 });
-                }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 50);
-        });
-    },
-    addToNodeExtractorV5: async (files: FileList, template: any, navigate: (path: string) => void, type: string) => {
-        Array.from(files).forEach(async (file, index) => {
-            const sendApiRequest = async () => {
-                try {
-                    set({ extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time:0 }] });
-
-                    const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
-
-                    const formData = new FormData();
-                    formData.append('template', JSON.stringify(template));
-                    formData.append('extractionType', 'single');
-                    formData.append('file', file);
-
-                    let timer;
-
-                    const [res] = await Promise.all([
-                        fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V5, {
-                            headers: {
-                                authorization: `Bearer ${JSON.parse(sessionStorageAccessToken)}`
-                            },
-                            method: 'POST',
-                            body: formData
-                        }),
-                        timer=setInterval(() => {
+        addToPythonExtraction: async (files: FileList, template: any) => {
+            Array.from(files).forEach(async (file, index) => {
+                const sendApiRequest = async () => {
+                    try {
+                        let timer;
+                        set({
+                            extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }]
+                        });
+                        timer = setInterval(() => {
                             set({
                                 extractionQueue: get().extractionQueue.map((item: any) =>
                                     item.fileName === file.name ? { ...item, time: item.time + 1 } : item
                                 )
                             });
-                        }, 1000),
-                        setTimeout(
-                            () =>
-                                set({
-                                    extractionQueue: get().extractionQueue.map((item: any) =>
-                                        item.fileName === file.name ? { ...item, status: 'Processing' } : item
-                                    )
-                                }),
-                            4000
-                        )
-                    ]);
-                    const response = await res.json();
-                    clearInterval(timer);
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
-                    });
-                    set({ refreshRecord: get().refreshRecord + 1 });
-                } catch (error) {
-                    console.log('error:===========', error);
+                        }, 1000);
+                        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
+                        get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
+                        });
+                        const convertedJson = convertJSON(template?.fields || []);
+                        const requestBody: Record<string, any> = {
+                            document_type: template.docType || 'other',
+                            entity_schema: convertedJson,
+                            include_confidence: true,
+                            include_bbox: true,
+                            confidence_threshold: 0.5,
+                            s3_file_name: s3Response?.data?.fileName,
+                            provider_id: 'azure',
+                            model_id: 'gpt-4o',
+                            use_latest: false
+                        };
+                        if (template.enableOcr) requestBody.ocr_engine = 'doctr';
+                        // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
-                    set({
-                        extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
-                    });
-                    set({ refreshRecord: get().refreshRecord + 1 });
+                        const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+
+                        const createReqObject = {
+                            status: 'processing',
+                            metadata: res,
+                            extractedData: null,
+                            pdfFileName: s3Response?.data?.fileName,
+                            name: s3Response?.data?.fileName,
+                            templateId: template._id,
+                            documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
+                        };
+
+                        const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
+                        set({ refreshRecord: get().refreshRecord + 1 });
+
+                        // const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
+                        // if (!processingFiles.length) {
+                        //     set({ refreshRecord: get().refreshRecord + 1 });
+                        // }
+
+                        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+                        eventSource.addEventListener('task_update', async (event: any) => {
+                            const data = JSON.parse(event.data);
+                            set({
+                                extractionQueue: get().extractionQueue.map((item: any) =>
+                                    item.fileName === file.name ? { ...item, status: data.status } : item
+                                )
+                            });
+                            if (data.current_step === 'Complete') {
+                                clearInterval(timer);
+                                eventSource.close();
+                                try {
+                                    const extractedData: any = data?.result?.extracted_data || {};
+                                    // ========Add External Fields=========
+
+                                    const user = usePermissionStore.getState().user;
+
+                                    template?.fields?.forEach((section: any) => {
+                                        if (section.excludeExtraction) {
+                                            section?.subFields?.forEach((subField: any) => {
+                                                // Initialize empty value in extractedData for each subField
+                                                extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
+                                                extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
+                                            });
+                                        }
+                                    });
+
+                                    extractedData['extracted_by'] = {
+                                        name: {
+                                            value: `${user?.firstName} ${user?.lastName}`
+                                        },
+                                        email: {
+                                            value: `${user?.email}`
+                                        }
+                                    };
+                                    const requestBody = {
+                                        extractedData,
+                                        status: 'extracted'
+                                    };
+                                    await httpRequest(
+                                        'PATCH',
+                                        `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                        requestBody
+                                    );
+                                    set({ refreshRecord: get().refreshRecord + 1 });
+
+                                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+                                    if (!processingFiles.length) {
+                                        set({ refreshRecord: get().refreshRecord + 1 });
+                                    }
+                                } catch (error) {
+                                    console.log('error:===========', error);
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                        });
+                    }
+                };
+                setTimeout(() => {
+                    sendApiRequest();
+                }, index * 100);
+            });
+        },
+        addToPythonExtractionMultiPO: async (files: FileList, template: any) => {
+            Array.from(files).forEach(async (file, index) => {
+                const sendApiRequest = async () => {
+                    try {
+                        let timer;
+                        set({
+                            extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }]
+                        });
+                        timer = setInterval(() => {
+                            set({
+                                extractionQueue: get().extractionQueue.map((item: any) =>
+                                    item.fileName === file.name ? { ...item, time: item.time + 1 } : item
+                                )
+                            });
+                        }, 1000);
+                        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
+                        get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
+                        });
+                        const convertedJson = convertJSON(template?.fields || []);
+                        const requestBody: Record<string, any> = {
+                            document_type: template.docType || 'other',
+                            entity_schema: convertedJson,
+                            include_confidence: true,
+                            include_bbox: true,
+                            confidence_threshold: 0.5,
+                            s3_file_name: s3Response?.data?.fileName,
+                            provider_id: 'azure',
+                            model_id: 'gpt-4o',
+                            use_latest: false,
+                            template_id: template._id
+                        };
+                        if (template.enableOcr) requestBody.ocr_engine = 'doctr';
+                        // const extractionEngine = window.localStorage.getItem('extractionEngine');
+
+                        const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);
+
+                        const createReqObject = {
+                            status: 'processing',
+                            metadata: res,
+                            extractedData: null,
+                            pdfFileName: s3Response?.data?.fileName,
+                            name: s3Response?.data?.fileName,
+                            templateId: template._id,
+                            documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
+                        };
+
+                        // const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
+                        set({ refreshRecord: get().refreshRecord + 1 });
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
+                        });
+
+                        const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
+                        if (!processingFiles.length) {
+                            set({ refreshRecord: get().refreshRecord + 1 });
+                        }
+
+                        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+
+                        eventSource.addEventListener('task_update', async (event: any) => {
+                            const data = JSON.parse(event.data);
+                            set({
+                                extractionQueue: get().extractionQueue.map((item: any) =>
+                                    item.fileName === file.name ? { ...item, status: data.status } : item
+                                )
+                            });
+                            if (data.current_step === 'Complete') {
+                                clearInterval(timer);
+                                eventSource.close();
+                                try {
+                                    // const extractedData: any = data?.result?.extracted_data || {};
+                                    // ========Add External Fields=========
+
+                                    // const user = usePermissionStore.getState().user;
+
+                                    // template?.fields?.forEach((section: any) => {
+                                    //     if (section.excludeExtraction) {
+                                    //         section?.subFields?.forEach((subField: any) => {
+                                    //             // Initialize empty value in extractedData for each subField
+                                    //             extractedData[section.jsonKey] = extractedData[section.jsonKey] || {};
+                                    //             extractedData[section.jsonKey][subField.jsonKey] = { value: '' };
+                                    //         });
+                                    //     }
+                                    // });
+
+                                    // extractedData['extracted_by'] = {
+                                    //     name: {
+                                    //         value: `${user?.firstName} ${user?.lastName}`
+                                    //     },
+                                    //     email: {
+                                    //         value: `${user?.email}`
+                                    //     }
+                                    // };
+                                    // const requestBody = {
+                                    //     extractedData,
+                                    //     status: 'extracted'
+                                    // };
+                                    // await httpRequest(
+                                    //     'PATCH',
+                                    //     `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                    //     requestBody
+                                    // );
+                                    set({ refreshRecord: get().refreshRecord + 1 });
+
+                                    const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');
+                                    if (!processingFiles.length) {
+                                        set({ refreshRecord: get().refreshRecord + 1 });
+                                    }
+                                } catch (error) {
+                                    console.log('error:===========', error);
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        set({
+                            extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'failed' } : item))
+                        });
+                    }
+                };
+                setTimeout(() => {
+                    sendApiRequest();
+                }, index * 5000);
+            });
+        },
+        trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_PYTHON_URL}/chatbot/upload`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source: [
+                            {
+                                name: s3fileName,
+                                fileType: 'application/pdf',
+                                url: s3Url,
+                                active: true
+                            }
+                        ],
+                        botName: s3fileName || 'Testbot'
+                    })
+                });
+
+                // Check if the response is ok
+                if (!response.ok) {
+                    return null;
                 }
-            };
-            setTimeout(() => {
-                sendApiRequest();
-            }, index * 100);
-        });
-    }
-}));
+
+                const reader = response.body?.getReader();
+                if (!reader) {
+                    return null;
+                }
+
+                const decoder = new TextDecoder();
+                let hasError = false;
+
+                try {
+                    while (true) {
+                        const { value, done } = await reader.read();
+
+                        if (done) {
+                            // if (!hasError) { }
+                            break;
+                        }
+                    }
+                } catch (streamError) {
+                    console.error('Stream reading error:', streamError);
+                    hasError = true;
+                } finally {
+                    reader.releaseLock();
+                }
+            } catch (error) {
+                console.error('Training error:', error);
+                return null;
+            }
+        },
+
+        // ================================================= Node Js =====================================================
+
+        addToNodeExtractorV1: async (files: FileList, template: any) => {
+            for (const [index, file] of Array.from(files).entries()) {
+                removeCompletedFiles();
+                sendApiRequest(file, template);
+            }
+        }
+    };
+});

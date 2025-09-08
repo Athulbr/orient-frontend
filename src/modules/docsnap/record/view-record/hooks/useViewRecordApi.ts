@@ -266,70 +266,629 @@ const visionOcrText = [
 ];
 
 const sampleExtractedData = {
-    basic_info: {
-        po_number: {
-            value: 'HC7536',
-            confidence: 1,
-            bbox: {
-                x_min: 0.7717141544117647,
-                y_min: 0.2255859375,
-                x_max: 0.8311121323529411,
-                y_max: 0.2373046875
-            },
-            page: 1
-        }
-    },
-    line_items: [
-        {
-            description: {
-                value: '-',
-                confidence: 0.9836,
-                bbox: {
-                    x_min: 0.2643137255,
-                    y_min: 0.5157575758,
-                    x_max: 0.5701960784,
-                    y_max: 0.5812121212
-                },
-                page: 1
-            }
+    "basic_details": {
+      "purchase_agent": {
+        "value": "Andrea Lavell Myers",
+        "page": 2,
+        "row": 5,
+        "bbox": {
+          "x_min": 0.2818396226,
+          "y_min": 0.1227217497,
+          "x_max": 0.4382861635,
+          "y_max": 0.1354799514
         },
-        {
-            unit_price: {
-                value: '675.00',
-                confidence: 0.9899,
-                bbox: {
-                    x_min: 0.737254902,
-                    y_min: 0.5775757576,
-                    x_max: 0.7803921569,
-                    y_max: 0.5860606061
-                },
-                page: 1
-            },
-            total_price: {
-                value: '675.00',
-                confidence: 0.9899,
-                bbox: {
-                    x_min: 0.8650980392,
-                    y_min: 0.5781818182,
-                    x_max: 0.9090196078,
-                    y_max: 0.5866666667
-                },
-                page: 1
-            },
-            description: {
-                value: 'Delivery',
-                confidence: 0.9836,
-                bbox: {
-                    x_min: 0.2949019608,
-                    y_min: 0.5157575758,
-                    x_max: 0.5701960784,
-                    y_max: 0.5812121212
-                },
-                page: 1
-            }
+        "confidence": 0.9776,
+        "spaceSeperatedFirstWord": "ANDREA",
+        "spaceSeperatedLstWord": "MYERS"
+      },
+      "contact_email": {
+        "value": "andrea.myers5@va.gov",
+        "page": 2,
+        "row": 7,
+        "bbox": {
+          "x_min": 0.2000786164,
+          "y_min": 0.1810449575,
+          "x_max": 0.4068396226,
+          "y_max": 0.1956257594
+        },
+        "confidence": 0.9797
+      },
+      "po_number": {
+        "value": "573-5F9823",
+        "page": 2,
+        "row": 11,
+        "bbox": {
+          "x_min": 0.1301100629,
+          "y_min": 0.2961725395,
+          "x_max": 0.2366352201,
+          "y_max": 0.3068043742
+        },
+        "confidence": 0.9885
+      },
+      "from_location": {
+        "value": "GAINESVILLE VAMC",
+        "page": 2,
+        "row": 2,
+        "bbox": {
+          "x_min": 0.0652515723,
+          "y_min": 0.054981774,
+          "x_max": 0.2150157233,
+          "y_max": 0.0722964763
+        },
+        "confidence": 0.9931,
+        "spaceSeperatedFirstWord": "GAINESVILLE",
+        "spaceSeperatedLstWord": "GAINESVILLE"
+      },
+      "contract_number": {
+        "value": "",
+        "page": 0,
+        "row": 0
+      },
+      "quote_id": {
+        "value": "",
+        "page": 0,
+        "row": 0
+      },
+      "subtotal": {
+        "value": "983.13",
+        "page": 3,
+        "row": 28,
+        "bbox": {
+          "x_min": 0.8294025157,
+          "y_min": 0.6254556501,
+          "x_max": 0.8789308176,
+          "y_max": 0.6363912515
+        },
+        "confidence": 0.9907
+      },
+      "tax": {
+        "value": "",
+        "page": 0,
+        "row": 0
+      },
+      "total_amount": {
+        "value": "983.13",
+        "page": 3,
+        "row": 29,
+        "bbox": {
+          "x_min": 0.829009434,
+          "y_min": 0.6470230863,
+          "x_max": 0.8785377358,
+          "y_max": 0.6573511543
+        },
+        "confidence": 0.9851
+      },
+      "discount": {
+        "value": "0.00",
+        "page": 3,
+        "row": 29,
+        "bbox": {
+          "x_min": 0.3746069182,
+          "y_min": 0.6482381531,
+          "x_max": 0.4072327044,
+          "y_max": 0.6579586877
+        },
+        "confidence": 0.9869
+      },
+      "shipping_cost": {
+        "value": "0.00",
+        "page": 3,
+        "row": 29,
+        "bbox": {
+          "x_min": 0.6383647799,
+          "y_min": 0.6461117861,
+          "x_max": 0.6674528302,
+          "y_max": 0.6579586877
+        },
+        "confidence": 0.9854
+      }
+    },
+    "bill_to": {
+      "bill_to_name": {
+        "value": "Andrea Lavell Myers",
+        "page": 2,
+        "row": 5,
+        "bbox": {
+          "x_min": 0.2818396226,
+          "y_min": 0.1227217497,
+          "x_max": 0.4382861635,
+          "y_max": 0.1354799514
+        },
+        "confidence": 0.9776,
+        "spaceSeperatedFirstWord": "ANDREA",
+        "spaceSeperatedLstWord": "MYERS"
+      },
+      "street": {
+        "value": "1601 SW ARCHER ROAD",
+        "page": 2,
+        "row": 3,
+        "bbox": {
+          "x_min": 0.0656446541,
+          "y_min": 0.0808019441,
+          "x_max": 0.2955974843,
+          "y_max": 0.0920413123
+        },
+        "confidence": 0.9907,
+        "spaceSeperatedFirstWord": "1601",
+        "spaceSeperatedLstWord": "ROAD"
+      },
+      "city": {
+        "value": "Gainesville",
+        "page": 2,
+        "row": 4,
+        "bbox": {
+          "x_min": 0.0652515723,
+          "y_min": 0.1023693803,
+          "x_max": 0.1922169811,
+          "y_max": 0.1148238153
+        },
+        "confidence": 0.993,
+        "spaceSeperatedFirstWord": "GAINESVILLE",
+        "spaceSeperatedLstWord": "GAINESVILLE"
+      },
+      "state": {
+        "value": "FL",
+        "page": 2,
+        "row": 4,
+        "bbox": {
+          "x_min": 0.2051886792,
+          "y_min": 0.1023693803,
+          "x_max": 0.2279874214,
+          "y_max": 0.1148238153
+        },
+        "confidence": 0.9684
+      },
+      "zip": {
+        "value": "32608",
+        "page": 2,
+        "row": 4,
+        "bbox": {
+          "x_min": 0.2382075472,
+          "y_min": 0.1023693803,
+          "x_max": 0.2924528302,
+          "y_max": 0.1148238153
+        },
+        "confidence": 0.9834
+      },
+      "phone_number": {
+        "value": "3867193273 x3273",
+        "page": 2,
+        "row": 6,
+        "bbox": {
+          "x_min": 0.2063679245,
+          "y_min": 0.1613001215,
+          "x_max": 0.3738207547,
+          "y_max": 0.1731470231
+        },
+        "confidence": 0.9886,
+        "spaceSeperatedFirstWord": "3867193273",
+        "spaceSeperatedLstWord": "x3273"
+      },
+      "bill_to_company": {
+        "value": "GAINESVILLE VAMC",
+        "page": 2,
+        "row": 2,
+        "bbox": {
+          "x_min": 0.0652515723,
+          "y_min": 0.054981774,
+          "x_max": 0.2150157233,
+          "y_max": 0.0722964763
+        },
+        "confidence": 0.9931,
+        "spaceSeperatedFirstWord": "GAINESVILLE",
+        "spaceSeperatedLstWord": "GAINESVILLE"
+      }
+    },
+    "ship_to": {
+      "ship_to_company": {
+        "value": "",
+        "page": 0,
+        "row": 0
+      },
+      "name": {
+        "value": "Harry McKinley Warren",
+        "page": 3,
+        "row": 15,
+        "bbox": {
+          "x_min": 0.0668238994,
+          "y_min": 0.3113608748,
+          "x_max": 0.2028301887,
+          "y_max": 0.3229040097
+        },
+        "confidence": 0.9909,
+        "spaceSeperatedFirstWord": "HARRY",
+        "spaceSeperatedLstWord": "WARREN"
+      },
+      "street": {
+        "value": "86079 CARDINAL ROAD",
+        "page": 3,
+        "row": 17,
+        "bbox": {
+          "x_min": 0.0676100629,
+          "y_min": 0.3502430134,
+          "x_max": 0.2441037736,
+          "y_max": 0.3590522479
+        },
+        "confidence": 0.9887,
+        "spaceSeperatedFirstWord": "86079",
+        "spaceSeperatedLstWord": "ROAD"
+      },
+      "city": {
+        "value": "Yulee",
+        "page": 3,
+        "row": 18,
+        "bbox": {
+          "x_min": 0.0664308176,
+          "y_min": 0.3630012151,
+          "x_max": 0.1128144654,
+          "y_max": 0.3736330498
+        },
+        "confidence": 0.9911,
+        "spaceSeperatedFirstWord": "YULEE",
+        "spaceSeperatedLstWord": "YULEE"
+      },
+      "state": {
+        "value": "FL",
+        "page": 3,
+        "row": 18
+      },
+      "zip": {
+        "value": "32097",
+        "page": 3,
+        "row": 18,
+        "bbox": {
+          "x_min": 0.205581761,
+          "y_min": 0.3623936817,
+          "x_max": 0.2511792453,
+          "y_max": 0.3730255164
+        },
+        "confidence": 0.9908
+      },
+      "phone_number": {
+        "value": "(904) 225-2207",
+        "page": 3,
+        "row": 19,
+        "bbox": {
+          "x_min": 0.0668238994,
+          "y_min": 0.3766707169,
+          "x_max": 0.185927673,
+          "y_max": 0.3869987849
+        },
+        "confidence": 0.9816,
+        "spaceSeperatedFirstWord": "(",
+        "spaceSeperatedLstWord": "225-2207"
+      }
+    },
+    "card_info": {
+      "name": {
+        "value": "",
+        "page": 0,
+        "row": 0
+      },
+      "card_number": {
+        "value": "4716400003889226",
+        "page": 3,
+        "row": 35,
+        "bbox": {
+          "x_min": 0.0558176101,
+          "y_min": 0.7904009721,
+          "x_max": 0.205581761,
+          "y_max": 0.7992102066
+        },
+        "confidence": 0.9907
+      },
+      "expiration_date": {
+        "value": "2/28",
+        "page": 4,
+        "row": 21,
+        "bbox": {
+          "x_min": 0.2617924528,
+          "y_min": 0.5036452005,
+          "x_max": 0.2940251572,
+          "y_max": 0.5130619684
+        },
+        "confidence": 0.9819
+      },
+      "cvv": {
+        "value": "672",
+        "page": 4,
+        "row": 22,
+        "bbox": {
+          "x_min": 0.233490566,
+          "y_min": 0.5185297691,
+          "x_max": 0.2617924528,
+          "y_max": 0.5273390036
+        },
+        "confidence": 0.9878
+      }
+    },
+    "line_items": [
+      {
+        "sku_number": {
+          "value": "STI-5850",
+          "page": 4,
+          "row": 15,
+          "bbox": {
+            "x_min": 0.1383647799,
+            "y_min": 0.3465978129,
+            "x_max": 0.205581761,
+            "y_max": 0.3563183475
+          },
+          "confidence": 0.9768,
+          "spaceSeperatedFirstWord": "STI",
+          "spaceSeperatedLstWord": "5850"
+        },
+        "rehab_id": {
+          "value": "",
+          "page": 0,
+          "row": 0
+        },
+        "description": {
+          "value": "BED SAFETY FROM STANDER",
+          "page": 4,
+          "row": 15,
+          "bbox": {
+            "x_min": 0.2130503145,
+            "y_min": 0.3465978129,
+            "x_max": 0.4496855346,
+            "y_max": 0.3563183475
+          },
+          "confidence": 0.9907,
+          "spaceSeperatedFirstWord": "BED",
+          "spaceSeperatedLstWord": "STANDER"
+        },
+        "quantity": {
+          "value": "1",
+          "page": 4,
+          "row": 15,
+          "bbox": {
+            "x_min": 0.5978773585,
+            "y_min": 0.3472053463,
+            "x_max": 0.6037735849,
+            "y_max": 0.3554070474
+          },
+          "confidence": 0.9397
+        },
+        "unit_price": {
+          "value": "155.37",
+          "page": 4,
+          "row": 15,
+          "bbox": {
+            "x_min": 0.7822327044,
+            "y_min": 0.3462940462,
+            "x_max": 0.830581761,
+            "y_max": 0.3557108141
+          },
+          "confidence": 0.9861
+        },
+        "total_price": {
+          "value": "155.37",
+          "page": 4,
+          "row": 15,
+          "bbox": {
+            "x_min": 0.8922955975,
+            "y_min": 0.3459902795,
+            "x_max": 0.9402515723,
+            "y_max": 0.3557108141
+          },
+          "confidence": 0.9846
         }
+      },
+      {
+        "sku_number": {
+          "value": "SLB-SB6C",
+          "page": 4,
+          "row": 16,
+          "bbox": {
+            "x_min": 0.1383647799,
+            "y_min": 0.379708384,
+            "x_max": 0.1690251572,
+            "y_max": 0.3894289186
+          },
+          "confidence": 0.9834,
+          "spaceSeperatedFirstWord": "SLB",
+          "spaceSeperatedLstWord": "SLB"
+        },
+        "rehab_id": {
+          "value": "",
+          "page": 0,
+          "row": 0
+        },
+        "description": {
+          "value": "SHOWER BUDDY ROLL-IN BUDDY LITE",
+          "page": 4,
+          "row": 16,
+          "bbox": {
+            "x_min": 0.2291666667,
+            "y_min": 0.379708384,
+            "x_max": 0.5357704403,
+            "y_max": 0.3894289186
+          },
+          "confidence": 0.9919,
+          "spaceSeperatedFirstWord": "SHOWER",
+          "spaceSeperatedLstWord": "LITE"
+        },
+        "quantity": {
+          "value": "1",
+          "page": 4,
+          "row": 16,
+          "bbox": {
+            "x_min": 0.5978773585,
+            "y_min": 0.3806196841,
+            "x_max": 0.6033805031,
+            "y_max": 0.3891251519
+          },
+          "confidence": 0.9319
+        },
+        "unit_price": {
+          "value": "760.75",
+          "page": 4,
+          "row": 16,
+          "bbox": {
+            "x_min": 0.7822327044,
+            "y_min": 0.3794046173,
+            "x_max": 0.8313679245,
+            "y_max": 0.3894289186
+          },
+          "confidence": 0.9786
+        },
+        "total_price": {
+          "value": "760.75",
+          "page": 4,
+          "row": 16,
+          "bbox": {
+            "x_min": 0.8919025157,
+            "y_min": 0.379708384,
+            "x_max": 0.9402515723,
+            "y_max": 0.3888213852
+          },
+          "confidence": 0.961
+        }
+      },
+      {
+        "sku_number": {
+          "value": "NCM-NC28667",
+          "page": 4,
+          "row": 17,
+          "bbox": {
+            "x_min": 0.1379716981,
+            "y_min": 0.4122114216,
+            "x_max": 0.2503930818,
+            "y_max": 0.422235723
+          },
+          "confidence": 0.9793,
+          "spaceSeperatedFirstWord": "NCM",
+          "spaceSeperatedLstWord": "NC28667"
+        },
+        "rehab_id": {
+          "value": "",
+          "page": 0,
+          "row": 0
+        },
+        "description": {
+          "value": "GOOD GRIPS BUTTON HOOK",
+          "page": 4,
+          "row": 17,
+          "bbox": {
+            "x_min": 0.2566823899,
+            "y_min": 0.4122114216,
+            "x_max": 0.4878144654,
+            "y_max": 0.422235723
+          },
+          "confidence": 0.9891,
+          "spaceSeperatedFirstWord": "GOOD",
+          "spaceSeperatedLstWord": "HOOK"
+        },
+        "quantity": {
+          "value": "1",
+          "page": 4,
+          "row": 17,
+          "bbox": {
+            "x_min": 0.597091195,
+            "y_min": 0.412818955,
+            "x_max": 0.6033805031,
+            "y_max": 0.4204131227
+          },
+          "confidence": 0.887
+        },
+        "unit_price": {
+          "value": "29.01",
+          "page": 4,
+          "row": 17,
+          "bbox": {
+            "x_min": 0.7916666667,
+            "y_min": 0.4125151883,
+            "x_max": 0.8297955975,
+            "y_max": 0.4216281896
+          },
+          "confidence": 0.9826
+        },
+        "total_price": {
+          "value": "29.01",
+          "page": 4,
+          "row": 17,
+          "bbox": {
+            "x_min": 0.9017295597,
+            "y_min": 0.4119076549,
+            "x_max": 0.9394654088,
+            "y_max": 0.4219319563
+          },
+          "confidence": 0.9846
+        }
+      },
+      {
+        "sku_number": {
+          "value": "OPTP-660",
+          "page": 4,
+          "row": 18,
+          "bbox": {
+            "x_min": 0.1383647799,
+            "y_min": 0.4456257594,
+            "x_max": 0.215408805,
+            "y_max": 0.455346294
+          },
+          "confidence": 0.9883,
+          "spaceSeperatedFirstWord": "OPTP",
+          "spaceSeperatedLstWord": "660"
+        },
+        "rehab_id": {
+          "value": "",
+          "page": 0,
+          "row": 0
+        },
+        "description": {
+          "value": "TRANSFER GAIT BELT BY OPTP",
+          "page": 4,
+          "row": 18,
+          "bbox": {
+            "x_min": 0.1383647799,
+            "y_min": 0.4456257594,
+            "x_max": 0.3097484277,
+            "y_max": 0.455346294
+          },
+          "confidence": 0.9942,
+          "spaceSeperatedFirstWord": "TRANSFER",
+          "spaceSeperatedLstWord": "OPTP"
+        },
+        "quantity": {
+          "value": "1",
+          "page": 4,
+          "row": 18,
+          "bbox": {
+            "x_min": 0.5978773585,
+            "y_min": 0.4459295261,
+            "x_max": 0.6045597484,
+            "y_max": 0.4541312272
+          },
+          "confidence": 0.9347
+        },
+        "unit_price": {
+          "value": "38.00",
+          "page": 4,
+          "row": 18,
+          "bbox": {
+            "x_min": 0.7912735849,
+            "y_min": 0.445018226,
+            "x_max": 0.830581761,
+            "y_max": 0.4550425273
+          },
+          "confidence": 0.9892
+        },
+        "total_price": {
+          "value": "38.00",
+          "page": 4,
+          "row": 18,
+          "bbox": {
+            "x_min": 0.9009433962,
+            "y_min": 0.4453219927,
+            "x_max": 0.9406446541,
+            "y_max": 0.4547387606
+          },
+          "confidence": 0.9899
+        }
+      }
     ]
-};
+  }
 
 const images = [
     {
