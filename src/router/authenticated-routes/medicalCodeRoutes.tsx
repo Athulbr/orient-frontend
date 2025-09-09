@@ -8,7 +8,7 @@ const CreatePromatePage = lazy(() => import('../../modules/transcript/audioRecor
 const MedicalCodeRoutes = () => {
     return (
         <Routes>
-            <Route path="create" element={<CreatePromatePage />} />
+            {/* <Route path="create" element={<CreatePromatePage />} /> */}
             {/* <Route path="/transcripts/list" element={<TranscriptListPage />} />
             <Route path="/transcripts/create/:id" element={<TranscriptProjectPage />} />
             <Route path="/transcripts/view/:id" element={<TranscriptProjectPage update />} />

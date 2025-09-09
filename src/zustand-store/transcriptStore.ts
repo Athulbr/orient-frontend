@@ -53,7 +53,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
   createTranscript: async (payload) => {
     try {
       set({ currentData: null });
-      const res = await httpRequest("POST", `${import.meta.env.VITE_API_URL}/ml/api/transcript/create`, payload);
+      const res = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/idp/transcript/create`, payload);
       set({ currentData: res.data });
       return true;
     } catch (error) {
@@ -62,7 +62,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
   },
   updateTranscript: async (payload, id) => {
     try {
-      await httpRequest("PATCH", `${import.meta.env.VITE_API_URL}/ml/api/transcript/update/${id}`, payload);
+      await httpRequest("PATCH", `${import.meta.env.VITE_NODE_URL}/idp/transcript/update/${id}`, payload);
       await get().getTranscripts();
       return true;
     } catch (error) {
@@ -72,7 +72,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
   getTranscripts: async (payload) => {
     set({ initialLoading: true });
     try {
-      const res = await httpRequest("POST", `${import.meta.env.VITE_API_URL}/ml/api/transcript/`, payload);
+      const res = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/idp/transcript/`, payload);
       if (!res.data.length) return true;
       set({ transcripts: res.data });
       return true;
@@ -87,7 +87,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
     set({ loading: true });
     try {
       set({ transcriptData: null });
-      const res = await httpRequest("GET", `${import.meta.env.VITE_API_URL}/ml/api/transcript/${id}`);
+      const res = await httpRequest("GET", `${import.meta.env.VITE_NODE_URL}/idp/transcript/${id}`);
       set({ transcriptData: res.data });
       return true;
     } catch (error) {
@@ -100,7 +100,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
   deleteTranscript: async (id) => {
     set({ deleting: id });
     try {
-      await httpRequest("DELETE", `${import.meta.env.VITE_API_URL}/ml/api/transcript/delete/${id}`);
+      await httpRequest("DELETE", `${import.meta.env.VITE_NODE_URL}/idp/transcript/delete/${id}`);
       // toast.success("Record deleted successfully");
       await get().getTranscripts(); // Refresh after deletion
       return true;

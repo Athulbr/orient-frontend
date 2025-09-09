@@ -172,18 +172,18 @@ const allSettings: SettingsIF[] = [
                 permission: 'read:prompt-tuning'
             }
         ]
-    },
-    {
-        name: 'Medical Code',
-        iconName: 'Book',
-        items: [
-            {
-                name: 'Medical Code',
-                iconName: 'MessageSquareText',
-                path: '/config/transcript',
-                key: 'medical',
-                permission: 'read:medical'
-            }
-        ]
     }
+    // {
+    //     name: 'Medical Code',
+    //     iconName: 'Book',
+    //     items: [
+    //         {
+    //             name: 'Medical Code',
+    //             iconName: 'MessageSquareText',
+    //             path: '/config/transcript',
+    //             key: 'medical',
+    //             permission: 'read:medical'
+    //         }
+    //     ]
+    // }
 ];

@@ -38,7 +38,7 @@ const ListUserPage = lazy(() => import('../../../modules/config/user/list-user')
 const UserPreferencePage = lazy(() => import('../../../modules/config/workspace-settings/UserPreferencePage'));
 const TenantSettingsPage = lazy(() => import('../../../modules/config/tenant/tenant-settings'));
 const DocsnapSettingsPage = lazy(() => import('../../../modules/docsnap/docsnap-settings'));
-const TranscriptionPage = lazy(() => import('../../../modules/transcript/audioRecorder'));
+// const TranscriptionPage = lazy(() => import('../../../modules/transcript/create'));
 
 const ConfigRoutes = () => {
     const navigate = useNavigate();
@@ -64,7 +64,7 @@ const ConfigRoutes = () => {
                         <Route path="user-preference" element={<UserPreferencePage />} />
                         <Route path="comment/*" element={<ListCommentPage />} />
                         <Route path="docsnap-settings" element={<DocsnapSettingsPage />} />
-                        <Route path="transcript" element={<TranscriptionPage />} />
+                        {/* <Route path="transcript" element={<TranscriptionPage />} /> */}
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                 </div>

@@ -6,6 +6,7 @@ import FullScreenLoader from '../../components/FullScreenLoader';
 const PromateRoutes = lazy(() => import('./PromateRoutes'));
 const ConfigRoutes = lazy(() => import('./config-routes'));
 const DashboardPage = lazy(() => import('../../modules/dashboard'));
+const TranscriptionPage = lazy(() => import('../../modules/transcript/create'));
 const DocSnapRoutes = lazy(() => import('./DocSnapRoutes'));
 const UserRoutes = lazy(() => import('./UserRoutes'));
 
@@ -18,6 +19,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/" element={<DashboardPage />} />
+                <Route path="/transcript/*" element={<TranscriptionPage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </Suspense>

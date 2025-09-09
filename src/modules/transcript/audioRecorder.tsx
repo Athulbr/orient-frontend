@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Mic, FileUp, Play, Pause, Square, Upload, ArrowLeft, DeleteIcon } from 'lucide-react';
+import { Mic, FileUp, Play, Pause, Square, Upload, ArrowLeft, DeleteIcon, Trash2 } from 'lucide-react';
 import AudioWaveform from './audioWave';
 import { getCurrentDateTime } from '../../global-utils/convert-date-format';
 import { processZipResponse } from '../../global-utils/zipHandler';
@@ -10,10 +10,10 @@ import httpUploadRequest from '../../global-utils/httpUploadRequest';
 import { Dialog } from '../../builders/formbuilder/components/dialog';
 
 interface AudioRecorderProps {
-    setIsProcessing: (val: boolean) => void;
-    setTranscriptionData: (data: any) => void;
+    setIsProcessing?: (val: boolean) => void;
+    setTranscriptionData?: (data: any) => void;
     titleName: string;
-    setError: (val: string | null) => void;
+    setError?: (val: string | null) => void;
     deleteAudioTrack?: boolean;
 }
 
@@ -55,7 +55,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
     const startRecording = async () => {
         try {
             setAudioBlob(null);
-            setError(null);
+            setError?.(null);
             audioChunksRef.current = [];
             setVoiceRecording(true);
 
@@ -80,7 +80,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
             setRecordingTime(0);
             timerRef.current = window.setInterval(() => setRecordingTime(p => p + 1), 1000);
         } catch (err) {
-            setError('Could not access microphone. Please ensure permissions are granted.');
+            setError?.('Could not access microphone. Please ensure permissions are granted.');
         }
     };
 
@@ -111,12 +111,12 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
     const uploadAudioFile = () => fileInputRef.current?.click();
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAudioBlob(null);
-        setError(null);
+        setError?.(null);
         audioChunksRef.current = [];
         const file = e.target.files?.[0];
         if (file) {
             if (!file.type.startsWith('audio/')) {
-                setError('Please select an audio file.');
+                setError?.('Please select an audio file.');
                 return;
             }
             setFileUpload(true);
@@ -126,19 +126,19 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
 
     const uploadFileToS3 = async (file: File) => {
         try {
-            return await httpUploadRequest(`${import.meta.env.VITE_API_URL}/ml/api/page/upload`, file);
+            return await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file);
         } catch (err) {
             console.log('Error:', err);
         }
     };
 
     const handleUpload = async () => {
-        if (!audioBlob) return setError('No audio file to upload.');
+        if (!audioBlob) return setError?.('No audio file to upload.');
 
         try {
             setIsUploading(true);
-            setIsProcessing(true);
-            setError(null);
+            setIsProcessing?.(true);
+            setError?.(null);
 
             const fd = new FormData();
             fd.append('file', audioBlob, 'recording.m4a');
@@ -146,7 +146,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
 
             if (response) {
                 const transcriptions = await processZipResponse(response);
-                setTranscriptionData(transcriptions);
+                setTranscriptionData?.(transcriptions);
                 setTranscription(transcriptions);
 
                 const blob = new Blob([response], { type: 'application/zip' });
@@ -157,11 +157,11 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                 createTranscript(payload);
             }
         } catch (err) {
-            setError('Failed to process audio. Try again.');
-            setTranscriptionData([]);
+            setError?.('Failed to process audio. Try again.');
+            setTranscriptionData?.([]);
         } finally {
             setIsUploading(false);
-            setIsProcessing(false);
+            setIsProcessing?.(false);
         }
     };
 
@@ -194,27 +194,24 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                 <div className="text-xl font-mono text-gray-700">{formatTime(recordingTime)}</div>
 
                 {/* Buttons */}
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex justify-center gap-4">
                     {!isRecording ? (
                         <>
-                            {!fileUpload && (
-                                <button
-                                    onClick={startRecording}
-                                    disabled={isRecordingStop}
-                                    className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
-                                >
-                                    <Mic className="w-5 h-5" /> Start Recording
-                                </button>
-                            )}
-                            {!voiceRecording && (
-                                <button
-                                    onClick={uploadAudioFile}
-                                    disabled={isUploading || fileUpload}
-                                    className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
-                                >
-                                    <FileUp className="w-5 h-5" /> Upload Audio File
-                                </button>
-                            )}
+                            <button
+                                onClick={startRecording}
+                                disabled={isRecordingStop}
+                                className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
+                            >
+                                <Mic className="w-5 h-5" /> Start Recording
+                            </button>
+
+                            <button
+                                onClick={uploadAudioFile}
+                                disabled={isUploading}
+                                className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
+                            >
+                                <FileUp className="w-5 h-5" /> Choose File
+                            </button>
                             <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileChange} className="hidden" />
                         </>
                     ) : (
@@ -236,7 +233,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                         </>
                     )}
 
-                    {/* Upload Button with Loader */}
+                    {/* Upload Button */}
                     <button
                         onClick={handleUpload}
                         disabled={!audioBlob || isUploading || transcription.length > 0}
@@ -266,8 +263,15 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                             Your browser does not support the audio element.
                         </audio>
                         {transcription.length === 0 && (
-                            <span onClick={() => setClicked(true)} className="text-red-600 cursor-pointer">
-                                <DeleteIcon />
+                            <span
+                                onClick={() => {
+                                    console.log('clicked delete');
+                                    deleteAudio();
+                                    // setClicked(true);
+                                }}
+                                className="text-red-600 cursor-pointer"
+                            >
+                                <Trash2 />
                             </span>
                         )}
                     </div>
