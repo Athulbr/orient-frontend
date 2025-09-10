@@ -20,6 +20,7 @@ export interface UpdateTemplateStateIF {
     updatingTemplateFieldsWithAI:boolean;
     visionOcrText:string[]    
     noS3File:boolean
+    showSettingsForm:boolean
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
@@ -33,7 +34,8 @@ const initialState: UpdateTemplateStateIF = {
     userQuery:'',
     updatingTemplateFieldsWithAI:false,
     visionOcrText:[],
-    noS3File:false
+    noS3File:false,
+    showSettingsForm:false
 };
 
 const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {

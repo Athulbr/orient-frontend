@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Edit, Eye, EyeOff, GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
 import { DragAndDropContainer } from '../../../../components/DragAndDropContainer';
 import { LightIconButton } from './components/ImageViewer';
 import { ClassAttributes, InputHTMLAttributes, useEffect, useState } from 'react';
@@ -9,7 +9,7 @@ import { useUpdateTemplateState } from './hooks/updateTemplateContext';
 import { Button } from '../../../../components/Button';
 import Tooltip from '../../../../components/Tooltip';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
 import { fileTypeFromBuffer } from 'file-type';
@@ -20,8 +20,6 @@ import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useS3Storage } from '../../../../zustand-store/S3Storage';
 import Spinner from '../../../../components/Spinner';
 import { convertTemplateFields } from './utils/convertTemplateFields';
-import { DialogComponent } from '../../../../components/DialogComponent';
-import { TextAreaComponent } from '../../../../components/Textarea';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
@@ -77,7 +75,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                 ...prev,
                 loadingS3File: false,
                 images: imageUrl,
-                sectionList: []
             }));
         };
         getFileAndConvertToImages();
@@ -169,10 +166,13 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     return (
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
-                Template Fields
+                <div>Template Fields</div>
+                <div className='flex items-center gap-2'>
+                <Button startIcon={<FileCog className='text-gray-500' size={16} />} outlined onClick={() => setState(prev => ({ ...prev, showSettingsForm: true }))}>Settings</Button>
                 <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
                     {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
                 </Button>
+                </div>
             </div>
             {state.loadingTemplate ? (
                 <FullScreenLoader text="Loading Template..." />
@@ -239,6 +239,16 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                 className="w-[80vw]"
                 name="Create Template Form"
                 closeDialog={() => setState(prev => ({ ...prev, showCreateForm: false }))}
+                onSubmit={handleCreateTemplate}
+                existingData={state.templateData}
+                loadingPrimaryButton={state.updatingTemplate}
+            />
+            <UseFormbuilder
+                title="Template Settings"
+                isOpen={state.showSettingsForm}
+                className="w-[40vw]"
+                name="Template Settings Form"
+                closeDialog={() => setState(prev => ({ ...prev, showSettingsForm: false }))}
                 onSubmit={handleCreateTemplate}
                 existingData={state.templateData}
                 loadingPrimaryButton={state.updatingTemplate}
