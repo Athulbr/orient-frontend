@@ -57,11 +57,12 @@ export const useS3Storage = create<S3StorageIF>((set, get) => ({
       } catch (error) {
         console.error(`Error fetching file: ${fileName}`, error);
 
+        
         set(state => ({
           uploading: { ...state.uploading, [fileName]: undefined },
         }));
-
-        return null;
+        
+        throw new Error(`Error fetching file`);
       }
     })();
 

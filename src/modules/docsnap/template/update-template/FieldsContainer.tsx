@@ -86,6 +86,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     useEffect(() => {
         if (!id) return;
         const getTemplateData = async () => {
+            try {
             const templateData = await getTemplateApi(id);
             setState(prev => ({ ...prev, loadingS3File: true, templateData }));
             const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
@@ -107,6 +108,11 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             }
 
             setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
+        } catch (error:any) {
+            setState(prev => ({ ...prev, loadingS3File: false, noS3File: true }));
+
+               toast.error(error.message); 
+        }
         };
         getTemplateData();
     }, [id]);

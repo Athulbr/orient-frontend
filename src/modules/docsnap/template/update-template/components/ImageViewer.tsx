@@ -1,8 +1,11 @@
 import { FC, useState, useRef, useEffect } from 'react';
-import { Download, Expand, Shrink, ZoomIn, ZoomOut } from 'lucide-react';
+import { Download, Expand, Shrink, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
 import { useUpdateTemplateState } from '../hooks/updateTemplateContext';
 import { cn } from '../../../../../global-utils/twMerge';
+import { Button } from '../../../../../components/Button';
+import { useS3Storage } from '../../../../../zustand-store/S3Storage';
+import Spinner from '../../../../../components/Spinner';
 interface ImageViewerProps {
     images: string[];
     name?: string;
@@ -13,6 +16,8 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
     const [shrinked, setShrinked] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const { state } = useUpdateTemplateState();
+    const {uploadS3File} = useS3Storage();
+    const [uploadingFile, setUploadingFile] = useState(false);
 
     const zoomIn = () => {
         const newZoom = Math.min(zoom + 10, 200);
@@ -52,6 +57,14 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
         setShrinked(!shrinked);
     };
 
+    const handleUpload = async(e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setUploadingFile(true);
+            const response = await uploadS3File(file);
+            setUploadingFile(false);        }
+    };
+
     return (
         <div className="flex h-full w-full flex-col">
             <div className="flex h-16 items-center justify-between border border-r-0 bg-white px-4">
@@ -70,7 +83,15 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
                 <LightIconButton Icon={Download} onClick={download} title="Download" />
             </div>
             {state.loadingS3File ? (
-                <FullScreenLoader text="Loading Document..." />
+                <FullScreenLoader className='relative bottom-10' text="Loading Document..." />
+            ) : state.noS3File ? (
+                <div className="flex h-full w-full items-center justify-center ">
+                    <div className="flex items-center gap-2 flex-col">
+                        {uploadingFile?<FullScreenLoader text='Uploading Document...'/>
+                        :<input className='relative bottom-10 cursor-pointer border border-gray-200 bg-gray-50 p-2' type="file" onChange={handleUpload}/>
+                        }
+                    </div>
+                </div>
             ) : (
                 <div
                     ref={containerRef}

@@ -106,11 +106,11 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             const token = window?.sessionStorage?.getItem('accessToken') || '';
             const formData = new FormData();
             formData.append('template', JSON.stringify(template));
-            formData.append('extractionType', 'single');
+            // formData.append('extractionType', 'single');
             formData.append('file', file);
 
 
-            const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V2, {
+            const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V4, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${JSON.parse(token)}` },
                 body: formData
