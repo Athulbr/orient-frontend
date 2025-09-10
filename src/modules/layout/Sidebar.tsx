@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Dock, Menu, X } from 'lucide-react';
+import { Dock, Hospital, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import useToggle from '../../hooks/useToggleHook';
@@ -45,7 +45,9 @@ const DesktopSidebar = () => {
                             onClick={() => navigate('/transcript')}
                             className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
                         >
-                            <div className="text-[40px] font-bold text-white">M</div>
+                            <div className="text-[40px] font-bold text-white">
+                                <Hospital />
+                            </div>
                         </div>
                     </>
                 ) : checkPermission('create:transcription') ? (
@@ -55,7 +57,9 @@ const DesktopSidebar = () => {
                         onClick={() => navigate('/transcript')}
                         className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
                     >
-                        <div className="text-[40px] font-bold text-white">M</div>
+                        <div className="text-[40px] font-bold text-white">
+                            <Hospital />
+                        </div>
                     </div>
                 ) : (
                     // Not superadmin and no permission → show only D

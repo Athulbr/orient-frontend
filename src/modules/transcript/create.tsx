@@ -28,7 +28,8 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const tabs = useMemo(
         () => [
             { id: 'transcript', title: 'Transcription' },
-            { id: 'summary', title: 'Summary' }
+            { id: 'summary', title: 'Summary' },
+            { id: 'cpt', title: 'CPT' }
         ],
         []
     );

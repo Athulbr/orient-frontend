@@ -183,7 +183,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                 <span className="flex items-center gap-1 text-gray-700 cursor-pointer" onClick={() => setExit(true)}>
                     <ArrowLeft className="w-5 h-5" />
                 </span>
-                <h2 className="text-xl font-semibold text-gray-800">Record {titleName} Audio</h2>
+                <h2 className="text-xl font-semibold text-gray-800">Record {titleName}</h2>
             </div>
 
             {/* Recorder Content */}

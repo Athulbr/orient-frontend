@@ -55,6 +55,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     };
 
     const renderContent = () => {
+        console.log('transcripts on first tab:--------->', transcripts);
         if (error) {
             return (
                 <div className="flex flex-col items-center justify-center text-center p-6 gap-4">
