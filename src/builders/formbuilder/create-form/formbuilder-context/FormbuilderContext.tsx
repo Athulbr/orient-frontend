@@ -39,6 +39,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
             return true;
         } catch (error) {
             console.error(error);
+            toast.error('Formbuilder update failed');
             return false;
         } finally {
             setLoading(false);
@@ -61,6 +62,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
             return true;
         } catch (error) {
             console.error(error);
+            toast.error('Formbuilder update failed');
             return false;
         } finally {
             setLoading(false);
@@ -75,6 +77,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
             return res?.data?.name;
         } catch (error) {
             console.error(error);
+            toast.error('Formbuilder update failed');
             return '';
         } finally {
             setLoading(false);
