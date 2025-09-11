@@ -8,6 +8,7 @@ import useTranscriptStore from '../../zustand-store/transcriptStore';
 import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 import httpUploadRequest from '../../global-utils/httpUploadRequest';
 import { Dialog } from '../../builders/formbuilder/components/dialog';
+import { Button } from '../../components/Button';
 
 interface AudioRecorderProps {
     setIsProcessing?: (val: boolean) => void;
@@ -177,7 +178,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
     };
 
     return (
-        <div className="flex flex-col flex-grow">
+        <div className="flex flex-col overflow-auto justify-center h-full">
             {/* Recorder Content */}
             <div className="flex flex-col items-center justify-center flex-grow gap-4">
                 <div className="w-full h-32 bg-gray-100 rounded-md overflow-hidden">
@@ -185,30 +186,30 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                 </div>
                 <div className="text-xl font-mono text-gray-700">{formatTime(recordingTime)}</div>
 
-                {/* Buttons */}
-                <div className="flex justify-center gap-4">
+                {/*  Buttons */}
+                <div className="flex justify-center gap-4 flex-wrap">
                     {!isRecording ? (
                         <>
-                            <button
+                            < Button
                                 onClick={startRecording}
                                 disabled={isRecordingStop}
-                                className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
+                                className="flex items-center text-nowrap gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
                             >
                                 <Mic className="w-5 h-5" /> Start Recording
-                            </button>
+                            </ Button>
 
-                            <button
+                            < Button
                                 onClick={uploadAudioFile}
                                 disabled={isUploading}
-                                className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
+                                className="flex text-nowrap items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
                             >
                                 <FileUp className="w-5 h-5" /> Choose File
-                            </button>
+                            </ Button>
                             <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileChange} className="hidden" />
                         </>
                     ) : (
                         <>
-                            <button onClick={togglePause} className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800">
+                            < Button onClick={togglePause} className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800">
                                 {isPaused ? (
                                     <>
                                         <Play className="w-5 h-5" /> Resume
@@ -218,15 +219,15 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                                         <Pause className="w-5 h-5" /> Pause
                                     </>
                                 )}
-                            </button>
-                            <button onClick={stopRecording} className="flex items-center gap-2 px-6 py-3 text-white bg-red-600 rounded-full hover:bg-red-700">
+                            </ Button>
+                            < Button onClick={stopRecording} className="flex text-nowrap items-center gap-2 px-6 py-3 text-white bg-red-600 rounded-full hover:bg-red-700">
                                 <Square className="w-5 h-5" /> Stop Recording
-                            </button>
+                            </ Button>
                         </>
                     )}
 
-                    {/* Upload Button */}
-                    <button
+                    {/* Upload  Button */}
+                    < Button
                         onClick={handleUpload}
                         disabled={!audioBlob || isUploading || transcription.length > 0}
                         className="flex items-center gap-2 px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
@@ -241,7 +242,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                                 <Upload className="w-5 h-5" /> Upload
                             </>
                         )}
-                    </button>
+                    </ Button>
                 </div>
             </div>
 

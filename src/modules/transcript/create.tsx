@@ -6,6 +6,9 @@ import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 import useTranscriptStore from '../../zustand-store/transcriptStore';
 import PageContainer from '../../components/PageContainer';
 import PageNameComponent from '../../components/PageName';
+import { ResizableContainer } from '../docsnap/template/update-template/components/ResizableContainer';
+import { Button } from '../../components/Button';
+import { Upload } from 'lucide-react';
 
 interface PropsIF {
     update?: boolean;
@@ -44,32 +47,44 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const titleName = 'Audio';
 
     return (
-        <PageContainer className="gap-4 p-6">
-            <PageNameComponent name="Create CPT Code" showBackButton={true} />
-            <div className="h-[87vh] flex flex-col bg-gray-50 overflow-hidden">
-                <div className="flex-1 flex overflow-hidden">
-                    <div className="flex-1 grid grid-cols-[1.3fr_1fr] relative overflow-hidden min-h-[87vh]">
-                        <div className="flex flex-col border-r border-gray-200 relative overflow-hidden">
-                            <AudioRecorder
-                                titleName={titleName}
-                                setIsProcessing={setIsProcessing}
-                                setTranscriptionData={setTranscriptionData}
-                                setError={setError}
-                                deleteAudioTrack={deleteAudio}
-                            />
-                        </div>
-                        <div className="relative overflow-hidden min-h-[50vh] max-h-[87vh] xs:hidden">
-                            <ResponseViewer
-                                isProcessing={isProcessing}
-                                transcriptionData={transcriptionData}
-                                tabs={tabs}
-                                titleName={titleName}
-                                error={error}
-                                clearData={clearData}
-                            />
-                        </div>
-                    </div>
-                </div>
+        <PageContainer className="gap-4 p-2 md:p-6">
+            <PageNameComponent name="Create CPT Code" showBackButton={true} >
+                <Button startIcon={<Upload size={16} className='text-gray-500' />} outlined>Export</Button>
+            </PageNameComponent>
+            <div className="hidden md:block overflow-auto flex-col h-full  border-t">
+                <ResizableContainer
+                    left={
+                        <AudioRecorder
+                            titleName={titleName}
+                            setIsProcessing={setIsProcessing}
+                            setTranscriptionData={setTranscriptionData}
+                            setError={setError}
+                            deleteAudioTrack={deleteAudio}
+                        />
+                    }
+                    right={
+                        <ResponseViewer
+                            isProcessing={isProcessing}
+                            transcriptionData={transcriptionData}
+                            tabs={tabs}
+                            titleName={titleName}
+                            error={error}
+                            clearData={clearData}
+                        />
+                    }
+                    initialLeftWidthPercent={60}
+                    minLeftWidthPercent={30}
+                    maxLeftWidthPercent={70}
+                />
+            </div>
+            <div className="block md:hidden overflow-auto  flex-col h-full">
+                <AudioRecorder
+                    titleName={titleName}
+                    setIsProcessing={setIsProcessing}
+                    setTranscriptionData={setTranscriptionData}
+                    setError={setError}
+                    deleteAudioTrack={deleteAudio}
+                />
             </div>
         </PageContainer>
     );

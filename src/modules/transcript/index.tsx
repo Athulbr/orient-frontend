@@ -10,6 +10,7 @@ import TableSearch from '../../components/table-search';
 import TableRow from '../../components/table-row';
 import TableControlBox from '../../components/table-control-box';
 import { tableRowOptions } from '../../global-utils/static-data';
+import { UseTablebuilder } from '../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 
 const TranscriptListPage = () => {
     const navigate = useNavigate();
@@ -35,42 +36,20 @@ const TranscriptListPage = () => {
         getAllProjects();
     }, [tableRows, currentPage, searchText]);
 
-    useSetTitle();
+    // useSetTitle();
 
     return (
         <div className="px-5 w-full">
-            <TableControlBox tableName="Transcripts">
-                <TableSearch searchText={searchText} setSearchText={setSearchText} />
-                <TableRow
-                    options={tableRowOptions}
-                    row={`${tableRows}`}
-                    setRow={(size: string) => {
-                        setCurrentPage(1);
-                        setTableRows(size);
-                    }}
-                />
-                <Button onClick={() => navigate('/transcripts/record')} startIcon={<PlusIcon fill="white" />}>
-                    Create
-                </Button>
-                {/* {permissions?.transcript?.create && (
-                    <Button onClick={() => navigate('/transcripts/record')} startIcon={<PlusIcon fill="white" />}>
-                        Create
-                    </Button>
-                )} */}
-            </TableControlBox>
-
-            <div className="max-h-[calc(100vh-185px)] overflow-y-scroll">
-                <TranscriptTableComponent startIndex={Number(tableRows) * currentPage - Number(tableRows)} />
-            </div>
-
-            {/* {!initialLoading && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.ceil(total / Number(tableRows))}
-                    onPageChange={pageNumber => setCurrentPage(pageNumber)}
-                    loading={loading}
-                />
-            )} */}
+               <UseTablebuilder
+                        name="List Transcript Table"
+                        fluidHeight
+                        // refresh={state.refresh}
+                        // customFunctions={customFunctions}
+                        // customUI={customUI}
+                        // actionButtons={actionButtons}
+                        deletePermission="delete:project"
+                        updatePermission="update:project"
+                    />
         </div>
     );
 };

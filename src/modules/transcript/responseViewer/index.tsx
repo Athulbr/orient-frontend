@@ -78,7 +78,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
 
         if (!transcripts?.content) {
             return (
-                <div className="flex flex-col items-center justify-center text-center p-6 gap-4">
+                <div className="flex flex-col items-center justify-center text-center p-6 gap-4 h-full">
                     <FileText className="w-12 h-12 text-gray-400" />
                     <h3 className="text-lg font-semibold">No Transcription Yet</h3>
                     <p className="text-gray-600">Record and upload audio to see the transcription here.</p>
