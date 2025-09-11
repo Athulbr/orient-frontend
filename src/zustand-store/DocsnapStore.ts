@@ -74,9 +74,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         }
                         updateQueue(fileName, { status: 'failed' });
                     } else if (parsed.status) {
-                        if (processingFiles.length < 2) {
-                            set({ refreshRecord: get().refreshRecord + 1 });
-                        }
                         updateQueue(fileName, { status: parsed.status });
                     }
                 } catch (err) {
