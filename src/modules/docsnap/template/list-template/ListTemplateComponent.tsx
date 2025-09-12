@@ -5,7 +5,7 @@ import { TemplateCardComponent } from './components/TemplateCard';
 
 const ListTemplateComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
-    const { getTemplatesApi, getPredefinedTemplatesApi } = useListTemplatePageApi();
+    const { getTemplatesApi } = useListTemplatePageApi();
 
     useEffect(() => {
         getTemplatesApi();

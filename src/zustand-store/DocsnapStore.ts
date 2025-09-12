@@ -46,49 +46,193 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
     const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, fileName: string, timer: any) => {
         const decoder = new TextDecoder('utf-8');
         let buffer = '';
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-                if (!line.trim()) continue;
-                try {
-                    const parsed = JSON.parse(line);
-                    const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
-
-                    if (parsed.status === 'Complete') {
-                        clearInterval(timer);
-                        if (processingFiles.length < 2) {
-                            set({ refreshRecord: get().refreshRecord + 1 });
+    
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+    
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+    
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    
+                    try {
+                        // Handle SSE format: "data: {json}" or just "{json}"
+                        let jsonString = line;
+                        if (line.startsWith('data: ')) {
+                            jsonString = line.substring(6); // Remove "data: " prefix
                         }
-                        updateQueue(fileName, { status: 'Complete' });
-                    } else if (parsed.status === 'error') {
-                        clearInterval(timer);
-                        if (processingFiles.length < 2) {
-                            set({ refreshRecord: get().refreshRecord + 1 });
+                        
+                        if (!jsonString.trim()) continue;
+                        
+                        console.log('Processing line:', jsonString);
+                        
+                        const parsed = JSON.parse(jsonString);
+                        console.log('Parsed data:', parsed);
+                        
+                        const processingFiles = get().extractionQueue.filter(
+                            queue => queue.status !== 'Complete' && queue.status !== 'failed'
+                        );
+    
+                        // Handle different status types
+                        switch (parsed.status) {
+                            case 'Complete':
+                                handleCompletion(timer, processingFiles, fileName);
+                                break;
+                                
+                            case 'failed':
+                            case 'error':
+                                handleError(timer, processingFiles, fileName);
+                                break;
+                                
+                            case 'Connected':
+                                console.log('SSE connection established');
+                                updateQueue(fileName, { status: 'Processing' });
+                                break;
+                                
+                            default:
+                                if (parsed.status) {
+                                    updateQueue(fileName, { status: parsed.status });
+                                }
+                                break;
                         }
-                        updateQueue(fileName, { status: 'failed' });
-                    } else if (parsed.status) {
-                        updateQueue(fileName, { status: parsed.status });
+                        
+                    } catch (parseError) {
+                        console.warn('Failed to parse SSE message:', parseError, 'Line:', line);
+                        // Don't fail the entire stream for individual parse errors
+                        continue;
                     }
-                } catch (err) {
-                    clearInterval(timer);
-                    const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
-
-                    if (processingFiles.length < 2) {
-                        set({ refreshRecord: get().refreshRecord + 1 });
-                    }
-                    updateQueue(fileName, { status: 'failed' });
-                    console.error('Failed to parse JSON line:', err, line);
                 }
             }
+        } catch (streamError) {
+            console.error('Stream processing error:', streamError);
+            handleError(timer, get().extractionQueue.filter(
+                queue => queue.status !== 'Complete' && queue.status !== 'failed'
+            ), fileName);
+        } finally {
+            // Always clear the timer when stream processing ends
+            if (timer) {
+                clearInterval(timer);
+            }
         }
+    };
+    
+    // Helper function to handle successful completion
+    const handleCompletion = (timer: any, processingFiles: any[], fileName: string) => {
         clearInterval(timer);
+        if (processingFiles.length < 2) {
+            set({ refreshRecord: get().refreshRecord + 1 });
+        }
+        updateQueue(fileName, { status: 'Complete' });
+        console.log(`File ${fileName} processing completed successfully`);
+    };
+    
+    // Helper function to handle errors
+    const handleError = (timer: any, processingFiles: any[], fileName: string) => {
+        clearInterval(timer);
+        if (processingFiles.length < 2) {
+            set({ refreshRecord: get().refreshRecord + 1 });
+        }
+        updateQueue(fileName, { status: 'failed' });
+        console.error(`File ${fileName} processing failed`);
+    };
+    
+    // Alternative version with better error recovery and reconnection logic
+    const processStreamWithReconnection = async (
+        reader: ReadableStreamDefaultReader<Uint8Array>, 
+        fileName: string, 
+        timer: any,
+        maxRetries: number = 3
+    ) => {
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let retryCount = 0;
+    
+        const processWithRetry = async (): Promise<void> => {
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+    
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        
+                        try {
+                            let jsonString = line.startsWith('data: ') ? line.substring(6) : line;
+                            if (!jsonString.trim()) continue;
+                            
+                            const parsed = JSON.parse(jsonString);
+                            
+                            // Reset retry count on successful message
+                            retryCount = 0;
+                            
+                            const processingFiles = get().extractionQueue.filter(
+                                queue => queue.status !== 'Complete' && queue.status !== 'failed'
+                            );
+    
+                            switch (parsed.status) {
+                                case 'Complete':
+                                    handleCompletion(timer, processingFiles, fileName);
+                                    return; // Exit the function
+                                    
+                                case 'failed':
+                                case 'error':
+                                    handleError(timer, processingFiles, fileName);
+                                    return; // Exit the function
+                                    
+                                case 'Connected':
+                                    updateQueue(fileName, { status: 'Processing' });
+                                    break;
+                                    
+                                default:
+                                    if (parsed.status) {
+                                        updateQueue(fileName, { status: parsed.status });
+                                    }
+                                    break;
+                            }
+                            
+                        } catch (parseError) {
+                            console.warn('Parse error for line:', line, parseError);
+                            continue;
+                        }
+                    }
+                }
+            } catch (streamError) {
+                console.error('Stream error:', streamError);
+                
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    console.log(`Retrying stream processing (attempt ${retryCount}/${maxRetries})`);
+                    
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                    
+                    // Attempt to retry (you might need to recreate the reader here)
+                    return processWithRetry();
+                } else {
+                    // Max retries reached
+                    handleError(timer, get().extractionQueue.filter(
+                        queue => queue.status !== 'Complete' && queue.status !== 'failed'
+                    ), fileName);
+                    throw streamError;
+                }
+            }
+        };
+    
+        try {
+            await processWithRetry();
+        } finally {
+            if (timer) {
+                clearInterval(timer);
+            }
+        }
     };
 
     const sendApiRequest = async (file: File, template: any) => {
