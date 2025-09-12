@@ -9,7 +9,6 @@ interface TranscriptCptProps {
 }
 
 const TranscriptCpt = ({ isProcessing, transcriptionData, error }: TranscriptCptProps) => {
-    console.log('transcriptionData:--------->', transcriptionData);
     const renderContent = () => {
         if (error) {
             return (

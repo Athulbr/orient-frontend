@@ -10,6 +10,7 @@ import TranscriptSummary from './summary';
 import TranscriptCpt from './cpt';
 import { Button } from '../../../components/Button';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
+import { useAlertStore } from '../../../components/alert/AlertStore';
 
 interface TabIF {
     id?: string;
@@ -23,15 +24,17 @@ interface ResponseViewerProps {
     tabs: TabIF[];
     titleName?: string;
     clearData?: () => void;
+    onSubmit?: () => void;
 }
 
-const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleName, clearData }: ResponseViewerProps) => {
+const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleName, clearData, onSubmit }: ResponseViewerProps) => {
     const [tabIndex, setTabIndex] = useState(0);
     const [title, setTitle] = useState<string>();
     const [cptCode, setCptCode] = useState<any>();
     const [summary, setSummary] = useState<any>();
     const [transcripts, setTranscripts] = useState<any>();
     const [submit, setSubmit] = useState(false);
+    const { showAlert, closeAlert } = useAlertStore();
     const [exit, setExit] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -40,13 +43,14 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     const extractedData = useTranscriptGroupStore((state: any) => state.extractedData);
 
     useEffect(() => {
+        console.log('transcriptionData on review:--------->', transcriptionData);
         transcriptionData.forEach(item => {
             if (item.filename === 'cpt_codes.txt') setCptCode(item);
             if (item.filename === 'medical_analysis.txt') setSummary(item);
             if (item.filename === 'transcription.txt') setTranscripts(item);
         });
         setTitle(titleName?.toLowerCase());
-    }, [transcriptionData, titleName]);
+    }, [transcriptionData, titleName, id]);
 
     const exportData = async (index: number) => {
         const fileName = index === 0 ? transcripts?.filename : index === 1 ? summary?.filename : cptCode?.filename;
@@ -55,7 +59,6 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     };
 
     const renderContent = () => {
-        console.log('transcripts on first tab:--------->', transcripts);
         if (error) {
             return (
                 <div className="flex flex-col items-center justify-center text-center p-6 gap-4">
@@ -95,13 +98,6 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
         );
     };
 
-    const onSubmit = async (values: any) => {
-        if (currentData?._id) {
-            const res = await updateTranscript(values, currentData._id);
-            if (res) navigate(-1);
-        }
-    };
-
     return (
         <div className="h-full flex flex-col items-center justify-between">
             {/* Tabs */}
@@ -110,20 +106,34 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
             {/* Tab Content */}
             {tabIndex === 0 && <div className="flex-1 w-full overflow-y-auto">{renderContent()}</div>}
             {tabIndex === 1 && <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} />}
-            {(title === 'medical' || title === 'healthcare') && tabIndex === 2 && (
-                <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />
-            )}
+            {/* {(title === 'medical' || title === 'healthcare') && tabIndex === 2 && ( */}
+            <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />
+            {/* )} */}
 
             {/* Action Buttons */}
             {transcripts?.content && (
                 <div className="w-full flex justify-end gap-3 p-3">
-                    <Button onClick={() => setExit(true)}>Close</Button>
-                    <Button onClick={() => setSubmit(true)}>Save</Button>
+                    <Button
+                        onClick={() => {
+                            showAlert({
+                                alertText: 'Are you sure you want to exit, Exit without saving will lose the edited data?',
+                                primaryButtonText: 'Exit',
+                                onPrimaryAction: async () => {
+                                    setExit(true);
+                                    closeAlert();
+                                    navigate('/transcript/list');
+                                }
+                            });
+                        }}
+                    >
+                        Close
+                    </Button>
+                    <Button onClick={onSubmit}>Save</Button>
                 </div>
             )}
 
             {/* Submit Form */}
-            {submit && (
+            {/* {submit && (
                 <>
                     <UseFormbuilder
                         title="Transcription"
@@ -134,7 +144,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
                         onSubmit={onSubmit}
                     />
                 </>
-            )}
+            )} */}
         </div>
     );
 };

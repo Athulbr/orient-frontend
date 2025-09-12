@@ -13,12 +13,13 @@ import { Button } from '../../components/Button';
 interface AudioRecorderProps {
     setIsProcessing?: (val: boolean) => void;
     setTranscriptionData?: (data: any) => void;
+    setZipBlob?: (blob: Blob | null) => void;
     titleName: string;
     setError?: (val: string | null) => void;
     deleteAudioTrack?: boolean;
 }
 
-const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setError, deleteAudioTrack }: AudioRecorderProps) => {
+const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titleName, setError, deleteAudioTrack }: AudioRecorderProps) => {
     const [isRecording, setIsRecording] = useState(false);
     const [voiceRecording, setVoiceRecording] = useState(false);
     const [fileUpload, setFileUpload] = useState(false);
@@ -32,7 +33,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
     const [clicked, setClicked] = useState(false);
     const navigate = useNavigate();
     const { uploadAudio } = useTranscriptGroupStore();
-    const { createTranscript } = useTranscriptStore();
+    const { createTranscript, updateTranscript, currentData } = useTranscriptStore();
     const { id } = useParams();
     // const { showAlert, closeAlert } = useAlertStore();
 
@@ -151,11 +152,12 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                 setTranscription(transcriptions);
 
                 const blob = new Blob([response], { type: 'application/zip' });
-                const file = new File([blob], `${getCurrentDateTime()}.zip`, { type: 'application/zip' });
-                const result = await uploadFileToS3(file);
-
-                const payload = { transcriptGroupId: id || '', transcriptedFile: result?.data?.fileName, transcriptions };
-                createTranscript(payload);
+                setZipBlob?.(blob);
+                // const file = new File([blob], `${getCurrentDateTime()}.zip`, { type: 'application/zip' });
+                const audioFile = new File([audioBlob], `audio-${getCurrentDateTime()}.m4a`, { type: 'audio/m4a' });
+                const result = await uploadFileToS3(audioFile);
+                const payload = { transcriptedFile: result?.data?.fileName, transcriptions };
+                if (currentData?._id) updateTranscript(payload, currentData._id);
             }
         } catch (err) {
             setError?.('Failed to process audio. Try again.');
@@ -190,26 +192,26 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                 <div className="flex justify-center gap-4 flex-wrap">
                     {!isRecording ? (
                         <>
-                            < Button
+                            <Button
                                 onClick={startRecording}
                                 disabled={isRecordingStop}
                                 className="flex items-center text-nowrap gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
                             >
                                 <Mic className="w-5 h-5" /> Start Recording
-                            </ Button>
+                            </Button>
 
-                            < Button
+                            <Button
                                 onClick={uploadAudioFile}
                                 disabled={isUploading}
                                 className="flex text-nowrap items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800 disabled:opacity-50"
                             >
                                 <FileUp className="w-5 h-5" /> Choose File
-                            </ Button>
+                            </Button>
                             <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileChange} className="hidden" />
                         </>
                     ) : (
                         <>
-                            < Button onClick={togglePause} className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800">
+                            <Button onClick={togglePause} className="flex items-center gap-2 px-6 py-3 text-white bg-gray-700 rounded-full hover:bg-gray-800">
                                 {isPaused ? (
                                     <>
                                         <Play className="w-5 h-5" /> Resume
@@ -219,15 +221,18 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                                         <Pause className="w-5 h-5" /> Pause
                                     </>
                                 )}
-                            </ Button>
-                            < Button onClick={stopRecording} className="flex text-nowrap items-center gap-2 px-6 py-3 text-white bg-red-600 rounded-full hover:bg-red-700">
+                            </Button>
+                            <Button
+                                onClick={stopRecording}
+                                className="flex text-nowrap items-center gap-2 px-6 py-3 text-white bg-red-600 rounded-full hover:bg-red-700"
+                            >
                                 <Square className="w-5 h-5" /> Stop Recording
-                            </ Button>
+                            </Button>
                         </>
                     )}
 
                     {/* Upload  Button */}
-                    < Button
+                    <Button
                         onClick={handleUpload}
                         disabled={!audioBlob || isUploading || transcription.length > 0}
                         className="flex items-center gap-2 px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
@@ -242,7 +247,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, titleName, setEr
                                 <Upload className="w-5 h-5" /> Upload
                             </>
                         )}
-                    </ Button>
+                    </Button>
                 </div>
             </div>
 

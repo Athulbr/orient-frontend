@@ -20,9 +20,10 @@ export interface transcriptIF {
 }
 
 export interface createTranscriptPayloadIF {
-  transcriptGroupId: string,
-  transcriptedFile: string,
-  transcriptions: any
+  name?: string,
+  patientId?: string,
+  transcriptedFile?: string,
+  transcriptions?: any
 }
 
 interface RoleState {
