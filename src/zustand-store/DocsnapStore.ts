@@ -251,7 +251,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             formData.append('file', file);
 
 
-            const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V4, {
+            const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V5, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${JSON.parse(token)}` },
                 body: formData
