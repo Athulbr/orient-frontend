@@ -10,6 +10,7 @@ import { ResizableContainer } from '../docsnap/template/update-template/componen
 import { Button } from '../../components/Button';
 import { Upload } from 'lucide-react';
 import { getCurrentDateTime } from '../../global-utils/convert-date-format';
+import { useS3Storage } from '../../zustand-store/S3Storage';
 
 interface PropsIF {
     update?: boolean;
@@ -33,6 +34,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const [zipBlob, setZipBlob] = useState<Blob | null>(null);
     const navigate = useNavigate();
     const { id } = useParams();
+    const { getS3File } = useS3Storage();
     const { updateTranscript, currentData, gettranscriptData, transcriptData } = useTranscriptStore();
 
     useEffect(() => {
@@ -42,8 +44,14 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     }, [id]);
 
     useEffect(() => {
+        const getTranscriptFile = async () => {
+            console.log('transcriptData on create File---->', transcriptData?.transcriptedFile);
+            const uploadedFile = await getS3File(transcriptData?.transcriptedFile || '');
+            console.log('uploadedFile', uploadedFile);
+        };
         if (transcriptData && transcriptData?.transcriptions?.length > 0) {
             setTranscriptionData(transcriptData?.transcriptions || []);
+            getTranscriptFile();
         }
     }, [transcriptData]);
 
