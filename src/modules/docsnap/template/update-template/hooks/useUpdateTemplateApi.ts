@@ -81,11 +81,11 @@ export const useUpdateTemplatePageApi = () => {
     const generateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true }));
-            // const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
-            // const data = convertLLMResponse(res.data?.templateFields || {});
-            // setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
-            const data = convertLLMResponse(newSchema);
-            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false }));
+            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
+            const data = convertLLMResponse(res.data?.templateFields || {});
+            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
+            // const data = convertLLMResponse(newSchema);
+            // setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false }));
             toast.success('Template fields generated successfully');
             return true;
         } catch (error) {
