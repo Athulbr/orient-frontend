@@ -46,60 +46,60 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
     const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, fileName: string, timer: any) => {
         const decoder = new TextDecoder('utf-8');
         let buffer = '';
-    
+
         try {
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-    
+
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split('\n');
                 buffer = lines.pop() || '';
-    
+
                 for (const line of lines) {
                     if (!line.trim()) continue;
-                    
+
                     try {
                         // Handle SSE format: "data: {json}" or just "{json}"
                         let jsonString = line;
                         if (line.startsWith('data: ')) {
                             jsonString = line.substring(6); // Remove "data: " prefix
                         }
-                        
+
                         if (!jsonString.trim()) continue;
-                        
+
                         console.log('Processing line:', jsonString);
-                        
+
                         const parsed = JSON.parse(jsonString);
                         console.log('Parsed data:', parsed);
-                        
+
                         const processingFiles = get().extractionQueue.filter(
                             queue => queue.status !== 'Complete' && queue.status !== 'failed'
                         );
-    
+
                         // Handle different status types
                         switch (parsed.status) {
                             case 'Complete':
                                 handleCompletion(timer, processingFiles, fileName);
                                 break;
-                                
+
                             case 'failed':
                             case 'error':
                                 handleError(timer, processingFiles, fileName);
                                 break;
-                                
+
                             case 'Connected':
                                 console.log('SSE connection established');
                                 updateQueue(fileName, { status: 'Processing' });
                                 break;
-                                
+
                             default:
                                 if (parsed.status) {
                                     updateQueue(fileName, { status: parsed.status });
                                 }
                                 break;
                         }
-                        
+
                     } catch (parseError) {
                         console.warn('Failed to parse SSE message:', parseError, 'Line:', line);
                         // Don't fail the entire stream for individual parse errors
@@ -119,7 +119,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             }
         }
     };
-    
+
     // Helper function to handle successful completion
     const handleCompletion = (timer: any, processingFiles: any[], fileName: string) => {
         clearInterval(timer);
@@ -129,7 +129,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
         updateQueue(fileName, { status: 'Complete' });
         console.log(`File ${fileName} processing completed successfully`);
     };
-    
+
     // Helper function to handle errors
     const handleError = (timer: any, processingFiles: any[], fileName: string) => {
         clearInterval(timer);
@@ -139,65 +139,65 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
         updateQueue(fileName, { status: 'failed' });
         console.error(`File ${fileName} processing failed`);
     };
-    
+
     // Alternative version with better error recovery and reconnection logic
     const processStreamWithReconnection = async (
-        reader: ReadableStreamDefaultReader<Uint8Array>, 
-        fileName: string, 
+        reader: ReadableStreamDefaultReader<Uint8Array>,
+        fileName: string,
         timer: any,
         maxRetries: number = 3
     ) => {
         const decoder = new TextDecoder('utf-8');
         let buffer = '';
         let retryCount = 0;
-    
+
         const processWithRetry = async (): Promise<void> => {
             try {
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-    
+
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
                     buffer = lines.pop() || '';
-    
+
                     for (const line of lines) {
                         if (!line.trim()) continue;
-                        
+
                         try {
                             let jsonString = line.startsWith('data: ') ? line.substring(6) : line;
                             if (!jsonString.trim()) continue;
-                            
+
                             const parsed = JSON.parse(jsonString);
-                            
+
                             // Reset retry count on successful message
                             retryCount = 0;
-                            
+
                             const processingFiles = get().extractionQueue.filter(
                                 queue => queue.status !== 'Complete' && queue.status !== 'failed'
                             );
-    
+
                             switch (parsed.status) {
                                 case 'Complete':
                                     handleCompletion(timer, processingFiles, fileName);
                                     return; // Exit the function
-                                    
+
                                 case 'failed':
                                 case 'error':
                                     handleError(timer, processingFiles, fileName);
                                     return; // Exit the function
-                                    
+
                                 case 'Connected':
                                     updateQueue(fileName, { status: 'Processing' });
                                     break;
-                                    
+
                                 default:
                                     if (parsed.status) {
                                         updateQueue(fileName, { status: parsed.status });
                                     }
                                     break;
                             }
-                            
+
                         } catch (parseError) {
                             console.warn('Parse error for line:', line, parseError);
                             continue;
@@ -206,14 +206,14 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                 }
             } catch (streamError) {
                 console.error('Stream error:', streamError);
-                
+
                 if (retryCount < maxRetries) {
                     retryCount++;
                     console.log(`Retrying stream processing (attempt ${retryCount}/${maxRetries})`);
-                    
+
                     // Wait before retrying
                     await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-                    
+
                     // Attempt to retry (you might need to recreate the reader here)
                     return processWithRetry();
                 } else {
@@ -225,7 +225,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                 }
             }
         };
-    
+
         try {
             await processWithRetry();
         } finally {
@@ -307,7 +307,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             model_id: 'gpt-4o',
                             use_latest: false
                         };
-                        if (template.enableOcr) requestBody.ocr_engine = 'doctr';
+                        if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
                         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
@@ -431,7 +431,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             use_latest: false,
                             template_id: template._id
                         };
-                        if (template.enableOcr) requestBody.ocr_engine = 'doctr';
+                        if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
                         const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);
