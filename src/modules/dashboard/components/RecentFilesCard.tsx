@@ -67,12 +67,14 @@ const RecentFilesCardComponent: React.FC = () => {
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
                                         <RecordStatusCustomUI data={row} />
                                     </td>
-                                    {showPoLink && <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
-                                        <Polink data={row} />
-                                    </td>}
+                                    {showPoLink && (
+                                        <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
+                                            <Polink data={row} />
+                                        </td>
+                                    )}
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
-                                        {/* {formatDate(row.updatedAt)} */}
-                                        {formatDate(row.documentDate, true)} 
+                                        {row.documentDate}
+                                        {/* {formatDate(row.documentDate, true)} */}
                                     </td>
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
