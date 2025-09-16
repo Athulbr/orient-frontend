@@ -164,19 +164,17 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
 
     const uploadAudioFile = () => fileInputRef.current?.click();
     const handleFileChange = (files: FileList) => {
-        console.log('File type---->', files?.[0]);
-
-        // setAudioBlob(null);
-        // setError?.(null);
-        // audioChunksRef.current = [];
-        // if (file) {
-        //     if (!file.type.startsWith('audio/')) {
-        //         setError?.('Please select an audio file.');
-        //         return;
-        //     }
-        //     setFileUpload(true);
-        //     setAudioBlob(file);
-        // }
+        setAudioBlob(null);
+        setError?.(null);
+        audioChunksRef.current = [];
+        if (files?.[0]) {
+            if (!files?.[0].type.startsWith('audio/')) {
+                setError?.('Please select an audio file.');
+                return;
+            }
+            setFileUpload(true);
+            setAudioBlob(files?.[0]);
+        }
     };
 
     const uploadFileToS3 = async (file: File) => {
@@ -235,8 +233,8 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
     };
 
     return (
-        <div className="h-full bg-green-400">
-            <div className="flex gap-4 bg-yellow-300 p-6">
+        <div className="h-full">
+            <div className="flex gap-4  p-6">
                 <label className="flex items-center gap-2">
                     <input type="radio" value="text" checked={sourceType === 'text'} onChange={() => setSourceType('text')} />
                     Text
@@ -255,12 +253,12 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
                 {sourceType === 'text' && (
                     <div className="flex flex-col gap-4">
                         <textarea
-                            className="w-full h-32 border rounded-md p-2"
+                            className="w-full h-80 border rounded-md p-2"
                             placeholder="Type your text here..."
                             value={textInput}
                             onChange={e => setTextInput(e.target.value)}
                         />
-                        <Button onClick={handleUploadText} className="bg-blue-600 text-white">
+                        <Button onClick={handleUploadText} className="bg-[#455a95] text-white">
                             Send Text
                         </Button>
                     </div>
@@ -340,21 +338,24 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
                     </div>
                 )}
 
+                {/* <DragAndDropFileInput onFileDrop={handleFileChange} /> */}
+
                 {sourceType === 'file' && (
-                    <div className="flex flex-col gap-4 justify-center overflow-y-auto bg-red-200">
+                    <div className="flex flex-col gap-4 justify-center overflow-y-auto h-full">
                         {/* <input type="file" accept="audio/*" onChange={handleFileChange} />
                         {file && (
                             <div className="flex items-center gap-2">
                                 <span className="text-sm">{file.name}</span>
                                 <Trash2 className="w-4 h-4 text-red-600 cursor-pointer" onClick={() => setFile(null)} />
                             </div>
-                        )}
+                        )} */}
+
+                        <DragAndDropFileInput onFileDrop={handleFileChange} />
+
                         <Button onClick={handleUpload} className="bg-blue-600 text-white">
                             <Upload className="w-5 h-5" /> Upload File
-                        </Button> */}
-                        <DragAndDropFileInput onFileDrop={handleFileChange} />
+                        </Button>
                     </div>
-                    // <div className="h-full bg-red-200"></div>
                 )}
 
                 {/* Preview */}

@@ -59,6 +59,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     };
 
     const renderContent = () => {
+        console.log('transcripts on review:--------->', transcripts, tabIndex);
         if (error) {
             return (
                 <div className="flex flex-col items-center justify-center text-center p-6 gap-4">
@@ -92,7 +93,9 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
         return (
             <div className="flex flex-col gap-6">
                 <div className="max-h-[calc(100vh-153px)] overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white">
-                    <p className="whitespace-pre-line text-gray-700">{transcripts.content}</p>
+                    <p className="whitespace-pre-line text-gray-700">
+                        {tabIndex === 0 ? transcripts?.content : tabIndex === 1 ? summary?.content : cptCode?.content}
+                    </p>
                 </div>
             </div>
         );
@@ -106,9 +109,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
             {/* Tab Content */}
             {tabIndex === 0 && <div className="flex-1 w-full overflow-y-auto">{renderContent()}</div>}
             {tabIndex === 1 && <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} />}
-            {/* {(title === 'medical' || title === 'healthcare') && tabIndex === 2 && ( */}
-            <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />
-            {/* )} */}
+            {tabIndex === 2 && <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />}
 
             {/* Action Buttons */}
             {transcripts?.content && (

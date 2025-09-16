@@ -12,6 +12,25 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop,
     const [dragging, setDragging] = useState(false);
     const toast = useToastStore();
 
+    const allowedTypes = [
+        'application/pdf',
+        'image/',
+        'audio/',
+        'text/plain',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+    ];
+
+    const isValidFile = (file: File) => {
+        if (onlyImage) return file.type.startsWith('image/');
+        return (
+            file.type.startsWith('image/') ||
+            file.type.startsWith('audio/') ||
+            file.type === 'application/pdf' ||
+            file.type === 'text/plain' ||
+            file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        );
+    };
+
     const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragging(true);
@@ -32,15 +51,13 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop,
             setDragging(false);
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                const validFiles = Array.from(files).filter(file =>
-                    onlyImage ? file.type.startsWith('image/') : file.type.startsWith('application/pdf') || file.type.startsWith('image/')
-                );
+                const validFiles = Array.from(files).filter(isValidFile);
                 if (validFiles.length > 0) {
                     const dataTransfer = new DataTransfer();
                     validFiles.forEach(file => dataTransfer.items.add(file));
                     onFileDrop(dataTransfer.files);
                 } else {
-                    toast.error(`Only ${!onlyImage ? 'PDF and' : ''} image files are allowed`);
+                    toast.error('Only images, PDFs, audio, TXT, or DOCX files are allowed');
                 }
             }
         },
@@ -54,15 +71,13 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop,
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
-            const validFiles = Array.from(files).filter(file =>
-                onlyImage ? file.type.startsWith('image/') : file.type.startsWith('application/pdf') || file.type.startsWith('image/')
-            );
+            const validFiles = Array.from(files).filter(isValidFile);
             if (validFiles.length > 0) {
                 const dataTransfer = new DataTransfer();
                 validFiles.forEach(file => dataTransfer.items.add(file));
                 onFileDrop(dataTransfer.files);
             } else {
-                toast.error(`Only ${!onlyImage ? 'PDF and' : ''} image files are allowed`);
+                toast.error('Only images, PDFs, audio, TXT, or DOCX files are allowed');
                 e.target.value = ''; // Clear the input
             }
         }
@@ -78,7 +93,12 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop,
             onClick={handleClick}
         >
             <input
-                accept={accept || (onlyImage ? 'image/*' : 'application/pdf,image/*')}
+                accept={
+                    accept ||
+                    (onlyImage
+                        ? 'image/*'
+                        : 'application/pdf,image/*,audio/*,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                }
                 id="fileInput"
                 type="file"
                 className="hidden"
@@ -87,7 +107,7 @@ const DragAndDropFileInput: React.FC<DragAndDropFileInputProps> = ({ onFileDrop,
             />
             <FileUp strokeWidth={1.5} size={70} className="text-sky-600" />
             <p className="mt-2 font-semibold text-gray-800">Drag & drop </p>
-            <div className="">
+            <div>
                 or <span className="text-sky-500 underline">Browse </span>
             </div>
         </div>

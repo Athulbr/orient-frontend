@@ -115,7 +115,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
 
   uploadAudio: async (formData: FormData): Promise<any> => {
     try {
-      const URL = `${import.meta.env.VITE_BASR_URL}/transcript/upload_audio/`;
+      const URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
       const response = await fetch(URL, {
         method: 'POST',
         body: formData,

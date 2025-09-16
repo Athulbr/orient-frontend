@@ -43,7 +43,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         }, 2000);
         if (isAuthenticated) {
             instance.logoutRedirect({
-                postLogoutRedirectUri: import.meta.env.VITE_BASR_URL || 'https://demo.makez.ai'
+                postLogoutRedirectUri: import.meta.env.VITE_BASE_URL || 'https://demo.makez.ai'
             });
         }
         const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});

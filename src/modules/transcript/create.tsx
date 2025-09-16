@@ -83,6 +83,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     };
 
     const handleSubmit = async () => {
+        console.log('currentData on create File---->', currentData);
         if (currentData?._id) {
             const payload = {
                 name: currentData?.name,

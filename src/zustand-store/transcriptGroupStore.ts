@@ -101,7 +101,7 @@ const useTranscriptGroupStore = create<RoleState>((set, get) => ({
 
   uploadAudio: async (formData: FormData): Promise<any> => {
     try {
-      const URL = `${import.meta.env.VITE_BASR_URL}/transcript/upload_audio/`;
+      const URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
       const response = await fetch(URL, {
         method: 'POST',
         body: formData,
@@ -134,7 +134,8 @@ const useTranscriptGroupStore = create<RoleState>((set, get) => ({
 
   uploadText: async (formData: FormData): Promise<any> => {
     try {
-      const URL = `${import.meta.env.VITE_BASR_URL}/transcript/upload_text/`;
+      const URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_text/`;
+      console.log('UR--------------->', URL);
       const response = await fetch(URL, {
         method: 'POST',
         body: formData,
