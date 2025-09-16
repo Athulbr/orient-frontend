@@ -1,7 +1,7 @@
 export const formatDate = (iso: string, onlyDate?: boolean): string => {
     try {
+        if (iso === '') return '-';
         if (!iso || typeof iso !== 'string' || !iso.trim()) return 'Error';
-
         const date = new Date(iso.trim());
         if (isNaN(date.getTime())) return 'Error';
 
@@ -15,7 +15,7 @@ export const formatDate = (iso: string, onlyDate?: boolean): string => {
         const pad = (num: number): string => num.toString().padStart(2, '0');
 
         return onlyDate ? `${pad(day)}/${pad(month)}/${year}` : `${pad(day)}/${pad(month)}/${year} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-        
+
     } catch {
         return 'Error';
     }
