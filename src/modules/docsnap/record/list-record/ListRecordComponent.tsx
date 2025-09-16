@@ -7,6 +7,7 @@ import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
+import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -54,7 +55,8 @@ export const ListRecordComponent: React.FC = () => {
 
     const customUI = {
         recordStatus: RecordStatusCustomUI,
-        poLink: Polink
+        poLink: Polink,
+        documentDate: OnlyDateCustomUI
     };
 
     const actionButtons = checkPermission('export:record:ardex')

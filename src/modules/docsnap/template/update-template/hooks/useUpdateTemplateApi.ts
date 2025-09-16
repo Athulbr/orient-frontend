@@ -48,13 +48,17 @@ export const useUpdateTemplatePageApi = () => {
             toast.error('Failed to create template');
         }
     };
-    const updateTemplateApi = async (id: string, requestBody: any) => {
+    const updateTemplateApi = async (id: string, requestBody: any, reload = true) => {
         try {
             setState(prev => ({ ...prev, updatingTemplate: true }));
             const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/template/update/${id}`, requestBody);
             setState(prev => ({ ...prev, id: '', showCreateForm: false, updatingTemplate: false }));
             toast.success('Template updated successfully');
-            navigate('/docsnap/template/list');
+            if (reload) {
+                window.location.reload();
+            } else {
+                navigate('/docsnap/template/list');
+            }
             return true;
         } catch (error) {
             console.error('error:===========', error);
@@ -80,6 +84,8 @@ export const useUpdateTemplatePageApi = () => {
             const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
+            // const data = convertLLMResponse(newSchema);
+            // setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false }));
             toast.success('Template fields generated successfully');
             return true;
         } catch (error) {
@@ -126,4 +132,58 @@ export const useUpdateTemplatePageApi = () => {
         updateTemplateFieldsWithAI,
         regenerateInstructionWithAI
     };
+};
+
+const newSchema = {
+    basic_details: {
+        dealer_name: 'Extract main dealer name from top section (before product details). Ignore buyer/consignee sections.',
+        dealer_branch: 'Extract dealer branch/city from top section. Normalize to Title Case (e.g., Raipur).',
+        sub_dealer: "Extract sub-dealer from 'Buyer', 'Consignee', or 'Ship To' labels.",
+        invoice_number: 'Extract invoice number.',
+        invoice_date: 'Extract invoice date.',
+        delivery_note: 'Extract delivery note number.',
+        delivery_note_date: 'Extract delivery note date.',
+        cgst: 'Extract CGST amount.',
+        sgst: 'Extract SGST amount.',
+        total_tax: 'Extract total tax (CGST + SGST).',
+        total_amount: 'Extract total invoice amount.'
+    },
+    consignee: {
+        name: 'Extract consignee/ship-to name.',
+        street: 'Extract consignee street address.',
+        city: 'Extract consignee city.',
+        state: 'Extract consignee state.',
+        zip: 'Extract consignee ZIP code.',
+        gstin_uin: 'Extract consignee GSTIN/UIN if present.'
+    },
+    buyer: {
+        name: 'Extract buyer/bill-to name.',
+        street: 'Extract buyer street address.',
+        city: 'Extract buyer city.',
+        state: 'Extract buyer state.',
+        zip: 'Extract buyer ZIP code.',
+        gstin_uin: 'Extract buyer GSTIN/UIN if present.'
+    },
+    line_items: [
+        {
+            table_instruction:
+                'CRITICAL: Use image for table extraction, not OCR text. OCR often corrupts table data. Cross-reference table columns visually. Correct OCR mistakes by analyzing remaining data patterns (e.g., if quantities are 1,2,3,1222 → correct 1222 to reasonable value). Each row with HSN/SAC = one line item. Verify calculations: amount = quantity × rate ± discount ± tax. Check SGST = CGST (usually equal).',
+            serial_no: 'Extract serial number or assign sequential order.',
+            description: 'Extract item description. Verify against image if OCR seems corrupted.',
+            hsn_sac: 'Extract HSN/SAC code. Cross-check with image for accuracy.',
+            quantity: 'Extract quantity as integer. CRITICAL: Correct OCR errors by comparing with other quantities and logical patterns.',
+            rate: 'Extract rate as float. Verify calculations match amount = quantity × rate. Default: 0.0 if missing.',
+            per: "Extract 'per' unit if available.",
+            discount: 'Extract discount percentage or amount. Check if calculations are consistent. Default: 0 if missing.',
+            sgst: 'Extract SGST amount. Should equal CGST in most cases.',
+            cgst: 'Extract CGST amount. Should equal SGST in most cases.',
+            amount: 'Extract line item amount. Verify: amount = (quantity × rate) - discount + taxes.'
+        }
+    ],
+    bank_details: {
+        bank_name: 'Extract company bank name.',
+        account_number: 'Extract bank account number (may be labeled as A/c No.).',
+        branch_name: 'Extract branch name if available.',
+        ifsc_code: 'Extract IFSC/branch code if available.'
+    }
 };

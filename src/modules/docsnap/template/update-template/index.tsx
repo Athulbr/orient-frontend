@@ -19,6 +19,8 @@ export interface UpdateTemplateStateIF {
     userQuery:string;
     updatingTemplateFieldsWithAI:boolean;
     visionOcrText:string[]    
+    noS3File:boolean
+    showSettingsForm:boolean
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
@@ -31,7 +33,9 @@ const initialState: UpdateTemplateStateIF = {
     generatingTemplateFieldsWithAI: false,
     userQuery:'',
     updatingTemplateFieldsWithAI:false,
-    visionOcrText:[]
+    visionOcrText:[],
+    noS3File:false,
+    showSettingsForm:false
 };
 
 const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
@@ -56,82 +60,157 @@ const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
 
 export default UpdateTemplatePage;
 
-const sampleInput = {
-    basic_details: {
-        group_instruction: 'Instructions for extracting basic details from OCR text',
-        po_number: 'Instructions for extracting purchase order number from OCR text',
-        date: 'Instructions for extracting purchase order date number from OCR text'
-    },
-    line_items: [
-        {
-            group_instruction: 'Instruction for table extraction',
-            sku_number: 'Instructions for extracting SKU number from OCR text',
-            description: 'Instructions for extracting description from OCR text'
-        }
-    ]
-};
 
-const sampleOutput = [
+const fields=[
     {
-        name: 'Basic Details',
-        dataType: 'object',
-        jsonKey: 'basic_details',
-        subFields: [
+        "name": "Basic Details",
+        "dataType": "object",
+        "jsonKey": "basic_details",
+        "excludeExtraction": false,
+        "description": "Basic Details",
+        "instruction": "Extract Basic Details of the product.",
+        "isHidden": false,
+        "subFields": [
             {
-                name: 'PO Number',
-                jsonKey: 'po_number',
-                dataType: 'str',
-                description: 'PO Number',
-                instruction: 'Instructions for extracting purchase order number from OCR text',
-                excludeExtraction: false,
-                isHidden: false,
-                required: false
+                "name": "SKU Number",
+                "dataType": "str",
+                "jsonKey": "sku_number",
+                "required": false,
+                "excludeExtraction": false,
+                "isHidden": false,
+                "_id": "68c7c0b39fa94d034c7cb81b"
             },
             {
-                name: 'Date',
-                jsonKey: 'date',
-                dataType: 'str',
-                description: 'Date',
-                instruction: 'Instructions for extracting purchase order date number from OCR text',
-                excludeExtraction: false,
-                isHidden: false,
-                required: false
+                "name": "Vendor Product Name",
+                "dataType": "str",
+                "jsonKey": "vendor_product_name",
+                "required": false,
+                "excludeExtraction": false,
+                "isHidden": false,
+                "_id": "68c7c0b39fa94d034c7cb81c",
+                "description": "Product name",
+                "instruction": "Extract Product name, You can find it in a ocr text.",
+                "guidelines": ""
+            },
+            {
+                "name": "RM Product Name",
+                "dataType": "str",
+                "jsonKey": "rm_product_name",
+                "required": false,
+                "excludeExtraction": false,
+                "isHidden": false,
+                "_id": "68c7c0b39fa94d034c7cb81d"
+            },
+            {
+                "name": "Product Sub Title",
+                "dataType": "str",
+                "jsonKey": "product_sub_title",
+                "required": false,
+                "excludeExtraction": false,
+                "isHidden": false,
+                "_id": "68c7c0b39fa94d034c7cb81e",
+                "description": "Product sub-title",
+                "instruction": "Extract Product sub-title, You can find it in a ocr text.",
+                "guidelines": ""
+            },
+            {
+                "name": "URL File Path",
+                "dataType": "str",
+                "jsonKey": "url_file_path",
+                "required": false,
+                "excludeExtraction": false,
+                "isHidden": false,
+                "_id": "68c7c0b39fa94d034c7cb81f"
             }
         ],
-        description: 'basic details',
-        instruction: 'Instructions for extracting basic details from OCR text',
-        excludeExtraction: false,
-        isHidden: false
+        "_id": "68c7c0b39fa94d034c7cb81a"
     },
     {
-        name: 'Line Items',
-        dataType: 'array',
-        jsonKey: 'line_items',
-        subFields: [
+        "name": "Descriptions",
+        "dataType": "object",
+        "jsonKey": "descriptions",
+        "subFields": [
             {
-                name: 'SKU Number',
-                jsonKey: 'sku_number',
-                dataType: 'str',
-                description: 'SKU',
-                instruction: 'Instructions for extracting SKU number from OCR text',
-                excludeExtraction: false,
-                isHidden: false,
-                required: false
+                "name": "Manufacturer Product Short Description",
+                "jsonKey": "manufacturer_product_short_description",
+                "dataType": "str",
+                "description": "Manufacturer Product Short Description",
+                "instruction": "Extract Manufacturer Product Short Description",
+                "guidelines": "",
+                "excludeExtraction": false,
+                "isHidden": false,
+                "required": false
             },
             {
-                name: 'Description',
-                jsonKey: 'description',
-                dataType: 'str',
-                description: 'description',
-                instruction: 'Instructions for extracting description from OCR text',
-                excludeExtraction: false,
-                isHidden: false,
-                required: false
+                "name": "Manufacturer Product Long Description",
+                "jsonKey": "manufacturer_product_long_description",
+                "dataType": "str",
+                "description": "Manufacturer Product Long Description",
+                "instruction": "Extract Manufacturer Product Long Description",
+                "guidelines": "",
+                "excludeExtraction": false,
+                "isHidden": false,
+                "required": false
+            },
+            {
+                "name": "Product Benefits",
+                "jsonKey": "product_benefits",
+                "dataType": "str",
+                "description": "Product Benefits",
+                "instruction": "Extract Product Benefits",
+                "guidelines": "",
+                "excludeExtraction": false,
+                "isHidden": false,
+                "required": false
             }
         ],
-        description: 'line items',
-        instruction: 'Instruction for table extraction',
-        excludeExtraction: false,
-        isHidden: false
+        "description": "Descriptions",
+        "instruction": "You can find Descriptions in ocr text.",
+        "excludeExtraction": false,
+        "isHidden": false
+    },
+    {
+        "name": "Product Specifications",
+        "dataType": "array",
+        "jsonKey": "product_specifications",
+        "subFields": [
+            {
+                "name": "Serial Number",
+                "jsonKey": "serial_number",
+                "dataType": "str",
+                "description": "Serial Number",
+                "instruction": "Extract Serial Number, If not add from 1 to n.",
+                "guidelines": "",
+                "excludeExtraction": false,
+                "isHidden": false,
+                "required": false
+            },
+            {
+                "name": "Attribute",
+                "jsonKey": "attribute",
+                "dataType": "str",
+                "description": "Attributes",
+                "instruction": "Extract attributes like \"height\", \"weight\", etc.",
+                "guidelines": "",
+                "excludeExtraction": false,
+                "isHidden": false,
+                "required": false
+            },
+            {
+                "name": "Value",
+                "jsonKey": "value",
+                "dataType": "str",
+                "description": "Value",
+                "instruction": "Extract Value of the attribute, ex: \"20\", \"Yes\", etc.",
+                "guidelines": "",
+                "excludeExtraction": false,
+                "isHidden": false,
+                "required": false
+            }
+        ],
+        "description": "Product Specifications",
+        "instruction": "Extract Product Specifications, You can find in ocr text.",
+        "excludeExtraction": false,
+        "isHidden": false
     }
-];
+]

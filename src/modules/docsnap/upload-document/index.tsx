@@ -12,7 +12,7 @@ interface UploadDocumentComponentIF {
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV5 } = useDocsnapStore();
+    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV1 } = useDocsnapStore();
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
@@ -26,7 +26,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             getTemplate();
         }
     }, [template?._id]);
-    const onFileDrop = async (files: FileList) => {
+    const onFileDrop = async (files: File[]) => {
         const tenantSettings: any = await getTenantSettings();
         const extractionEngine = tenantSettings?.extractionEngine;
         const extractionType = tenantSettings?.extractionType;
@@ -39,12 +39,8 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 toast.error('Template not found');
                 return;
             }
-            if (extractionType === 'multiPO') {
-                addToNodeExtractorV5(files, templateData || {}, (path: string) => navigate(path), 'multiple');
-            } else {
-                addToNodeExtractorV5(files, templateData || '', (path: string) => navigate(path), 'single');
-                // addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
-            }
+            addToNodeExtractorV1(files, templateData);
+
         } else {
             if (extractionType === 'multiPO') {
                 addToPythonExtractionMultiPO(files, templateData || {});
@@ -64,7 +60,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput onFileDrop={onFileDrop} />
+                <DragAndDropFileInput accept='application/pdf,image/*' onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

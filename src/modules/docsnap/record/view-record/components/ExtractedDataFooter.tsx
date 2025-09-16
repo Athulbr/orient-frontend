@@ -31,13 +31,13 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             entity_schema: convertedJson,
             include_confidence: true,
             include_bbox: true,
-            confidence_threshold: 0.5,
+            confidence_threshold: 0.2,
             s3_file_name: state.record?.pdfFileName,
             provider_id: 'azure',
             model_id: 'gpt-4o',
             use_latest: false
         };
-        requestBody.ocr_engine = 'doctr';
+        requestBody.ocr_engine = 'doctr'; // 'google_vision'; // 'doctr';
         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
         const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);

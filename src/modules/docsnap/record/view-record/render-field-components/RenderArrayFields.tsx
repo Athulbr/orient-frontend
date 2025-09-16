@@ -37,7 +37,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
     const addLineItem = () => {
         // Get the column names from the first row to create the same structure
 
-        const crnt = ['Item', 'Description', 'Quantity', 'UM', 'Delivery Date', 'Price', 'Net Amount'];
 
         const firstRow = Object.values(state.arrayFields[0])[0] || {};
 
@@ -127,7 +126,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                 {formatFieldLabel(label)}
                                             </th>
                                         ))}
-                                        {Object.keys(lineItems).length > 1 && <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>}
+                                    <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -178,10 +177,10 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                     />
                                                 );
                                             })}
-                                            {Object.keys(lineItems).length > 1 && (
+                                            
                                                 <td className="h-full border py-2 pl-9">
                                                     <Trash2
-                                                        tabIndex={0}
+                                                        tabIndex={-1}
                                                         onClick={() => deleteLineItem(mainIndex, rowIndex)}
                                                         onKeyDown={e => {
                                                             if (e.key === 'Enter') {
@@ -192,7 +191,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                         className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
                                                     />
                                                 </td>
-                                            )}
                                         </tr>
                                     ))}
                                 </tbody>

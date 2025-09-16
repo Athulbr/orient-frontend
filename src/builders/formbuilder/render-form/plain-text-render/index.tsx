@@ -65,6 +65,7 @@ export const validatePlainText = (value: string, config: FieldConfigIF): string 
     if (config.numbers) allowedChars += '0-9';
     if (config.emptySpace) allowedChars += ' ';
     if (config.comma) allowedChars += ',';
+    allowedChars += '\\n\\r–”“';
     if (config.allowedSpecialCharacters) {
         // Remove commas and escape other regex special characters
         const safeSpecials = config.allowedSpecialCharacters.replace(/,/g, '').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -72,7 +73,7 @@ export const validatePlainText = (value: string, config: FieldConfigIF): string 
     }
 
     // Validate only allowed characters if any rules were set
-    if (allowedChars) {
+    if (allowedChars && config.allowedSpecialCharacters !== 'all') {
         const specialCharsRegex = new RegExp(`^[${allowedChars}]*$`);
         if (!specialCharsRegex.test(value)) {
             return 'Invalid characters entered.';

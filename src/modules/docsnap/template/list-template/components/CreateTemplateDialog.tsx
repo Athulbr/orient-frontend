@@ -127,7 +127,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
 const FileUploadUIComponent = ({ closeDialog }: { closeDialog: () => void }) => {
     const navigate = useNavigate();
     const [uploading, setUploading] = useState(false);
-    const onFileDrop = async (files: FileList) => {
+    const onFileDrop = async (files: File[]) => {
         setUploading(true);
         const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, files[0] as File);
         navigate(`/docsnap/template/create/${s3Response.data?.fileName}`);
@@ -136,7 +136,7 @@ const FileUploadUIComponent = ({ closeDialog }: { closeDialog: () => void }) => 
     };
     return (
         <div className="flex h-[50vh] w-full flex-col items-center justify-center">
-            {uploading ? <FullScreenLoader text="Uploading Document" /> : <DragAndDropFileInput onFileDrop={onFileDrop} />}
+            {uploading ? <FullScreenLoader text="Uploading Document" /> : <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />}
         </div>
     );
 };

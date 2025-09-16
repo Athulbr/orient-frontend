@@ -85,6 +85,76 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                         </div>
                     </div>
                 );
+            case 'Converting File':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Converting File</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={10} />
+                            <span className="text-[10px] text-amber-500">10%</span>
+                        </div>
+                    </div>
+                );
+            case 'Extracting Text':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Extracting Text</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={20} />
+                            <span className="text-[10px] text-amber-500">20%</span>
+                        </div>
+                    </div>
+                );
+            case 'Simplifying Vision Data':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Simplifying Vision Data</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={30} />
+                            <span className="text-[10px] text-amber-500">30%</span>
+                        </div>
+                    </div>
+                );
+            case 'Generating Prompt':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Generating Prompt</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={40} />
+                            <span className="text-[10px] text-amber-500">40%</span>
+                        </div>
+                    </div>
+                );
+            case 'Generating Response':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Generating Response</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={50} />
+                            <span className="text-[10px] text-amber-500">50%</span>
+                        </div>
+                    </div>
+                );
+            case 'Mapping Bounding Box':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Mapping Bounding Box</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={80} />
+                            <span className="text-[10px] text-amber-500">80%</span>
+                        </div>
+                    </div>
+                );
+            case 'Saving Data':
+                return (
+                    <div className="flex flex-col text-xs">
+                        <span className="text-amber-500">Saving Data</span>
+                        <div className="flex items-center gap-3">
+                            <ProgressBar value={90} />
+                            <span className="text-[10px] text-amber-500">90%</span>
+                        </div>
+                    </div>
+                );
             case 'OCR Processing':
                 return (
                     <div className="flex flex-col text-xs">
@@ -98,6 +168,10 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
             case 'Complete':
                 return <CheckCircle2 className="text-green-500" />;
             case 'failed':
+                return <CircleAlert className="text-red-500" />;
+            case 'Completed':
+                return <CheckCircle2 className="text-green-500" />;
+            case 'Failed':
                 return <CircleAlert className="text-red-500" />;
             default:
                 return <p className="rounded bg-amber-100 px-2 py-1 text-sm text-amber-500">Processing</p>;
@@ -120,8 +194,9 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 className={cn('flex w-full items-center justify-between border-b p-4 text-lg font-semibold', 'cursor-grab active:cursor-grabbing select-none')}
                 onMouseDown={handleMouseDown}
             >
-                Extraction Status
+                Extraction Status 
                 <div className="flex gap-3 items-center">
+                <span className="text-sm text-green-500 font-light">({extractionQueue.filter(i => i.status === 'Complete').length}/{extractionQueue.length})</span>
                     {minimize ? (
                         <ChevronRight
                             size={22}
@@ -170,7 +245,7 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto p-4">
                     {extractionQueue.map((file: any, idx: number) => (
                         <div key={idx} className={cn('flex items-center justify-between gap-2')}>
-                            <div className="truncate text-sm">{file.fileName}&nbsp;&nbsp;<span className='text-sm text-green-600'>( {file.time}s )</span></div>
+                            <div className='flex justify-between items-center'><p  className="truncate text-sm">{file.fileName}</p>&nbsp;&nbsp;<span className='text-sm text-nowrap text-green-600'>( {file.time}s )</span></div>
                             {getStatusUI(file.status)}
                         </div>
                     ))}
