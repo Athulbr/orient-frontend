@@ -26,7 +26,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             getTemplate();
         }
     }, [template?._id]);
-    const onFileDrop = async (files: FileList) => {
+    const onFileDrop = async (files: File[]) => {
         const tenantSettings: any = await getTenantSettings();
         const extractionEngine = tenantSettings?.extractionEngine;
         const extractionType = tenantSettings?.extractionType;
@@ -60,7 +60,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput onFileDrop={onFileDrop} />
+                <DragAndDropFileInput accept='application/pdf,image/*' onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

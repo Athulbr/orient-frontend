@@ -117,7 +117,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         const sectionList = [...state.sectionList];
         sectionList.push({
             name: 'New Section',
-            dataType: 'object',
+            dataType: 'dict',
             jsonKey: 'new_section',
             subFields: [
                 {
@@ -133,7 +133,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         const sectionList = [...state.sectionList];
         sectionList.push({
             name: 'New Table',
-            dataType: 'array',
+            dataType: 'list',
             jsonKey: 'new_table',
             subFields: [
                 {

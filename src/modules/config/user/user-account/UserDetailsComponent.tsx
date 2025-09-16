@@ -64,7 +64,7 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
         getFile();
     }, [state?.user?.profilePicture]);
 
-    const handleUpload = async (files: FileList) => {
+    const handleUpload = async (files: File[]) => {
         const s3Response = await uploadS3File(files[0]);
         await updateProfilePicture(s3Response.fileName);
         setOpenDialog(false);
@@ -101,7 +101,7 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
             </div>
             <DialogComponent isOpen={openDialog} closeDialog={() => setOpenDialog(false)}>
                 <div className="flex h-[50vh] w-[50vw] flex-col gap-4 rounded-lg p-4 shadow-lg">
-                    <DragAndDropFileInput accept="image/*" onFileDrop={handleUpload} />
+                    <DragAndDropFileInput accept="image/*" onFilesChange={handleUpload} />
                 </div>
             </DialogComponent>
         </div>

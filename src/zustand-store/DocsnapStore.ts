@@ -15,11 +15,11 @@ interface DocsnapStoreIF {
     extractionQueue: ExtractionItem[];
     clearExtractionQueue: () => void;
     // Python
-    addToPythonExtraction: (files: FileList, template: any) => Promise<any>;
-    addToPythonExtractionMultiPO: (files: FileList, template: any) => Promise<any>;
+    addToPythonExtraction: (files: File[], template: any) => Promise<any>;
+    addToPythonExtractionMultiPO: (files: File[], template: any) => Promise<any>;
     trainChatWithDocumentEngine: (s3fileName: string, s3Url: string) => Promise<any>;
     // Node Js
-    addToNodeExtractorV1: (files: FileList, template: any) => Promise<void>;
+    addToNodeExtractorV1: (files: File[], template: any) => Promise<void>;
 }
 
 export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
@@ -251,6 +251,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             formData.append('file', file);
 
 
+            // const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_DATA_ENTRY, {
             const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V5, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${JSON.parse(token)}` },
@@ -275,7 +276,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
 
         // ================================================= Python =====================================================
 
-        addToPythonExtraction: async (files: FileList, template: any) => {
+        addToPythonExtraction: async (files: File[], template: any) => {
             Array.from(files).forEach(async (file, index) => {
                 const sendApiRequest = async () => {
                     try {
@@ -398,7 +399,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                 }, index * 100);
             });
         },
-        addToPythonExtractionMultiPO: async (files: FileList, template: any) => {
+        addToPythonExtractionMultiPO: async (files: File[], template: any) => {
             Array.from(files).forEach(async (file, index) => {
                 const sendApiRequest = async () => {
                     try {
@@ -579,7 +580,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
 
         // ================================================= Node Js =====================================================
 
-        addToNodeExtractorV1: async (files: FileList, template: any) => {
+        addToNodeExtractorV1: async (files, template) => {
             for (const [index, file] of Array.from(files).entries()) {
                 removeCompletedFiles();
                 sendApiRequest(file, template);
