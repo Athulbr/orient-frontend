@@ -79,7 +79,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                         <SingleSelect
                             className="min-w-40"
                             value={selectedTenantFromSessionStorage}
-                            onValueChange={e => setSelectedTenant(e)}
+                            onValueChange={e => {
+                                setSelectedTenant(e);
+                                window.location.reload();
+                            }}
                             options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
                         />
                     )}

@@ -72,14 +72,14 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     tenantSettingResponse: "",
     selectedTenant: null,
     submitTenantSettings: async (settings?: any) => {
-        if (!get().selectedTenant) {
+        if (!get().selectedTenant && !window.sessionStorage.getItem('selectedTenant')) {
             useToastStore.getState().error('Tenant not selected');
             return;
         }
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/settings/submit`, {
                 settings,
-                tenantId: get().selectedTenant
+                tenantId: !get().selectedTenant ? window.sessionStorage.getItem('selectedTenant') : get().selectedTenant
             });
             set({ tenantSettings: settings, tenantSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
@@ -97,16 +97,20 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             if (res.data === null) {
                 set({ tenantSettings: {} });
             }
-            set({ tenantSettings: res.data.settings });
-            return res.data.settings;
+            set({ tenantSettings: res?.data?.settings });
+            return res?.data?.settings;
         } catch (error) {
             console.log(error);
         }
     },
-    setSelectedTenant: (tenant: any) => {
+    setSelectedTenant: async (tenant: any) => {
         window.sessionStorage.setItem('selectedTenant', tenant);
+        const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list/${tenant}`);
+        if (res.data === null) {
+            set({ tenantSettings: {} });
+        }
+        set({ tenantSettings: res?.data?.settings });
         set({ selectedTenant: tenant });
-        get().getTenantSettings();
     },
     // ============================== TENANT SETTINGS ===============================
 }));
