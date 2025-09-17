@@ -43,11 +43,11 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
         }
     }, [id]);
 
+    console.log('Transcript data on row click---->', transcriptData);
+
     useEffect(() => {
         const getTranscriptFile = async () => {
-            console.log('transcriptData on create File---->', transcriptData?.transcriptedFile);
             const uploadedFile = await getS3File(transcriptData?.transcriptedFile || '');
-            console.log('uploadedFile', uploadedFile);
         };
         if (transcriptData && transcriptData?.transcriptions?.length > 0) {
             setTranscriptionData(transcriptData?.transcriptions || []);
@@ -83,7 +83,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     };
 
     const handleSubmit = async () => {
-        console.log('currentData on create File---->', currentData);
         if (currentData?._id) {
             const payload = {
                 name: currentData?.name,

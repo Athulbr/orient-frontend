@@ -47,7 +47,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
         transcriptionData.forEach(item => {
             if (item.filename === 'cpt_codes.txt') setCptCode(item);
             if (item.filename === 'medical_analysis.txt') setSummary(item);
-            if (item.filename === 'transcription.txt') setTranscripts(item);
+            if (item.filename === 'source_text.txt') setTranscripts(item);
         });
         setTitle(titleName?.toLowerCase());
     }, [transcriptionData, titleName, id]);
@@ -59,7 +59,6 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     };
 
     const renderContent = () => {
-        console.log('transcripts on review:--------->', transcripts, tabIndex);
         if (error) {
             return (
                 <div className="flex flex-col items-center justify-center text-center p-6 gap-4">

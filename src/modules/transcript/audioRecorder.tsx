@@ -61,7 +61,45 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
         };
     }, []);
 
-    const handleUploadText = async () => {
+    // const handleUploadText = async () => {
+    //     if (!textInput.trim()) {
+    //         setError?.('Please type something to upload.');
+    //         return;
+    //     }
+    //     setIsProcessing?.(true);
+
+    //     try {
+    //         // 1️⃣ Create a .txt file from textInput
+    //         const blob = new Blob([textInput], { type: 'text/plain' });
+    //         const textFile = new File([blob], `typed-${Date.now()}.txt`, {
+    //             type: 'text/plain'
+    //         });
+
+    //         // 2️⃣ Prepare FormData for API
+    //         const fd = new FormData();
+    //         fd.append('file', textFile);
+
+    //         // 3️⃣ Call your existing API
+    //         const response: any = await uploadText(fd); // <-- same function you use for audio
+
+    //         if (response) {
+    //             // If your API returns a zip like with audio
+    //             const transcriptions = await processZipResponse(response);
+    //             setTranscriptionData?.(transcriptions);
+
+    //             const zipBlob = new Blob([response], { type: 'application/zip' });
+    //             setZipBlob?.(zipBlob);
+    //         }
+    //     } catch (err) {
+    //         console.error(err);
+    //         setError?.('Failed to process text.');
+    //         setTranscriptionData?.([]);
+    //     } finally {
+    //         setIsProcessing?.(false);
+    //     }
+    // };
+
+    const handleText = async () => {
         if (!textInput.trim()) {
             setError?.('Please type something to upload.');
             return;
@@ -69,21 +107,10 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
         setIsProcessing?.(true);
 
         try {
-            // 1️⃣ Create a .txt file from textInput
-            const blob = new Blob([textInput], { type: 'text/plain' });
-            const textFile = new File([blob], `typed-${Date.now()}.txt`, {
-                type: 'text/plain'
-            });
-
-            // 2️⃣ Prepare FormData for API
-            const fd = new FormData();
-            fd.append('file', textFile);
-
-            // 3️⃣ Call your existing API
-            const response: any = await uploadText(fd); // <-- same function you use for audio
+            const payload = { medical_text: textInput };
+            const response: any = await uploadText(payload);
 
             if (response) {
-                // If your API returns a zip like with audio
                 const transcriptions = await processZipResponse(response);
                 setTranscriptionData?.(transcriptions);
 
@@ -98,13 +125,6 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
             setIsProcessing?.(false);
         }
     };
-
-    // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const selected = e.target.files?.[0];
-    //     if (selected) {
-    //         setFile(selected);
-    //     }
-    // };
 
     const startRecording = async () => {
         try {
@@ -163,17 +183,32 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
     };
 
     const uploadAudioFile = () => fileInputRef.current?.click();
-    const handleFileChange = (files: FileList) => {
+    const handleFileDrop = (files: FileList) => {
         setAudioBlob(null);
         setError?.(null);
+        console.log('file type------->', files?.[0].type);
         audioChunksRef.current = [];
-        if (files?.[0]) {
-            if (!files?.[0].type.startsWith('audio/')) {
-                setError?.('Please select an audio file.');
-                return;
-            }
+        if (files?.[0].type.startsWith('audio/')) {
             setFileUpload(true);
             setAudioBlob(files?.[0]);
+        } else {
+            setFile(files?.[0]);
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            setAudioBlob(null);
+            setError?.(null);
+            console.log('file type------->', files[0].type);
+            audioChunksRef.current = [];
+            if (files?.[0].type.startsWith('audio/')) {
+                setFileUpload(true);
+                setAudioBlob(files?.[0]);
+            } else {
+                setFile(files?.[0]);
+            }
         }
     };
 
@@ -186,9 +221,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
     };
 
     const handleUpload = async () => {
-        console.log('Audio blob---->', audioBlob);
-
-        if (!audioBlob) return setError?.('No audio file to upload.');
+        if (!audioBlob && !file) return setError?.('No audio file to upload.');
 
         try {
             setIsUploading(true);
@@ -196,8 +229,9 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
             setError?.(null);
 
             const fd = new FormData();
-            fd.append('file', audioBlob, 'recording.m4a');
-            const response: any = await uploadAudio(fd);
+            if (audioBlob) fd.append('file', audioBlob, 'recording.m4a');
+            if (!audioBlob && file) fd.append('file', file, file.name);
+            const response: any = await uploadAudio(fd, `${file ? 'text' : 'audio'}`);
 
             if (response) {
                 const transcriptions = await processZipResponse(response);
@@ -207,8 +241,11 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
                 const blob = new Blob([response], { type: 'application/zip' });
                 setZipBlob?.(blob);
                 // const file = new File([blob], `${getCurrentDateTime()}.zip`, { type: 'application/zip' });
-                const audioFile = new File([audioBlob], `audio-${getCurrentDateTime()}.m4a`, { type: 'audio/m4a' });
-                const result = await uploadFileToS3(audioFile);
+                const fileToUpload = audioBlob ? new File([audioBlob], `audio-${getCurrentDateTime()}.m4a`, { type: 'audio/m4a' }) : file;
+                if (!fileToUpload) {
+                    throw new Error('No audio file available to upload');
+                }
+                const result = await uploadFileToS3(fileToUpload);
                 const payload = { transcriptedFile: result?.data?.fileName, transcriptions };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
             }
@@ -258,7 +295,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
                             value={textInput}
                             onChange={e => setTextInput(e.target.value)}
                         />
-                        <Button onClick={handleUploadText} className="bg-[#455a95] text-white">
+                        <Button onClick={handleText} className="bg-[#455a95] text-white">
                             Send Text
                         </Button>
                     </div>
@@ -350,7 +387,7 @@ const AudioRecorder = ({ setIsProcessing, setTranscriptionData, setZipBlob, titl
                             </div>
                         )} */}
 
-                        <DragAndDropFileInput onFileDrop={handleFileChange} />
+                        <DragAndDropFileInput onFileDrop={handleFileDrop} />
 
                         <Button onClick={handleUpload} className="bg-blue-600 text-white">
                             <Upload className="w-5 h-5" /> Upload File

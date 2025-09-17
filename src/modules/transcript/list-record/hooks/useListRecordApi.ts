@@ -13,7 +13,7 @@ export const useListRecordApi = () => {
 
     const createRecordApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, requestBody);
+            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/transcript/create`, requestBody);
             toast.success('Record created successfully');
             return res;
         } catch (error) {
@@ -22,7 +22,7 @@ export const useListRecordApi = () => {
     };
     const updateRecordApi = async (requestBody: any, id: string) => {
         try {
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${id}`, requestBody);
+            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/transcript/update/${id}`, requestBody);
             toast.success('Record updated successfully');
         } catch (error) {
             toast.error('Failed to update record');
@@ -30,7 +30,7 @@ export const useListRecordApi = () => {
     };
     const deleteRecordApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/history/delete/${id}`);
+            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/transcript/delete/${id}`);
             setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
             toast.success('Record deleted successfully');
         } catch (error) {
