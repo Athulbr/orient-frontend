@@ -17,14 +17,14 @@ const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
     const { state, setState } = useViewRecordState();
     const { sendMessage, sendMessageToNode } = useViewRecordApi();
     const navigate = useNavigate();
-    const { getUserSettings, userSettings } = useSettingsStore();
+    const { getTenantSettings, tenantSettings } = useSettingsStore();
 
     useEffect(() => {
-        if (userSettings?.extractionEngine) return;
-        getUserSettings();
+        if (tenantSettings?.extractionEngine) return;
+        getTenantSettings();
     }, []);
     const sendMessageHandler = async (message: string) => {
-        if (userSettings?.extractionEngine === 'node') {
+        if (tenantSettings?.extractionEngine === 'node') {
             sendMessageToNode(message);
         } else {
             sendMessage(message);
