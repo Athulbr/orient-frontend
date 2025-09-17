@@ -14,6 +14,7 @@ interface DocsnapStoreIF {
     refreshRecord: number;
     extractionQueue: ExtractionItem[];
     clearExtractionQueue: () => void;
+    updateRefreshRecord: () => void;
     // Python
     addToPythonExtraction: (files: File[], template: any) => Promise<any>;
     addToPythonExtractionMultiPO: (files: File[], template: any) => Promise<any>;
@@ -273,6 +274,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
         refreshRecord: 1,
         extractionQueue: [],
         clearExtractionQueue: () => set({ extractionQueue: [] }),
+        updateRefreshRecord: () => set({ refreshRecord: get().refreshRecord + 1 }),
 
         // ================================================= Python =====================================================
 
