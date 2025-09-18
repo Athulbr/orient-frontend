@@ -12,6 +12,7 @@ export interface transcriptIF {
   }
   recordedBy: string;
   deleted: boolean;
+  medicalText?: string;
   transcriptions: TranscriptionData[];
   transcriptedFile: string;
   createdAt: string;

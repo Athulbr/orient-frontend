@@ -39,11 +39,16 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
 
     const navigate = useNavigate();
     const { id } = useParams();
-    const { updateTranscript, loading, currentData } = useTranscriptStore();
+    const { updateTranscript, transcriptData, gettranscriptData } = useTranscriptStore();
     const extractedData = useTranscriptGroupStore((state: any) => state.extractedData);
 
     useEffect(() => {
-        console.log('transcriptionData on review:--------->', transcriptionData);
+        if (id) {
+            gettranscriptData(id);
+        }
+    }, [id]);
+
+    useEffect(() => {
         transcriptionData.forEach(item => {
             if (item.filename === 'cpt_codes.txt') setCptCode(item);
             if (item.filename === 'medical_analysis.txt') setSummary(item);

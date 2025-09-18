@@ -26,6 +26,8 @@ interface TranscriptItem {
     content: string;
 }
 
+type SourceType = 'text' | 'audio' | 'file';
+
 const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [deleteAudio, setDeleteAudio] = useState(false);
@@ -35,6 +37,8 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const navigate = useNavigate();
     const { id } = useParams();
     const { getS3File } = useS3Storage();
+    const [sourceType, setSourceType] = useState<SourceType>('text');
+    const [medicalText, setMedicalText] = useState('');
     const { updateTranscript, currentData, gettranscriptData, transcriptData } = useTranscriptStore();
 
     useEffect(() => {
@@ -42,8 +46,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
             gettranscriptData(id);
         }
     }, [id]);
-
-    console.log('Transcript data on row click---->', transcriptData);
 
     useEffect(() => {
         const getTranscriptFile = async () => {
@@ -72,6 +74,8 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const handleExport = () => {
         if (!zipBlob) return;
 
+        // const blob = new Blob([response], { type: 'application/zip' });
+
         const url = window.URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -84,10 +88,15 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
 
     const handleSubmit = async () => {
         if (currentData?._id) {
-            const payload = {
+            const payload: any = {
                 name: currentData?.name,
                 transcriptions: transcriptionData
             };
+            if (sourceType === 'text') {
+                payload.medicaltext = medicalText;
+                payload.sourceType = 'text';
+            }
+
             const res = await updateTranscript(payload, currentData._id);
             if (res) navigate('/transcript/list');
         }
@@ -116,6 +125,8 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                             setTranscriptionData={setTranscriptionData}
                             setError={setError}
                             deleteAudioTrack={deleteAudio}
+                            setMedicalText={setMedicalText}
+                            setSource={setSourceType}
                         />
                     }
                     right={
@@ -141,6 +152,8 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                     setTranscriptionData={setTranscriptionData}
                     setError={setError}
                     deleteAudioTrack={deleteAudio}
+                    setMedicalText={setMedicalText}
+                    setSource={setSourceType}
                 />
             </div>
         </PageContainer>
