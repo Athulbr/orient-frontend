@@ -11,6 +11,7 @@ interface ExportButtonPropsIF {
 export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true }) => {
     const { state } = useViewRecordState();
     const userData = window?.sessionStorage?.getItem('user');
+    const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
     const user = userData ? JSON.parse(userData) : null;
     const arrays: any = {};
     state.tableNames.forEach((item, index) => {
@@ -46,7 +47,8 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
+                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
+                tenantid: selectedTenant
             },
             body: JSON.stringify({ recordId })
         });
