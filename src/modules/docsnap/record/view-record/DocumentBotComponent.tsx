@@ -19,10 +19,11 @@ const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
     const navigate = useNavigate();
     const { getTenantSettings, tenantSettings } = useSettingsStore();
 
-    useEffect(() => {
-        if (tenantSettings?.extractionEngine) return;
-        getTenantSettings();
-    }, []);
+    // useEffect(() => {
+    //     console.log(tenantSettings);
+    //     if (tenantSettings?.extractionEngine) return;
+    //     getTenantSettings();
+    // }, []);
     const sendMessageHandler = async (message: string) => {
         if (tenantSettings?.extractionEngine === 'node') {
             sendMessageToNode(message);

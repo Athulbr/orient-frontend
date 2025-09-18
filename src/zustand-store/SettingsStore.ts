@@ -88,7 +88,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     getTenantSettings: async () => {
         try {
-            const tenantId = get().selectedTenant ? get().selectedTenant : usePermissionStore.getState().user?.tenant?._id;
+            const tenantId = get().selectedTenant ? get().selectedTenant : window.sessionStorage.getItem('selectedTenant');
             if (!tenantId) {
                 useToastStore.getState().error('Tenant not selected');
                 return;
