@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
+const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -86,7 +87,8 @@ export const ListRecordComponent: React.FC = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
+                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
+                tenantid: selectedTenant
             },
             body: JSON.stringify(payload)
         });

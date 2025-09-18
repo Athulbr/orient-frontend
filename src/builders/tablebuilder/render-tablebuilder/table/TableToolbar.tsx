@@ -11,6 +11,8 @@ import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { Button } from '../../../../components/Button';
 import Spinner from '../../../../components/Spinner';
 
+const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+
 export function TableToolbar() {
     const { injectedData } = useTablebuilderState();
 
@@ -333,7 +335,8 @@ const ExportButton = () => {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
+                            authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
+                            tenantid: selectedTenant
                         },
                         body: JSON.stringify({ recordId })
                     });
