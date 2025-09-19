@@ -49,7 +49,7 @@ const AudioRecorder = ({
     const { uploadAudio, uploadText } = useTranscriptGroupStore();
     const { createTranscript, updateTranscript, currentData, transcriptData } = useTranscriptStore();
     const { id } = useParams();
-    // const { showAlert, closeAlert } = useAlertStore();
+    const [uploadedContent, setUploadedContent] = useState<string | null>(null);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
@@ -114,6 +114,12 @@ const AudioRecorder = ({
     //     } finally {
     //         setIsProcessing?.(false);
     //     }
+    // };
+
+    // const handleFileDrop = async (file: File) => {
+    //     // read the file contents as text
+    //     const text = await file.text();
+    //     setUploadedContent(text);
     // };
 
     const handleText = async () => {
@@ -205,7 +211,7 @@ const AudioRecorder = ({
     };
 
     const uploadAudioFile = () => fileInputRef.current?.click();
-    const handleFileDrop = (files: FileList) => {
+    const handleFileDrop = async (files: FileList) => {
         setAudioBlob(null);
         setError?.(null);
         audioChunksRef.current = [];
@@ -215,6 +221,8 @@ const AudioRecorder = ({
         } else {
             setFile(files?.[0]);
         }
+        const text = await files?.[0].text();
+        setUploadedContent(text);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -257,7 +265,11 @@ const AudioRecorder = ({
                 const transcriptions = await processZipResponse(response);
                 setTranscriptionData?.(transcriptions);
                 setTranscription(transcriptions);
-                const transcriptedFile = await uploadFileToS3(response);
+                const blob = new Blob([response], { type: 'application/zip' });
+                setZipBlob?.(blob);
+
+                const transcriptedFile = new File([response], 'transcriptedFile.zip', { type: 'application/zip' });
+                const transcriptedFileResponse = await uploadFileToS3(transcriptedFile);
 
                 const fileToUpload = audioBlob ? new File([audioBlob], `audio-${getCurrentDateTime()}.m4a`, { type: 'audio/m4a' }) : file;
                 if (!fileToUpload) {
@@ -265,10 +277,7 @@ const AudioRecorder = ({
                 }
                 const result = await uploadFileToS3(fileToUpload);
 
-                const blob = new Blob([response], { type: 'application/zip' });
-                setZipBlob?.(blob);
-
-                const payload = { sourceFile: result?.data?.fileName, transcriptions, transcriptedFile: transcriptedFile?.data?.fileName };
+                const payload = { sourceFile: result?.data?.fileName, sourceType, transcriptions, transcriptedFile: transcriptedFileResponse?.data?.fileName };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
             }
         } catch (err) {
@@ -401,14 +410,6 @@ const AudioRecorder = ({
 
                 {sourceType === 'file' && (
                     <div className="flex flex-col gap-4 justify-center overflow-y-auto h-full p-2">
-                        {/* <input type="file" accept="audio/*" onChange={handleFileChange} />
-                        {file && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm">{file.name}</span>
-                                <Trash2 className="w-4 h-4 text-red-600 cursor-pointer" onClick={() => setFile(null)} />
-                            </div>
-                        )} */}
-
                         <DragAndDropFileInput onFileDrop={handleFileDrop} />
 
                         <Button onClick={handleUpload} className="bg-blue-600 text-white">
