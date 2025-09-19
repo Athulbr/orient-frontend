@@ -57,14 +57,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
         }
     }, [transcriptData]);
 
-    const tabs = useMemo(
-        () => [
-            { id: 'transcript', title: 'Transcription' },
-            { id: 'summary', title: 'Summary' },
-            { id: 'cpt', title: 'CPT' }
-        ],
-        []
-    );
+
 
     const clearData = () => {
         setTranscriptionData([]);
@@ -133,7 +126,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                         <ResponseViewer
                             isProcessing={isProcessing}
                             transcriptionData={transcriptionData}
-                            tabs={tabs}
                             titleName={titleName}
                             error={error}
                             clearData={clearData}

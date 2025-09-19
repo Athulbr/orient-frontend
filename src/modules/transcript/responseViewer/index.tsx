@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AlertCircle, FileText } from 'lucide-react';
 import useTranscriptStore from '../../../zustand-store/transcriptStore';
@@ -21,13 +21,14 @@ interface ResponseViewerProps {
     isProcessing: boolean;
     transcriptionData: any[];
     error: string | null;
-    tabs: TabIF[];
     titleName?: string;
     clearData?: () => void;
     onSubmit?: () => void;
 }
 
-const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleName, clearData, onSubmit }: ResponseViewerProps) => {
+
+
+const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, clearData, onSubmit }: ResponseViewerProps) => {
     const [tabIndex, setTabIndex] = useState(0);
     const [title, setTitle] = useState<string>();
     const [cptCode, setCptCode] = useState<any>();
@@ -36,6 +37,15 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     const [submit, setSubmit] = useState(false);
     const { showAlert, closeAlert } = useAlertStore();
     const [exit, setExit] = useState<boolean>(false);
+
+    const tabs = useMemo(
+        () => [
+            { id: 'transcript', title: 'Transcription' },
+            { id: 'summary', title: 'Summary' },
+            { id: 'cpt', title: 'CPT' }
+        ],
+        []
+    );
 
     const navigate = useNavigate();
     const { id } = useParams();
@@ -106,7 +116,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, tabs, titleNam
     };
 
     return (
-        <div className="h-full flex flex-col items-center justify-between">
+        <div className="h-full flex flex-col items-center justify-between p-2">
             {/* Tabs */}
             <TabNavComponent tabs={tabs} onChange={setTabIndex} exportData={exportData} enableFlag={transcripts?.content} />
 

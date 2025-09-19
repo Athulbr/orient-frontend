@@ -419,7 +419,7 @@ const AudioRecorder = ({
 
                 {/* Preview */}
                 {audioBlob && !isRecording && !isUploading && !exit && (
-                    <div className="flex flex-col overflow-auto justify-center h-full">
+                    <div className="flex flex-col overflow-auto justify-center">
                         <div className="p-4 mb-10 bg-blue-50 rounded-md">
                             <p className="mb-2 text-sm text-blue-600">Audio Ready For Upload!</p>
                             <div className="flex items-center gap-4">
