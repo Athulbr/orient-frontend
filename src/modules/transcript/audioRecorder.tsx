@@ -292,7 +292,7 @@ const AudioRecorder = ({
     };
 
     return (
-        <div className="h-full">
+        <div>
             <div className="flex gap-4  p-6">
                 <label className="flex items-center gap-2">
                     <input type="radio" value="text" checked={sourceType === 'text'} onChange={() => setSourceType('text')} />
@@ -307,12 +307,12 @@ const AudioRecorder = ({
                     File Upload
                 </label>
             </div>
-            <div className="flex flex-col justify-center h-full">
+            <div className="flex flex-col justify-center">
                 {/* Conditional Input UI */}
                 {sourceType === 'text' && (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-1 flex-col overflow-y-auto gap-4">
                         <textarea
-                            className="w-full h-80 border rounded-md p-2"
+                            className="w-full border rounded-md flex-1 p-2"
                             placeholder="Type your text here..."
                             value={textInput}
                             onChange={e => setTextInput(e.target.value)}
