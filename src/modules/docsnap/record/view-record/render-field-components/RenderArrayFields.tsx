@@ -42,7 +42,9 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
 
         let columnNames = Object.keys(firstRow);
         if (columnNames.length === 0) {
-            const lineItems = state.record?.templateId?.fields?.find((item: any) => item.name === 'line items');
+            const lineItems = state.record?.templateId?.fields?.find((item: any) => {
+                return item.jsonKey === 'line_items'
+            });
             if (lineItems?.subFields) {
                 columnNames = lineItems.subFields.map((item: any) => item.name);
             }
@@ -53,11 +55,13 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
             newRow[columnName] = { value: '' };
         });
 
+
         const newArrayFields = [...state.arrayFields];
         // Calculate the next index by getting the current number of entries
         const currentEntries = Object.keys(newArrayFields[0]);
         const nextIndex = currentEntries.length;
         newArrayFields[0] = { ...newArrayFields[0], [`${nextIndex}`]: newRow };
+
 
         setState(prev => {
             return { ...prev, arrayFields: newArrayFields };
