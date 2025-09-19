@@ -292,7 +292,7 @@ const AudioRecorder = ({
     };
 
     return (
-        <div>
+        <div className="flex flex-col h-full">
             <div className="flex gap-4  p-6">
                 <label className="flex items-center gap-2">
                     <input type="radio" value="text" checked={sourceType === 'text'} onChange={() => setSourceType('text')} />
@@ -307,10 +307,10 @@ const AudioRecorder = ({
                     File Upload
                 </label>
             </div>
-            <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center overflow-y-auto flex-1">
                 {/* Conditional Input UI */}
                 {sourceType === 'text' && (
-                    <div className="flex flex-1 flex-col overflow-y-auto gap-4">
+                    <div className="flex flex-1 flex-col overflow-y-auto gap-4 p-2">
                         <textarea
                             className="w-full border rounded-md flex-1 p-2"
                             placeholder="Type your text here..."
@@ -324,7 +324,7 @@ const AudioRecorder = ({
                 )}
 
                 {sourceType === 'audio' && (
-                    <div className="flex flex-col items-center justify-center flex-grow gap-4">
+                    <div className=" flex flex-col items-center justify-center flex-grow gap-4 p-2">
                         <div className="w-full h-32 bg-gray-100 rounded-md overflow-hidden">
                             <AudioWaveform isRecording={isRecording && !isPaused} />
                         </div>
@@ -400,7 +400,7 @@ const AudioRecorder = ({
                 {/* <DragAndDropFileInput onFileDrop={handleFileChange} /> */}
 
                 {sourceType === 'file' && (
-                    <div className="flex flex-col gap-4 justify-center overflow-y-auto h-full">
+                    <div className="flex flex-col gap-4 justify-center overflow-y-auto h-full p-2">
                         {/* <input type="file" accept="audio/*" onChange={handleFileChange} />
                         {file && (
                             <div className="flex items-center gap-2">
