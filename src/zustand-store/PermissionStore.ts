@@ -26,9 +26,7 @@ export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
     settings: [],
     checkPermission: (permission?: string) => {
         const { user } = get();
-        const ardexTenant = ['68a89969e874ddf8cf00527e', '68896ef48e0baa23315c3cfd']; // temporary patch, need to fix
-        const selectedTenant = window.sessionStorage.getItem('selectedTenant') || '';
-        if (user?.role?.name === 'superadmin' && ardexTenant.includes(selectedTenant)) return true;
+        if (user?.role?.name === 'superadmin') return true;
         if (!permission) return false;
         return get().permissions.includes(permission);
     },
