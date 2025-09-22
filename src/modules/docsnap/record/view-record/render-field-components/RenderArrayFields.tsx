@@ -37,13 +37,12 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
     const addLineItem = (mainIndex: number) => {
         // Get the column names from the first row to create the same structure
 
-
         const firstRow = Object.values(state.arrayFields[mainIndex])[0] || {};
 
         let columnNames = Object.keys(firstRow);
         if (columnNames.length === 0) {
             const lineItems = state.record?.templateId?.fields?.find((item: any) => {
-                return item.jsonKey === state.tableNames[mainIndex]
+                return item.jsonKey === state.tableNames[mainIndex];
             });
             if (lineItems?.subFields) {
                 columnNames = lineItems.subFields.map((item: any) => item.name);
@@ -55,13 +54,11 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
             newRow[columnName] = { value: '' };
         });
 
-
         const newArrayFields = [...state.arrayFields];
         // Calculate the next index by getting the current number of entries
         const currentEntries = Object.keys(newArrayFields[mainIndex]);
         const nextIndex = currentEntries.length;
         newArrayFields[mainIndex] = { ...newArrayFields[mainIndex], [`${nextIndex}`]: newRow };
-
 
         setState(prev => {
             return { ...prev, arrayFields: newArrayFields };
@@ -99,7 +96,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 const firstRow = lineItems[0] || {};
                 const labels = Object.keys(firstRow);
 
-
                 // const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
 
                 return (
@@ -133,7 +129,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                 {formatFieldLabel(label)}
                                             </th>
                                         ))}
-                                    <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
+                                        <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -184,20 +180,20 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                     />
                                                 );
                                             })}
-                                            
-                                                <td className="h-full border py-2 pl-9">
-                                                    <Trash2
-                                                        tabIndex={-1}
-                                                        onClick={() => deleteLineItem(mainIndex, rowIndex)}
-                                                        onKeyDown={e => {
-                                                            if (e.key === 'Enter') {
-                                                                deleteLineItem(mainIndex, rowIndex);
-                                                            }
-                                                        }}
-                                                        size={20}
-                                                        className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
-                                                    />
-                                                </td>
+
+                                            <td className="h-full border py-2 pl-9">
+                                                <Trash2
+                                                    tabIndex={-1}
+                                                    onClick={() => deleteLineItem(mainIndex, rowIndex)}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter') {
+                                                            deleteLineItem(mainIndex, rowIndex);
+                                                        }
+                                                    }}
+                                                    size={20}
+                                                    className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
+                                                />
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

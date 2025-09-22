@@ -132,7 +132,7 @@ export const useLoginPageApi = () => {
     const forgotPasswordApi = async () => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
-        } catch (error) { }
+        } catch (error) {}
     };
 
     // ============================= Return ==================================

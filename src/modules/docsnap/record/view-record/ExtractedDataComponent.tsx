@@ -15,7 +15,6 @@ interface ExtractedDataComponentProps {
 const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, fieldRefs }) => {
     const { state, setState } = useViewRecordState();
 
-
     const extractedDataContainerRef = useRef<HTMLDivElement | null>(null);
     const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
     const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -95,8 +94,6 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
             });
         }
     }, [state.selectedTableName]);
-
-
 
     if (!state.record) return <LoadingDataSpinner />;
     if (state.record?.status === 'processing') return <LoadingDataSpinner text="Processing..." />;

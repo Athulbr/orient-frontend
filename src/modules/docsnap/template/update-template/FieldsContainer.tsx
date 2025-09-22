@@ -29,7 +29,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { id, fileName } = useParams();
     const toast = useToastStore();
 
-
     useEffect(() => {
         if (!fileName) return;
 
@@ -74,7 +73,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             setState(prev => ({
                 ...prev,
                 loadingS3File: false,
-                images: imageUrl,
+                images: imageUrl
             }));
         };
         getFileAndConvertToImages();
@@ -84,32 +83,32 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         if (!id) return;
         const getTemplateData = async () => {
             try {
-            const templateData = await getTemplateApi(id);
-            setState(prev => ({ ...prev, loadingS3File: true, templateData, templateSettings: templateData?.settings }));
-            const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
-            const imageData = s3Response?.Body?.data;
-            if (!imageData) {
-                toast.error('S3 document not found');
-                return;
-            }
-            const uint8Array = new Uint8Array(imageData);
-            const getFileType = await fileTypeFromBuffer(uint8Array);
-            let pdfFile: any;
-            let imageUrl;
-            if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
-                pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
-                imageUrl = [URL.createObjectURL(pdfFile).toString()];
-            } else {
-                pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
-                imageUrl = await convertPdfToImages(pdfFile);
-            }
+                const templateData = await getTemplateApi(id);
+                setState(prev => ({ ...prev, loadingS3File: true, templateData, templateSettings: templateData?.settings }));
+                const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
+                const imageData = s3Response?.Body?.data;
+                if (!imageData) {
+                    toast.error('S3 document not found');
+                    return;
+                }
+                const uint8Array = new Uint8Array(imageData);
+                const getFileType = await fileTypeFromBuffer(uint8Array);
+                let pdfFile: any;
+                let imageUrl;
+                if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
+                    pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+                    imageUrl = [URL.createObjectURL(pdfFile).toString()];
+                } else {
+                    pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+                    imageUrl = await convertPdfToImages(pdfFile);
+                }
 
-            setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
-        } catch (error:any) {
-            setState(prev => ({ ...prev, loadingS3File: false, noS3File: true }));
+                setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
+            } catch (error: any) {
+                setState(prev => ({ ...prev, loadingS3File: false, noS3File: true }));
 
-               toast.error(error.message); 
-        }
+                toast.error(error.message);
+            }
         };
         getTemplateData();
     }, [id]);
@@ -172,11 +171,17 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
                 <div>Template Fields</div>
-                <div className='flex items-center gap-2'>
-                <Button startIcon={<FileCog className='text-gray-500' size={16} />} outlined onClick={() => setState(prev => ({ ...prev, showTemplateSettingsForm: true }))}>Settings</Button>
-                <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
-                    {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        startIcon={<FileCog className="text-gray-500" size={16} />}
+                        outlined
+                        onClick={() => setState(prev => ({ ...prev, showTemplateSettingsForm: true }))}
+                    >
+                        Settings
+                    </Button>
+                    <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
+                        {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
+                    </Button>
                 </div>
             </div>
             {state.loadingTemplate ? (
@@ -353,7 +358,16 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                         className="flex flex-col gap-4 p-2"
                         disableDrag={editFieldDialog !== -1}
                     >
-                        {(field: any, index: number) => <FieldComponent editFieldDialog={editFieldDialog} setEditFieldDialog={setEditFieldDialog} key={index} field={field} index={index} mainIndex={mainIndex} />}
+                        {(field: any, index: number) => (
+                            <FieldComponent
+                                editFieldDialog={editFieldDialog}
+                                setEditFieldDialog={setEditFieldDialog}
+                                key={index}
+                                field={field}
+                                index={index}
+                                mainIndex={mainIndex}
+                            />
+                        )}
                     </DragAndDropContainer>
                     <Button disableRipple className="ml-4 w-fit border-none" startIcon={<Plus size={16} />} onClick={addNewField} outlined>
                         New Field
@@ -381,7 +395,19 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     );
 };
 
-const   FieldComponent = ({ field, index, mainIndex, editFieldDialog, setEditFieldDialog }: { field: any; index: number; mainIndex: number; editFieldDialog: number; setEditFieldDialog: (index: number) => void }) => {
+const FieldComponent = ({
+    field,
+    index,
+    mainIndex,
+    editFieldDialog,
+    setEditFieldDialog
+}: {
+    field: any;
+    index: number;
+    mainIndex: number;
+    editFieldDialog: number;
+    setEditFieldDialog: (index: number) => void;
+}) => {
     const { state, setState } = useUpdateTemplateState();
     // const [showConfigForm, setShowConfigForm] = useState(false);
     const { regenerateInstructionWithAI } = useUpdateTemplatePageApi();
@@ -449,7 +475,7 @@ const   FieldComponent = ({ field, index, mainIndex, editFieldDialog, setEditFie
             setState(prev => {
                 const sectionList = [...prev.sectionList];
                 sectionList[mainIndex].subFields[index].instruction = updatedInstruction;
-                return { ...prev, sectionList,  };
+                return { ...prev, sectionList };
             });
             // setShowConfigForm(false);
         }

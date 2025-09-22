@@ -26,7 +26,7 @@ interface SettingsStoreIF {
 export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     // ============================== USER SETTINGS ===============================
     userSettings: {},
-    userSettingResponse: "",
+    userSettingResponse: '',
     submitUserSettings: async (settings?: any) => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/settings/submit`, {
@@ -47,7 +47,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== DOCSNAP SETTINGS ===============================
     docsnapSettings: {},
-    docsnapSettingResponse: "",
+    docsnapSettingResponse: '',
     submitDocsnapSettings: async (settings?: any) => {
         try {
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/settings/submit`, {
@@ -69,7 +69,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     // ============================== TENANT SETTINGS ===============================
     tenantSettings: {},
-    tenantSettingResponse: "",
+    tenantSettingResponse: '',
     selectedTenant: null,
     submitTenantSettings: async (settings?: any) => {
         if (!get().selectedTenant && !window.sessionStorage.getItem('selectedTenant')) {
@@ -111,6 +111,6 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
         }
         set({ tenantSettings: res?.data?.settings });
         set({ selectedTenant: tenant });
-    },
+    }
     // ============================== TENANT SETTINGS ===============================
 }));

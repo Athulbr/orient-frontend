@@ -16,7 +16,7 @@ export const inputTypes: FieldIF[] = [
             comma: true,
             minimumLength: 0,
             maximumLength: 1000,
-            allowedSpecialCharacters: "all", // empty space and comma not included
+            allowedSpecialCharacters: 'all', // empty space and comma not included
             textTransform: 'none',
             placeholder: '',
             regularExpression: '',

@@ -194,9 +194,11 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 className={cn('flex w-full items-center justify-between border-b p-4 text-lg font-semibold', 'cursor-grab active:cursor-grabbing select-none')}
                 onMouseDown={handleMouseDown}
             >
-                Extraction Status 
+                Extraction Status
                 <div className="flex gap-3 items-center">
-                <span className="text-sm text-green-500 font-light">({extractionQueue.filter(i => i.status === 'Complete').length}/{extractionQueue.length})</span>
+                    <span className="text-sm text-green-500 font-light">
+                        ({extractionQueue.filter(i => i.status === 'Complete').length}/{extractionQueue.length})
+                    </span>
                     {minimize ? (
                         <ChevronRight
                             size={22}
@@ -245,7 +247,10 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto p-4">
                     {extractionQueue.map((file: any, idx: number) => (
                         <div key={idx} className={cn('flex items-center justify-between gap-2')}>
-                            <div className='flex justify-between items-center'><p  className="truncate text-sm">{file.fileName}</p>&nbsp;&nbsp;<span className='text-sm text-nowrap text-green-600'>( {file.time}s )</span></div>
+                            <div className="flex justify-between items-center">
+                                <p className="truncate text-sm">{file.fileName}</p>&nbsp;&nbsp;
+                                <span className="text-sm text-nowrap text-green-600">( {file.time}s )</span>
+                            </div>
                             {getStatusUI(file.status)}
                         </div>
                     ))}

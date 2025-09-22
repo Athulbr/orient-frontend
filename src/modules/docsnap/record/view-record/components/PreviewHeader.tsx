@@ -28,7 +28,7 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
                 return;
             }
 
-            const s3Response:any = await getS3File(state.record.pdfFileName);
+            const s3Response: any = await getS3File(state.record.pdfFileName);
 
             if (!s3Response?.Body?.data) {
                 toast.error('File not found or invalid response');

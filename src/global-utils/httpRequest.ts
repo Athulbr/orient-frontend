@@ -1,4 +1,4 @@
-import clientLogger from "./clientLog";
+import clientLogger from './clientLog';
 
 const httpRequest = async <T = any>(method: string, url: string, data: Record<string, any> = {}, token?: string): Promise<T> => {
     const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
@@ -6,11 +6,10 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
     const user: any = window?.sessionStorage?.getItem('user') || '';
     const normalizedMethod = method.toUpperCase();
 
-
     const headers: HeadersInit = {
         Accept: 'application/json',
         'Content-Type': 'application/json;charset=UTF-8',
-        tenantid: selectedTenant ? selectedTenant : user?.tenant?.name,
+        tenantid: selectedTenant ? selectedTenant : user?.tenant?.name
     };
 
     if (sessionStorageAccessToken) {
@@ -43,34 +42,34 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
             // Parse the body as JSON
             const result = await response.json();
             if (response?.status === 401) {
-                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } })
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } });
                 window.sessionStorage.clear();
                 window?.location?.replace('/');
             }
 
             if (response?.status === 409) {
-                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } })
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } });
                 throw new Error(result.message);
             }
 
             if (response?.status === 403) {
-                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } })
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } });
                 throw new Error(result.message);
             }
 
             if (response?.status === 404) {
-                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
                 throw new Error(`Connection error, try again later`);
             }
 
             if (response?.status === 504) {
-                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
                 throw new Error(`${response?.statusText}`);
             }
 
             if (response?.status === 500) {
-                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
-                const errorMessage = response?.statusText === "" ? "Connection issue, try again later" : response?.statusText;
+                clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
+                const errorMessage = response?.statusText === '' ? 'Connection issue, try again later' : response?.statusText;
                 throw new Error(errorMessage);
             }
 

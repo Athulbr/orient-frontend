@@ -74,9 +74,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         const parsed = JSON.parse(jsonString);
                         console.log('Parsed data:', parsed);
 
-                        const processingFiles = get().extractionQueue.filter(
-                            queue => queue.status !== 'Complete' && queue.status !== 'failed'
-                        );
+                        const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
 
                         // Handle different status types
                         switch (parsed.status) {
@@ -100,7 +98,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                 }
                                 break;
                         }
-
                     } catch (parseError) {
                         console.warn('Failed to parse SSE message:', parseError, 'Line:', line);
                         // Don't fail the entire stream for individual parse errors
@@ -110,9 +107,11 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             }
         } catch (streamError) {
             console.error('Stream processing error:', streamError);
-            handleError(timer, get().extractionQueue.filter(
-                queue => queue.status !== 'Complete' && queue.status !== 'failed'
-            ), fileName);
+            handleError(
+                timer,
+                get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed'),
+                fileName
+            );
         } finally {
             // Always clear the timer when stream processing ends
             if (timer) {
@@ -142,12 +141,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
     };
 
     // Alternative version with better error recovery and reconnection logic
-    const processStreamWithReconnection = async (
-        reader: ReadableStreamDefaultReader<Uint8Array>,
-        fileName: string,
-        timer: any,
-        maxRetries: number = 3
-    ) => {
+    const processStreamWithReconnection = async (reader: ReadableStreamDefaultReader<Uint8Array>, fileName: string, timer: any, maxRetries: number = 3) => {
         const decoder = new TextDecoder('utf-8');
         let buffer = '';
         let retryCount = 0;
@@ -174,9 +168,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             // Reset retry count on successful message
                             retryCount = 0;
 
-                            const processingFiles = get().extractionQueue.filter(
-                                queue => queue.status !== 'Complete' && queue.status !== 'failed'
-                            );
+                            const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
 
                             switch (parsed.status) {
                                 case 'Complete':
@@ -198,7 +190,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                     }
                                     break;
                             }
-
                         } catch (parseError) {
                             console.warn('Parse error for line:', line, parseError);
                             continue;
@@ -219,9 +210,11 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                     return processWithRetry();
                 } else {
                     // Max retries reached
-                    handleError(timer, get().extractionQueue.filter(
-                        queue => queue.status !== 'Complete' && queue.status !== 'failed'
-                    ), fileName);
+                    handleError(
+                        timer,
+                        get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed'),
+                        fileName
+                    );
                     throw streamError;
                 }
             }
@@ -250,7 +243,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             formData.append('template', JSON.stringify(template));
             // formData.append('extractionType', 'single');
             formData.append('file', file);
-
 
             // const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_DATA_ENTRY, {
             const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V5, {
@@ -434,7 +426,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             use_latest: false,
                             template_id: template._id
                         };
-                        if (template.enableOcr) requestBody.ocr_engine = 'doctr' //'google_vision'; // 'doctr';
+                        if (template.enableOcr) requestBody.ocr_engine = 'doctr'; //'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
                         const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);

@@ -21,8 +21,7 @@ const ListCommentPage: React.FC<ListCommentPageIF> = () => {
         rowClickHandler: (row: Record<string, string>) => {
             navigate(`/config/comment/update/${row._id}`);
         },
-        editClickHandler: () => {
-        }
+        editClickHandler: () => {}
     };
     const customUI = {};
     return (
