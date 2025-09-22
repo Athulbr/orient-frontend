@@ -9,7 +9,7 @@ import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
-const tenants = ['68a89969e874ddf8cf00527e', '68896ef48e0baa23315c3cfd'];
+// const tenants = ['68a89969e874ddf8cf00527e', '68896ef48e0baa23315c3cfd'];
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -63,7 +63,8 @@ export const ListRecordComponent: React.FC = () => {
     };
 
     const actionButtons =
-        checkPermission('export:record:ardex') && tenants.includes(tenantId)
+        // checkPermission('export:record:ardex') && tenants.includes(tenantId)
+        checkPermission('export:record:ardex')
             ? [
                   {
                       label: 'Export Record',
