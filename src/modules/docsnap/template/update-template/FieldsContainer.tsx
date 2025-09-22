@@ -470,7 +470,7 @@ const   FieldComponent = ({ field, index, mainIndex, editFieldDialog, setEditFie
             <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
             <UseFormbuilder
                 isOpen={editFieldDialog === index}
-                className="w-130"
+                className="w-[50vw]"
                 title="Field Configuration"
                 name="Template Field Config Form"
                 closeDialog={() => setEditFieldDialog(-1)}
