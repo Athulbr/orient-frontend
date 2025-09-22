@@ -34,16 +34,16 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         }));
     };
 
-    const addLineItem = () => {
+    const addLineItem = (mainIndex: number) => {
         // Get the column names from the first row to create the same structure
 
 
-        const firstRow = Object.values(state.arrayFields[0])[0] || {};
+        const firstRow = Object.values(state.arrayFields[mainIndex])[0] || {};
 
         let columnNames = Object.keys(firstRow);
         if (columnNames.length === 0) {
             const lineItems = state.record?.templateId?.fields?.find((item: any) => {
-                return item.jsonKey === 'line_items'
+                return item.jsonKey === state.tableNames[mainIndex]
             });
             if (lineItems?.subFields) {
                 columnNames = lineItems.subFields.map((item: any) => item.name);
@@ -58,9 +58,9 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
 
         const newArrayFields = [...state.arrayFields];
         // Calculate the next index by getting the current number of entries
-        const currentEntries = Object.keys(newArrayFields[0]);
+        const currentEntries = Object.keys(newArrayFields[mainIndex]);
         const nextIndex = currentEntries.length;
-        newArrayFields[0] = { ...newArrayFields[0], [`${nextIndex}`]: newRow };
+        newArrayFields[mainIndex] = { ...newArrayFields[mainIndex], [`${nextIndex}`]: newRow };
 
 
         setState(prev => {
@@ -91,11 +91,14 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         }));
     };
 
+    console.log('state.tableNames:===========', state.tableNames);
+
     return (
         <>
             {state.arrayFields.map((lineItems, mainIndex) => {
                 const firstRow = lineItems[0] || {};
                 const labels = Object.keys(firstRow);
+
 
                 // const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
 
@@ -108,7 +111,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                     <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                                         Add Comment
                                     </Button>
-                                    <Button tabIndex={-1} outlined onClick={addLineItem}>
+                                    <Button tabIndex={-1} outlined onClick={() => addLineItem(mainIndex)}>
                                         Add Line Item
                                     </Button>
                                 </div>

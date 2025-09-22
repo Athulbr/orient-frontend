@@ -85,7 +85,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         const getTemplateData = async () => {
             try {
             const templateData = await getTemplateApi(id);
-            setState(prev => ({ ...prev, loadingS3File: true, templateData }));
+            setState(prev => ({ ...prev, loadingS3File: true, templateData, templateSettings: templateData?.settings }));
             const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
             const imageData = s3Response?.Body?.data;
             if (!imageData) {
@@ -157,18 +157,23 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             if (!id) return;
             const requestBody = {
                 fields: state.sectionList,
+                settings: state.templateSettings,
                 s3FileName: fileName,
                 ...data
             };
             updateTemplateApi(id, requestBody);
         }
     };
+    console.log('state.templateSettings:===========', state.templateSettings);
+    const submitSettingsHandler = (data: any) => {
+        setState(prev => ({ ...prev, templateSettings: data, showTemplateSettingsForm: false }));
+    };
     return (
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
                 <div>Template Fields</div>
                 <div className='flex items-center gap-2'>
-                <Button startIcon={<FileCog className='text-gray-500' size={16} />} outlined onClick={() => setState(prev => ({ ...prev, showSettingsForm: true }))}>Settings</Button>
+                <Button startIcon={<FileCog className='text-gray-500' size={16} />} outlined onClick={() => setState(prev => ({ ...prev, showTemplateSettingsForm: true }))}>Settings</Button>
                 <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
                     {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
                 </Button>
@@ -245,12 +250,12 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             />
             <UseFormbuilder
                 title="Template Settings"
-                isOpen={state.showSettingsForm}
+                isOpen={state.showTemplateSettingsForm}
                 className="w-[80vw]"
                 name="Template Settings Form"
-                closeDialog={() => setState(prev => ({ ...prev, showSettingsForm: false }))}
-                onSubmit={handleCreateTemplate}
-                existingData={state.templateData}
+                closeDialog={() => setState(prev => ({ ...prev, showTemplateSettingsForm: false }))}
+                onSubmit={submitSettingsHandler}
+                existingData={state.templateSettings}
                 loadingPrimaryButton={state.updatingTemplate}
             />
         </div>
@@ -480,16 +485,14 @@ const   FieldComponent = ({ field, index, mainIndex, editFieldDialog, setEditFie
                     instruction: field?.instruction,
                     excludeExtraction: field?.excludeExtraction,
                     isHidden: field?.isHidden,
-                    required: field?.required
+                    required: field?.required,
+                    validationUrl: field?.validationUrl,
+                    postProcessingScript: field?.postProcessingScript
                 }}
                 onSubmit={handleUpdateField}
                 actionButtonText="Regenerate Instruction"
                 actionButtonClickHandler={(fields: FieldIF[]) => updateInstructionApi(fields)}
             />
-            {/* <DialogComponent name='Update Instruction' className='p-4 pt-0  w-250' isOpen={showUpdateInstructionDialog} closeDialog={() => setShowUpdateInstructionDialog(false)}>
-                <TextAreaComponent rows={10} placeholder="Instruction" value={query} onChange={(e) => setQuery(e.target.value)} />
-                <Button disabled={!query} className='mt-4' onClick={updateInstructionWithAI} outlined>Submit</Button>
-            </DialogComponent> */}
         </div>
     );
 };

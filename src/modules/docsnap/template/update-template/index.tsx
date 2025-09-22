@@ -16,11 +16,13 @@ export interface UpdateTemplateStateIF {
     templateData: any;
     showCreateForm: boolean;
     generatingTemplateFieldsWithAI: boolean;
-    userQuery:string;
-    updatingTemplateFieldsWithAI:boolean;
-    visionOcrText:string[]    
-    noS3File:boolean
-    showSettingsForm:boolean
+    userQuery: string;
+    updatingTemplateFieldsWithAI: boolean;
+    visionOcrText: string[];
+    noS3File: boolean;
+    showSettingsForm: boolean;
+    showTemplateSettingsForm: boolean;
+    templateSettings: any;
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
@@ -31,11 +33,13 @@ const initialState: UpdateTemplateStateIF = {
     templateData: null,
     showCreateForm: false,
     generatingTemplateFieldsWithAI: false,
-    userQuery:'',
-    updatingTemplateFieldsWithAI:false,
-    visionOcrText:[],
-    noS3File:false,
-    showSettingsForm:false
+    userQuery: '',
+    updatingTemplateFieldsWithAI: false,
+    visionOcrText: [],
+    noS3File: false,
+    showSettingsForm: false,
+    showTemplateSettingsForm: false,
+    templateSettings: null
 };
 
 const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
@@ -45,7 +49,7 @@ const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
         <UpdateTemplateStateProvider value={{ state, setState }}>
             <PageContainer className="gap-4 overflow-hidden p-6 pb-0">
                 <Breadcrumbs page="updateTemplate" />
-                <PageNameComponent name={`${create ? 'Create Template' : 'Update Template'}: ${state.templateData?.name || "New Template"}`} showBackButton />
+                <PageNameComponent name={`${create ? 'Create Template' : 'Update Template'}: ${state.templateData?.name || 'New Template'}`} showBackButton />
                 <ResizableContainer
                     left={<ImageViewer images={state.images} name="Document" />}
                     right={<FieldsContainer create={create} />}
@@ -60,157 +64,156 @@ const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
 
 export default UpdateTemplatePage;
 
-
-const fields=[
+const fields = [
     {
-        "name": "Basic Details",
-        "dataType": "object",
-        "jsonKey": "basic_details",
-        "excludeExtraction": false,
-        "description": "Basic Details",
-        "instruction": "Extract Basic Details of the product.",
-        "isHidden": false,
-        "subFields": [
+        name: 'Basic Details',
+        dataType: 'object',
+        jsonKey: 'basic_details',
+        excludeExtraction: false,
+        description: 'Basic Details',
+        instruction: 'Extract Basic Details of the product.',
+        isHidden: false,
+        subFields: [
             {
-                "name": "SKU Number",
-                "dataType": "str",
-                "jsonKey": "sku_number",
-                "required": false,
-                "excludeExtraction": false,
-                "isHidden": false,
-                "_id": "68c7c0b39fa94d034c7cb81b"
+                name: 'SKU Number',
+                dataType: 'str',
+                jsonKey: 'sku_number',
+                required: false,
+                excludeExtraction: false,
+                isHidden: false,
+                _id: '68c7c0b39fa94d034c7cb81b'
             },
             {
-                "name": "Vendor Product Name",
-                "dataType": "str",
-                "jsonKey": "vendor_product_name",
-                "required": false,
-                "excludeExtraction": false,
-                "isHidden": false,
-                "_id": "68c7c0b39fa94d034c7cb81c",
-                "description": "Product name",
-                "instruction": "Extract Product name, You can find it in a ocr text.",
-                "guidelines": ""
+                name: 'Vendor Product Name',
+                dataType: 'str',
+                jsonKey: 'vendor_product_name',
+                required: false,
+                excludeExtraction: false,
+                isHidden: false,
+                _id: '68c7c0b39fa94d034c7cb81c',
+                description: 'Product name',
+                instruction: 'Extract Product name, You can find it in a ocr text.',
+                guidelines: ''
             },
             {
-                "name": "RM Product Name",
-                "dataType": "str",
-                "jsonKey": "rm_product_name",
-                "required": false,
-                "excludeExtraction": false,
-                "isHidden": false,
-                "_id": "68c7c0b39fa94d034c7cb81d"
+                name: 'RM Product Name',
+                dataType: 'str',
+                jsonKey: 'rm_product_name',
+                required: false,
+                excludeExtraction: false,
+                isHidden: false,
+                _id: '68c7c0b39fa94d034c7cb81d'
             },
             {
-                "name": "Product Sub Title",
-                "dataType": "str",
-                "jsonKey": "product_sub_title",
-                "required": false,
-                "excludeExtraction": false,
-                "isHidden": false,
-                "_id": "68c7c0b39fa94d034c7cb81e",
-                "description": "Product sub-title",
-                "instruction": "Extract Product sub-title, You can find it in a ocr text.",
-                "guidelines": ""
+                name: 'Product Sub Title',
+                dataType: 'str',
+                jsonKey: 'product_sub_title',
+                required: false,
+                excludeExtraction: false,
+                isHidden: false,
+                _id: '68c7c0b39fa94d034c7cb81e',
+                description: 'Product sub-title',
+                instruction: 'Extract Product sub-title, You can find it in a ocr text.',
+                guidelines: ''
             },
             {
-                "name": "URL File Path",
-                "dataType": "str",
-                "jsonKey": "url_file_path",
-                "required": false,
-                "excludeExtraction": false,
-                "isHidden": false,
-                "_id": "68c7c0b39fa94d034c7cb81f"
+                name: 'URL File Path',
+                dataType: 'str',
+                jsonKey: 'url_file_path',
+                required: false,
+                excludeExtraction: false,
+                isHidden: false,
+                _id: '68c7c0b39fa94d034c7cb81f'
             }
         ],
-        "_id": "68c7c0b39fa94d034c7cb81a"
+        _id: '68c7c0b39fa94d034c7cb81a'
     },
     {
-        "name": "Descriptions",
-        "dataType": "object",
-        "jsonKey": "descriptions",
-        "subFields": [
+        name: 'Descriptions',
+        dataType: 'object',
+        jsonKey: 'descriptions',
+        subFields: [
             {
-                "name": "Manufacturer Product Short Description",
-                "jsonKey": "manufacturer_product_short_description",
-                "dataType": "str",
-                "description": "Manufacturer Product Short Description",
-                "instruction": "Extract Manufacturer Product Short Description",
-                "guidelines": "",
-                "excludeExtraction": false,
-                "isHidden": false,
-                "required": false
+                name: 'Manufacturer Product Short Description',
+                jsonKey: 'manufacturer_product_short_description',
+                dataType: 'str',
+                description: 'Manufacturer Product Short Description',
+                instruction: 'Extract Manufacturer Product Short Description',
+                guidelines: '',
+                excludeExtraction: false,
+                isHidden: false,
+                required: false
             },
             {
-                "name": "Manufacturer Product Long Description",
-                "jsonKey": "manufacturer_product_long_description",
-                "dataType": "str",
-                "description": "Manufacturer Product Long Description",
-                "instruction": "Extract Manufacturer Product Long Description",
-                "guidelines": "",
-                "excludeExtraction": false,
-                "isHidden": false,
-                "required": false
+                name: 'Manufacturer Product Long Description',
+                jsonKey: 'manufacturer_product_long_description',
+                dataType: 'str',
+                description: 'Manufacturer Product Long Description',
+                instruction: 'Extract Manufacturer Product Long Description',
+                guidelines: '',
+                excludeExtraction: false,
+                isHidden: false,
+                required: false
             },
             {
-                "name": "Product Benefits",
-                "jsonKey": "product_benefits",
-                "dataType": "str",
-                "description": "Product Benefits",
-                "instruction": "Extract Product Benefits",
-                "guidelines": "",
-                "excludeExtraction": false,
-                "isHidden": false,
-                "required": false
+                name: 'Product Benefits',
+                jsonKey: 'product_benefits',
+                dataType: 'str',
+                description: 'Product Benefits',
+                instruction: 'Extract Product Benefits',
+                guidelines: '',
+                excludeExtraction: false,
+                isHidden: false,
+                required: false
             }
         ],
-        "description": "Descriptions",
-        "instruction": "You can find Descriptions in ocr text.",
-        "excludeExtraction": false,
-        "isHidden": false
+        description: 'Descriptions',
+        instruction: 'You can find Descriptions in ocr text.',
+        excludeExtraction: false,
+        isHidden: false
     },
     {
-        "name": "Product Specifications",
-        "dataType": "array",
-        "jsonKey": "product_specifications",
-        "subFields": [
+        name: 'Product Specifications',
+        dataType: 'array',
+        jsonKey: 'product_specifications',
+        subFields: [
             {
-                "name": "Serial Number",
-                "jsonKey": "serial_number",
-                "dataType": "str",
-                "description": "Serial Number",
-                "instruction": "Extract Serial Number, If not add from 1 to n.",
-                "guidelines": "",
-                "excludeExtraction": false,
-                "isHidden": false,
-                "required": false
+                name: 'Serial Number',
+                jsonKey: 'serial_number',
+                dataType: 'str',
+                description: 'Serial Number',
+                instruction: 'Extract Serial Number, If not add from 1 to n.',
+                guidelines: '',
+                excludeExtraction: false,
+                isHidden: false,
+                required: false
             },
             {
-                "name": "Attribute",
-                "jsonKey": "attribute",
-                "dataType": "str",
-                "description": "Attributes",
-                "instruction": "Extract attributes like \"height\", \"weight\", etc.",
-                "guidelines": "",
-                "excludeExtraction": false,
-                "isHidden": false,
-                "required": false
+                name: 'Attribute',
+                jsonKey: 'attribute',
+                dataType: 'str',
+                description: 'Attributes',
+                instruction: 'Extract attributes like "height", "weight", etc.',
+                guidelines: '',
+                excludeExtraction: false,
+                isHidden: false,
+                required: false
             },
             {
-                "name": "Value",
-                "jsonKey": "value",
-                "dataType": "str",
-                "description": "Value",
-                "instruction": "Extract Value of the attribute, ex: \"20\", \"Yes\", etc.",
-                "guidelines": "",
-                "excludeExtraction": false,
-                "isHidden": false,
-                "required": false
+                name: 'Value',
+                jsonKey: 'value',
+                dataType: 'str',
+                description: 'Value',
+                instruction: 'Extract Value of the attribute, ex: "20", "Yes", etc.',
+                guidelines: '',
+                excludeExtraction: false,
+                isHidden: false,
+                required: false
             }
         ],
-        "description": "Product Specifications",
-        "instruction": "Extract Product Specifications, You can find in ocr text.",
-        "excludeExtraction": false,
-        "isHidden": false
+        description: 'Product Specifications',
+        instruction: 'Extract Product Specifications, You can find in ocr text.',
+        excludeExtraction: false,
+        isHidden: false
     }
-]
+];

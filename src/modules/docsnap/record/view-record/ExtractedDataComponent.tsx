@@ -1,12 +1,10 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { useViewRecordState } from './hooks/viewRecordContext';
 import { RenderObjectFields } from './render-field-components/RenderObjectFields';
-import { LoadingDataSpinner, ProgressLoader } from './components/Loaders';
+import { LoadingDataSpinner } from './components/Loaders';
 import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
-import { Button } from '../../../../components/Button';
 import { TableNames } from './render-field-components/TableNames';
-import { useViewRecordApi } from './hooks/useViewRecordApi';
 import RequestNewField from './components/RequestNewField';
 
 interface ExtractedDataComponentProps {
@@ -16,9 +14,7 @@ interface ExtractedDataComponentProps {
 
 const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef, fieldRefs }) => {
     const { state, setState } = useViewRecordState();
-    const { getRecordApiById } = useViewRecordApi();
 
-    const [data, setData] = useState<{ progress?: number; current_step?: string }>({});
 
     const extractedDataContainerRef = useRef<HTMLDivElement | null>(null);
     const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -100,25 +96,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
         }
     }, [state.selectedTableName]);
 
-    // useEffect(() => {
-    //   if (!state.record?.extractedData && state.record?.metadata?.stream_url) {
-    //     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-    //     const eventSource = new EventSource(
-    //       `${import.meta.env.VITE_PYTHON_URL}/ai/${state.record?.metadata?.stream_url}?token=Bearer ${JSON.parse(accessToken)}`
-    //     );
-    //     eventSource.addEventListener('task_update', (event: any) => {
-    //       const data = JSON.parse(event.data);
-    //       setData(data);
-    //       if (data.status === 'Complete') {
-    //         eventSource.close();
-    //         getRecordApiById(state.record?._id);
-    //       }
-    //     });
-    //     eventSource.onerror = () => {
-    //       eventSource.close();
-    //     };
-    //   }
-    // }, [state.record]);
+
 
     if (!state.record) return <LoadingDataSpinner />;
     if (state.record?.status === 'processing') return <LoadingDataSpinner text="Processing..." />;
