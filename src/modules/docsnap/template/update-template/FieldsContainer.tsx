@@ -236,7 +236,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             <UseFormbuilder
                 title={create ? 'Create Template' : 'Update Template'}
                 isOpen={state.showCreateForm}
-                className="w-[80vw]"
+                className="w-[40vw]"
                 name="Create Template Form"
                 closeDialog={() => setState(prev => ({ ...prev, showCreateForm: false }))}
                 onSubmit={handleCreateTemplate}
@@ -246,7 +246,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             <UseFormbuilder
                 title="Template Settings"
                 isOpen={state.showSettingsForm}
-                className="w-[40vw]"
+                className="w-[80vw]"
                 name="Template Settings Form"
                 closeDialog={() => setState(prev => ({ ...prev, showSettingsForm: false }))}
                 onSubmit={handleCreateTemplate}
@@ -266,6 +266,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const { state, setState } = useUpdateTemplateState();
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
+    const [editFieldDialog, setEditFieldDialog] = useState(-1);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -345,8 +346,9 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                             setState(prev => ({ ...prev, sectionList }));
                         }}
                         className="flex flex-col gap-4 p-2"
+                        disableDrag={editFieldDialog !== -1}
                     >
-                        {(field: any, index: number) => <FieldComponent key={index} field={field} index={index} mainIndex={mainIndex} />}
+                        {(field: any, index: number) => <FieldComponent editFieldDialog={editFieldDialog} setEditFieldDialog={setEditFieldDialog} key={index} field={field} index={index} mainIndex={mainIndex} />}
                     </DragAndDropContainer>
                     <Button disableRipple className="ml-4 w-fit border-none" startIcon={<Plus size={16} />} onClick={addNewField} outlined>
                         New Field
@@ -374,9 +376,9 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     );
 };
 
-const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number; mainIndex: number }) => {
+const   FieldComponent = ({ field, index, mainIndex, editFieldDialog, setEditFieldDialog }: { field: any; index: number; mainIndex: number; editFieldDialog: number; setEditFieldDialog: (index: number) => void }) => {
     const { state, setState } = useUpdateTemplateState();
-    const [showConfigForm, setShowConfigForm] = useState(false);
+    // const [showConfigForm, setShowConfigForm] = useState(false);
     const { regenerateInstructionWithAI } = useUpdateTemplatePageApi();
 
     const updateName = (e: any) => {
@@ -427,7 +429,7 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
         subFields[index] = { ...subFields[index], ...data };
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
-        setShowConfigForm(false);
+        setEditFieldDialog(-1);
     };
 
     const updateInstructionApi = async (fields: FieldIF[]) => {
@@ -464,14 +466,14 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
             ) : (
                 <LightIconButton Icon={Eye} onClick={() => updateHidden(true)} title="Visible" />
             )}
-            <LightIconButton Icon={Settings} onClick={() => setShowConfigForm(true)} title="Config" />
+            <LightIconButton Icon={Settings} onClick={() => setEditFieldDialog(index)} title="Config" />
             <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
             <UseFormbuilder
-                isOpen={showConfigForm}
+                isOpen={editFieldDialog === index}
                 className="w-130"
                 title="Field Configuration"
                 name="Template Field Config Form"
-                closeDialog={() => setShowConfigForm(false)}
+                closeDialog={() => setEditFieldDialog(-1)}
                 existingData={{
                     hidden: field?.hidden,
                     description: field?.description,
