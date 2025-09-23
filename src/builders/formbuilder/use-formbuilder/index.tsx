@@ -109,7 +109,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                 cancelClickHandler={closeDialog}
                 columns={settings.columns}
                 actionButtonText={actionButtonText}
-                actionButtonClickHandler={actionButtonClickHandler ?(fields)=>actionButtonClickHandler(fields):undefined}
+                actionButtonClickHandler={actionButtonClickHandler ? fields => actionButtonClickHandler(fields) : undefined}
             />
         </DialogComponent>
     );

@@ -15,7 +15,6 @@ export const formatDate = (iso: string, onlyDate?: boolean): string => {
         const pad = (num: number): string => num.toString().padStart(2, '0');
 
         return onlyDate ? `${pad(day)}/${pad(month)}/${year}` : `${pad(day)}/${pad(month)}/${year} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-
     } catch {
         return 'Error';
     }

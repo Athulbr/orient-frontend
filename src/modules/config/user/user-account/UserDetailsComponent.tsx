@@ -42,7 +42,7 @@ export const UserDetailsComponent: React.FC<UserDetailsComponentIF> = () => {
             }
 
             try {
-                const awsS3Response:any = await getS3File(state?.user?.profilePicture);
+                const awsS3Response: any = await getS3File(state?.user?.profilePicture);
 
                 // Convert Buffer to Uint8Array
                 const bufferData = new Uint8Array(awsS3Response.Body.data);

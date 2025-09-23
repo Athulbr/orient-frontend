@@ -105,7 +105,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
     const someSelected = allSubdealers.some(sd => sd.selected) && !allSelected;
 
     const handleSelectAll = (isSelected: boolean) => {
-        setDealersData(prevData => 
+        setDealersData(prevData =>
             prevData.map(dealer => ({
                 ...dealer,
                 subDealers: dealer.subDealers.map(subDealer => ({
@@ -120,15 +120,23 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
         <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="absolute inset-0 bg-gray-600 opacity-50" onClick={closeDialog}></div>
             <div className="fixed right-0 top-0 h-screen w-1/3 min-w-120  bg-white shadow-lg  overflow-y-auto">
-            <div className='sticky top-0 z-10 bg-white'>
-                <div className="flex bg-white top-0 z-10 justify-between items-center p-6">
-                    <h1 className="text-xl font-bold">Dealer Selection</h1>
-                    <button onClick={closeDialog} className="text-gray-500 hover:text-gray-700 cursor-pointer p-2 hover:bg-gray-100 rounded-full ">
-                        <X className="text-gray-500 hover:text-gray-700" onClick={closeDialog} />
-                    </button>
-                </div>
-                <div className="px-8 pb-4 font-semibold flex flex-col">
-                            <div className='pb-4'><DatePicker from={startDate} to={endDate} onSubmit={(from, to) => {setStartDate(from), setEndDate(to)}} /></div>
+                <div className="sticky top-0 z-10 bg-white">
+                    <div className="flex bg-white top-0 z-10 justify-between items-center p-6">
+                        <h1 className="text-xl font-bold">Dealer Selection</h1>
+                        <button onClick={closeDialog} className="text-gray-500 hover:text-gray-700 cursor-pointer p-2 hover:bg-gray-100 rounded-full ">
+                            <X className="text-gray-500 hover:text-gray-700" onClick={closeDialog} />
+                        </button>
+                    </div>
+                    <div className="px-8 pb-4 font-semibold flex flex-col">
+                        <div className="pb-4">
+                            <DatePicker
+                                from={startDate}
+                                to={endDate}
+                                onSubmit={(from, to) => {
+                                    setStartDate(from), setEndDate(to);
+                                }}
+                            />
+                        </div>
                         <div className="flex items-center pl-2">
                             <input
                                 type="checkbox"
@@ -137,10 +145,12 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                                 ref={input => {
                                     if (input) input.indeterminate = someSelected;
                                 }}
-                                onChange={(e) => handleSelectAll(e.target.checked)}
+                                onChange={e => handleSelectAll(e.target.checked)}
                                 id="selectAll"
                             />
-                            <label htmlFor="selectAll" className="ml-2 cursor-pointer">Select All</label >
+                            <label htmlFor="selectAll" className="ml-2 cursor-pointer">
+                                Select All
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -209,7 +219,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                     <h2 className="text-lg font-semibold mb-4">Selected Dealers and Sub Dealers</h2>
                     <div className="px-4 py-2 font-semibold">Dealer Name</div>
                     <div className="px-4 py-2 font-semibold">Location</div>
-                    
+
                     {selectedDealers.length > 0 ? (
                         <ul className="space-y-4">
                             {selectedDealers.map((dealer, index) => (

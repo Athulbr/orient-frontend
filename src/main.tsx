@@ -16,7 +16,7 @@ const startApp = async () => {
             <MsalProvider instance={msalInstance}>
                 <BrowserRouter>
                     {/* <StrictMode> */}
-                        <App />
+                    <App />
                     {/* </StrictMode> */}
                 </BrowserRouter>
             </MsalProvider>

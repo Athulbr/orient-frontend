@@ -67,7 +67,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
             const response = await uploadS3File(file);
             console.log(response);
             const requestBody = {
-                s3FileName: response?.fileName,
+                s3FileName: response?.fileName
             };
             if (!id) return;
             updateTemplateApi(id, requestBody, true);

@@ -9,6 +9,7 @@ import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+// const tenants = ['68a89969e874ddf8cf00527e', '68896ef48e0baa23315c3cfd'];
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -36,6 +37,7 @@ export const ListRecordComponent: React.FC = () => {
     const { deleteRecordApi } = useListRecordApi();
     const [params] = useSearchParams();
     const { checkPermission, user } = usePermissionStore();
+    const tenantId = user?.tenant?._id || selectedTenant;
 
     const { refreshRecord, extractionQueue } = useDocsnapStore();
 
@@ -60,16 +62,18 @@ export const ListRecordComponent: React.FC = () => {
         documentDate: OnlyDateCustomUI
     };
 
-    const actionButtons = checkPermission('export:record:ardex')
-        ? [
-              {
-                  label: 'Export Record',
-                  action: () => {
-                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+    const actionButtons =
+        // checkPermission('export:record:ardex') && tenants.includes(tenantId)
+        checkPermission('export:record:ardex')
+            ? [
+                  {
+                      label: 'Export Record',
+                      action: () => {
+                          setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                      }
                   }
-              }
-          ]
-        : [];
+              ]
+            : [];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
         return query;

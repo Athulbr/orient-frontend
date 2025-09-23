@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Dock, Menu, X } from 'lucide-react';
+import { Dock, Hospital, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import useToggle from '../../hooks/useToggleHook';
@@ -14,25 +14,64 @@ const DesktopSidebar = () => {
     const navigate = useNavigate();
     const [expandedSidebar, toggleExpandedSidebar] = useToggle();
     const { settings, checkPermission } = usePermissionStore();
+    const loginUser = JSON.parse(window.sessionStorage.getItem('user') || '{}');
 
     const handleNavigation = (path: string) => {
         navigate(path);
     };
 
     return (
-        <div className={`hidden h-full w-16 flex-col bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
+        <div className="hidden h-full w-16 flex-col bg-[#012D56] transition-all duration-300 ease-in-out md:flex">
             <section
                 className={`flex flex-col items-center gap-5 pt-6 transition-all duration-800 ease-out ${
                     expandedSidebar ? 'absolute top-16 left-0 z-2 h-[calc(100vh-64px)] w-45 bg-[#001529e3]' : 'h-full'
                 }`}
             >
-                <div
-                    tabIndex={0}
-                    onClick={() => navigate('/')}
-                    className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
-                >
-                    {<div className="text-[40px] font-bold text-white">D</div>}
-                </div>
+                {/* Superadmin → show both */}
+                {loginUser?.role?.name === 'superadmin' ? (
+                    <>
+                        {/* D */}
+                        <div
+                            tabIndex={0}
+                            onClick={() => navigate('/')}
+                            className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
+                        >
+                            <div className="text-[40px] font-bold text-white">D</div>
+                        </div>
+
+                        {/* M */}
+                        <div
+                            tabIndex={0}
+                            onClick={() => navigate('/audio-transcript/list')}
+                            className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
+                        >
+                            <div className="text-[40px] font-bold text-white">
+                                <Hospital />
+                            </div>
+                        </div>
+                    </>
+                ) : checkPermission('create:transcription') ? (
+                    // Not superadmin but has permission → show only M
+                    <div
+                        tabIndex={0}
+                        onClick={() => navigate('/audio-transcript/list')}
+                        className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
+                    >
+                        <div className="text-[40px] font-bold text-white">
+                            <Hospital />
+                        </div>
+                    </div>
+                ) : (
+                    // Not superadmin and no permission → show only D
+                    <div
+                        tabIndex={0}
+                        onClick={() => navigate('/')}
+                        className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
+                    >
+                        <div className="text-[40px] font-bold text-white">D</div>
+                    </div>
+                )}
+
                 {settings.length > 0 && checkPermission('read:settings') && (
                     <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 ${expandedSidebar ? 'w-full' : 'items-center text-[10px]'}`}>
                         <NavItem

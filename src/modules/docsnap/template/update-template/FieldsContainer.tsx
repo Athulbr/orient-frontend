@@ -29,7 +29,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { id, fileName } = useParams();
     const toast = useToastStore();
 
-
     useEffect(() => {
         if (!fileName) return;
 
@@ -74,7 +73,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             setState(prev => ({
                 ...prev,
                 loadingS3File: false,
-                images: imageUrl,
+                images: imageUrl
             }));
         };
         getFileAndConvertToImages();
@@ -84,32 +83,32 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         if (!id) return;
         const getTemplateData = async () => {
             try {
-            const templateData = await getTemplateApi(id);
-            setState(prev => ({ ...prev, loadingS3File: true, templateData }));
-            const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
-            const imageData = s3Response?.Body?.data;
-            if (!imageData) {
-                toast.error('S3 document not found');
-                return;
-            }
-            const uint8Array = new Uint8Array(imageData);
-            const getFileType = await fileTypeFromBuffer(uint8Array);
-            let pdfFile: any;
-            let imageUrl;
-            if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
-                pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
-                imageUrl = [URL.createObjectURL(pdfFile).toString()];
-            } else {
-                pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
-                imageUrl = await convertPdfToImages(pdfFile);
-            }
+                const templateData = await getTemplateApi(id);
+                setState(prev => ({ ...prev, loadingS3File: true, templateData, templateSettings: templateData?.settings }));
+                const s3Response: any = await useS3Storage.getState().getS3File(templateData?.s3FileName);
+                const imageData = s3Response?.Body?.data;
+                if (!imageData) {
+                    toast.error('S3 document not found');
+                    return;
+                }
+                const uint8Array = new Uint8Array(imageData);
+                const getFileType = await fileTypeFromBuffer(uint8Array);
+                let pdfFile: any;
+                let imageUrl;
+                if (getFileType?.mime && getFileType?.mime !== 'application/pdf') {
+                    pdfFile = await binaryToFile(uint8Array, `image.${getFileType.ext}`, getFileType?.mime);
+                    imageUrl = [URL.createObjectURL(pdfFile).toString()];
+                } else {
+                    pdfFile = await binaryToFile(uint8Array, `document.${getFileType?.ext}`, getFileType?.mime);
+                    imageUrl = await convertPdfToImages(pdfFile);
+                }
 
-            setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
-        } catch (error:any) {
-            setState(prev => ({ ...prev, loadingS3File: false, noS3File: true }));
+                setState(prev => ({ ...prev, loadingS3File: false, images: imageUrl }));
+            } catch (error: any) {
+                setState(prev => ({ ...prev, loadingS3File: false, noS3File: true }));
 
-               toast.error(error.message); 
-        }
+                toast.error(error.message);
+            }
         };
         getTemplateData();
     }, [id]);
@@ -157,21 +156,32 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             if (!id) return;
             const requestBody = {
                 fields: state.sectionList,
+                settings: state.templateSettings,
                 s3FileName: fileName,
                 ...data
             };
             updateTemplateApi(id, requestBody);
         }
     };
+    console.log('state.templateSettings:===========', state.templateSettings);
+    const submitSettingsHandler = (data: any) => {
+        setState(prev => ({ ...prev, templateSettings: data, showTemplateSettingsForm: false }));
+    };
     return (
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
                 <div>Template Fields</div>
-                <div className='flex items-center gap-2'>
-                <Button startIcon={<FileCog className='text-gray-500' size={16} />} outlined onClick={() => setState(prev => ({ ...prev, showSettingsForm: true }))}>Settings</Button>
-                <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
-                    {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        startIcon={<FileCog className="text-gray-500" size={16} />}
+                        outlined
+                        onClick={() => setState(prev => ({ ...prev, showTemplateSettingsForm: true }))}
+                    >
+                        Settings
+                    </Button>
+                    <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
+                        {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
+                    </Button>
                 </div>
             </div>
             {state.loadingTemplate ? (
@@ -236,7 +246,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             <UseFormbuilder
                 title={create ? 'Create Template' : 'Update Template'}
                 isOpen={state.showCreateForm}
-                className="w-[80vw]"
+                className="w-[40vw]"
                 name="Create Template Form"
                 closeDialog={() => setState(prev => ({ ...prev, showCreateForm: false }))}
                 onSubmit={handleCreateTemplate}
@@ -245,12 +255,12 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             />
             <UseFormbuilder
                 title="Template Settings"
-                isOpen={state.showSettingsForm}
-                className="w-[40vw]"
+                isOpen={state.showTemplateSettingsForm}
+                className="w-[80vw]"
                 name="Template Settings Form"
-                closeDialog={() => setState(prev => ({ ...prev, showSettingsForm: false }))}
-                onSubmit={handleCreateTemplate}
-                existingData={state.templateData}
+                closeDialog={() => setState(prev => ({ ...prev, showTemplateSettingsForm: false }))}
+                onSubmit={submitSettingsHandler}
+                existingData={state.templateSettings}
                 loadingPrimaryButton={state.updatingTemplate}
             />
         </div>
@@ -266,6 +276,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const { state, setState } = useUpdateTemplateState();
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
+    const [editFieldDialog, setEditFieldDialog] = useState(-1);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -345,8 +356,18 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                             setState(prev => ({ ...prev, sectionList }));
                         }}
                         className="flex flex-col gap-4 p-2"
+                        disableDrag={editFieldDialog !== -1}
                     >
-                        {(field: any, index: number) => <FieldComponent key={index} field={field} index={index} mainIndex={mainIndex} />}
+                        {(field: any, index: number) => (
+                            <FieldComponent
+                                editFieldDialog={editFieldDialog}
+                                setEditFieldDialog={setEditFieldDialog}
+                                key={index}
+                                field={field}
+                                index={index}
+                                mainIndex={mainIndex}
+                            />
+                        )}
                     </DragAndDropContainer>
                     <Button disableRipple className="ml-4 w-fit border-none" startIcon={<Plus size={16} />} onClick={addNewField} outlined>
                         New Field
@@ -374,9 +395,21 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     );
 };
 
-const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number; mainIndex: number }) => {
+const FieldComponent = ({
+    field,
+    index,
+    mainIndex,
+    editFieldDialog,
+    setEditFieldDialog
+}: {
+    field: any;
+    index: number;
+    mainIndex: number;
+    editFieldDialog: number;
+    setEditFieldDialog: (index: number) => void;
+}) => {
     const { state, setState } = useUpdateTemplateState();
-    const [showConfigForm, setShowConfigForm] = useState(false);
+    // const [showConfigForm, setShowConfigForm] = useState(false);
     const { regenerateInstructionWithAI } = useUpdateTemplatePageApi();
 
     const updateName = (e: any) => {
@@ -427,7 +460,7 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
         subFields[index] = { ...subFields[index], ...data };
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
-        setShowConfigForm(false);
+        setEditFieldDialog(-1);
     };
 
     const updateInstructionApi = async (fields: FieldIF[]) => {
@@ -442,7 +475,7 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
             setState(prev => {
                 const sectionList = [...prev.sectionList];
                 sectionList[mainIndex].subFields[index].instruction = updatedInstruction;
-                return { ...prev, sectionList,  };
+                return { ...prev, sectionList };
             });
             // setShowConfigForm(false);
         }
@@ -464,30 +497,28 @@ const FieldComponent = ({ field, index, mainIndex }: { field: any; index: number
             ) : (
                 <LightIconButton Icon={Eye} onClick={() => updateHidden(true)} title="Visible" />
             )}
-            <LightIconButton Icon={Settings} onClick={() => setShowConfigForm(true)} title="Config" />
+            <LightIconButton Icon={Settings} onClick={() => setEditFieldDialog(index)} title="Config" />
             <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
             <UseFormbuilder
-                isOpen={showConfigForm}
-                className="w-130"
+                isOpen={editFieldDialog === index}
+                className="w-[50vw]"
                 title="Field Configuration"
                 name="Template Field Config Form"
-                closeDialog={() => setShowConfigForm(false)}
+                closeDialog={() => setEditFieldDialog(-1)}
                 existingData={{
                     hidden: field?.hidden,
                     description: field?.description,
                     instruction: field?.instruction,
                     excludeExtraction: field?.excludeExtraction,
                     isHidden: field?.isHidden,
-                    required: field?.required
+                    required: field?.required,
+                    validationUrl: field?.validationUrl,
+                    postProcessingScript: field?.postProcessingScript
                 }}
                 onSubmit={handleUpdateField}
                 actionButtonText="Regenerate Instruction"
                 actionButtonClickHandler={(fields: FieldIF[]) => updateInstructionApi(fields)}
             />
-            {/* <DialogComponent name='Update Instruction' className='p-4 pt-0  w-250' isOpen={showUpdateInstructionDialog} closeDialog={() => setShowUpdateInstructionDialog(false)}>
-                <TextAreaComponent rows={10} placeholder="Instruction" value={query} onChange={(e) => setQuery(e.target.value)} />
-                <Button disabled={!query} className='mt-4' onClick={updateInstructionWithAI} outlined>Submit</Button>
-            </DialogComponent> */}
         </div>
     );
 };

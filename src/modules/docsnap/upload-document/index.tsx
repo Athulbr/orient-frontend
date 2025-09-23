@@ -40,7 +40,6 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
                 return;
             }
             addToNodeExtractorV1(files, templateData);
-
         } else {
             if (extractionType === 'multiPO') {
                 addToPythonExtractionMultiPO(files, templateData || {});
@@ -60,7 +59,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput accept='application/pdf,image/*' onFilesChange={onFileDrop} />
+                <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

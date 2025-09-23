@@ -13,10 +13,19 @@ interface RenderFormIF {
     loadingPrimaryButton?: boolean;
     className?: string;
     actionButtonText?: string;
-    actionButtonClickHandler?: (fields:FieldIF[]) => void;
+    actionButtonClickHandler?: (fields: FieldIF[]) => void;
 }
 
-export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancelClickHandler, submitClickHandler, loadingPrimaryButton, className, actionButtonText, actionButtonClickHandler }) => {
+export const RenderForm: React.FC<RenderFormIF> = ({
+    fields,
+    columns = 2,
+    cancelClickHandler,
+    submitClickHandler,
+    loadingPrimaryButton,
+    className,
+    actionButtonText,
+    actionButtonClickHandler
+}) => {
     const [fieldsArray, setFields] = useState<FieldIF[]>([]);
     // const [fieldsArray, setFields] = useState<FieldIF[]>(fields.map(field => ({ ...field })));
 
@@ -62,10 +71,11 @@ export const RenderForm: React.FC<RenderFormIF> = ({ fields, columns = 2, cancel
                         gap: '10px'
                     }}
                 >
-
-                   {actionButtonText && <Button onClick={actionButtonClickHandler ?()=>actionButtonClickHandler(fieldsArray):undefined} outlined>
-                        {actionButtonText}
-                    </Button>}
+                    {actionButtonText && (
+                        <Button onClick={actionButtonClickHandler ? () => actionButtonClickHandler(fieldsArray) : undefined} outlined>
+                            {actionButtonText}
+                        </Button>
+                    )}
                     <Button onClick={cancelClickHandler} outlined>
                         Cancel
                     </Button>
