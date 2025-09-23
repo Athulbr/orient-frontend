@@ -100,7 +100,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     return (
         <PageContainer className="gap-4 p-2 md:p-6">
             <PageNameComponent
-                name={id ? 'Update Patient Record' : 'Create Patient Record'}
+                name={id ? 'Update Operating Notes' : 'Create Operating Notes'}
                 showBackButton={true}
                 customGoBackFunction={() => navigate('/audio-transcript/list')}
             >
