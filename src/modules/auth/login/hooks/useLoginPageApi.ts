@@ -49,7 +49,9 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
 
-                if (res?.data?.permissions[0]?.key?.includes('create:transcription') && res?.data?.user?.role?.name !== 'superadmin') {
+                const permissions = res?.data?.permissions?.map((permission: any) => permission?.key);
+
+                if (permissions?.includes('create:transcription') && res?.data?.user?.role?.name !== 'superadmin') {
                     window?.location?.replace('/audio-transcript/list');
                 } else {
                     const permissions = [
