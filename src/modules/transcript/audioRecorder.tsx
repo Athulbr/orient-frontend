@@ -146,8 +146,8 @@ const AudioRecorder = ({
                 const payload = { medicalText: textInput, sourceType, transcriptions };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
 
-                // const zipBlob = new Blob([response], { type: 'application/zip' });
-                // setZipBlob?.(zipBlob);
+                const zipBlob = new Blob([response], { type: 'application/zip' });
+                setZipBlob?.(zipBlob);
             }
         } catch (err) {
             console.error(err);
