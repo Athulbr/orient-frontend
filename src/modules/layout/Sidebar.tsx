@@ -42,7 +42,7 @@ const DesktopSidebar = () => {
                         {/* M */}
                         <div
                             tabIndex={0}
-                            onClick={() => navigate('/transcript/list')}
+                            onClick={() => navigate('/audio-transcript/list')}
                             className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
                         >
                             <div className="text-[40px] font-bold text-white">
@@ -54,7 +54,7 @@ const DesktopSidebar = () => {
                     // Not superadmin but has permission → show only M
                     <div
                         tabIndex={0}
-                        onClick={() => navigate('/transcript/list')}
+                        onClick={() => navigate('/audio-transcript/list')}
                         className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
                     >
                         <div className="text-[40px] font-bold text-white">

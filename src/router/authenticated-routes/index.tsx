@@ -20,9 +20,9 @@ const AuthenticatedRoutes = () => {
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/" element={<DashboardPage />} />
-                <Route path="/transcript/list" element={<TranscriptionListPage />} />
-                <Route path="/transcript/create" element={<TranscriptionCreatePage />} />
-                <Route path="/transcript/view/:id" element={<TranscriptionCreatePage />} />
+                <Route path="/audio-transcript/list" element={<TranscriptionListPage />} />
+                <Route path="/audio-transcript/create" element={<TranscriptionCreatePage />} />
+                <Route path="/audio-transcript/view/:id" element={<TranscriptionCreatePage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </Suspense>

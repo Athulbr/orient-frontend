@@ -27,8 +27,6 @@ interface ResponseViewerProps {
     setShowPreview?: (value: boolean) => void;
 }
 
-
-
 const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, clearData, onSubmit, setShowPreview }: ResponseViewerProps) => {
     const [tabIndex, setTabIndex] = useState(0);
     const [title, setTitle] = useState<string>();
@@ -119,7 +117,8 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
     return (
         <div className="h-full flex flex-col items-start justify-between p-2">
             <Button outlined onClick={() => setShowPreview?.(false)} className="md:hidden">
-Go to Record                </Button>
+                Go to Record{' '}
+            </Button>
             {/* Tabs */}
             <TabNavComponent tabs={tabs} onChange={setTabIndex} exportData={exportData} enableFlag={transcripts?.content} />
 
@@ -139,7 +138,7 @@ Go to Record                </Button>
                                 onPrimaryAction: async () => {
                                     setExit(true);
                                     closeAlert();
-                                    navigate('/transcript/list');
+                                    navigate('/audio-transcript/list');
                                 }
                             });
                         }}

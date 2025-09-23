@@ -51,7 +51,7 @@ export const useLoginPageApi = () => {
 
 
                 if (res?.data?.permissions[0]?.key?.includes('create:transcription') && res?.data?.user?.role?.name !== 'superadmin') {
-                    window?.location?.replace('/transcript/list');
+                    window?.location?.replace('/audio-transcript/list');
                 } else {
                     const permissions = [
                         'create:template',

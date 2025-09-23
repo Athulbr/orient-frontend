@@ -87,7 +87,7 @@ const ListRecordPage: React.FC = () => {
                     <UseFormbuilder
                         title="Transcription"
                         isOpen={true}
-                        className="w-[80vw]"
+                        className="w-[40vw]"
                         name="Transcription"
                         closeDialog={() => setSubmit(false)}
                         onSubmit={(values: any) => onSubmit(values)}

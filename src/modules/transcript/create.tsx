@@ -91,7 +91,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
             }
 
             const res = await updateTranscript(payload, currentData._id);
-            if (res) navigate('/transcript/list');
+            if (res) navigate('/audio-transcript/list');
         }
     };
 
@@ -102,7 +102,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
             <PageNameComponent
                 name={id ? 'Update CPT Code' : 'Create CPT Code'}
                 showBackButton={true}
-                customGoBackFunction={() => navigate('/transcript/list')}
+                customGoBackFunction={() => navigate('/audio-transcript/list')}
             >
                 <Button startIcon={<Upload size={16} className="text-gray-500" />} outlined onClick={handleExport}>
                     Export
@@ -138,26 +138,28 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                 />
             </div>
             <div className="block md:hidden overflow-auto  flex-col h-full">
-               {showPreview ?<ResponseViewer
-                            isProcessing={isProcessing}
-                            transcriptionData={transcriptionData}
-                            titleName={titleName}
-                            error={error}
-                            clearData={clearData}
-                            onSubmit={handleSubmit}
-                            setShowPreview={setShowPreview}
-                        />
-               : <AudioRecorder
-                    titleName={titleName}
-                    setIsProcessing={setIsProcessing}
-                    setTranscriptionData={setTranscriptionData}
-                    setError={setError}
-                    deleteAudioTrack={deleteAudio}
-                    setMedicalText={setMedicalText}
-                    setSource={setSourceType}
-                    setShowPreview={setShowPreview}
-
-                />}
+                {showPreview ? (
+                    <ResponseViewer
+                        isProcessing={isProcessing}
+                        transcriptionData={transcriptionData}
+                        titleName={titleName}
+                        error={error}
+                        clearData={clearData}
+                        onSubmit={handleSubmit}
+                        setShowPreview={setShowPreview}
+                    />
+                ) : (
+                    <AudioRecorder
+                        titleName={titleName}
+                        setIsProcessing={setIsProcessing}
+                        setTranscriptionData={setTranscriptionData}
+                        setError={setError}
+                        deleteAudioTrack={deleteAudio}
+                        setMedicalText={setMedicalText}
+                        setSource={setSourceType}
+                        setShowPreview={setShowPreview}
+                    />
+                )}
             </div>
         </PageContainer>
     );
