@@ -39,6 +39,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const { getS3File } = useS3Storage();
     const [sourceType, setSourceType] = useState<SourceType>('text');
     const [medicalText, setMedicalText] = useState('');
+    const [showPreview, setShowPreview] = useState(false);
     const { updateTranscript, currentData, gettranscriptData, transcriptData } = useTranscriptStore();
 
     useEffect(() => {
@@ -137,7 +138,16 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                 />
             </div>
             <div className="block md:hidden overflow-auto  flex-col h-full">
-                <AudioRecorder
+               {showPreview ?<ResponseViewer
+                            isProcessing={isProcessing}
+                            transcriptionData={transcriptionData}
+                            titleName={titleName}
+                            error={error}
+                            clearData={clearData}
+                            onSubmit={handleSubmit}
+                            setShowPreview={setShowPreview}
+                        />
+               : <AudioRecorder
                     titleName={titleName}
                     setIsProcessing={setIsProcessing}
                     setTranscriptionData={setTranscriptionData}
@@ -145,7 +155,9 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                     deleteAudioTrack={deleteAudio}
                     setMedicalText={setMedicalText}
                     setSource={setSourceType}
-                />
+                    setShowPreview={setShowPreview}
+
+                />}
             </div>
         </PageContainer>
     );

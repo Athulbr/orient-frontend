@@ -48,11 +48,7 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
         );
     };
 
-    return (
-        <div className="flex flex-col h-full w-full">
-            <div className="flex-1 overflow-y-auto">{renderContent()}</div>
-        </div>
-    );
+    return renderContent()
 };
 
 export default TranscriptSummary;

@@ -41,19 +41,17 @@ const TranscriptCpt = ({ isProcessing, transcriptionData, error }: TranscriptCpt
         }
 
         return (
-            <div className="flex flex-col gap-6 overflow-y-auto">
-                <div className=" border border-gray-200 rounded-lg p-4 bg-white">
-                    <p className="whitespace-pre-line text-gray-700">{transcriptionData.content}</p>
-                </div>
-            </div>
+            // <div className="flex flex-1 flex-col gap-6 overflow-y-auto">
+            //     <div className=" border border-gray-200 rounded-lg p-4 bg-white">
+            //         <p className="whitespace-pre-line text-gray-700">{transcriptionData.content}</p>
+            //     </div>
+            // </div>
+                                <p className="overflow-y-auto flex-1 whitespace-pre-line text-gray-700">{transcriptionData.content}</p>
+
         );
     };
 
-    return (
-        <div className="flex flex-col w-full overflow-y-auto">
-            <div className="flex-1 flex-col overflow-y-auto">{renderContent()}</div>
-        </div>
-    );
+    return renderContent();
 };
 
 export default TranscriptCpt;

@@ -10,6 +10,7 @@ import httpUploadRequest from '../../global-utils/httpUploadRequest';
 import { Dialog } from '../../builders/formbuilder/components/dialog';
 import { Button } from '../../components/Button';
 import DragAndDropFileInput from '../../components/DragAndDropFileInput';
+import BackButton from '../../components/BackButton';
 
 interface AudioRecorderProps {
     setIsProcessing?: (val: boolean) => void;
@@ -20,6 +21,7 @@ interface AudioRecorderProps {
     deleteAudioTrack?: boolean;
     setMedicalText: (val: string) => void;
     setSource: (val: SourceType) => void;
+    setShowPreview?: (value: boolean) => void;
 }
 
 type SourceType = 'text' | 'audio' | 'file';
@@ -32,7 +34,8 @@ const AudioRecorder = ({
     setError,
     deleteAudioTrack,
     setMedicalText,
-    setSource
+    setSource,
+    setShowPreview
 }: AudioRecorderProps) => {
     const [isRecording, setIsRecording] = useState(false);
     const [voiceRecording, setVoiceRecording] = useState(false);
@@ -342,7 +345,7 @@ const AudioRecorder = ({
                         Audio
                     </label>
                 </div>
-                <Button onClick={handleUpload} className="bg-[#455a95] text-white">
+                <Button outlined onClick={() => setShowPreview?.(true)} className="md:hidden">
                     View Result
                 </Button>
             </div>
