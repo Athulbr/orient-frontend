@@ -43,7 +43,7 @@ export const ListRecordComponent: React.FC = () => {
 
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
-            navigate(`/transcript/view/${row._id}`);
+            navigate(`/audio-transcript/view/${row._id}`);
         },
         deleteClickHandler: (row: any) => {
             deleteRecordApi(row._id);
