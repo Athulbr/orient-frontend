@@ -18,7 +18,7 @@ const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name
         customGoBackFunction ? customGoBackFunction() : navigate(-1);
     };
     return (
-        <div className={cn('flex justify-between pb-1', className)}>
+        <div className={cn('flex justify-between pb-1 gap-2', className)}>
             <div className="flex items-center gap-2 text-xl text-nowrap">
                 {showBackButton && <BackButton onClick={onClickHandler} />} {name}
             </div>

@@ -14,7 +14,7 @@ const PageActionsComponent: React.FC = () => {
 
     return (
         <div className="flex w-full justify-end gap-4">
-            <div className="flex h-10 w-full max-w-100 flex-1 items-center rounded-md border px-3">
+            <div className=" h-10 w-full max-w-100 flex-1 items-center rounded-md border px-3  hidden md:flex">
                 <Search className="text-gray-500" size={20} />
                 <input
                     value={state.searchText}

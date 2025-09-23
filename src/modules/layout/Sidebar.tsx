@@ -1,173 +1,134 @@
-import { FC } from 'react';
-import { Dock, Hospital, Menu, X } from 'lucide-react';
+import { AudioLines, FilePenLine, Settings, Tractor, X } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
-import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
-import useToggle from '../../hooks/useToggleHook';
-import { useToastStore } from '../../components/toast/ToastStore';
-import { NavItem } from './components/NavItem';
-import { SidebarComponentIF, configMenuItem, logoutMenuItem, navItems } from './types';
-import React from 'react';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
 
-// Desktop sidebar component
-const DesktopSidebar = () => {
-    const navigate = useNavigate();
-    const [expandedSidebar, toggleExpandedSidebar] = useToggle();
-    const { settings, checkPermission } = usePermissionStore();
-    const loginUser = JSON.parse(window.sessionStorage.getItem('user') || '{}');
+interface SidebarComponentIF {
+    showSidebar?: boolean;
+    setShowSidebar: (state: boolean) => void;
+}
 
-    const handleNavigation = (path: string) => {
-        navigate(path);
-    };
+export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = false, setShowSidebar }) => {
+    const [sidebarMenuItems, setSidebarMenuItems] = useState([
+        {
+            name: 'DocSnap',
+            icon: <div className="text-[40px] font-bold text-white">D</div>,
+            path: '/docsnap',
+            key: 'docsnap',
+            permission: 'docsnap:module'
+        },
+        {
+            name: 'Data Entry',
+            icon: <FilePenLine size={32} strokeWidth={2.5} className="text-white" />,
+            path: '/dataentry',
+            key: 'dataentry',
+            permission: 'dataentry:module'
+        },
+        {
+            name: 'Transcript',
+            icon: <AudioLines size={32} strokeWidth={2.5} className="text-white" />,
+            path: '/audio-transcript/list',
+            key: 'transcript',
+            permission: 'transcript:module'
+        }
+    ]);
 
     return (
-        <div className="hidden h-full w-16 flex-col bg-[#012D56] transition-all duration-300 ease-in-out md:flex">
-            <section
-                className={`flex flex-col items-center gap-5 pt-6 transition-all duration-800 ease-out ${
-                    expandedSidebar ? 'absolute top-16 left-0 z-2 h-[calc(100vh-64px)] w-45 bg-[#001529e3]' : 'h-full'
-                }`}
-            >
-                {/* Superadmin → show both */}
-                {loginUser?.role?.name === 'superadmin' ? (
-                    <>
-                        {/* D */}
-                        <div
-                            tabIndex={0}
-                            onClick={() => navigate('/')}
-                            className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
-                        >
-                            <div className="text-[40px] font-bold text-white">D</div>
-                        </div>
+        <>
+            <DesktopSidebar sidebarMenuItems={sidebarMenuItems} />
+            <MobileSidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} sidebarMenuItems={sidebarMenuItems} />
+        </>
+    );
+};
 
-                        {/* M */}
-                        <div
-                            tabIndex={0}
-                            onClick={() => navigate('/audio-transcript/list')}
-                            className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
-                        >
-                            <div className="text-[40px] font-bold text-white">
-                                <Hospital />
-                            </div>
-                        </div>
-                    </>
-                ) : checkPermission('create:transcription') ? (
-                    // Not superadmin but has permission → show only M
-                    <div
-                        tabIndex={0}
-                        onClick={() => navigate('/audio-transcript/list')}
-                        className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
-                    >
-                        <div className="text-[40px] font-bold text-white">
-                            <Hospital />
-                        </div>
-                    </div>
-                ) : (
-                    // Not superadmin and no permission → show only D
-                    <div
-                        tabIndex={0}
-                        onClick={() => navigate('/')}
-                        className="flex h-16 w-12 cursor-pointer flex-col items-center justify-center gap-1 rounded-md transition-all duration-200 hover:bg-blue-900"
-                    >
-                        <div className="text-[40px] font-bold text-white">D</div>
-                    </div>
-                )}
+interface DesktopSidebarIF {
+    sidebarMenuItems: any[];
+}
 
-                {settings.length > 0 && checkPermission('read:settings') && (
-                    <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 ${expandedSidebar ? 'w-full' : 'items-center text-[10px]'}`}>
-                        <NavItem
-                            key={configMenuItem.key}
-                            item={configMenuItem}
-                            onClick={() => handleNavigation(configMenuItem.path)}
-                            expandedSidebar={expandedSidebar}
-                        />
-                        <span className="flex justify-center text-xs transition-opacity duration-300">{expandedSidebar ? '© 2025 makez.ai' : 'V 1.0.0'}</span>
+interface MobileSidebarIF {
+    showSidebar?: boolean;
+    setShowSidebar: (state: boolean) => void;
+    sidebarMenuItems: any[];
+}
+
+const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
+    const { settings, checkPermission } = usePermissionStore();
+
+    const navigate = useNavigate();
+    return (
+        <div className={`hidden h-full min-w-16 max-w-16 pt-2 flex-col gap-2 bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
+            {sidebarMenuItems.map(item => {
+                if (!checkPermission(item.permission)) return null;
+                const isActive = location.pathname.includes(item.key) || (item.key === 'docsnap' && location.pathname === '/');
+                return (
+                    <div
+                        onClick={() => navigate(item.path)}
+                        key={item.key}
+                        className={cn(
+                            'group flex h-16 cursor-pointer flex-col items-center justify-center rounded-md transition-all duration-200 relative',
+                            isActive && 'bg-blue-900'
+                        )}
+                    >
+                        <div className="min-h-8 ">{item.icon}</div>
+                        <div className="invisible z-10 group-hover:visible absolute bottom-4 left-[101%] bg-blue-950 py-2 px-3 rounded-md transition-all duration-300">
+                            <div className="text-xs text-nowrap text-white font-semibold">{item.name}</div>
+                        </div>
                     </div>
-                )}
-            </section>
+                );
+            })}
+            {settings.length > 0 && checkPermission('read:settings') && (
+                <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 items-center text-[10px]`}>
+                    <div
+                        onClick={() => navigate('/config/user/list')}
+                        className={cn('group flex h-16 cursor-pointer flex-col items-center justify-center rounded-md transition-all duration-200 relative')}
+                    >
+                        <div className="min-h-8 ">
+                            <Settings size={32} strokeWidth={2} className="text-white" />
+                        </div>
+                        <div className="invisible z-10 group-hover:visible absolute bottom-4 left-[152%] bg-blue-950 py-2 px-3 rounded-md transition-all duration-300">
+                            <div className="text-xs text-nowrap text-white font-semibold">Settings</div>
+                        </div>
+                    </div>
+                    <span className="flex justify-center text-xs transition-opacity duration-300">V 1.0.0</span>
+                </div>
+            )}
         </div>
     );
 };
 
-// Mobile sidebar overlay component
-const MobileSidebar: FC<SidebarComponentIF> = ({ showSidebar, setShowSidebar }) => {
-    const toast = useToastStore();
+const MobileSidebar = ({ showSidebar, setShowSidebar, sidebarMenuItems }: MobileSidebarIF) => {
+    const { settings, checkPermission } = usePermissionStore();
     const navigate = useNavigate();
 
-    const logOut = () => {
-        toast.success('Logged out successfully');
-        setTimeout(() => {
-            window.sessionStorage.clear();
-            window?.location?.replace('/');
-        }, 500);
-    };
-
-    const handleNavigation = (path: string) => {
-        navigate(path);
-    };
-
-    const item = {
-        name: 'DocSnap',
-        icon: React.createElement(Dock, { strokeWidth: 1.5, size: 32, color: '#f3f4f6' }),
-        path: '/',
-        key: 'docsnap'
-    };
-
+    if (!showSidebar) return null;
     return (
-        <>
-            {showSidebar && (
-                <div className="absolute top-0 left-0 z-20 flex h-screen w-screen bg-[#00000080] md:hidden">
-                    <div className="h-screen w-1/2 translate-x-0 transform bg-black">
-                        <div className="flex h-17 w-full items-center justify-between pl-6">
-                            <MakezLogoHeader />
-                        </div>
-                        <div className="flex flex-col gap-4 p-2 pt-6">
-                            <NavItem
-                                item={item}
-                                onClick={() => {
-                                    setShowSidebar(false);
-                                    handleNavigation(item.path);
-                                }}
-                                isMobile
-                            />
-                            <NavItem
-                                key={logoutMenuItem.key}
-                                item={logoutMenuItem}
-                                onClick={() => {
-                                    setShowSidebar(false);
-                                    logOut();
-                                }}
-                                isMobile
-                            />
-                            <NavItem
-                                key={configMenuItem.key}
-                                item={configMenuItem}
-                                onClick={() => {
-                                    setShowSidebar(false);
-                                    logOut();
-                                }}
-                                isMobile
-                            />
-                        </div>
-                    </div>
-                    <div onClick={() => setShowSidebar(false)} className="flex h-full flex-1 justify-end">
-                        <div className="flex h-16 w-16 items-center justify-center">
-                            <X className="cursor-pointer" color="white" size={20} />
-                        </div>
-                    </div>
+        <div className="absolute top-0 left-0 z-20 flex h-screen w-screen bg-[#00000080] md:hidden">
+            <div onClick={() => setShowSidebar(false)} className="flex h-full flex-1 justify-end">
+                <div className="flex h-16 w-16 items-center justify-center">
+                    <X className="cursor-pointer" color="white" size={20} />
                 </div>
-            )}
-        </>
+                <div className="absolute left-0 bottom-0 h-[calc(100vh-64px)] w-3/4 bg-[#012D56] flex flex-col gap-3 pt-3">
+                    {sidebarMenuItems.map(item => {
+                        if (!checkPermission(item.permission)) return null;
+                        const isActive = location.pathname.includes(item.key) || (item.key === 'docsnap' && location.pathname === '/');
+                        return (
+                            <div
+                                onClick={() => navigate(item.path)}
+                                key={item.key}
+                                className={cn(
+                                    'group flex h-16 cursor-pointer flex-col items-start pl-4 justify-center rounded-md transition-all duration-200 relative hover:bg-blue-900',
+                                    isActive && 'bg-blue-900'
+                                )}
+                            >
+                                <div className="min-h-8 flex gap-2 items-center text-white">
+                                    {item.icon} {item.name}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
     );
 };
-
-// Main sidebar component that renders both desktop and mobile sidebars
-const SidebarComponent: FC<SidebarComponentIF> = ({ showSidebar = false, setShowSidebar }) => {
-    return (
-        <>
-            <DesktopSidebar />
-            <MobileSidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar} />
-        </>
-    );
-};
-
-export default SidebarComponent;

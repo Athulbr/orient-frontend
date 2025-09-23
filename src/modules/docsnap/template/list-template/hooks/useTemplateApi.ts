@@ -11,8 +11,8 @@ export const useListTemplatePageApi = () => {
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { search: state.searchText || '' });
-            setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
+            const templates = sessionStorage.getItem('templates');
+            setState(prev => ({ ...prev, loadingTemplates: false, templates: JSON.parse(templates || '[]') }));
             // toast.success('Template fetched successfully');
             return true;
         } catch (error) {
@@ -20,11 +20,24 @@ export const useListTemplatePageApi = () => {
             toast.error('Failed to fetch template list');
         }
     };
+    // const getTemplatesApi = async () => {
+    //     try {
+    //         setState(prev => ({ ...prev, loadingTemplates: true }));
+    //         const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { search: state.searchText || '' });
+    //         setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
+    //         // toast.success('Template fetched successfully');
+    //         return true;
+    //     } catch (error) {
+    //         console.error('error:===========', error);
+    //         toast.error('Failed to fetch template list');
+    //     }
+    // };
     const getPredefinedTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/pre-template`);
-            setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data }));
+            // const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/pre-template`);
+            const predefinedTemplates = sessionStorage.getItem('predefinedTemplates');
+            setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: JSON.parse(predefinedTemplates || '[]') }));
             // toast.success('Template fetched successfully');
             return true;
         } catch (error) {

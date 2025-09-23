@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
@@ -23,29 +23,35 @@ export interface DashboardStateIF {
     statusCounts: any;
     loadingStatusCounts: boolean;
     test: any[];
+    module: string;
 }
 
-const initialState = {
-    totalTemplates: 0,
-    isDashboard: true,
-    records: [],
-    loadingRecords: false,
-    templates: [],
-    loadingTemplates: false,
-    showCreateTemplateDialog: false,
-    showUploadDocumentDialog: false,
-    selectedTemplate: null,
-    refresh: 1,
-    predefinedTemplates: [],
-    loadingPredefinedTemplates: false,
-    statusCounts: null,
-    loadingStatusCounts: false,
-    test: []
-};
-
-const DashboardPage: FC = () => {
+const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
+    console.log('module:===========', module);
+    const initialState = {
+        totalTemplates: 0,
+        isDashboard: true,
+        records: [],
+        loadingRecords: false,
+        templates: [],
+        loadingTemplates: false,
+        showCreateTemplateDialog: false,
+        showUploadDocumentDialog: false,
+        selectedTemplate: null,
+        refresh: 1,
+        predefinedTemplates: [],
+        loadingPredefinedTemplates: false,
+        statusCounts: null,
+        loadingStatusCounts: false,
+        test: [],
+        module
+    };
     const [state, setState] = useState<DashboardStateIF>(initialState);
-    // useBackButtonOverride('/');
+
+    useEffect(() => {
+        if (module === state.module) return;
+        setState({ ...state, module });
+    }, [module]);
 
     return (
         <DashboardStateProvider value={{ state, setState }}>

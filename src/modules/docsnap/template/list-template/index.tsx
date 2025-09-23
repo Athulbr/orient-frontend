@@ -40,7 +40,7 @@ const ListTemplatePage: React.FC = () => {
 
     return (
         <TemplateStateProvider value={{ state, setState }}>
-            <PageContainer className="gap-4 p-6">
+            <PageContainer className="gap-4 p-2 md:p-6">
                 <Breadcrumbs page="listTemplate" />
                 <PageNameComponent name="List of Templates" showBackButton>
                     <PageActionsComponent />

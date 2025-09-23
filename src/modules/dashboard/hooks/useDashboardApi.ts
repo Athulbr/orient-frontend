@@ -36,12 +36,8 @@ export const useDashboardApi = () => {
         try {
             // if (!checkPermission('read:template')) return;
             setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/pre-template`, {
-                pageSize: 50,
-                custom: true,
-                filters: { deleted: false }
-            });
-            setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: res.data }));
+            const predefinedTemplates = sessionStorage.getItem('predefinedTemplates');
+            setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: JSON.parse(predefinedTemplates || '[]') }));
             return true;
         } catch (error) {
             toast.error('Failed to fetch predefined template list');
@@ -50,12 +46,14 @@ export const useDashboardApi = () => {
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
-                pageSize: 15,
-                custom: true,
-                filters: { deleted: false }
-            });
-            setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data, totalTemplates: res.total }));
+            const templates = sessionStorage.getItem('templates');
+            const parsedTemplates = JSON.parse(templates || '[]');
+            setState(prev => ({
+                ...prev,
+                loadingTemplates: false,
+                templates: parsedTemplates,
+                totalTemplates: parsedTemplates.length
+            }));
             return true;
         } catch (error) {
             toast.error('Failed to fetch template list');

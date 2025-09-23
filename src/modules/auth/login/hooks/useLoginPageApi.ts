@@ -44,35 +44,17 @@ export const useLoginPageApi = () => {
 
                 const resp = await Promise.all([
                     httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
+                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
                 ]);
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
+                window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
+                window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
 
-                if (res?.data?.permissions[0]?.key?.includes('create:transcription') && res?.data?.user?.role?.name !== 'superadmin') {
-                    window?.location?.replace('/audio-transcript/list');
-                } else {
-                    const permissions = [
-                        'create:template',
-                        'read:template',
-                        'delete:template',
-                        'update:template',
-                        'extract:document',
-                        'read:user',
-                        'read:module',
-                        'read:feature',
-                        'read:role',
-                        'read:tenant',
-                        'read:subscription-model',
-                        'read:formbuilder',
-                        'read:tablebuilder',
-                        'read:comment',
-                        'read:prompt-tuning'
-                    ];
-                    window?.sessionStorage?.setItem('permissions', JSON.stringify(permissions));
-                    toast.success('Logged in successfully');
-                    window?.location?.replace('/');
-                }
+                toast.success('Logged in successfully');
+                window?.location?.replace('/');
             } else {
                 setState(prev => ({ ...prev, authError: 'Login failed. Please check your credentials.' }));
             }

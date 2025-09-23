@@ -10,6 +10,7 @@ import { RecordStatusCustomUI } from '../../docsnap/record/list-record/component
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import { Polink } from '../../docsnap/record/list-record/ListRecordComponent';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
+import { cn } from '../../../global-utils/twMerge';
 
 const RecentFilesCardComponent: React.FC = () => {
     const { state, setState } = useDashboardState();
@@ -28,7 +29,7 @@ const RecentFilesCardComponent: React.FC = () => {
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
-                <div className="text-gray-800">Recent Files</div>
+                <div className="text-gray-800">Recent {state.module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
                         onClick={() => navigate('/docsnap/record/list')}
@@ -40,7 +41,7 @@ const RecentFilesCardComponent: React.FC = () => {
             </div>
             {!checkPermission('read:record') ? (
                 <div className="flex h-full w-full flex-col items-center justify-center text-sm text-gray-400">
-                    You do not have permission to view recent files
+                    You do not have permission to view recent {state.module === 'docsnap' ? 'files' : 'entries'}
                 </div>
             ) : state.loadingRecords ? (
                 <SkeletonLoader />
@@ -72,7 +73,12 @@ const RecentFilesCardComponent: React.FC = () => {
                                             <Polink data={row} />
                                         </td>
                                     )}
-                                    <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
+                                    <td
+                                        className={cn(
+                                            'max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900',
+                                            formatDate(row.documentDate, true) === '-' ? 'pl-15' : ''
+                                        )}
+                                    >
                                         {/* {formatDate(row.updatedAt)} */}
                                         {formatDate(row.documentDate, true)}
                                     </td>
