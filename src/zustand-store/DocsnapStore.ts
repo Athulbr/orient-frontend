@@ -309,7 +309,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             model_id: 'gpt-4o',
                             use_latest: false
                         };
-                        if (template.enableOcr) requestBody.ocr_engine = 'doctr'; // 'google_vision'; // 'doctr';
+                        if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
                         const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
@@ -432,7 +432,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             use_latest: false,
                             template_id: template._id
                         };
-                        if (template.enableOcr) requestBody.ocr_engine = 'doctr' //'google_vision'; // 'doctr';
+                        if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
                         const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);
