@@ -282,11 +282,10 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             Array.from(files).forEach(async (file, index) => {
                 const sendApiRequest = async () => {
                     try {
-                        let timer;
                         set({
                             extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }]
                         });
-                        timer = setInterval(() => {
+                        const timer = setInterval(() => {
                             set({
                                 extractionQueue: get().extractionQueue.map((item: any) =>
                                     item.fileName === file.name ? { ...item, time: item.time + 1 } : item
@@ -405,11 +404,10 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             Array.from(files).forEach(async (file, index) => {
                 const sendApiRequest = async () => {
                     try {
-                        let timer;
                         set({
                             extractionQueue: [...get().extractionQueue, { fileName: file.name, status: 'Uploading', time: 0 }]
                         });
-                        timer = setInterval(() => {
+                        const timer = setInterval(() => {
                             set({
                                 extractionQueue: get().extractionQueue.map((item: any) =>
                                     item.fileName === file.name ? { ...item, time: item.time + 1 } : item

@@ -173,4 +173,17 @@ const allSettings: SettingsIF[] = [
             }
         ]
     }
+    // {
+    //     name: 'Medical Code',
+    //     iconName: 'Book',
+    //     items: [
+    //         {
+    //             name: 'Medical Code',
+    //             iconName: 'MessageSquareText',
+    //             path: '/config/transcript',
+    //             key: 'medical',
+    //             permission: 'read:medical'
+    //         }
+    //     ]
+    // }
 ];
