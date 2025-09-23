@@ -57,8 +57,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
         }
     }, [transcriptData]);
 
-
-
     const clearData = () => {
         setTranscriptionData([]);
         setDeleteAudio(true);
@@ -80,6 +78,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     };
 
     const handleSubmit = async () => {
+        console.log('currentData on submit', currentData, sourceType);
         if (currentData?._id) {
             const payload: any = {
                 name: currentData?.name,

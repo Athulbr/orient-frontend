@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Mic, FileUp, Play, Pause, Square, Upload, ArrowLeft, DeleteIcon, Trash2 } from 'lucide-react';
+import { Mic, FileUp, Play, Pause, Square, Upload, ArrowLeft, DeleteIcon, ArrowDownToLine, Trash2 } from 'lucide-react';
 import AudioWaveform from './audioWave';
 import { getCurrentDateTime } from '../../global-utils/convert-date-format';
 import { processZipResponse } from '../../global-utils/zipHandler';
@@ -73,6 +73,7 @@ const AudioRecorder = ({
     }, []);
 
     useEffect(() => {
+        console.log('transcriptData availabvle-----?', transcriptData?.transcriptions);
         if (transcriptData) {
             if (transcriptData?.medicalText) setTextInput(transcriptData?.medicalText);
         }
@@ -136,10 +137,10 @@ const AudioRecorder = ({
             const response: any = await uploadText(payload);
 
             if (response) {
-                const transcriptedFile = await uploadFileToS3(response);
+                // const transcriptedFile = await uploadFileToS3(response);
                 const transcriptions = await processZipResponse(response);
                 setTranscriptionData?.(transcriptions);
-                const payload = { medicalText: textInput, sourceType, transcriptions, transcriptedFile: transcriptedFile?.data?.fileName };
+                const payload = { medicalText: textInput, sourceType, transcriptions };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
 
                 // const zipBlob = new Blob([response], { type: 'application/zip' });
@@ -268,8 +269,8 @@ const AudioRecorder = ({
                 const blob = new Blob([response], { type: 'application/zip' });
                 setZipBlob?.(blob);
 
-                const transcriptedFile = new File([response], 'transcriptedFile.zip', { type: 'application/zip' });
-                const transcriptedFileResponse = await uploadFileToS3(transcriptedFile);
+                // const transcriptedFile = new File([response], 'transcriptedFile.zip', { type: 'application/zip' });
+                // const transcriptedFileResponse = await uploadFileToS3(transcriptedFile);
 
                 const fileToUpload = audioBlob ? new File([audioBlob], `audio-${getCurrentDateTime()}.m4a`, { type: 'audio/m4a' }) : file;
                 if (!fileToUpload) {
@@ -277,7 +278,7 @@ const AudioRecorder = ({
                 }
                 const result = await uploadFileToS3(fileToUpload);
 
-                const payload = { sourceFile: result?.data?.fileName, sourceType, transcriptions, transcriptedFile: transcriptedFileResponse?.data?.fileName };
+                const payload = { sourceFile: result?.data?.fileName, sourceType, transcriptions };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
             }
         } catch (err) {
@@ -300,6 +301,34 @@ const AudioRecorder = ({
         setFileUpload(false);
     };
 
+    const handleArrowDownClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileUpload = async (event: any) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.name.endsWith('.txt')) {
+            // Handle text file
+            const text = await file.text();
+            setTextInput(text); // Update textarea
+        } else if (file.name.endsWith('.docx')) {
+            // Handle docx file
+            const reader = new FileReader();
+            reader.onload = async (e: any) => {
+                const arrayBuffer = e.target.result;
+                // Use docx.js or mammoth.js in the browser to parse docx
+                const mammoth = await import('mammoth');
+                const { value } = await mammoth.extractRawText({ arrayBuffer });
+                setTextInput(value);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex gap-4  p-6">
@@ -309,15 +338,23 @@ const AudioRecorder = ({
                 </label>
                 <label className="flex items-center gap-2">
                     <input type="radio" value="audio" checked={sourceType === 'audio'} onChange={() => setSourceType('audio')} />
-                    Audio Record
+                    Audio
                 </label>
-                <label className="flex items-center gap-2">
+                {/* <label className="flex items-center gap-2">
                     <input type="radio" value="file" checked={sourceType === 'file'} onChange={() => setSourceType('file')} />
                     File Upload
-                </label>
+                </label> */}
             </div>
             <div className="flex flex-col justify-center overflow-y-auto flex-1">
                 {/* Conditional Input UI */}
+                {/* // TODO: Add drag and drop file input */}
+                {sourceType === 'text' && (
+                    <>
+                        <ArrowDownToLine size={24} className="text-gray-500 cursor-pointer flex-end" onClick={handleArrowDownClick} />
+                        {/** Hidden file input */}
+                        <input type="file" accept=".txt,.docx" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+                    </>
+                )}
                 {sourceType === 'text' && (
                     <div className="flex flex-1 flex-col overflow-y-auto gap-4 p-2">
                         <textarea
@@ -408,7 +445,7 @@ const AudioRecorder = ({
 
                 {/* <DragAndDropFileInput onFileDrop={handleFileChange} /> */}
 
-                {sourceType === 'file' && (
+                {/* {sourceType === 'file' && (
                     <div className="flex flex-col gap-4 justify-center overflow-y-auto h-full p-2">
                         <DragAndDropFileInput onFileDrop={handleFileDrop} />
 
@@ -416,7 +453,7 @@ const AudioRecorder = ({
                             <Upload className="w-5 h-5" /> Upload File
                         </Button>
                     </div>
-                )}
+                )} */}
 
                 {/* Preview */}
                 {audioBlob && !isRecording && !isUploading && !exit && (
