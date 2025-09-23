@@ -79,7 +79,7 @@ const ListRecordPage: React.FC = () => {
                 {/* <Breadcrumbs page="listTranscripts" /> */}
                 <PageNameComponent name={`List of Transcripts`}>
                     <Button outlined onClick={() => setSubmit(true)}>
-                        Create CPT
+                        Create Patient Record
                     </Button>
                 </PageNameComponent>
                 <ListRecordComponent />

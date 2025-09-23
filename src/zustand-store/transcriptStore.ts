@@ -12,6 +12,8 @@ export interface transcriptIF {
   }
   recordedBy: string;
   deleted: boolean;
+  sourceType?: string;
+  sourceFile?: string;
   medicalText?: string;
   transcriptions: TranscriptionData[];
   transcriptedFile: string;

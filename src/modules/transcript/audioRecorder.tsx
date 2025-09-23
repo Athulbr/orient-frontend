@@ -60,7 +60,7 @@ const AudioRecorder = ({
     const streamRef = useRef<MediaStream | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [sourceType, setSourceType] = useState<SourceType>('text');
+    const [sourceType, setSourceType] = useState<any>('text');
     const [textInput, setTextInput] = useState('');
     const [file, setFile] = useState<File | null>(null);
 
@@ -76,9 +76,9 @@ const AudioRecorder = ({
     }, []);
 
     useEffect(() => {
-        console.log('transcriptData availabvle-----?', transcriptData?.transcriptions);
         if (transcriptData) {
             if (transcriptData?.medicalText) setTextInput(transcriptData?.medicalText);
+            if (transcriptData?.sourceType) setSourceType(transcriptData?.sourceType);
         }
     }, [transcriptData, id]);
 
@@ -143,7 +143,7 @@ const AudioRecorder = ({
                 // const transcriptedFile = await uploadFileToS3(response);
                 const transcriptions = await processZipResponse(response);
                 setTranscriptionData?.(transcriptions);
-                const payload = { medicalText: textInput, sourceType, transcriptions };
+                const payload = { medicalText: textInput, sourceType: 'text', transcriptions };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
 
                 const zipBlob = new Blob([response], { type: 'application/zip' });
@@ -264,6 +264,7 @@ const AudioRecorder = ({
             if (audioBlob) fd.append('file', audioBlob, 'recording.m4a');
             if (!audioBlob && file) fd.append('file', file, file.name);
             const response: any = await uploadAudio(fd, `${file ? 'text' : 'audio'}`);
+            setSource('audio');
 
             if (response) {
                 const transcriptions = await processZipResponse(response);
@@ -281,7 +282,7 @@ const AudioRecorder = ({
                 }
                 const result = await uploadFileToS3(fileToUpload);
 
-                const payload = { sourceFile: result?.data?.fileName, sourceType, transcriptions };
+                const payload = { sourceFile: result?.data?.fileName, sourceType: 'audio', transcriptions };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
             }
         } catch (err) {
@@ -334,7 +335,7 @@ const AudioRecorder = ({
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex p-6 justify-between">
+            <div className="flex p-4 justify-between">
                 <div className="flex gap-2">
                     <label className="flex items-center gap-2">
                         <input type="radio" value="text" checked={sourceType === 'text'} onChange={() => setSourceType('text')} />
@@ -350,15 +351,14 @@ const AudioRecorder = ({
                 </Button>
             </div>
             <div className="flex flex-col justify-center overflow-y-auto flex-1">
-                {sourceType === 'text' && (
+                {/* {sourceType === 'text' && (
                     <>
-                        <div className="flex justify-end px-2">
-                            <ArrowDownToLine size={24} className="text-gray-500" onClick={handleArrowDownClick} />
+                        <div className="flex justify-end px-5">
+                            <Upload size={24} className="text-gray-500" onClick={handleArrowDownClick} />
                         </div>
-                        {/** Hidden file input */}
                         <input type="file" accept=".txt,.docx" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
                     </>
-                )}
+                )} */}
                 {sourceType === 'text' && (
                     <div className="flex flex-1 flex-col overflow-y-auto gap-4 p-2">
                         <textarea
@@ -367,9 +367,15 @@ const AudioRecorder = ({
                             value={textInput}
                             onChange={e => setTextInput(e.target.value)}
                         />
-                        <Button onClick={handleText} className="bg-[#455a95] text-white">
-                            Send Text
-                        </Button>
+                        <div className="flex gap-2 justify-center">
+                            <Button onClick={handleArrowDownClick} className="Primary text-white">
+                                Upload Text File
+                            </Button>
+                            <input ref={fileInputRef} type="file" accept=".txt,.docx" onChange={handleFileUpload} className="hidden" />
+                            <Button onClick={handleText} className="Primary text-white">
+                                Send Text
+                            </Button>
+                        </div>
                     </div>
                 )}
 
@@ -430,7 +436,7 @@ const AudioRecorder = ({
                             <Button
                                 onClick={handleUpload}
                                 disabled={!audioBlob || isUploading || transcription.length > 0}
-                                className="flex items-center gap-2 px-6 py-3 text-white bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
+                                className="flex items-center gap-2 px-6 py-3 text-white Primary rounded-full disabled:opacity-50"
                             >
                                 {isUploading ? (
                                     <div className="flex items-center gap-2">

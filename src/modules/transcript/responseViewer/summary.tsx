@@ -48,7 +48,7 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
         );
     };
 
-    return renderContent()
+    return renderContent();
 };
 
 export default TranscriptSummary;

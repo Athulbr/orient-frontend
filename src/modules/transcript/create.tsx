@@ -8,7 +8,7 @@ import PageContainer from '../../components/PageContainer';
 import PageNameComponent from '../../components/PageName';
 import { ResizableContainer } from '../docsnap/template/update-template/components/ResizableContainer';
 import { Button } from '../../components/Button';
-import { Upload } from 'lucide-react';
+import { Upload, ArrowDownToLine } from 'lucide-react';
 import { getCurrentDateTime } from '../../global-utils/convert-date-format';
 import { useS3Storage } from '../../zustand-store/S3Storage';
 
@@ -100,11 +100,11 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     return (
         <PageContainer className="gap-4 p-2 md:p-6">
             <PageNameComponent
-                name={id ? 'Update CPT Code' : 'Create CPT Code'}
+                name={id ? 'Update Patient Record' : 'Create Patient Record'}
                 showBackButton={true}
                 customGoBackFunction={() => navigate('/audio-transcript/list')}
             >
-                <Button startIcon={<Upload size={16} className="text-gray-500" />} outlined onClick={handleExport}>
+                <Button startIcon={<ArrowDownToLine size={16} className="text-gray-500" />} outlined onClick={handleExport}>
                     Export
                 </Button>
             </PageNameComponent>
