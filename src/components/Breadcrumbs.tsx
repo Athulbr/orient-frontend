@@ -10,6 +10,7 @@ interface BreadcrumbsIF {
 const Breadcrumbs: React.FC<BreadcrumbsIF> = ({ page, className, pageName }) => {
     const navigate = useNavigate();
     const breadcrumbs = {
+        listTranscripts: [{ text: 'Mediacl', path: '/' }, { text: '/' }, { text: 'Transcripts' }],
         listRecord: [{ text: 'Docsnap', path: '/' }, { text: '/' }, { text: 'Records' }],
         UserAccount: [{ text: 'Home', path: '/' }, { text: '/' }, { text: 'Account Details' }],
         // Checked ^

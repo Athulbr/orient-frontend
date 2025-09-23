@@ -1,3 +1,4 @@
+import { Key } from 'lucide-react';
 import { loginRequest } from '../sso/msal-config';
 import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
@@ -7,10 +8,12 @@ import httpRequest from '../../../../global-utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useMsal } from '@azure/msal-react';
 import { useEffect } from 'react';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 
 export const useLoginPageApi = () => {
     const { instance, accounts } = useMsal();
     const { state, setState } = useLoginPageState();
+    const { settings, checkPermission, setPermissions } = usePermissionStore();
     const toast = useToastStore();
 
     // ============================= UseEffect ==================================
@@ -37,6 +40,7 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                 window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+                window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
 
                 const resp = await Promise.all([
                     httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
@@ -44,27 +48,31 @@ export const useLoginPageApi = () => {
                 ]);
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
-                const permissions = [
-                    'create:template',
-                    'read:template',
-                    'delete:template',
-                    'update:template',
-                    'extract:document',
-                    'read:user',
-                    'read:module',
-                    'read:feature',
-                    'read:role',
-                    'read:tenant',
-                    'read:subscription-model',
-                    'read:formbuilder',
-                    'read:tablebuilder',
-                    'read:comment',
-                    'read:prompt-tuning'
-                ];
-                window?.sessionStorage?.setItem('permissions', JSON.stringify(permissions));
-                toast.success('Logged in successfully');
 
-                window?.location?.replace('/');
+                if (res?.data?.permissions[0]?.key?.includes('create:transcription') && res?.data?.user?.role?.name !== 'superadmin') {
+                    window?.location?.replace('/audio-transcript/list');
+                } else {
+                    const permissions = [
+                        'create:template',
+                        'read:template',
+                        'delete:template',
+                        'update:template',
+                        'extract:document',
+                        'read:user',
+                        'read:module',
+                        'read:feature',
+                        'read:role',
+                        'read:tenant',
+                        'read:subscription-model',
+                        'read:formbuilder',
+                        'read:tablebuilder',
+                        'read:comment',
+                        'read:prompt-tuning'
+                    ];
+                    window?.sessionStorage?.setItem('permissions', JSON.stringify(permissions));
+                    toast.success('Logged in successfully');
+                    window?.location?.replace('/');
+                }
             } else {
                 setState(prev => ({ ...prev, authError: 'Login failed. Please check your credentials.' }));
             }
@@ -128,11 +136,6 @@ export const useLoginPageApi = () => {
         instance.loginRedirect(loginRequest).catch(e => {
             console.error('Sign In issue---->', e);
         });
-    };
-    const forgotPasswordApi = async () => {
-        try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
-        } catch (error) {}
     };
 
     // ============================= Return ==================================

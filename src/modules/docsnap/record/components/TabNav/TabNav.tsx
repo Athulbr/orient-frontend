@@ -1,13 +1,20 @@
 import React, { useState, useCallback, useRef, useEffect, FC } from 'react';
 import styles from './TabNav.module.css';
+
+interface TabIF {
+    id?: string;
+    title?: string;
+}
 export interface TabNavProps {
     defaultActiveTab?: number;
     className?: string;
     onChange?: (index: number) => void;
-    tabs: { id: string; title: string }[];
+    tabs: TabIF[];
+    exportData?: (index: number) => Promise<void>;
+    enableFlag?: any;
 }
 
-export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange, tabs }) => {
+export const TabNavComponent: React.FC<TabNavProps> = ({ defaultActiveTab = 0, className = '', onChange, tabs, exportData, enableFlag }) => {
     // State for tracking active tab
     const [activeTab, setActiveTab] = useState(defaultActiveTab);
 
