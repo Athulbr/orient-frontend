@@ -3,11 +3,9 @@ import style from './transcript.module.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../auth/AuthStore';
 import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
-import TranscriptTableComponent from './table';
 import { Button } from '../../components/Button';
 import { PlusIcon } from 'lucide-react';
 import TableSearch from '../../components/table-search';
-import TableRow from '../../components/table-row';
 import TableControlBox from '../../components/table-control-box';
 import { tableRowOptions } from '../../global-utils/static-data';
 import { UseTablebuilder } from '../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
@@ -40,16 +38,16 @@ const TranscriptListPage = () => {
 
     return (
         <div className="px-5 w-full">
-               <UseTablebuilder
-                        name="List Transcript Table"
-                        fluidHeight
-                        // refresh={state.refresh}
-                        // customFunctions={customFunctions}
-                        // customUI={customUI}
-                        // actionButtons={actionButtons}
-                        deletePermission="delete:project"
-                        updatePermission="update:project"
-                    />
+            <UseTablebuilder
+                name="List Transcript Table"
+                fluidHeight
+                // refresh={state.refresh}
+                // customFunctions={customFunctions}
+                // customUI={customUI}
+                // actionButtons={actionButtons}
+                deletePermission="delete:project"
+                updatePermission="update:project"
+            />
         </div>
     );
 };
