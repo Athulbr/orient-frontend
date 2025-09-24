@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Mic, FileUp, Play, Pause, Square, Upload, ArrowLeft, DeleteIcon, ArrowDownToLine, Trash2 } from 'lucide-react';
+import { Mic, FileUp, Play, Pause, Square, Upload, Trash2 } from 'lucide-react';
 import AudioWaveform from './audioWave';
 import { getCurrentDateTime } from '../../global-utils/convert-date-format';
 import { processZipResponse } from '../../global-utils/zipHandler';
 import useTranscriptStore from '../../zustand-store/transcriptStore';
-import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 import httpUploadRequest from '../../global-utils/httpUploadRequest';
-import { Dialog } from '../../builders/formbuilder/components/dialog';
 import { Button } from '../../components/Button';
-import DragAndDropFileInput from '../../components/DragAndDropFileInput';
-import BackButton from '../../components/BackButton';
 
 interface AudioRecorderProps {
     setIsProcessing?: (val: boolean) => void;
@@ -75,57 +71,11 @@ const AudioRecorder = ({
     }, []);
 
     useEffect(() => {
-        console.log('Am i coming here------->', transcriptData?.medicalText);
-
         if (transcriptData && id) {
             if (transcriptData?.medicalText) setTextInput(transcriptData?.medicalText);
             if (transcriptData?.sourceType) setSourceType(transcriptData?.sourceType);
         }
     }, [transcriptData, id]);
-
-    // const handleUploadText = async () => {
-    //     if (!textInput.trim()) {
-    //         setError?.('Please type something to upload.');
-    //         return;
-    //     }
-    //     setIsProcessing?.(true);
-
-    //     try {
-    //         // 1️⃣ Create a .txt file from textInput
-    //         const blob = new Blob([textInput], { type: 'text/plain' });
-    //         const textFile = new File([blob], `typed-${Date.now()}.txt`, {
-    //             type: 'text/plain'
-    //         });
-
-    //         // 2️⃣ Prepare FormData for API
-    //         const fd = new FormData();
-    //         fd.append('file', textFile);
-
-    //         // 3️⃣ Call your existing API
-    //         const response: any = await uploadText(fd); // <-- same function you use for audio
-
-    //         if (response) {
-    //             // If your API returns a zip like with audio
-    //             const transcriptions = await processZipResponse(response);
-    //             setTranscriptionData?.(transcriptions);
-
-    //             const zipBlob = new Blob([response], { type: 'application/zip' });
-    //             setZipBlob?.(zipBlob);
-    //         }
-    //     } catch (err) {
-    //         console.error(err);
-    //         setError?.('Failed to process text.');
-    //         setTranscriptionData?.([]);
-    //     } finally {
-    //         setIsProcessing?.(false);
-    //     }
-    // };
-
-    // const handleFileDrop = async (file: File) => {
-    //     // read the file contents as text
-    //     const text = await file.text();
-    //     setUploadedContent(text);
-    // };
 
     const handleText = async () => {
         if (!textInput.trim()) {
@@ -141,19 +91,20 @@ const AudioRecorder = ({
             const response: any = await uploadText(payload);
 
             if (response) {
-                const transcriptions = await processZipResponse(response);
                 const transcriptedFile = new File([response], `transcriptedFile_${currentData?.patientId}_${getCurrentDateTime()}.zip`, {
                     type: 'application/zip'
                 });
-                const transcriptedFileResponse = await uploadFileToS3(transcriptedFile);
-                console.log('transcriptedFileResponse', transcriptedFileResponse);
+                Promise.all([processZipResponse(response), uploadFileToS3(transcriptedFile)]).then(([transcriptions, transcriptedFileResponse]) => {
+                    console.log('transcriptions', transcriptions);
+                    console.log('transcriptedFileResponse', transcriptedFileResponse);
 
-                setTranscriptionData?.(transcriptions);
-                const payload = { medicalText: textInput, sourceType: 'text', transcriptions, transcriptedFile: transcriptedFileResponse?.data?.fileName };
-                if (currentData?._id) updateTranscript(payload, currentData._id);
+                    setTranscriptionData?.(transcriptions);
+                    const payload = { medicalText: textInput, sourceType: 'text', transcriptions, transcriptedFile: transcriptedFileResponse?.data?.fileName };
+                    if (currentData?._id) updateTranscript(payload, currentData._id);
 
-                const zipBlob = new Blob([response], { type: 'application/zip' });
-                setZipBlob?.(zipBlob);
+                    const zipBlob = new Blob([response], { type: 'application/zip' });
+                    setZipBlob?.(zipBlob);
+                });
             }
         } catch (err) {
             console.error(err);
@@ -277,6 +228,7 @@ const AudioRecorder = ({
                 const transcriptions = await processZipResponse(response);
                 setTranscriptionData?.(transcriptions);
                 setTranscription(transcriptions);
+
                 const blob = new Blob([response], { type: 'application/zip' });
                 setZipBlob?.(blob);
 

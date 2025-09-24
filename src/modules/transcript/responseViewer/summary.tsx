@@ -5,9 +5,11 @@ interface TranscriptSummaryProps {
     isProcessing: boolean;
     transcriptionData?: { content?: string; filename?: string };
     error?: string | null;
+    value?: string;
+    onChange?: (val: string) => void;
 }
 
-const TranscriptSummary = ({ isProcessing, transcriptionData, error }: TranscriptSummaryProps) => {
+const TranscriptSummary = ({ isProcessing, transcriptionData, error, value, onChange }: TranscriptSummaryProps) => {
     const renderContent = () => {
         if (error) {
             return (
@@ -29,7 +31,7 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
             );
         }
 
-        if (!transcriptionData?.content) {
+        if (!transcriptionData?.content && !value) {
             return (
                 <div className="flex h-full flex-col items-center justify-center gap-4 text-center p-6">
                     <FileText className="w-12 h-12 text-gray-400" />
@@ -40,10 +42,13 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
         }
 
         return (
-            <div className="flex flex-1 flex-col gap-6 overflow-y-auto">
-                <div className="border border-gray-200 rounded-lg p-4 bg-white">
-                    <p className="whitespace-pre-line text-gray-700">{transcriptionData.content}</p>
-                </div>
+            <div className="flex flex-1 flex-col overflow-y-auto gap-4 p-2 w-full">
+                <textarea
+                    className="w-full border rounded-md flex-1 p-2"
+                    value={value ?? transcriptionData?.content ?? ''}
+                    onChange={e => onChange?.(e.target.value)}
+                    placeholder="Edit summary..."
+                />
             </div>
         );
     };
