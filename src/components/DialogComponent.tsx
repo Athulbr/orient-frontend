@@ -17,6 +17,7 @@ export interface DialogPropsIF {
     onSecondaryAction?: () => void;
     fullScreen?: boolean;
     className?: string;
+    layerClassName?: string;
     loading?: boolean;
     additionalButtons?: { label: string; action: () => void }[];
     disableBlurCloseDialog?: boolean;
@@ -32,6 +33,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
     onPrimaryAction,
     onSecondaryAction,
     className,
+    layerClassName,
     fullScreen,
     loading,
     additionalButtons,
@@ -99,7 +101,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
         );
 
     return (
-        <div className="fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]">
+        <div className={cn('fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#00000082]', layerClassName)}>
             <div
                 ref={dialogRef}
                 className={cn(

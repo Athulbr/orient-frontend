@@ -160,7 +160,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                 s3FileName: fileName,
                 ...data
             };
-            updateTemplateApi(id, requestBody);
+            updateTemplateApi(id, requestBody, false);
         }
     };
     console.log('state.templateSettings:===========', state.templateSettings);
@@ -513,7 +513,8 @@ const FieldComponent = ({
                     isHidden: field?.isHidden,
                     required: field?.required,
                     validationUrl: field?.validationUrl,
-                    postProcessingScript: field?.postProcessingScript
+                    postProcessingScript: field?.postProcessingScript,
+                    regenerateFieldValueWithAI: field?.regenerateFieldValueWithAI
                 }}
                 onSubmit={handleUpdateField}
                 actionButtonText="Regenerate Instruction"

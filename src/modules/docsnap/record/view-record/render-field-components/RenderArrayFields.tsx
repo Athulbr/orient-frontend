@@ -1,11 +1,12 @@
 import { Trash2, XCircle } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { ValidateSkuButton } from '../components/ValidateSkuButton';
+import nunjucks from 'nunjucks';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
@@ -88,8 +89,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         }));
     };
 
-    console.log('state.tableNames:===========', state.tableNames);
-
     return (
         <>
             {state.arrayFields.map((lineItems, mainIndex) => {
@@ -138,13 +137,24 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                             {labels.map((label, i) => {
                                                 const value = lineItem[label];
 
+                                                const { fieldLabel, validationUrl } = useMemo(() => {
+                                                    const fields = state.record?.templateId?.fields;
+                                                    const field = fields?.find((item: any) => item.jsonKey === state.tableNames[mainIndex]);
+                                                    const subField = field?.subFields?.find((item: any) => item.jsonKey === label);
+                                                    return {
+                                                        fieldLabel: subField?.name ? formatFieldLabel(subField.name) : 'formatFieldLabel(label)',
+                                                        validationUrl: subField?.validationUrl || ''
+                                                    };
+                                                }, [key, label]);
+
                                                 const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
                                                 return (
                                                     <ArrayFieldTextarea
                                                         key={i}
                                                         value={value}
                                                         fieldId={hoveredFieldId}
-                                                        label={label}
+                                                        validationUrl={validationUrl}
+                                                        label={fieldLabel}
                                                         fieldRefs={fieldRefs}
                                                         disabled={state.loadingS3File || state.reExtracting}
                                                         onChange={(e: any) => {
@@ -180,7 +190,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                     />
                                                 );
                                             })}
-
                                             <td className="h-full border py-2 pl-9">
                                                 <Trash2
                                                     tabIndex={-1}
@@ -199,7 +208,13 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                 </tbody>
                             </table>
                         </div>
-                        <CommentDialog jsonKey={'line_item'} isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
+                        <CommentDialog
+                            commentList={[]}
+                            setCommentList={() => {}}
+                            jsonKey={'line_item'}
+                            isOpen={commentDialog}
+                            closeDialog={() => setCommentDialog(false)}
+                        />
                     </div>
                 );
             })}
@@ -215,8 +230,9 @@ interface PropsIF {
     onMouseEnter: () => void;
     fieldRefs: any;
     disabled?: boolean;
+    validationUrl?: string;
 }
-const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled }) => {
+const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled, validationUrl }) => {
     const adjustTextareaHeight = () => {
         const textarea = fieldRefs.current[fieldId];
         if (!textarea) return;
@@ -234,9 +250,24 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     useEffect(() => {
         adjustTextareaHeight();
     }, [value?.value]);
+    const validateLink = (validationUrl: string, value: string) => {
+        if (!validationUrl.trim() || !value.trim()) return;
+        const finalUrl = nunjucks.renderString(validationUrl, { value });
+        window.open(finalUrl, '_blank');
+    };
     return (
         <td className="border p-1">
-            <ValidateSkuButton label={label} value={value?.value} />
+            {/* <ValidateSkuButton label={label} value={value?.value} /> */}
+            {validationUrl && value?.value && (
+                <div className="mb-0.5 w-full flex justify-end">
+                    <span
+                        onClick={() => validateLink(validationUrl, value?.value)}
+                        className="text-xs text-gray-600 cursor-pointer border  px-2 py-0.5 rounded-md hover:bg-sky-50 hover:border-gray-500"
+                    >
+                        Validate
+                    </span>
+                </div>
+            )}
             <textarea
                 data-gramm="false"
                 id={fieldId}

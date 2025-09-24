@@ -63,13 +63,32 @@ export const useViewRecordApi = () => {
                     }
                 });
             }
+            function removeDuplicates(arr: string[]) {
+                return [...new Set(arr)];
+            }
+            const dataEntryWebImages = removeDuplicates(res.data?.dataEntryWebImages);
+            const templateId = res.data?.templateId?._id;
+            const templates = sessionStorage.getItem('templates');
+            let templateSettings;
+            // if (templates) {
+            //     const templateData = JSON.parse(templates || '');
+            //     const template = templateData?.find((template: any) => template?._id === templateId);
+            //     templateSettings = template?.settings;
+            // } else {
+            const resp = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${templateId}`);
+            templateSettings = resp.data?.settings;
+            const templateFields = resp.data?.fields;
+            // }
             setState(prev => ({
                 ...prev,
                 record: res.data,
                 objectFields,
                 arrayFields,
                 tableNames,
-                loadingData: false
+                loadingData: false,
+                dataEntryWebImages,
+                templateSettings,
+                templateFields
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
@@ -257,6 +276,28 @@ export const useViewRecordApi = () => {
             return true;
         }
     };
+    const sendRegenerateMessage = async (data: any) => {
+        try {
+            const res = httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_FIELD}`, data);
+            return res;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to create Comment');
+        } finally {
+            setState(prev => ({ ...prev }));
+        }
+    };
+    const sendContentCreationContext = async (data: any) => {
+        try {
+            const res = httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_CONTENT_CREATION}`, data);
+            return res;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to create Comment');
+        } finally {
+            setState(prev => ({ ...prev }));
+        }
+    };
 
     return {
         getRecordApiById,
@@ -267,7 +308,9 @@ export const useViewRecordApi = () => {
         generateInvoiceWithAI,
         createRequestedNewField,
         createComment,
-        sendMessageToNode
+        sendMessageToNode,
+        sendRegenerateMessage,
+        sendContentCreationContext
     };
 };
 

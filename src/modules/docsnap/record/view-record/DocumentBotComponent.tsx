@@ -25,7 +25,7 @@ const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
     //     getTenantSettings();
     // }, []);
     const sendMessageHandler = async (message: string) => {
-        if (tenantSettings?.extractionEngine === 'node') {
+        if (tenantSettings?.extractionEngine !== 'node') {
             sendMessageToNode(message);
         } else {
             sendMessage(message);

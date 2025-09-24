@@ -34,7 +34,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             toast.error('You can select up to 20 files only.');
             return;
         }
-        if (extractionEngine === 'node') {
+        if (extractionEngine !== 'node') {
             if (!templateData) {
                 toast.error('Template not found');
                 return;

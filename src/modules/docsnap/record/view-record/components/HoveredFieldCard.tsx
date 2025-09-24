@@ -59,7 +59,7 @@ export const HoveredFieldCard: React.FC<HoveredFieldCardProps> = ({
 
     return (
         <div
-            className={`${state.hoveredOnArrayField ? 'bottom-[130%] shadow-none' : 'top-[130%] shadow-lg'} absolute left-[-10px] z-11 flex min-w-70 flex-col gap-2 rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-lg shadow-gray-400`}
+            className={`${state.hoveredOnArrayField ? 'bottom-[130%] shadow-none' : 'top-[130%] shadow-lg'} absolute left-[-10px] z-11 flex ${getFieldLabel().toLowerCase().includes('description') || getFieldLabel().toLowerCase().includes('benefits') ? 'min-w-180' : 'min-w-70'} flex-col gap-2 rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-lg shadow-gray-400`}
         >
             <div className="flex items-center justify-between gap-2 pl-1 font-semibold">
                 <div className="flex items-center gap-2">

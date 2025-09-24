@@ -6,6 +6,7 @@ import ExtractedDataFooter from './components/ExtractedDataFooter';
 import { ExportButton } from './components/ExportButton';
 import { TableNames } from './render-field-components/TableNames';
 import RequestNewField from './components/RequestNewField';
+import { DataEntryImages } from './render-field-components/DataEntryImages';
 
 interface ExtractedDataComponentProps {
     containerRef: any;
@@ -108,6 +109,7 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
             <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 pt-3 pb-50">
                 <RenderObjectFields refs={{ fieldRefs, isScrollingRef }} updateWire={updateWire} />
                 <TableNames />
+                <DataEntryImages />
             </div>
             <ExtractedDataFooter />
         </div>
