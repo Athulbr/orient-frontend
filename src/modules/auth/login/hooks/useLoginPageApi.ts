@@ -63,7 +63,7 @@ export const useLoginPageApi = () => {
             if (error.message === 'Invalid password') return setState(prev => ({ ...prev, authError: 'Invalid Credentials' }));
             if (error.message === 'Invalid email') return setState(prev => ({ ...prev, authError: 'Invalid Credentials' }));
 
-            setState(prev => ({ ...prev, authError: 'Something went wrong' }));
+            setState(prev => ({ ...prev, authError: error.message }));
         } finally {
             setState(prev => ({ ...prev, loading: false }));
         }
