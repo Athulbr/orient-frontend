@@ -141,10 +141,15 @@ const AudioRecorder = ({
             const response: any = await uploadText(payload);
 
             if (response) {
-                // const transcriptedFile = await uploadFileToS3(response);
                 const transcriptions = await processZipResponse(response);
+                const transcriptedFile = new File([response], `transcriptedFile_${currentData?.patientId}_${getCurrentDateTime()}.zip`, {
+                    type: 'application/zip'
+                });
+                const transcriptedFileResponse = await uploadFileToS3(transcriptedFile);
+                console.log('transcriptedFileResponse', transcriptedFileResponse);
+
                 setTranscriptionData?.(transcriptions);
-                const payload = { medicalText: textInput, sourceType: 'text', transcriptions };
+                const payload = { medicalText: textInput, sourceType: 'text', transcriptions, transcriptedFile: transcriptedFileResponse?.data?.fileName };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
 
                 const zipBlob = new Blob([response], { type: 'application/zip' });
@@ -265,6 +270,7 @@ const AudioRecorder = ({
             if (audioBlob) fd.append('file', audioBlob, 'recording.m4a');
             if (!audioBlob && file) fd.append('file', file, file.name);
             const response: any = await uploadAudio(fd, `${file ? 'text' : 'audio'}`);
+
             setSource('audio');
 
             if (response) {
@@ -274,8 +280,10 @@ const AudioRecorder = ({
                 const blob = new Blob([response], { type: 'application/zip' });
                 setZipBlob?.(blob);
 
-                // const transcriptedFile = new File([response], 'transcriptedFile.zip', { type: 'application/zip' });
-                // const transcriptedFileResponse = await uploadFileToS3(transcriptedFile);
+                const transcriptedFile = new File([response], `transcriptedFile_${currentData?.patientId}_${getCurrentDateTime()}.zip`, {
+                    type: 'application/zip'
+                });
+                const transcriptedFileResponse = await uploadFileToS3(transcriptedFile); // This is for export
 
                 const fileToUpload = audioBlob ? new File([audioBlob], `audio-${getCurrentDateTime()}.m4a`, { type: 'audio/m4a' }) : file;
                 if (!fileToUpload) {
@@ -283,7 +291,12 @@ const AudioRecorder = ({
                 }
                 const result = await uploadFileToS3(fileToUpload);
 
-                const payload = { sourceFile: result?.data?.fileName, sourceType: 'audio', transcriptions };
+                const payload = {
+                    sourceFile: result?.data?.fileName,
+                    sourceType: 'audio',
+                    transcriptions,
+                    transcriptedFile: transcriptedFileResponse?.data?.fileName
+                };
                 if (currentData?._id) updateTranscript(payload, currentData._id);
             }
         } catch (err) {

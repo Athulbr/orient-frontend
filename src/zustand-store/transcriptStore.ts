@@ -13,6 +13,7 @@ export interface transcriptIF {
   recordedBy: string;
   deleted: boolean;
   sourceType?: string;
+  patientId?: string;
   sourceFile?: string;
   medicalText?: string;
   transcriptions: TranscriptionData[];
@@ -221,7 +222,6 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
       throw error;
     }
   }
-
 
 }));
 
