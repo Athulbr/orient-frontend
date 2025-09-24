@@ -124,8 +124,14 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
 
             {/* Tab Content */}
             {tabIndex === 0 && <div className="flex-1 w-full overflow-y-auto">{renderContent()}</div>}
-            {tabIndex === 1 && <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} />}
-            {tabIndex === 2 && <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />}
+            {tabIndex === 1 && (
+                <div className="flex-1 w-full overflow-y-auto">
+                    {<TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} />}
+                </div>
+            )}
+            {tabIndex === 2 && (
+                <div className="flex-1 w-full overflow-y-auto">{<TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />}</div>
+            )}
 
             {/* Action Buttons */}
             {transcripts?.content && (
@@ -148,20 +154,6 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
                     <Button onClick={onSubmit}>Save</Button>
                 </div>
             )}
-
-            {/* Submit Form */}
-            {/* {submit && (
-                <>
-                    <UseFormbuilder
-                        title="Transcription"
-                        isOpen={submit}
-                        className="w-[80vw]"
-                        name="Transcription"
-                        closeDialog={() => setSubmit(false)}
-                        onSubmit={onSubmit}
-                    />
-                </>
-            )} */}
         </div>
     );
 };

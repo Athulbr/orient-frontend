@@ -50,7 +50,11 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
 
     useEffect(() => {
         const getTranscriptFile = async () => {
-            const uploadedFile = await getS3File(transcriptData?.transcriptedFile || '');
+            const awsS3Response: any = await getS3File(transcriptData?.transcriptedFile || '');
+            const bufferData = new Uint8Array(awsS3Response.Body.data);
+            // Create blob from buffer
+            const blob = new Blob([bufferData], { type: 'application/zip' });
+            setZipBlob(blob);
         };
         if (transcriptData && transcriptData?.transcriptions?.length > 0) {
             setTranscriptionData(transcriptData?.transcriptions || []);
@@ -60,14 +64,12 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
 
     const clearData = () => {
         setTranscriptionData([]);
+        setZipBlob(null);
         setDeleteAudio(true);
     };
 
     const handleExport = () => {
         if (!zipBlob) return;
-
-        // const blob = new Blob([response], { type: 'application/zip' });
-
         const url = window.URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -79,7 +81,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     };
 
     const handleSubmit = async () => {
-        console.log('currentData on submit', currentData, sourceType);
         if (currentData?._id) {
             const payload: any = {
                 name: currentData?.name,
@@ -100,7 +101,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     return (
         <PageContainer className="gap-4 p-2 md:p-6">
             <PageNameComponent
-                name={id ? 'Update Patient Record' : 'Create Patient Record'}
+                name={id ? 'Update Operating Notes' : 'Create Operating Notes'}
                 showBackButton={true}
                 customGoBackFunction={() => navigate('/audio-transcript/list')}
             >

@@ -11,7 +11,7 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
     const renderContent = () => {
         if (error) {
             return (
-                <div className="flex h-full flex-col items-center justify-center gap-4 text-center p-6">
+                <div className="flex flex-col items-center justify-center text-center p-6 gap-4">
                     <AlertCircle className="w-12 h-12 text-red-600" />
                     <h3 className="text-lg font-semibold text-red-600">Error</h3>
                     <p className="text-red-600">{error}</p>
@@ -21,7 +21,7 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
 
         if (isProcessing) {
             return (
-                <div className="flex h-full flex-col items-center justify-center gap-4 text-center p-6 animate-pulse">
+                <div className="flex flex-col items-center justify-center text-center p-6 gap-4 animate-pulse">
                     <Spinner />
                     <h4 className="text-lg font-semibold text-gray-900">Processing</h4>
                     <p className="text-gray-500">Extracting text from your audio...</p>
@@ -40,8 +40,8 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error }: Transcrip
         }
 
         return (
-            <div className="flex flex-col gap-6">
-                <div className="max-h-[calc(100vh-186px)] overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="flex flex-1 flex-col gap-6 overflow-y-auto">
+                <div className="border border-gray-200 rounded-lg p-4 bg-white">
                     <p className="whitespace-pre-line text-gray-700">{transcriptionData.content}</p>
                 </div>
             </div>

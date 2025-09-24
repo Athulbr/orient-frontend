@@ -13,6 +13,7 @@ export interface transcriptIF {
   recordedBy: string;
   deleted: boolean;
   sourceType?: string;
+  patientId?: string;
   sourceFile?: string;
   medicalText?: string;
   transcriptions: TranscriptionData[];
@@ -42,7 +43,8 @@ interface RoleState {
   updateTranscript: (payload: any, id: string) => Promise<boolean>;
   gettranscriptData: (id: string) => Promise<boolean>;
   deleteTranscript: (id: string) => Promise<boolean>;
-  uploadAudio: (payload: FormData) => Promise<boolean>;
+  uploadAudio: (payload: FormData, fileType: string) => Promise<boolean>;
+  uploadText: (payload: { medical_text: string; }) => Promise<boolean>;
 }
 
 const useTranscriptStore = create<RoleState>((set, get) => ({
@@ -56,9 +58,9 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
 
   createTranscript: async (payload) => {
     try {
-      set({ currentData: null });
+      set({ currentData: null, transcriptData: null });
       const res = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/idp/transcript/create`, payload);
-      set({ currentData: res.data });
+      set({ currentData: res.data, transcriptData: null });
       return true;
     } catch (error) {
       return false;
@@ -74,8 +76,8 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
     }
   },
   getTranscripts: async (payload) => {
-    set({ initialLoading: true });
     try {
+      set({ initialLoading: true, transcripts: [], transcriptData: null });
       const res = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/idp/transcript/`, payload);
       if (!res.data.length) return true;
       set({ transcripts: res.data });
@@ -116,9 +118,45 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
     }
   },
 
-  uploadAudio: async (formData: FormData): Promise<any> => {
+  // uploadAudio: async (formData: FormData): Promise<any> => {
+  //   try {
+  //     const URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
+  //     const response = await fetch(URL, {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       throw new Error(`API Error (${response.status}): ${errorText}`);
+  //     }
+
+  //     const reader = response?.body?.getReader();
+  //     if (!reader) {
+  //       // showToast('error', 'Error in training the bot');
+  //       return false;
+  //     }
+
+  //     while (true) {
+  //       const { value, done } = await reader.read();
+  //       if (value) {
+  //         set({ extractedData: value })
+  //         return value;
+  //       }
+  //       if (done) break;
+  //     }
+  //   } catch (error) {
+  //     console.error('Error in uploadAudio:', error);
+  //     throw error;
+  //   }
+  // }
+
+  uploadAudio: async (formData: FormData, fileType: string): Promise<any> => {
     try {
-      const URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
+      let URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
+      if (fileType === 'text') {
+        URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_file/`;
+      }
       const response = await fetch(URL, {
         method: 'POST',
         body: formData,
@@ -147,8 +185,43 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
       console.error('Error in uploadAudio:', error);
       throw error;
     }
-  }
+  },
 
+  uploadText: async (payload: { medical_text: string; }): Promise<any> => {
+    try {
+      const URL = `${import.meta.env.VITE_BASE_URL}/transcript/process_text/`;
+      const response = await fetch(URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error (${response.status}): ${errorText}`);
+      }
+
+      const reader = response?.body?.getReader();
+      if (!reader) {
+        // showToast('error', 'Error in training the bot');
+        return false;
+      }
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (value) {
+          set({ extractedData: value })
+          return value;
+        }
+        if (done) break;
+      }
+    } catch (error) {
+      console.error('Error in uploadText:', error);
+      throw error;
+    }
+  }
 
 }));
 
