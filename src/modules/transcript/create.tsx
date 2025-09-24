@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AudioRecorder from './audioRecorder';
 import ResponseViewer from './responseViewer/index';
-import useTranscriptGroupStore from '../../zustand-store/transcriptGroupStore';
 import useTranscriptStore from '../../zustand-store/transcriptStore';
 import PageContainer from '../../components/PageContainer';
 import PageNameComponent from '../../components/PageName';
@@ -80,18 +79,18 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
         window.URL.revokeObjectURL(url);
     };
 
-    const handleSubmit = async () => {
-        if (currentData?._id) {
+    const handleSubmit = async (data?: TranscriptItem[]) => {
+        const recordId = id ? id : currentData?._id;
+        if (recordId) {
             const payload: any = {
                 name: currentData?.name,
-                transcriptions: transcriptionData
+                transcriptions: data ?? transcriptionData
             };
             if (sourceType === 'text') {
                 payload.medicaltext = medicalText;
                 payload.sourceType = 'text';
             }
-
-            const res = await updateTranscript(payload, currentData._id);
+            const res = await updateTranscript(payload, recordId);
             if (res) navigate('/audio-transcript/list');
         }
     };
@@ -131,6 +130,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                             error={error}
                             clearData={clearData}
                             onSubmit={handleSubmit}
+                            setTranscriptionData={setTranscriptionData}
                         />
                     }
                     initialLeftWidthPercent={60}
@@ -148,6 +148,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                         clearData={clearData}
                         onSubmit={handleSubmit}
                         setShowPreview={setShowPreview}
+                        setTranscriptionData={setTranscriptionData}
                     />
                 ) : (
                     <AudioRecorder
