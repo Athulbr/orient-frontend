@@ -49,8 +49,7 @@ const AudioRecorder = ({
     const [transcription, setTranscription] = useState<any[]>([]);
     const [clicked, setClicked] = useState(false);
     const navigate = useNavigate();
-    const { uploadAudio, uploadText } = useTranscriptGroupStore();
-    const { createTranscript, updateTranscript, currentData, transcriptData } = useTranscriptStore();
+    const { uploadAudio, uploadText, updateTranscript, currentData, transcriptData } = useTranscriptStore();
     const { id } = useParams();
     const [uploadedContent, setUploadedContent] = useState<string | null>(null);
 
@@ -76,7 +75,9 @@ const AudioRecorder = ({
     }, []);
 
     useEffect(() => {
-        if (transcriptData) {
+        console.log('Am i coming here------->', transcriptData?.medicalText);
+
+        if (transcriptData && id) {
             if (transcriptData?.medicalText) setTextInput(transcriptData?.medicalText);
             if (transcriptData?.sourceType) setSourceType(transcriptData?.sourceType);
         }
