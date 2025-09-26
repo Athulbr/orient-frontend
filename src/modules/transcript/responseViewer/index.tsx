@@ -92,9 +92,9 @@ const ResponseViewer = ({
     }, [cptCode]);
 
     const onHandleChange = (value: string) => {
-        setEditedTranscript(value);
-        setEditedSummary(value);
-        setEditedCpt(value);
+        if (tabIndex === 0) setEditedTranscript(value);
+        if (tabIndex === 1) setEditedSummary(value);
+        if (tabIndex === 2) setEditedCpt(value);
         setDisableExport?.(true);
     };
 
