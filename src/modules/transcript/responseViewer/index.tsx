@@ -26,6 +26,7 @@ interface ResponseViewerProps {
     onSubmit?: (data?: any[]) => void;
     setTranscriptionData?: (data: any[]) => void;
     setShowPreview?: (value: boolean) => void;
+    setDisableExport?: (value: boolean) => void;
 }
 
 const ResponseViewer = ({
@@ -36,7 +37,8 @@ const ResponseViewer = ({
     clearData,
     onSubmit,
     setShowPreview,
-    setTranscriptionData
+    setTranscriptionData,
+    setDisableExport
 }: ResponseViewerProps) => {
     const [tabIndex, setTabIndex] = useState(0);
     const [title, setTitle] = useState<string>();
@@ -89,6 +91,13 @@ const ResponseViewer = ({
         if (cptCode?.content !== undefined) setEditedCpt(cptCode.content);
     }, [cptCode]);
 
+    const onHandleChange = (value: string) => {
+        setEditedTranscript(value);
+        setEditedSummary(value);
+        setEditedCpt(value);
+        setDisableExport?.(true);
+    };
+
     const handleSave = async () => {
         const newData = [
             { filename: 'source_text.txt', content: editedTranscript ?? '' },
@@ -109,13 +118,13 @@ const ResponseViewer = ({
 
             {/* Tab Content */}
             {tabIndex === 0 && (
-                <SourcePage isProcessing={isProcessing} transcriptionData={transcripts} error={error} value={editedTranscript} onChange={setEditedTranscript} />
+                <SourcePage isProcessing={isProcessing} transcriptionData={transcripts} error={error} value={editedTranscript} onChange={onHandleChange} />
             )}
             {tabIndex === 1 && (
-                <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} value={editedSummary} onChange={setEditedSummary} />
+                <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} value={editedSummary} onChange={onHandleChange} />
             )}
             {tabIndex === 2 && (
-                <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} value={editedCpt} onChange={setEditedCpt} />
+                <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} value={editedCpt} onChange={onHandleChange} />
             )}
 
             {/* Action Buttons */}
