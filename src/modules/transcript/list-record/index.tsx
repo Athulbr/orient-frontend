@@ -4,10 +4,8 @@ import { ListRecordComponent } from './ListRecordComponent';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PromptFieldIF } from '../../docsnap/document';
 import PageContainer from '../../../components/PageContainer';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import PageNameComponent from '../../../components/PageName';
 import { Button } from '../../../components/Button';
-import { useAlertStore } from '../../../components/alert/AlertStore';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import useTranscriptStore from '../../../zustand-store/transcriptStore';
 interface Project {
@@ -69,8 +67,10 @@ const ListRecordPage: React.FC = () => {
     const onSubmit = async (values: any) => {
         setSubmit(false);
         const payload = { name: values?.patientName, patientId: values?.patientId };
-        createTranscript(payload);
-        navigate('/audio-transcript/create');
+        const result = await createTranscript(payload);
+        if (result) {
+            navigate('/audio-transcript/create');
+        }
     };
 
     return (

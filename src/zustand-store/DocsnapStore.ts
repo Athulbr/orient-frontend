@@ -299,7 +299,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             s3_file_name: s3Response?.data?.fileName,
                             provider_id: 'azure',
                             model_id: 'gpt-4o',
-                            use_latest: false
+                            use_latest: false,
+                            ocr_engine: 'google_vision'
                         };
                         if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');

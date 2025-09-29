@@ -62,7 +62,8 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
       const res = await httpRequest("POST", `${import.meta.env.VITE_NODE_URL}/idp/transcript/create`, payload);
       set({ currentData: res.data, transcriptData: null });
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      useToastStore.getState().error(error.message);
       return false;
     }
   },

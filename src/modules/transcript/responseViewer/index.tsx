@@ -9,8 +9,8 @@ import { TabNavComponent } from '../../docsnap/record/components/TabNav/TabNav';
 import TranscriptSummary from './summary';
 import TranscriptCpt from './cpt';
 import { Button } from '../../../components/Button';
-import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import { useAlertStore } from '../../../components/alert/AlertStore';
+import SourcePage from './source';
 
 interface TabIF {
     id?: string;
@@ -23,16 +23,31 @@ interface ResponseViewerProps {
     error: string | null;
     titleName?: string;
     clearData?: () => void;
-    onSubmit?: () => void;
+    onSubmit?: (data?: any[]) => void;
+    setTranscriptionData?: (data: any[]) => void;
     setShowPreview?: (value: boolean) => void;
+    setDisableExport?: (value: boolean) => void;
 }
 
-const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, clearData, onSubmit, setShowPreview }: ResponseViewerProps) => {
+const ResponseViewer = ({
+    isProcessing,
+    transcriptionData,
+    error,
+    titleName,
+    clearData,
+    onSubmit,
+    setShowPreview,
+    setTranscriptionData,
+    setDisableExport
+}: ResponseViewerProps) => {
     const [tabIndex, setTabIndex] = useState(0);
     const [title, setTitle] = useState<string>();
     const [cptCode, setCptCode] = useState<any>();
     const [summary, setSummary] = useState<any>();
     const [transcripts, setTranscripts] = useState<any>();
+    const [editedTranscript, setEditedTranscript] = useState<string>('');
+    const [editedSummary, setEditedSummary] = useState<string>('');
+    const [editedCpt, setEditedCpt] = useState<string>('');
     const [submit, setSubmit] = useState(false);
     const { showAlert, closeAlert } = useAlertStore();
     const [exit, setExit] = useState<boolean>(false);
@@ -49,7 +64,6 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
     const navigate = useNavigate();
     const { id } = useParams();
     const { updateTranscript, transcriptData, gettranscriptData } = useTranscriptStore();
-    const extractedData = useTranscriptGroupStore((state: any) => state.extractedData);
 
     useEffect(() => {
         if (id) {
@@ -66,52 +80,32 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
         setTitle(titleName?.toLowerCase());
     }, [transcriptionData, titleName, id]);
 
-    const exportData = async (index: number) => {
-        const fileName = index === 0 ? transcripts?.filename : index === 1 ? summary?.filename : cptCode?.filename;
-        if (!fileName) return;
-        await downloadZipTxtFiles(extractedData, fileName);
+    // Seed editable state when the data buckets are set
+    useEffect(() => {
+        if (transcripts?.content !== undefined) setEditedTranscript(transcripts.content);
+    }, [transcripts]);
+    useEffect(() => {
+        if (summary?.content !== undefined) setEditedSummary(summary.content);
+    }, [summary]);
+    useEffect(() => {
+        if (cptCode?.content !== undefined) setEditedCpt(cptCode.content);
+    }, [cptCode]);
+
+    const onHandleChange = (value: string) => {
+        if (tabIndex === 0) setEditedTranscript(value);
+        if (tabIndex === 1) setEditedSummary(value);
+        if (tabIndex === 2) setEditedCpt(value);
+        setDisableExport?.(true);
     };
 
-    const renderContent = () => {
-        if (error) {
-            return (
-                <div className="flex flex-col items-center justify-center text-center p-6 gap-4">
-                    <AlertCircle className="w-12 h-12 text-red-600" />
-                    <h3 className="text-red-600 font-semibold text-lg">Error</h3>
-                    <p className="text-red-600">{error}</p>
-                </div>
-            );
-        }
-
-        if (isProcessing) {
-            return (
-                <div className="flex flex-col items-center justify-center text-center p-6 gap-4 animate-pulse">
-                    <Spinner />
-                    <h4 className="text-gray-800 font-medium">Processing</h4>
-                    <p className="text-gray-500">Extracting text from your audio...</p>
-                </div>
-            );
-        }
-
-        if (!transcripts?.content) {
-            return (
-                <div className="flex flex-col items-center justify-center text-center p-6 gap-4 h-full">
-                    <FileText className="w-12 h-12 text-gray-400" />
-                    <h3 className="text-lg font-semibold">No Transcription Yet</h3>
-                    <p className="text-gray-600">Record and upload audio to see the transcription here.</p>
-                </div>
-            );
-        }
-
-        return (
-            <div className="flex flex-col gap-6">
-                <div className="max-h-[calc(100vh-153px)] overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white">
-                    <p className="whitespace-pre-line text-gray-700">
-                        {tabIndex === 0 ? transcripts?.content : tabIndex === 1 ? summary?.content : cptCode?.content}
-                    </p>
-                </div>
-            </div>
-        );
+    const handleSave = async () => {
+        const newData = [
+            { filename: 'source_text.txt', content: editedTranscript ?? '' },
+            { filename: 'medical_analysis.txt', content: editedSummary ?? '' },
+            { filename: 'cpt_codes.txt', content: editedCpt ?? '' }
+        ];
+        setTranscriptionData?.(newData);
+        onSubmit?.(newData);
     };
 
     return (
@@ -120,17 +114,17 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
                 Go to Record{' '}
             </Button>
             {/* Tabs */}
-            <TabNavComponent tabs={tabs} onChange={setTabIndex} exportData={exportData} enableFlag={transcripts?.content} />
+            <TabNavComponent tabs={tabs} onChange={setTabIndex} enableFlag={transcripts?.content} />
 
             {/* Tab Content */}
-            {tabIndex === 0 && <div className="flex-1 w-full overflow-y-auto">{renderContent()}</div>}
+            {tabIndex === 0 && (
+                <SourcePage isProcessing={isProcessing} transcriptionData={transcripts} error={error} value={editedTranscript} onChange={onHandleChange} />
+            )}
             {tabIndex === 1 && (
-                <div className="flex-1 w-full overflow-y-auto">
-                    {<TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} />}
-                </div>
+                <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} value={editedSummary} onChange={onHandleChange} />
             )}
             {tabIndex === 2 && (
-                <div className="flex-1 w-full overflow-y-auto">{<TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} />}</div>
+                <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} value={editedCpt} onChange={onHandleChange} />
             )}
 
             {/* Action Buttons */}
@@ -151,7 +145,7 @@ const ResponseViewer = ({ isProcessing, transcriptionData, error, titleName, cle
                     >
                         Close
                     </Button>
-                    <Button onClick={onSubmit}>Save</Button>
+                    <Button onClick={handleSave}>Save</Button>
                 </div>
             )}
         </div>

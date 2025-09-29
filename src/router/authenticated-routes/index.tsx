@@ -6,10 +6,9 @@ import FullScreenLoader from '../../components/FullScreenLoader';
 const PromateRoutes = lazy(() => import('./PromateRoutes'));
 const ConfigRoutes = lazy(() => import('./config-routes'));
 const DashboardPage = lazy(() => import('../../modules/dashboard'));
-const TranscriptionListPage = lazy(() => import('../../modules/transcript/list-record/index'));
-const TranscriptionCreatePage = lazy(() => import('../../modules/transcript/create'));
 const DocSnapRoutes = lazy(() => import('./DocSnapRoutes'));
 const UserRoutes = lazy(() => import('./UserRoutes'));
+const MedicalCodeRoutes = lazy(() => import('./medicalCodeRoutes'));
 
 const AuthenticatedRoutes = () => {
     const permissions = sessionStorage.getItem('permissions');
@@ -30,9 +29,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
-                <Route path="/audio-transcript/list" element={<TranscriptionListPage />} />
-                <Route path="/audio-transcript/create" element={<TranscriptionCreatePage />} />
-                <Route path="/audio-transcript/view/:id" element={<TranscriptionCreatePage />} />
+                <Route path="/audio-transcript/*" element={<MedicalCodeRoutes />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />

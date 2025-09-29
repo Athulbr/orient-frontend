@@ -88,7 +88,12 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     getTenantSettings: async () => {
         try {
-            const tenantId = get().selectedTenant ? get().selectedTenant : window.sessionStorage.getItem('selectedTenant');
+            let tenantId = get().selectedTenant ? get().selectedTenant : window.sessionStorage.getItem('selectedTenant');
+            if (!tenantId) {
+                let user: any = window.sessionStorage.getItem('user');
+                user = JSON.parse(user);
+                tenantId = user?.tenant?._id;
+            }
             if (!tenantId) {
                 useToastStore.getState().error('Tenant not selected');
                 return;

@@ -9,9 +9,7 @@ import { TranscriptionData } from '../modules/transcript/interface';
 export const processZipResponse = async (zipBlob: Blob): Promise<TranscriptionData[]> => {
   try {
     const zip = new JSZip();
-    console.log('Response file size---->', zipBlob);
     const loadedZip = await zip.loadAsync(zipBlob);
-    console.log('Response Files---->', loadedZip);
     const result: TranscriptionData[] = [];
 
     const filePromises = Object.keys(loadedZip.files).map(async (filename) => {
