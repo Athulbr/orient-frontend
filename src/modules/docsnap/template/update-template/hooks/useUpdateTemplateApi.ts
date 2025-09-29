@@ -40,6 +40,12 @@ export const useUpdateTemplatePageApi = () => {
             setState(prev => ({ ...prev, updatingTemplate: true }));
             const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
             setState(prev => ({ ...prev, showCreateForm: false, id: '', updatingTemplate: false }));
+            const resp = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
             toast.success('Template created successfully');
             navigate('/docsnap/template/list');
             return true;
@@ -53,6 +59,12 @@ export const useUpdateTemplatePageApi = () => {
             setState(prev => ({ ...prev, updatingTemplate: true }));
             const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/template/update/${id}`, requestBody);
             setState(prev => ({ ...prev, id: '', showCreateForm: false, updatingTemplate: false }));
+            const resp = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
             toast.success('Template updated successfully');
             if (reload) {
                 window.location.reload();
