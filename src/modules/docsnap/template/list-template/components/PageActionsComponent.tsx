@@ -2,10 +2,16 @@ import { Search, Plus, CircleX } from 'lucide-react';
 import { useTemplateState } from '../hooks/templateContext';
 import { Button } from '../../../../../components/Button';
 import { useListTemplatePageApi } from '../hooks/useTemplateApi';
+import { useEffect } from 'react';
 
 const PageActionsComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
-    const { getPredefinedTemplatesApi } = useListTemplatePageApi();
+    const { getPredefinedTemplatesApi, getTemplatesApi } = useListTemplatePageApi();
+
+    useEffect(() => {
+        if (!state.searchText) return;
+        // getTemplatesApi();
+    }, [state.searchText]);
 
     const handleCreateTemplate = () => {
         setState({ ...state, showCreateTemplateDialog: true });

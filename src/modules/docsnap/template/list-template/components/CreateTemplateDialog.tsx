@@ -29,6 +29,12 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
         };
         setState({ ...state, loadingCreateTemplate: true });
         const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
+        const resp = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
+            pageSize: 1000,
+            custom: true,
+            filters: { deleted: false }
+        });
+        window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
         if (state.isDashboard) {
             setState({ ...state, loadingCreateTemplate: false });
             navigate('/docsnap/template/list');
