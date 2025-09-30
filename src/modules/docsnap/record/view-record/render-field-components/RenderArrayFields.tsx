@@ -137,24 +137,15 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                             {labels.map((label, i) => {
                                                 const value = lineItem[label];
 
-                                                const { fieldLabel, validationUrl } = useMemo(() => {
-                                                    const fields = state.record?.templateId?.fields;
-                                                    const field = fields?.find((item: any) => item.jsonKey === state.tableNames[mainIndex]);
-                                                    const subField = field?.subFields?.find((item: any) => item.jsonKey === label);
-                                                    return {
-                                                        fieldLabel: subField?.name ? formatFieldLabel(subField.name) : 'formatFieldLabel(label)',
-                                                        validationUrl: subField?.validationUrl || ''
-                                                    };
-                                                }, [key, label]);
-
                                                 const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
                                                 return (
                                                     <ArrayFieldTextarea
+                                                        mainIndex={mainIndex}
+                                                        keyName={key}
                                                         key={i}
                                                         value={value}
                                                         fieldId={hoveredFieldId}
-                                                        validationUrl={validationUrl}
-                                                        label={fieldLabel}
+                                                        label={label}
                                                         fieldRefs={fieldRefs}
                                                         disabled={state.loadingS3File || state.reExtracting}
                                                         onChange={(e: any) => {
@@ -230,9 +221,11 @@ interface PropsIF {
     onMouseEnter: () => void;
     fieldRefs: any;
     disabled?: boolean;
-    validationUrl?: string;
+    mainIndex: number;
+    keyName: string;
 }
-const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled, validationUrl }) => {
+const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled, mainIndex, keyName }) => {
+    const { state } = useViewRecordState();
     const adjustTextareaHeight = () => {
         const textarea = fieldRefs.current[fieldId];
         if (!textarea) return;
@@ -255,6 +248,15 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
         const finalUrl = nunjucks.renderString(validationUrl, { value });
         window.open(finalUrl, '_blank');
     };
+    const { fieldLabel, validationUrl } = useMemo(() => {
+        const fields = state.record?.templateId?.fields;
+        const field = fields?.find((item: any) => item.jsonKey === state.tableNames[mainIndex]);
+        const subField = field?.subFields?.find((item: any) => item.jsonKey === label);
+        return {
+            fieldLabel: subField?.name ? formatFieldLabel(subField.name) : 'formatFieldLabel(label)',
+            validationUrl: subField?.validationUrl || ''
+        };
+    }, [keyName, label]);
     return (
         <td className="border p-1">
             {/* <ValidateSkuButton label={label} value={value?.value} /> */}
