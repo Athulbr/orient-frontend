@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
+import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -13,24 +14,38 @@ interface UploadDocumentComponentIF {
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
     const toast = useToastStore();
+    const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
-    const { addToNodeExtractorV1 } = useDocsnapStore();
+    const { addToNodeJsDocumentExtractor } = useNodeJsDocumentExtractor();
 
     useEffect(() => {
-        const templateSettings = template?.settings;
-        if (!templateSettings) {
-            toast.error('Template settings not found, Please update template settings');
+        if (!template._id) {
+            toast.error('Template not found, Please select a template');
             closeDialog();
-            setTimeout(() => {
-                navigate(`/docsnap/template/settings/${template._id}`);
-            }, 2000);
             return;
         }
-        toast.info(`Selected Extraction engine: ${templateSettings?.extractionEngine}`, { duration: 2000 });
+        const getTemplate = async () => {
+            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
+            const templateSettings = res.data?.settings;
+            if (!templateSettings) {
+                toast.error('Template settings not found, Please update template settings');
+                closeDialog();
+                setTimeout(() => {
+                    navigate(`/docsnap/template/settings/${template._id}`);
+                }, 2000);
+                return;
+            }
+            toast.info(`Selected Extraction engine: ${templateSettings?.extractionEngine}`, { duration: 2000 });
+            setLatestTemplate(res.data);
+        };
+        getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        const templateSettings = template?.settings;
-        addToNodeExtractorV1(files, template);
+        const templateSettings = latestTemplate?.settings;
+        if (templateSettings?.extractionEngine === 'node') {
+            addToNodeJsDocumentExtractor(files, latestTemplate);
+        } else {
+        }
     };
 
     return (
@@ -46,69 +61,3 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         </DialogComponent>
     );
 };
-// import { useEffect, useState } from 'react';
-// import { DialogComponent } from '../../../components/DialogComponent';
-// import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
-// import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
-// import { useNavigate } from 'react-router-dom';
-// import httpRequest from '../../../global-utils/httpRequest';
-// import { useToastStore } from '../../../components/toast/ToastStore';
-// import { useSettingsStore } from '../../../zustand-store/SettingsStore';
-// interface UploadDocumentComponentIF {
-//     template?: any;
-//     closeDialog: () => void;
-// }
-
-// export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-//     const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV1 } = useDocsnapStore();
-//     const navigate = useNavigate();
-//     const toast = useToastStore();
-//     const [templateData, setTemplateData] = useState<any>(null);
-//     const { getTenantSettings } = useSettingsStore();
-//     useEffect(() => {
-//         const getTemplate = async () => {
-//             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
-//             setTemplateData(res.data);
-//         };
-//         if (template?._id) {
-//             getTemplate();
-//         }
-//     }, [template?._id]);
-//     const onFileDrop = async (files: File[]) => {
-//         const tenantSettings: any = await getTenantSettings();
-//         const extractionEngine = tenantSettings?.extractionEngine;
-//         const extractionType = tenantSettings?.extractionType;
-//         if (files.length > 20 && extractionEngine !== 'node') {
-//             toast.error('You can select up to 20 files only.');
-//             return;
-//         }
-//         if (extractionEngine === 'node') {
-//             if (!templateData) {
-//                 toast.error('Template not found');
-//                 return;
-//             }
-//             addToNodeExtractorV1(files, templateData);
-//         } else {
-//             if (extractionType === 'multiPO') {
-//                 addToPythonExtractionMultiPO(files, templateData || {});
-//             } else {
-//                 addToPythonExtraction(files, templateData || '');
-//             }
-//         }
-
-//         navigate('/docsnap/record/list');
-//         closeDialog();
-//     };
-//     return (
-//         <DialogComponent
-//             className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col overflow-y-auto"
-//             name="Upload Documents"
-//             isOpen={true}
-//             closeDialog={closeDialog}
-//         >
-//             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-//                 <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />
-//             </div>
-//         </DialogComponent>
-//     );
-// };

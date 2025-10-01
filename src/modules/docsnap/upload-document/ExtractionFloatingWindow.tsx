@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronRight, CircleAlert, CircleX, Loader, LoaderCircle } from 'lucide-react';
 import { cn } from '../../../global-utils/twMerge';
-import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
+import { useExtractionStore } from '../../../zustand-store/extractionStore';
 import ProgressBar from '../../../components/ProgressBar';
 import { useDraggable } from './useDraggable';
 import Spinner from '../../../components/Spinner';
@@ -11,8 +11,10 @@ interface ExtractionFloatingWindowIF {
 }
 
 const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
-    const { extractionQueue, clearExtractionQueue } = useDocsnapStore();
+    const { extractionQueue, clearExtractionQueue } = useExtractionStore();
     const [minimize, setMinimize] = useState(false);
+
+    console.log('extractionQueue:===========', extractionQueue);
 
     const { ref, position, isDragging, handleMouseDown } = useDraggable<HTMLDivElement>();
 

@@ -11,12 +11,12 @@ interface TableIF {
     refresh?: number;
 }
 
-const Table: React.FC<TableIF> = ({ refresh = 1 }) => {
+const Table: React.FC<TableIF> = ({ refresh = 0 }) => {
     const { injectedData, settings, setState, state } = useTablebuilderState();
     const { getDataFromApi } = useFetchDataFromApi();
 
     useEffect(() => {
-        if (settings.api.refresh === 1) return;
+        if (settings.api.refresh === 0) return;
         setState(prev => ({
             ...prev,
             activeFilters: [],

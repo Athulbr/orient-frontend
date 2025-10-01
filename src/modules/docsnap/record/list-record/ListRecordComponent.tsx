@@ -3,13 +3,13 @@ import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tableb
 import { RecordStatusCustomUI } from './components/RecordStatusCustomUI';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import { useListRecordApi } from './hooks/useListRecordApi';
-import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
+import { useExtractionStore } from '../../../../zustand-store/extractionStore';
+import { downloadXlsxFile } from './utils/downloadXlsxFile';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
-// const tenants = ['68a89969e874ddf8cf00527e', '68896ef48e0baa23315c3cfd'];
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -39,7 +39,7 @@ export const ListRecordComponent: React.FC = () => {
     const { checkPermission, user } = usePermissionStore();
     const tenantId = user?.tenant?._id || selectedTenant;
 
-    const { refreshRecord, extractionQueue } = useDocsnapStore();
+    const { refreshRecord, extractionQueue } = useExtractionStore();
 
     useEffect(() => {
         if (refreshRecord === 100) return;
@@ -62,55 +62,19 @@ export const ListRecordComponent: React.FC = () => {
         documentDate: OnlyDateCustomUI
     };
 
-    const actionButtons =
-        // checkPermission('export:record:ardex') && tenants.includes(tenantId)
-        checkPermission('export:record:ardex')
-            ? [
-                  {
-                      label: 'Export Record',
-                      action: () => {
-                          setState(prev => ({ ...prev, dealerSelectionDialog: true }));
-                      }
+    const actionButtons = checkPermission('export:record:ardex')
+        ? [
+              {
+                  label: 'Export Record',
+                  action: () => {
+                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
-              ]
-            : [];
+              }
+          ]
+        : [];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
         return query;
-    };
-
-    const downloadXlsxFile = async (payload: any) => {
-        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-
-        let exportURL = '';
-        // Update this condition based on your tenant settings
-        const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
-
-        const response = await fetch(exportURL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
-                tenantid: selectedTenant
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const blob = await response.blob();
-
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `table-export-${new Date().getTime()}.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
     };
 
     const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
@@ -135,7 +99,7 @@ export const ListRecordComponent: React.FC = () => {
             dealers
         };
 
-        downloadXlsxFile(payload);
+        downloadXlsxFile(payload, selectedTenant);
     };
 
     const hiddenColumns = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? [] : ['poLink'];
