@@ -15,12 +15,14 @@ const AuthenticatedRoutes = () => {
     const docsnapModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'docsnap:module');
     const dataEntryModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'dataentry:module');
     const transcriptModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'transcript:module');
+    const sldModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'sld:module');
 
-    const module = docsnapModule ? 'docsnap' : dataEntryModule ? 'dataentry' : transcriptModule ? 'transcript' : 'docsnap';
+    const module = docsnapModule ? 'docsnap' : dataEntryModule ? 'dataentry' : transcriptModule ? 'transcript' : sldModule ? 'sld' : 'docsnap';
     const paths = {
         docsnap: '/docsnap',
         dataentry: '/dataentry',
-        transcript: '/audio-transcript/list'
+        transcript: '/audio-transcript/list',
+        sld: '/sld'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
@@ -32,6 +34,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="/audio-transcript/*" element={<MedicalCodeRoutes />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
+                <Route path="/sld" element={<DashboardPage module="sld" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

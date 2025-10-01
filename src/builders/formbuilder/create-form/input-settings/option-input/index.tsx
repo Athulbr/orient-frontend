@@ -121,8 +121,15 @@ export const OptionInput: React.FC<OptionInputPropsIF> = ({ index, keyName }) =>
                 </div>
                 {showDialog && (
                     <div className={style.popupContainer} ref={dropdownRef}>
-                        <TextField value={key} onChange={e => setKey(e.target.value)} label="Label" />
-                        <TextField value={value} onChange={e => setValue(e.target.value)} label="Value" />
+                        <TextField
+                            value={key}
+                            onChange={e => {
+                                setKey(e.target.value);
+                                setValue(`${e.target.value}`.toLowerCase().trim());
+                            }}
+                            label="Label"
+                        />
+                        <TextField value={value} onChange={e => setValue(`${e.target.value}`.toLowerCase().trim())} label="Value" />
 
                         {optionIndex !== null && optionIndex >= 0 ? (
                             <div className={style.buttonBox}>

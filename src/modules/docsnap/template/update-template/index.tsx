@@ -5,7 +5,7 @@ import { FieldsContainer } from './FieldsContainer';
 import { ImageViewer } from './components/ImageViewer';
 import { ResizableContainer } from './components/ResizableContainer';
 import { UpdateTemplateStateProvider } from './hooks/updateTemplateContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface UpdateTemplateStateIF {
     sectionList: any[];
@@ -42,8 +42,10 @@ const initialState: UpdateTemplateStateIF = {
     templateSettings: null
 };
 
-const UpdateTemplatePage: React.FC<{ create?: boolean }> = ({ create }) => {
+const UpdateTemplatePage: React.FC<{ create?: boolean; settings?: boolean }> = ({ create, settings }) => {
     const [state, setState] = useState<UpdateTemplateStateIF>(initialState);
+
+    useEffect(() => (settings ? setState({ ...state, showTemplateSettingsForm: true }) : () => {}), []);
 
     return (
         <UpdateTemplateStateProvider value={{ state, setState }}>

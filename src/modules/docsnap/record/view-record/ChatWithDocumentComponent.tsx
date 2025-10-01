@@ -9,23 +9,33 @@ import { useViewRecordApi } from './hooks/useViewRecordApi';
 import { useViewRecordState } from './hooks/viewRecordContext';
 import { useNavigate } from 'react-router-dom';
 
-interface DocumentBotComponentIF {
+interface ChatWithDocumentComponentIF {
     test?: string;
 }
 
-const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
+const ChatWithDocumentComponent: React.FC<ChatWithDocumentComponentIF> = () => {
     const { state, setState } = useViewRecordState();
     const { sendMessage, sendMessageToNode } = useViewRecordApi();
     const navigate = useNavigate();
-    const { getTenantSettings, tenantSettings } = useSettingsStore();
 
-    // useEffect(() => {
-    //     console.log(tenantSettings);
-    //     if (tenantSettings?.extractionEngine) return;
-    //     getTenantSettings();
-    // }, []);
     const sendMessageHandler = async (message: string) => {
-        if (tenantSettings?.extractionEngine !== 'node') {
+        if (message.trim() === '') return;
+        setState(prev => ({ ...prev, chatLoading: true, messages: [...prev.messages, { text: message, userMessage: true }] }));
+
+        const normalizedMessage = message.trim().toLowerCase();
+        if (normalizedMessage === 'hi' || normalizedMessage === 'hello') {
+            await new Promise(resolve =>
+                setTimeout(() => {
+                    setState(prev => ({
+                        ...prev,
+                        messages: [...prev.messages, { text: 'Hello! Ask me anything about this document.', userMessage: false }]
+                    }));
+                    resolve(true);
+                }, 2000)
+            );
+            return;
+        }
+        if (state.templateSettings?.extractionEngine === 'node') {
             sendMessageToNode(message);
         } else {
             sendMessage(message);
@@ -50,4 +60,4 @@ const DocumentBotComponent: React.FC<DocumentBotComponentIF> = () => {
     );
 };
 
-export default DocumentBotComponent;
+export default ChatWithDocumentComponent;

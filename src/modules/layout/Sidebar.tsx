@@ -1,4 +1,4 @@
-import { AudioLines, FilePenLine, Settings, Tractor, X } from 'lucide-react';
+import { AudioLines, CircuitBoard, FilePenLine, Settings, Tractor, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +31,13 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             path: '/audio-transcript/list',
             key: 'transcript',
             permission: 'transcript:module'
+        },
+        {
+            name: 'SLD',
+            icon: <CircuitBoard size={32} strokeWidth={2.5} className="text-white" />,
+            path: '/sld',
+            key: 'sld',
+            permission: 'sld:module'
         }
     ]);
 

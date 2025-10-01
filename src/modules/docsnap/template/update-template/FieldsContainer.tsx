@@ -262,6 +262,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                 onSubmit={submitSettingsHandler}
                 existingData={state.templateSettings}
                 loadingPrimaryButton={state.updatingTemplate}
+                disableBlurCloseDialog
             />
         </div>
     );

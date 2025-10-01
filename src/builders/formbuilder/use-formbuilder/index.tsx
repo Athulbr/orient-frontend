@@ -18,6 +18,7 @@ interface UseFormbuilderIF {
     showInDialog?: boolean;
     actionButtonText?: string;
     actionButtonClickHandler?: (fields: FieldIF[]) => void;
+    disableBlurCloseDialog?: boolean;
 }
 
 export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
@@ -33,7 +34,8 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
     loadingPrimaryButton,
     showInDialog = true,
     actionButtonText,
-    actionButtonClickHandler
+    actionButtonClickHandler,
+    disableBlurCloseDialog
 }) => {
     const [fields, setFields] = useState<FieldIF[]>([]);
     const [hasError, setHasError] = useState(false);
@@ -101,7 +103,14 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
     }
 
     return (
-        <DialogComponent loading={loading || fields.length === 0} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
+        <DialogComponent
+            disableBlurCloseDialog={disableBlurCloseDialog}
+            loading={loading || fields.length === 0}
+            closeDialog={closeDialog}
+            isOpen={isOpen}
+            name={title ? title : name}
+            className={className}
+        >
             <RenderForm
                 fields={fields}
                 loadingPrimaryButton={loadingPrimaryButton}

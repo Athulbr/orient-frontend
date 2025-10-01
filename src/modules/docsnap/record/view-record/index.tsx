@@ -9,8 +9,8 @@ import { useBackButtonOverride } from '../../../../hooks/useBackButtonOverride';
 import { DataEntryImagesList } from './render-field-components/DataEntryImagesList';
 import RegenerateFieldDialog from './components/RegenerateFieldDialog';
 import ContentCreationComponent from './components/ContentCreationComponent';
-import DocumentBotComponent from './DocumentBotComponent';
 import { InvoiceGenerator } from './components/InvoiceGenerator';
+import ChatWithDocumentComponent from './ChatWithDocumentComponent';
 
 interface WirePoints {
     x1: number;
@@ -138,7 +138,7 @@ const ViewRecordPage: React.FC = () => {
                             <TabViewContainer
                                 tabContents={{
                                     extractedData: <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />,
-                                    chatWithDocument: <DocumentBotComponent />,
+                                    chatWithDocument: <ChatWithDocumentComponent />,
                                     invoiceGenerator: <InvoiceGenerator />,
                                     contentCreation: <ContentCreationComponent />
                                 }}
