@@ -52,11 +52,15 @@ export const useFetchDataFromApi = () => {
                 if (!res || !res.data) {
                     throw new Error('Invalid API response format');
                 }
-                setState(prev => ({ ...prev, total: res.total, data: res.data }));
+                setState(prev => ({ ...prev, total: res.total, data: res.data, failedToFetch: false }));
 
                 return true;
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Failed to fetch data:', error);
+                if (error?.message === 'Failed to fetch') {
+                    setState(prev => ({ ...prev, failedToFetch: true }));
+                }
+
                 return false;
             } finally {
                 setTimeout(() => {
