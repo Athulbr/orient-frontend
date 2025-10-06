@@ -22,7 +22,8 @@ const AuthenticatedRoutes = () => {
         docsnap: '/docsnap',
         dataentry: '/dataentry',
         transcript: '/audio-transcript/list',
-        sld: '/sld'
+        sld: '/sld',
+        documentCreation: '/document-creation'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
@@ -35,6 +36,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
+                <Route path="/document-creation" element={<DashboardPage module="documentCreation" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

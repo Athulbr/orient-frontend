@@ -42,7 +42,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/user/settings/list`);
             set({ userSettings: res.data.settings });
         } catch (error) {
-            console.log(error);
+            // console.log(error);
         }
     },
     // ============================== DOCSNAP SETTINGS ===============================

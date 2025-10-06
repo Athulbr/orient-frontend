@@ -14,8 +14,6 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
     const { extractionQueue, clearExtractionQueue } = useExtractionStore();
     const [minimize, setMinimize] = useState(false);
 
-    console.log('extractionQueue:===========', extractionQueue);
-
     const { ref, position, isDragging, handleMouseDown } = useDraggable<HTMLDivElement>();
 
     if (!extractionQueue.length) return null;
