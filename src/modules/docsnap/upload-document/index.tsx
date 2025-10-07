@@ -6,57 +6,51 @@ import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
-import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
-import { usePythonSingleDocumentExtractor } from './usePythonSingleDocumentExtractor';
-import { usePythonMultiDocumentExtractor } from './usePythonMultiDocumentExtractor';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const toast = useToastStore();
-    const [latestTemplate, setLatestTemplate] = useState<any>(null);
+    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV1 } = useDocsnapStore();
     const navigate = useNavigate();
-    const { addToNodeJsDocumentExtractor } = useNodeJsDocumentExtractor();
-    const { addToPythonSingleDocumentExtractor } = usePythonSingleDocumentExtractor();
-    const { addToPythonMultiDocumentExtractor } = usePythonMultiDocumentExtractor();
-
+    const toast = useToastStore();
+    const [templateData, setTemplateData] = useState<any>(null);
+    const { getTenantSettings } = useSettingsStore();
     useEffect(() => {
-        if (!template._id) {
-            toast.error('Template not found, Please select a template');
-            closeDialog();
-            return;
-        }
         const getTemplate = async () => {
             const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
-            const templateSettings = res.data?.settings;
-            if (!templateSettings) {
-                toast.error('Template settings not found, Please update template settings');
-                closeDialog();
-                setTimeout(() => {
-                    navigate(`/docsnap/template/settings/${template._id}`);
-                }, 2000);
+            setTemplateData(res.data);
+        };
+        if (template?._id) {
+            getTemplate();
+        }
+    }, [template?._id]);
+    const onFileDrop = async (files: File[]) => {
+        const tenantSettings: any = await getTenantSettings();
+        const extractionEngine = tenantSettings?.extractionEngine;
+        const extractionType = tenantSettings?.extractionType;
+        if (files.length > 20 && extractionEngine !== 'node') {
+            toast.error('You can select up to 20 files only.');
+            return;
+        }
+        if (extractionEngine === 'node') {
+            if (!templateData) {
+                toast.error('Template not found');
                 return;
             }
-            toast.info(`Selected Extraction engine: ${templateSettings?.extractionEngine}`, { duration: 2000 });
-            setLatestTemplate(res.data);
-        };
-        getTemplate();
-    }, []);
-    const onFileDrop = async (files: File[]) => {
-        const templateSettings = latestTemplate?.settings;
-        if (templateSettings?.extractionEngine === 'node') {
-            addToNodeJsDocumentExtractor(files, latestTemplate);
+            addToNodeExtractorV1(files, templateData);
         } else {
-            if (templateSettings?.extractSingleDocument) {
-                addToPythonSingleDocumentExtractor(files, latestTemplate);
+            if (extractionType === 'multiPO') {
+                addToPythonExtractionMultiPO(files, templateData || {});
             } else {
-                addToPythonMultiDocumentExtractor(files, latestTemplate);
+                addToPythonExtraction(files, templateData || '');
             }
         }
-    };
 
+        navigate('/docsnap/record/list');
+        closeDialog();
+    };
     return (
         <DialogComponent
             className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col overflow-y-auto"
