@@ -7,6 +7,8 @@ import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
+import { usePythonSingleDocumentExtractor } from './usePythonSingleDocumentExtractor';
+import { usePythonMultiDocumentExtractor } from './usePythonMultiDocumentExtractor';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -17,6 +19,8 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToNodeJsDocumentExtractor } = useNodeJsDocumentExtractor();
+    const { addToPythonSingleDocumentExtractor } = usePythonSingleDocumentExtractor();
+    const { addToPythonMultiDocumentExtractor } = usePythonMultiDocumentExtractor();
 
     useEffect(() => {
         if (!template._id) {
@@ -45,6 +49,11 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
         if (templateSettings?.extractionEngine === 'node') {
             addToNodeJsDocumentExtractor(files, latestTemplate);
         } else {
+            if (templateSettings?.extractSingleDocument) {
+                addToPythonSingleDocumentExtractor(files, latestTemplate);
+            } else {
+                addToPythonMultiDocumentExtractor(files, latestTemplate);
+            }
         }
     };
 
