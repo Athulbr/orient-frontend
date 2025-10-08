@@ -53,8 +53,8 @@ const ListTemplatePage: React.FC = () => {
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
                 <>
-                    <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
-                    {/* <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} /> */}
+                    {/* <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} /> */}
+                    <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
                 </>
             )}
         </TemplateStateProvider>

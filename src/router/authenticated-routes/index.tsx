@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { NotFoundPage } from '../not-found-routes/GlobalNotFoundPage';
 import FullScreenLoader from '../../components/FullScreenLoader';
+import DocumentCreationEditor from '../../modules/documentCreation';
 
 const PromateRoutes = lazy(() => import('./PromateRoutes'));
 const ConfigRoutes = lazy(() => import('./config-routes'));
@@ -16,8 +17,20 @@ const AuthenticatedRoutes = () => {
     const dataEntryModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'dataentry:module');
     const transcriptModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'transcript:module');
     const sldModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'sld:module');
+    const documentCreationModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'documentCreation:module');
 
-    const module = docsnapModule ? 'docsnap' : dataEntryModule ? 'dataentry' : transcriptModule ? 'transcript' : sldModule ? 'sld' : 'docsnap';
+    const module = docsnapModule
+        ? 'docsnap'
+        : dataEntryModule
+          ? 'dataentry'
+          : transcriptModule
+            ? 'transcript'
+            : sldModule
+              ? 'sld'
+              : documentCreationModule
+                ? 'documentCreation'
+                : 'docsnap';
+    sessionStorage.setItem('module', module);
     const paths = {
         docsnap: '/docsnap',
         dataentry: '/dataentry',
@@ -37,6 +50,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
                 <Route path="/document-creation" element={<DashboardPage module="documentCreation" />} />
+                <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

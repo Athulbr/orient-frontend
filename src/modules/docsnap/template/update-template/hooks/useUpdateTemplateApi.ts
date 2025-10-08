@@ -92,7 +92,23 @@ export const useUpdateTemplatePageApi = () => {
 
     const generateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
+            const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true }));
+            if (module === 'documentCreation') {
+                const res = await httpRequest('POST', `http://localhost:6008/document-creation/generate-document-fields`, requestBody);
+                console.log('res:===========', res);
+                const data = [
+                    {
+                        name: 'Document Fields',
+                        dataType: 'dict',
+                        jsonKey: 'document_fields',
+                        subFields: res.data?.documentFields
+                    }
+                ];
+                setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: [res.data?.documentText] }));
+                toast.success('Template fields generated successfully');
+                return true;
+            }
             const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));

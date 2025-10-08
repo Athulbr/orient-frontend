@@ -1,4 +1,4 @@
-import { Edit, MoreVertical, Upload } from 'lucide-react';
+import { Edit, MoreVertical, Plus, Upload } from 'lucide-react';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { Button } from '../../../../../components/Button';
 import httpRequest from '../../../../../global-utils/httpRequest';
@@ -20,6 +20,8 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
     const { checkPermission } = usePermissionStore();
+
+    const module = sessionStorage.getItem('module');
 
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
@@ -124,8 +126,13 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                 >
                     Edit Fields
                 </Button>
-                <Button permission="extract:document" startIcon={<Upload size={14} />} onClick={onClickUpload} small>
-                    Upload
+                <Button
+                    permission="extract:document"
+                    startIcon={module === 'documentCreation' ? <Plus size={14} /> : <Upload size={14} />}
+                    onClick={module === 'documentCreation' ? () => navigate(`/document-creation/create/${template._id}`) : onClickUpload}
+                    small
+                >
+                    {module === 'documentCreation' ? 'Create' : 'Upload'}
                 </Button>
             </div>
         </div>

@@ -29,6 +29,8 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { id, fileName } = useParams();
     const toast = useToastStore();
 
+    console.log('state:===========', state);
+
     useEffect(() => {
         if (!fileName) return;
 
@@ -112,6 +114,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         };
         getTemplateData();
     }, [id]);
+
     const addNewSection = () => {
         const sectionList = [...state.sectionList];
         sectionList.push({
@@ -145,6 +148,8 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         setState(prev => ({ ...prev, sectionList }));
     };
     const handleCreateTemplate = (data: any) => {
+        console.log('visionOcrText:===========', state.visionOcrText);
+        data.description = state.visionOcrText[0];
         if (create) {
             const requestBody = {
                 fields: state.sectionList,
@@ -163,10 +168,10 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             updateTemplateApi(id, requestBody, false);
         }
     };
-    console.log('state.templateSettings:===========', state.templateSettings);
     const submitSettingsHandler = (data: any) => {
         setState(prev => ({ ...prev, templateSettings: data, showTemplateSettingsForm: false }));
     };
+
     return (
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
@@ -377,7 +382,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             )}
             <UseFormbuilder
                 isOpen={editSectionDialog}
-                className="w-130"
+                className="w-[60vw]"
                 title="Section Configuration"
                 name="Template Section Config Form"
                 closeDialog={() => setEditSectionDialog(false)}
@@ -502,7 +507,7 @@ const FieldComponent = ({
             <LightIconButton Icon={Trash2} onClick={deleteField} title="Delete" className="hover:border-red-400 hover:text-red-500" />
             <UseFormbuilder
                 isOpen={editFieldDialog === index}
-                className="w-[50vw]"
+                className="w-[60vw]"
                 title="Field Configuration"
                 name="Template Field Config Form"
                 closeDialog={() => setEditFieldDialog(-1)}
