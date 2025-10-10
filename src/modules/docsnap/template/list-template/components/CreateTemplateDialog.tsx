@@ -1,5 +1,5 @@
 import { Search, CircleChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,14 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState('');
     const [showFileUploadUI, setShowFileUploadUI] = useState(false);
+
+    useEffect(() => {
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            setShowFileUploadUI(true);
+            setSelectedTemplateName('');
+        }
+    }, [state.showCreateTemplateDialog]);
 
     const handleSubmit = async () => {
         if (showFileUploadUI) return;

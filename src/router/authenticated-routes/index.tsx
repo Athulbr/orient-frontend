@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { NotFoundPage } from '../not-found-routes/GlobalNotFoundPage';
 import FullScreenLoader from '../../components/FullScreenLoader';
-import DocumentCreationEditor from '../../modules/documentCreation';
+import DocumentCreationEditor from '../../modules/documentCreation/create-document';
 
 const PromateRoutes = lazy(() => import('./PromateRoutes'));
 const ConfigRoutes = lazy(() => import('./config-routes'));
