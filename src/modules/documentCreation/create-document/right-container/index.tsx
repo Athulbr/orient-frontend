@@ -3,7 +3,7 @@ import { DynamicForm } from './DynamicForm';
 import { useDocumentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import { tabs } from '../static-data/tabs';
 import nunjucks from 'nunjucks';
-import KnowledgeBase from './KnowledgeBase';
+import KnowledgeBase from './knowledge-base';
 import ChatWithKnowledgeBase from './ChatWithKnowledgeBase';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { Button } from '../../../../components/Button';
@@ -15,6 +15,8 @@ interface RightContainerIF {
 
 const RightContainer: React.FC<RightContainerIF> = () => {
     const { state, setState } = useDocumentCreationEditorState();
+
+    console.log('state:===========', state);
 
     if (state.loadingTemplate) return <FullScreenLoader />;
 

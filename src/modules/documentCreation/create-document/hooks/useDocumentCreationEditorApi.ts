@@ -33,6 +33,42 @@ export const useDocumentCreationEditorApi = () => {
             toast.error('Failed to fetch template');
         }
     };
+    const sendMessageToNode = async (query: string) => {
+        try {
+            const knowledgeBaseString = state.knowledgeBase
+                .map((document, index) => {
+                    const fileName = document.fileName || document.name || 'Unknown';
+                    const text = document.documentText?.join(' ') || '';
+                    return `Document ${index + 1}:\nFile Name: ${fileName}\nContent:\n${text}`;
+                })
+                .join('\n\n---\n\n');
+            const requestBody = { query, visionOcrText: [knowledgeBaseString], chatList: state.messages };
+            const response: any = await httpRequest('POST', `http://localhost:6008/docsnap/chat-with-document`, requestBody);
+            setState(prev => ({
+                ...prev,
+                chatLoading: false,
+                messages: [...prev.messages, { text: response.data.answer, userMessage: false }]
+            }));
+        } catch (error) {
+            setState(prev => ({
+                ...prev,
+                chatLoading: false,
+                messages: [...prev.messages, { text: 'Something went wrong, Please try again later', userMessage: false }]
+            }));
+        }
+    };
+    const fillFormFieldsWithAI = async () => {
+        try {
+            const requestBody = { knowledgeBase: state.knowledgeBase, formFields: state.formFields };
+            const response: any = await httpRequest('POST', `http://localhost:6008/document-creation/fill-form-fields`, requestBody);
+            console.log('response:===========', response);
+            setState(prev => ({ ...prev, formData: { ...prev.formData, ...response.data } }));
+        } catch (error) {
+            console.log('error:===========', error);
+        } finally {
+            setState(prev => ({ ...prev, applyingKnowledgeBase: false }));
+        }
+    };
 
-    return { getTemplateByIdApi };
+    return { getTemplateByIdApi, sendMessageToNode, fillFormFieldsWithAI };
 };
