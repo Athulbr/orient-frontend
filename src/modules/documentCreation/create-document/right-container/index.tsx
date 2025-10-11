@@ -16,13 +16,14 @@ interface RightContainerIF {
 const RightContainer: React.FC<RightContainerIF> = () => {
     const { state, setState } = useDocumentCreationEditorState();
 
-    console.log('state:===========', state);
 
     if (state.loadingTemplate) return <FullScreenLoader />;
 
     return (
         <div className="flex flex-col flex-1 h-full relative">
-            <TabNavComponent tabs={tabs} onChange={index => setState(prev => ({ ...prev, activeTab: tabs[index].id }))} />
+            <div className="z-50">
+                <TabNavComponent tabs={tabs} onChange={index => setState(prev => ({ ...prev, activeTab: tabs[index].id }))} />
+            </div>
             <div className="border-b"></div>
             {state.activeTab === 'documentFields' && <DynamicForm />}
             {state.activeTab === 'knowledgeBase' && <KnowledgeBase />}

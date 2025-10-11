@@ -1,9 +1,8 @@
-import { Plus, Trash2, Upload } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useDocumentCreationEditorState } from '../../hooks/DocumentCreationEditorContext';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
-import { KnowledgeBaseList } from './KnowledgeBaseList';
 import { SelectedFileList } from './SelectedFileList';
 
 interface KnowledgeBaseIF {
@@ -13,10 +12,7 @@ interface KnowledgeBaseIF {
 const KnowledgeBase: React.FC<KnowledgeBaseIF> = () => {
     const { state, setState } = useDocumentCreationEditorState();
 
-    // console.log('state:===========', state);
-
     const handleFilesChange = (files: File[]) => {
-        console.log(files);
         setState(prev => ({ ...prev, files: [...prev.files, ...files], showFileInput: false }));
     };
 

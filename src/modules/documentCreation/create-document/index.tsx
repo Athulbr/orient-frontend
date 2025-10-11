@@ -4,6 +4,7 @@ import { DocumentCreationEditorStateProvider } from './hooks/DocumentCreationEdi
 import { tabs } from './static-data/tabs';
 import RightContainer from './right-container';
 import PreviewComponent from './preview-container';
+import { AnnotationLine, useAnnotationLine } from './components/AnnotationLine';
 
 interface DocumentCreationIF {
     test?: string;
@@ -53,17 +54,21 @@ const initialState: DocumentCreationEditorStateIF = {
 
 const DocumentCreationEditor: React.FC<DocumentCreationIF> = () => {
     const [state, setState] = useState<DocumentCreationEditorStateIF>(initialState);
+    const { sourceId, targetId, shouldRender } = useAnnotationLine(state.activeId);
 
     return (
         <DocumentCreationEditorStateProvider value={{ state, setState }}>
-            <ResizableContainer
-                className="flex flex-1 overflow-y-auto"
-                left={<PreviewComponent />}
-                right={<RightContainer />}
-                initialLeftWidthPercent={55}
-                minLeftWidthPercent={30}
-                maxLeftWidthPercent={75}
-            />
+            <div className="flex flex-1 overflow-y-auto relative">
+                <ResizableContainer
+                    className="flex flex-1 overflow-y-auto"
+                    left={<PreviewComponent />}
+                    right={<RightContainer />}
+                    initialLeftWidthPercent={55}
+                    minLeftWidthPercent={30}
+                    maxLeftWidthPercent={75}
+                />
+                {shouldRender && <AnnotationLine sourceId={sourceId} targetId={targetId} />}
+            </div>
         </DocumentCreationEditorStateProvider>
     );
 };

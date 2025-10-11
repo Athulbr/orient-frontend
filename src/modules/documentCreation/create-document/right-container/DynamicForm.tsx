@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '../../../../components/Button';
 import { useDocumentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
@@ -31,10 +31,21 @@ interface FormErrors {
 
 export const DynamicForm: React.FC = () => {
     const { state, setState } = useDocumentCreationEditorState();
+    const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
-    // const [formData, setFormData] = useState<{ [key: string]: any }>({});
     const [errors, setErrors] = useState<FormErrors>({});
     const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+
+    // Scroll active input into view
+    useEffect(() => {
+        if (state.activeId && inputRefs.current[state.activeId]) {
+            inputRefs.current[state.activeId]?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'nearest'
+            });
+        }
+    }, [state.activeId]);
 
     const handleFormDataChange = (data: any) => {
         if (!state.template) return;
@@ -44,7 +55,6 @@ export const DynamicForm: React.FC = () => {
                 values[subField.jsonKey] = data[subField.jsonKey] || '_______________';
             });
         });
-        // const finalDocumentText = nunjucks.renderString(state.template?.description, values);
         setState(prev => ({ ...prev, documentText: state.template?.description, formValues: values }));
     };
 
@@ -140,11 +150,15 @@ export const DynamicForm: React.FC = () => {
                     <div key={subField.jsonKey} className="mb-4">
                         <label className="flex items-center cursor-pointer">
                             <input
+                                ref={el => {
+                                    inputRefs.current[subField.jsonKey] = el;
+                                }}
                                 onFocus={() => handleOnFocus(subField)}
                                 type="checkbox"
                                 checked={value || false}
                                 onChange={e => handleChange(subField, e.target.checked)}
                                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                                id={`input-${subField.jsonKey}`}
                             />
                             <span className="ml-2 text-gray-700 text-sm">
                                 {subField.name}
@@ -163,6 +177,9 @@ export const DynamicForm: React.FC = () => {
                             {subField.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
+                            ref={el => {
+                                inputRefs.current[subField.jsonKey] = el;
+                            }}
                             onFocus={() => handleOnFocus(subField)}
                             type="number"
                             step={subField.dataType === 'float' ? 'any' : '1'}
@@ -172,6 +189,7 @@ export const DynamicForm: React.FC = () => {
                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
                                 isTouched && error ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                             }`}
+                            id={`input-${subField.jsonKey}`}
                         />
                         {isTouched && error && (
                             <div className="flex items-center mt-1.5 text-red-600 text-sm">
@@ -190,6 +208,9 @@ export const DynamicForm: React.FC = () => {
                             {subField.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
+                            ref={el => {
+                                inputRefs.current[subField.jsonKey] = el;
+                            }}
                             onFocus={() => handleOnFocus(subField)}
                             type="text"
                             value={value}
@@ -198,6 +219,7 @@ export const DynamicForm: React.FC = () => {
                             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
                                 isTouched && error ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                             }`}
+                            id={`input-${subField.jsonKey}`}
                         />
                         {isTouched && error && (
                             <div className="flex items-center mt-1.5 text-red-600 text-sm">
@@ -234,6 +256,10 @@ export const DynamicForm: React.FC = () => {
                     <div key={field._id || field.jsonKey} className="mb-5">
                         <label className="flex items-center cursor-pointer">
                             <input
+                                ref={el => {
+                                    inputRefs.current[field.jsonKey] = el;
+                                }}
+                                onFocus={() => handleOnFocus(field)}
                                 type="checkbox"
                                 checked={value || false}
                                 onChange={e => handleChange(field, e.target.checked)}
@@ -256,6 +282,10 @@ export const DynamicForm: React.FC = () => {
                             {field.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
+                            ref={el => {
+                                inputRefs.current[field.jsonKey] = el;
+                            }}
+                            onFocus={() => handleOnFocus(field)}
                             tabIndex={0}
                             type="number"
                             step={field.dataType === 'float' ? 'any' : '1'}
@@ -283,6 +313,10 @@ export const DynamicForm: React.FC = () => {
                             {field.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
+                            ref={el => {
+                                inputRefs.current[field.jsonKey] = el;
+                            }}
+                            onFocus={() => handleOnFocus(field)}
                             tabIndex={0}
                             type="text"
                             value={value}

@@ -29,8 +29,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { id, fileName } = useParams();
     const toast = useToastStore();
 
-    console.log('state:===========', state);
-
     useEffect(() => {
         if (!fileName) return;
 
