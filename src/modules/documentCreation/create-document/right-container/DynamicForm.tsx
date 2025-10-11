@@ -44,8 +44,8 @@ export const DynamicForm: React.FC = () => {
                 values[subField.jsonKey] = data[subField.jsonKey] || '_______________';
             });
         });
-        const finalDocumentText = nunjucks.renderString(state.template?.description, values);
-        setState(prev => ({ ...prev, documentText: finalDocumentText }));
+        // const finalDocumentText = nunjucks.renderString(state.template?.description, values);
+        setState(prev => ({ ...prev, documentText: state.template?.description, formValues: values }));
     };
 
     useEffect(() => {
@@ -88,10 +88,15 @@ export const DynamicForm: React.FC = () => {
 
     const handleBlur = (field: SubField | FormField) => {
         setTouched(prev => ({ ...prev, [field.jsonKey]: true }));
+        setState(prev => ({ ...prev, activeId: '' }));
 
         const value = state.formData[field.jsonKey];
         const error = validateField(field, value);
         setErrors(prev => ({ ...prev, [field.jsonKey]: error }));
+    };
+
+    const handleOnFocus = (field: SubField | FormField) => {
+        setState(prev => ({ ...prev, activeId: field.jsonKey }));
     };
 
     const handleSubmit = () => {
@@ -135,10 +140,11 @@ export const DynamicForm: React.FC = () => {
                     <div key={subField.jsonKey} className="mb-4">
                         <label className="flex items-center cursor-pointer">
                             <input
+                                onFocus={() => handleOnFocus(subField)}
                                 type="checkbox"
                                 checked={value || false}
                                 onChange={e => handleChange(subField, e.target.checked)}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                             />
                             <span className="ml-2 text-gray-700 text-sm">
                                 {subField.name}
@@ -157,12 +163,13 @@ export const DynamicForm: React.FC = () => {
                             {subField.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
+                            onFocus={() => handleOnFocus(subField)}
                             type="number"
                             step={subField.dataType === 'float' ? 'any' : '1'}
                             value={value}
                             onChange={e => handleChange(subField, e.target.value)}
                             onBlur={() => handleBlur(subField)}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
                                 isTouched && error ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                             }`}
                         />
@@ -183,11 +190,12 @@ export const DynamicForm: React.FC = () => {
                             {subField.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
+                            onFocus={() => handleOnFocus(subField)}
                             type="text"
                             value={value}
                             onChange={e => handleChange(subField, e.target.value)}
                             onBlur={() => handleBlur(subField)}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 transition-colors ${
                                 isTouched && error ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                             }`}
                         />

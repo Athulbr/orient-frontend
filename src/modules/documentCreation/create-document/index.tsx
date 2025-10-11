@@ -19,6 +19,7 @@ export interface DocumentCreationEditorStateIF {
     activeTab: string;
     formFields: any[];
     template: any;
+    formValues: Record<string, any>;
     documentText: string;
     showFileInput: boolean;
     files: any[];
@@ -29,12 +30,14 @@ export interface DocumentCreationEditorStateIF {
     messages: Message[];
     chatLoading: boolean;
     applyingKnowledgeBase: boolean;
+    activeId: string;
 }
 
 const initialState: DocumentCreationEditorStateIF = {
     activeTab: tabs[0].id,
     formFields: [],
     template: null,
+    formValues: {},
     documentText: '',
     showFileInput: false,
     files: [],
@@ -44,7 +47,8 @@ const initialState: DocumentCreationEditorStateIF = {
     uploadingDocuments: [],
     messages: [],
     chatLoading: false,
-    applyingKnowledgeBase: false
+    applyingKnowledgeBase: false,
+    activeId: ''
 };
 
 const DocumentCreationEditor: React.FC<DocumentCreationIF> = () => {

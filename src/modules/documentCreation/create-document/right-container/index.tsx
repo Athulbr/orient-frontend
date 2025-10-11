@@ -1,5 +1,4 @@
 import { TabNavComponent } from '../../../docsnap/record/components/TabNav/TabNav';
-import { DynamicForm } from './DynamicForm';
 import { useDocumentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import { tabs } from '../static-data/tabs';
 import nunjucks from 'nunjucks';
@@ -8,6 +7,7 @@ import ChatWithKnowledgeBase from './ChatWithKnowledgeBase';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { Button } from '../../../../components/Button';
 import { Save } from 'lucide-react';
+import { DynamicForm } from './DynamicForm';
 
 interface RightContainerIF {
     test?: string;

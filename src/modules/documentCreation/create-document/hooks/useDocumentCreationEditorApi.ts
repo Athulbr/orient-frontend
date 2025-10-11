@@ -2,7 +2,6 @@ import { template } from 'lodash';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useDocumentCreationEditorState } from './DocumentCreationEditorContext';
-import nunjucks from 'nunjucks';
 
 export const useDocumentCreationEditorApi = () => {
     const { state, setState } = useDocumentCreationEditorState();
@@ -19,13 +18,13 @@ export const useDocumentCreationEditorApi = () => {
                     values[subField.jsonKey] = '_______________';
                 });
             });
-            const finalDocumentText = nunjucks.renderString(res.data?.description, values);
             setState(prev => ({
                 ...prev,
                 template: res.data,
                 loadingTemplate: false,
                 formFields: res.data?.fields,
-                documentText: finalDocumentText
+                formValues: values,
+                documentText: res.data?.documentText
             }));
             return res.data;
         } catch (error) {

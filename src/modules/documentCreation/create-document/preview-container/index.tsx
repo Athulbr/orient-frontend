@@ -5,6 +5,8 @@ import { useDocumentCreationEditorApi } from '../hooks/useDocumentCreationEditor
 import { cn } from '../../../../global-utils/twMerge';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { Button } from '../../../../components/Button';
+import { HighlightedText } from './HighlightedText';
+import { RenderContent } from './RenderContent';
 
 interface PreviewComponentIF {
     test?: string;
@@ -39,11 +41,12 @@ const PreviewComponent: React.FC<PreviewComponentIF> = () => {
                 </Button>
             </div>
             <div className="p-6 rounded-lg border h-full flex flex-col gap-6 overflow-y-auto">
-                {state.documentText.split('\n').map((item: string, index: number) => (
+                {/* {state.documentTexqqqq.split('\n').map((item: string, index: number) => (
                     <div className={cn('leading-12', isAllCaps(item) && 'font-bold text-lg')} key={index}>
                         {item}
                     </div>
-                ))}
+                ))} */}
+                <RenderContent template={state.documentText} data={state.formValues} />
             </div>
         </div>
     );
