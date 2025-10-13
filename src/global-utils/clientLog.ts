@@ -1,4 +1,5 @@
 import { useToastStore } from '../components/toast/ToastStore';
+import { config } from '../config/default';
 
 const clientLogger = async (method: string, url: string, data: any = {}) => {
     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
@@ -21,22 +22,22 @@ const clientLogger = async (method: string, url: string, data: any = {}) => {
         const result = await response.json();
 
         if (response?.status === 403) {
-            clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: result.message, data: { url: response?.url } });
+            clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: result.message, data: { url: response?.url } });
             throw new Error(`Connection error, try again later`);
         }
 
         if (response?.status === 404) {
-            clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
+            clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
             throw new Error(`Connection error, try again later`);
         }
 
         if (response?.status === 504) {
-            clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
+            clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
             throw new Error(`${response?.statusText}`);
         }
 
         if (response?.status === 500) {
-            // clientLogger('POST', `${import.meta.env.VITE_NODE_URL}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
+            // clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } })
             const errorMessage = response?.statusText === '' ? 'Connection issue, try again later' : response?.statusText;
             throw new Error(errorMessage);
         }

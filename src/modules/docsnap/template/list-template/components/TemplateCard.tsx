@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertDialog } from '../../../../../components/alert/AlertDialog';
 import { useAlertStore } from '../../../../../components/alert/AlertStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { config } from '../../../../../config/default';
 interface PropsIF {
     template?: any;
     onClickUpload?: () => void;
@@ -26,7 +27,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
             try {
-                const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/template/delete/${id}`);
+                const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
                 refreshPage && refreshPage();
                 toast.success('Template deleted successfully');
             } catch (error) {

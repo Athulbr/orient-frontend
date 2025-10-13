@@ -7,6 +7,7 @@ import { processZipResponse } from '../../global-utils/zipHandler';
 import useTranscriptStore from '../../zustand-store/transcriptStore';
 import httpUploadRequest from '../../global-utils/httpUploadRequest';
 import { Button } from '../../components/Button';
+import { config } from '../../config/default';
 
 interface AudioRecorderProps {
     setIsProcessing?: (val: boolean) => void;
@@ -203,7 +204,7 @@ const AudioRecorder = ({
 
     const uploadFileToS3 = async (file: File) => {
         try {
-            return await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file);
+            return await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file);
         } catch (err) {
             console.log('Error:', err);
         }

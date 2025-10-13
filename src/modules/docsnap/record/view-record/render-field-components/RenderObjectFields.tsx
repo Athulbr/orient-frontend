@@ -36,8 +36,10 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
 
                                 const { label, showRegenButton, validationUrl, showTextarea } = useMemo(() => {
                                     const fields = state.record?.templateId?.fields;
-                                    const field = fields?.find((item: any) => item.jsonKey === key);
+                                    let field = fields?.find((item: any) => item.jsonKey === key);
+
                                     const subField = field?.subFields?.find((item: any) => item.jsonKey === subKey);
+
                                     return {
                                         label: subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey),
                                         showRegenButton: subField?.regenerateFieldValueWithAI || false,

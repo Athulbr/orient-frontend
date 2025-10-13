@@ -2,6 +2,7 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useDashboardState } from './dashboardContext';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
+import { config } from '../../../config/default';
 
 export const useDashboardApi = () => {
     const { setState } = useDashboardState();
@@ -14,7 +15,7 @@ export const useDashboardApi = () => {
         try {
             // if (!checkPermission('read:record')) return;
             setState(prev => ({ ...prev, loadingRecords: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history`, { pageSize: 10, filters: { deleted: false } });
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { pageSize: 10, filters: { deleted: false } });
             setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;
@@ -26,7 +27,7 @@ export const useDashboardApi = () => {
         try {
             // if (!checkPermission('read:record')) return;
             setState(prev => ({ ...prev, loadingStatusCounts: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/history/status/count`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/status/count`);
             setState(prev => ({ ...prev, loadingStatusCounts: false, statusCounts: { ...res.data[0], total: res.total } }));
         } catch (error) {
             toast.error('Failed to fetch record');

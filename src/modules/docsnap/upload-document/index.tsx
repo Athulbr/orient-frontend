@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
+import { config } from '../../../config/default';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -19,7 +20,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
     const { getTenantSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
             setTemplateData(res.data);
         };
         if (template?._id) {

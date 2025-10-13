@@ -42,7 +42,8 @@ export const HighlightedText: React.FC<{ template: string; data: DataMap }> = ({
                             style={{
                                 border: key === state.activeId ? '2px solid #3b82f6' : '2px solid white',
                                 padding: '2px 4px',
-                                borderRadius: '3px'
+                                borderRadius: '3px',
+                                backgroundColor: 'rgb(210 242 198 / 36%)'
                             }}
                             id={`span-${key}`}
                             onClick={() => setState(prev => ({ ...prev, activeId: key }))}

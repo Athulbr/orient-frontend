@@ -9,6 +9,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useMsal } from '@azure/msal-react';
 import { useEffect } from 'react';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
+import { config } from '../../../../config/default';
 
 export const useLoginPageApi = () => {
     const { instance, accounts } = useMsal();
@@ -35,7 +36,7 @@ export const useLoginPageApi = () => {
         }
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/login`, { email: state.email, password: state.password });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/login`, { email: state.email, password: state.password });
             if (res?.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
@@ -43,10 +44,10 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
 
                 const resp = await Promise.all([
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
-                    httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
+                    httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
+                    httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
                 ]);
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
@@ -75,22 +76,22 @@ export const useLoginPageApi = () => {
             try {
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/google/userinfo`, { access_token: response?.access_token });
+                const user = await httpRequest('POST', `${config.nodeApiUrl}/auth/google/userinfo`, { access_token: response?.access_token });
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
                     email: user.email,
                     sso: true
                 };
-                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/signup`, ssoRegistration);
+                const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/signup`, ssoRegistration);
                 if (res.data?.accessToken) {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                     window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                     // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
                     const resp = await Promise.all([
-                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                        httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 })
+                        httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                        httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 })
                     ]);
                     window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                     window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));

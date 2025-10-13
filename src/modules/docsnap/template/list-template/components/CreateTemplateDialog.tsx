@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
+import { config } from '../../../../../config/default';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [selectedTemplateName, setSelectedTemplateName] = useState('');
@@ -36,8 +37,8 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             templateId: selectedTemplate._id
         };
         setState({ ...state, loadingCreateTemplate: true });
-        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
-        const resp = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
+        const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+        const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
             pageSize: 1000,
             custom: true,
             filters: { deleted: false }
@@ -143,7 +144,7 @@ const FileUploadUIComponent = ({ closeDialog }: { closeDialog: () => void }) => 
     const [uploading, setUploading] = useState(false);
     const onFileDrop = async (files: File[]) => {
         setUploading(true);
-        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, files[0] as File);
+        const s3Response = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, files[0] as File);
         navigate(`/docsnap/template/create/${s3Response.data?.fileName}`);
         closeDialog();
         setUploading(false);

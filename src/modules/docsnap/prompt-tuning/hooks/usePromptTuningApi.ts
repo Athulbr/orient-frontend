@@ -1,6 +1,7 @@
 import { usePromptTuningState } from './promptTuningContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const usePromptTuningApi = () => {
     const { state, setState } = usePromptTuningState();
@@ -77,7 +78,7 @@ export const usePromptTuningApi = () => {
         }
         try {
             setState(prev => ({ ...prev, updatingTemplate: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/updated-field/update/prompt/${state.selectedTemplateId}`, requestBody);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/updated-field/update/prompt/${state.selectedTemplateId}`, requestBody);
             setState(prev => ({ ...prev, showTuningDialog: false, id: '', templateName: '', selectedTemplateId: '' }));
             toast.success('Template updated successfully');
             return true;

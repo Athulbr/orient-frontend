@@ -1,4 +1,5 @@
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { config } from '../../../../../config/default';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { useViewTemplateState } from './viewTemplateContext';
 
@@ -11,7 +12,7 @@ export const useViewTemplateApi = () => {
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { pageSize: 100 });
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 100 });
             setState(prev => ({ ...prev }));
             return true;
         } catch (error) {
@@ -22,7 +23,7 @@ export const useViewTemplateApi = () => {
     const getTemplateByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplate: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${id}`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${id}`);
             setState(prev => ({ ...prev, templateFields: res.data?.fields, template: res.data, loadingTemplate: false }));
             return res.data;
         } catch (error) {
@@ -33,7 +34,7 @@ export const useViewTemplateApi = () => {
 
     const updateTemplateApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/update/`, requestBody);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/update/`, requestBody);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
             toast.success('Template updated successfully');
             return true;
@@ -44,7 +45,7 @@ export const useViewTemplateApi = () => {
     };
     const deleteTemplateApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/template/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
             toast.success('Template deleted successfully');
             return true;

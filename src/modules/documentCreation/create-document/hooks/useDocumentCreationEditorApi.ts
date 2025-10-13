@@ -2,6 +2,7 @@ import { template } from 'lodash';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useDocumentCreationEditorState } from './DocumentCreationEditorContext';
+import { config } from '../../../../config/default';
 
 export const useDocumentCreationEditorApi = () => {
     const { state, setState } = useDocumentCreationEditorState();
@@ -10,7 +11,7 @@ export const useDocumentCreationEditorApi = () => {
     const getTemplateByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplate: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${id}`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${id}`);
 
             const values: any = {};
             res.data?.fields?.forEach((field: any) => {

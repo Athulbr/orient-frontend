@@ -149,7 +149,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                     ? import.meta.env.VITE_ML_SERVICE_NODEJS_EXTRACT_SLD_V2
                     : import.meta.env.VITE_ML_SERVICE_NODEJS_EXTRACT_DOCUMENT_V1;
 
-            // const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_DATA_ENTRY, {
             const response = await fetch(apiEndPoint, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${JSON.parse(token)}` },

@@ -4,6 +4,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { X } from 'lucide-react';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { DatePicker } from '../../../../../builders/tablebuilder/render-tablebuilder/components/DatePicker';
+import { config } from '../../../../../config/default';
 
 interface SubDealer {
     name: string;
@@ -31,7 +32,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
     useEffect(() => {
         const getDealerList = async () => {
             try {
-                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/list/dealers`);
+                const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/list/dealers`);
                 setDealersData(res.data?.dealers);
             } catch (error) {
                 toast.error('Failed to fetch dealer list');

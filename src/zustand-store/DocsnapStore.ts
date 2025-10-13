@@ -3,6 +3,7 @@ import httpUploadRequest from '../global-utils/httpUploadRequest';
 import httpRequest from '../global-utils/httpRequest';
 import { convertJSON } from '../modules/docsnap/record/list-record/utils/convertJSON';
 import { usePermissionStore } from './PermissionStore';
+import { config } from '../config/default';
 
 interface ExtractionItem {
     fileName: string;
@@ -155,8 +156,9 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             // formData.append('extractionType', 'single');
             formData.append('file', file);
 
-            // const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_DATA_ENTRY, {
-            const response = await fetch(import.meta.env.VITE_ML_SERVICE_NODEJS_V5, {
+            console.log('config.mlServiceNodejs:===========', config.mlServiceNodejs);
+
+            const response = await fetch(`${config.mlServiceNodejs}/docsnap/extract-document`, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${JSON.parse(token)}` },
                 body: formData
@@ -195,7 +197,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                 )
                             });
                         }, 1000);
-                        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
+                        const s3Response = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file as File);
                         get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -215,7 +217,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
-                        const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+                        const res = await httpRequest('POST', `${config.mlServicePython}/api/v5/document/analyze_document_v5`, requestBody);
 
                         const createReqObject = {
                             status: 'processing',
@@ -227,7 +229,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                         };
 
-                        const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
+                        const createRecordResponse = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
                         set({ refreshRecord: get().refreshRecord + 1 });
 
                         // const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
@@ -278,7 +280,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                     };
                                     await httpRequest(
                                         'PATCH',
-                                        `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                        `${config.nodeApiUrl}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
                                         requestBody
                                     );
                                     set({ refreshRecord: get().refreshRecord + 1 });
@@ -317,7 +319,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                 )
                             });
                         }, 1000);
-                        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
+                        const s3Response = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file as File);
                         get().trainChatWithDocumentEngine(s3Response?.data?.fileName, s3Response?.data?.url);
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Processing' } : item))
@@ -338,7 +340,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
-                        const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, requestBody);
+                        const res = await httpRequest('POST', `${config.mlServicePython}/api/v5/document/analyze_document_v5_multi`, requestBody);
 
                         const createReqObject = {
                             status: 'processing',
@@ -350,7 +352,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
                         };
 
-                        // const createRecordResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, createReqObject);
+                        // const createRecordResponse = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
                         set({ refreshRecord: get().refreshRecord + 1 });
                         set({
                             extractionQueue: get().extractionQueue.map((item: any) => (item.fileName === file.name ? { ...item, status: 'Complete' } : item))
@@ -404,7 +406,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                     // };
                                     // await httpRequest(
                                     //     'PATCH',
-                                    //     `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                    //     `${config.nodeApiUrl}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
                                     //     requestBody
                                     // );
                                     set({ refreshRecord: get().refreshRecord + 1 });

@@ -88,10 +88,15 @@ export const AnnotationLine: React.FC<AnnotationLineProps> = ({ sourceId, target
     const { start, end } = lineData;
 
     // Calculate path with horizontal offsets (like the reference)
-    const startHorizontalX = start.x - HORIZONTAL_OFFSET;
+    const diff = start.x - end.x;
+
+    const startHorizontalX = diff > 100 ? start.x - HORIZONTAL_OFFSET : start.x - 20;
     const startHorizontalY = start.y;
-    const endHorizontalX = end.x + HORIZONTAL_OFFSET;
+    const endHorizontalX = diff > 100 ? end.x + HORIZONTAL_OFFSET : end.x + 20;
     const endHorizontalY = end.y;
+
+    console.log('start.x:===========', start.x);
+    console.log('end.x:===========', end.x);
 
     const pathData = `M ${start.x} ${start.y} L ${startHorizontalX} ${startHorizontalY} L ${endHorizontalX} ${endHorizontalY} L ${end.x} ${end.y}`;
 

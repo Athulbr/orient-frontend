@@ -2,7 +2,6 @@ import { RefObject, useId, useState } from 'react';
 import { CircleCheck, Eye, MessageSquareText } from 'lucide-react';
 import { CommentDialog } from './CommentDialog';
 import { ConfidenceScore } from './ConfidenceScore';
-import nunjucks from 'nunjucks';
 
 interface InputFieldProps {
     label?: string;
@@ -44,9 +43,13 @@ export const InputField = ({
     const id = useId();
     const [commentList, setCommentList] = useState<{ text: string; date: string; time: string }[]>([]);
 
+    const renderTemplate = (template: string, data: Record<string, string>) => {
+        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => encodeURIComponent(data[key] ?? ''));
+    };
+
     const validateLink = (validationUrl: string, value: string) => {
         if (!validationUrl.trim() || !value.trim()) return;
-        const finalUrl = nunjucks.renderString(validationUrl, { value });
+        const finalUrl = renderTemplate(validationUrl, { value });
         window.open(finalUrl, '_blank');
     };
 

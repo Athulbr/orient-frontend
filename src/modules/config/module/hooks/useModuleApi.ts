@@ -3,6 +3,7 @@ import { useModuleState } from './moduleContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const useModulesApi = () => {
     const { state, setState } = useModuleState();
@@ -19,7 +20,7 @@ export const useModulesApi = () => {
     const createModuleApi = async (payload: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/module/create`, payload);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/module/create`, payload);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Module Created Successfully');
         } catch (error) {
@@ -33,7 +34,7 @@ export const useModulesApi = () => {
     const updateModuleApi = async (module: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/module/update/${state.id}`, module);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/module/update/${state.id}`, module);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Module Updated Successfully');
         } catch (error) {
@@ -46,7 +47,7 @@ export const useModulesApi = () => {
 
     const getModuleByIdApi = async (id: string) => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/module/${id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/module/${id}`);
             toast.success('Module fetched successfully');
             setState(prev => ({ ...prev, module: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -57,7 +58,7 @@ export const useModulesApi = () => {
 
     const deleteModuleApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/module/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/module/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Module deleted successfully');
             return true;

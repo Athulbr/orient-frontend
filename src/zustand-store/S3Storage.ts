@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import httpRequest from '../global-utils/httpRequest';
 import httpUploadRequest from '../global-utils/httpUploadRequest';
+import { config } from '../config/default';
 
 interface S3StorageIF {
     files: Record<string, ArrayBuffer | null>;
@@ -15,7 +16,7 @@ export const useS3Storage = create<S3StorageIF>((set, get) => ({
 
     uploadS3File: async (file: File) => {
         try {
-            const uploadResponse = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file);
+            const uploadResponse = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file);
             return uploadResponse.data;
         } catch (error) {
             console.error('Error uploading file:', error);
@@ -39,7 +40,7 @@ export const useS3Storage = create<S3StorageIF>((set, get) => ({
         // ✅ Create fetch promise first and put in state immediately
         const fetchPromise: Promise<ArrayBuffer | null> = (async () => {
             try {
-                const fileDataResponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/document/get/file`, { fileName });
+                const fileDataResponse = await httpRequest('POST', `${config.nodeApiUrl}/idp/document/get/file`, { fileName });
 
                 set(state => ({
                     files: { ...state.files, [fileName]: fileDataResponse.data },

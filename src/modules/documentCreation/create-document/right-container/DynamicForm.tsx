@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '../../../../components/Button';
 import { useDocumentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
-import nunjucks from 'nunjucks';
 
 interface SubField {
     name: string;
@@ -41,9 +40,10 @@ export const DynamicForm: React.FC = () => {
         if (state.activeId && inputRefs.current[state.activeId]) {
             inputRefs.current[state.activeId]?.scrollIntoView({
                 behavior: 'smooth',
-                block: 'center',
+                block: 'nearest',
                 inline: 'nearest'
             });
+            inputRefs.current[state.activeId]?.focus();
         }
     }, [state.activeId]);
 
@@ -342,7 +342,7 @@ export const DynamicForm: React.FC = () => {
             <div className="p-2 pb-0 flex flex-col overflow-y-auto flex-1">
                 {state.formFields.map(field => renderField(field))}
 
-                <div className="sticky bottom-0 left-0 flex gap-3 p-2 justify-end bg-white">
+                {/* <div className="sticky bottom-0 left-0 flex gap-3 p-2 justify-end bg-white">
                     <Button type="button" onClick={handleSubmit}>
                         Submit Form
                     </Button>
@@ -356,7 +356,7 @@ export const DynamicForm: React.FC = () => {
                     >
                         Reset
                     </Button>
-                </div>
+                </div> */}
             </div>
         </div>
     );

@@ -1,3 +1,4 @@
+import { config } from '../../../config/default';
 import httpRequest from '../../../global-utils/httpRequest';
 import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
@@ -95,7 +96,7 @@ export const usePythonSingleDocumentExtractor = () => {
                 formData.append('template', JSON.stringify(template));
                 formData.append('file', file);
 
-                const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file as File);
+                const s3Response = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file as File);
 
                 const res = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL}_multi`, {});
 

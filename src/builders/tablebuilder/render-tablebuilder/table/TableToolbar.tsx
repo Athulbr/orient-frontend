@@ -10,6 +10,7 @@ import { getFiltersObject } from '../utils/getFiltersObject';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { Button } from '../../../../components/Button';
 import Spinner from '../../../../components/Spinner';
+import { config } from '../../../../config/default';
 
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
@@ -316,7 +317,7 @@ const ExportButton = () => {
                 link.remove();
                 window.URL.revokeObjectURL(url);
             } else if (value === 'all') {
-                // `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
+                // `${config.nodeApiUrl}/idp/history/export/new`;
 
                 const downloadXlsxFile = async () => {
                     const recordId = 'export';
@@ -326,9 +327,9 @@ const ExportButton = () => {
                     // Update this condition based on your tenant settings
                     const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
                     if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
-                        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
+                        exportURL = `${config.nodeApiUrl}/idp/history/export/new`;
                     } else {
-                        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export`;
+                        exportURL = `${config.nodeApiUrl}/idp/history/export`;
                     }
 
                     const response = await fetch(exportURL, {

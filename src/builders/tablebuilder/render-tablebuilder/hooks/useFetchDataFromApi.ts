@@ -3,6 +3,7 @@ import { useTablebuilderState } from './useTablebuilderStateContext';
 import { getFiltersObject } from '../utils/getFiltersObject';
 import { QueryParams } from '../interface';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const useFetchDataFromApi = () => {
     const { state, setState, settings, injectedData } = useTablebuilderState();
@@ -43,7 +44,8 @@ export const useFetchDataFromApi = () => {
                 }
                 const api = settings.api;
                 // const url = 'http://192.168.1.36:4600';
-                const url = api.getUrlFromEnv ? import.meta.env[api.envVariable] : api.url;
+                // const url = api.getUrlFromEnv ? import.meta.env[api.envVariable] : api.url;
+                const url = config.nodeApiUrl;
 
                 const updatedQuery = injectedData.updatedQuery ? injectedData.updatedQuery(query) : query;
 

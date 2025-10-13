@@ -1,7 +1,6 @@
 import { TabNavComponent } from '../../../docsnap/record/components/TabNav/TabNav';
 import { useDocumentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import { tabs } from '../static-data/tabs';
-import nunjucks from 'nunjucks';
 import KnowledgeBase from './knowledge-base';
 import ChatWithKnowledgeBase from './ChatWithKnowledgeBase';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
@@ -16,12 +15,11 @@ interface RightContainerIF {
 const RightContainer: React.FC<RightContainerIF> = () => {
     const { state, setState } = useDocumentCreationEditorState();
 
-
     if (state.loadingTemplate) return <FullScreenLoader />;
 
     return (
         <div className="flex flex-col flex-1 h-full relative">
-            <div className="z-50">
+            <div className="z-20">
                 <TabNavComponent tabs={tabs} onChange={index => setState(prev => ({ ...prev, activeTab: tabs[index].id }))} />
             </div>
             <div className="border-b"></div>
