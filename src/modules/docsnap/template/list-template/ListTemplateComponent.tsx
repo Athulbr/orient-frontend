@@ -20,6 +20,13 @@ const ListTemplateComponent: React.FC = () => {
         getTemplatesApi();
     }, [state.refresh]);
 
+    // Get selected tenant id from localStorage
+    const selectedTenantId = localStorage.getItem('selectedTenant');
+
+    // Filter templates by tenant id if present
+    const filteredTemplates =
+        !selectedTenantId || selectedTenantId === 'all' ? state.templates : state.templates.filter((template: any) => template.tenantId === selectedTenantId);
+
     if (state.loadingTemplates) {
         return (
             <div className="flex flex-wrap gap-4">
@@ -39,7 +46,7 @@ const ListTemplateComponent: React.FC = () => {
 
     return (
         <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
-            {state.templates.map((template: any, idx: number) => (
+            {filteredTemplates.map((template: any, idx: number) => (
                 <TemplateCardComponent
                     onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
                     key={idx}
