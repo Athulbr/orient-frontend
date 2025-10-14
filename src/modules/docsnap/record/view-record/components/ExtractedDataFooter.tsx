@@ -7,6 +7,7 @@ import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { config } from '../../../../../config/default';
 interface ExtractedDataFooterIF {
     test?: string;
 }
@@ -38,9 +39,9 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             use_latest: false
         };
         requestBody.ocr_engine = 'google_vision'; // 'doctr';
-        const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+        const res = await httpRequest('POST', `${config.extractionServicePython}/analyze-document`, requestBody);
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai/${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+        const eventSource = new EventSource(`${config.extractionServicePython}${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
         eventSource.addEventListener('task_update', async (event: any) => {
             const data = JSON.parse(event.data);

@@ -98,7 +98,7 @@ export const usePythonMultiDocumentExtractor = () => {
 
                 const s3Response = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file as File);
 
-                const res = await httpRequest('POST', `${config.mlServicePython}/api/v5/document/analyze_document_v5_multi`, {});
+                const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5_multi`, {});
 
                 // const reader = response.body.getReader();
                 // await processStream(reader, file.name, timer);

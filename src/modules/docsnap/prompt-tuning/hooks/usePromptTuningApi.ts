@@ -52,7 +52,7 @@ export const usePromptTuningApi = () => {
         }
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_URL}/finetune/prompt_finetune`, payload);
+            const res: any = await httpRequest('POST', `${config.extractionServicePython}/finetune/prompt_finetune`, payload);
             if (!res.success) {
                 setState(prev => ({ ...prev, loading: false }));
                 toast.error(res.message);

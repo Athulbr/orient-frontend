@@ -106,7 +106,7 @@ export const useUpdateTemplatePageApi = () => {
                 toast.success('Template fields generated successfully');
                 return true;
             }
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/generate-template-fields`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
             // const data = convertLLMResponse(newSchema);
@@ -122,7 +122,7 @@ export const useUpdateTemplatePageApi = () => {
     const updateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_UPDATE_TEMPLATE_FIELDS}`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/update-template-fields`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, updatingTemplateFieldsWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');
@@ -136,7 +136,7 @@ export const useUpdateTemplatePageApi = () => {
     const regenerateInstructionWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_INSTRUCTION}`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/regenerate-instruction`, requestBody);
             setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');
             return res.data?.updatedInstruction;

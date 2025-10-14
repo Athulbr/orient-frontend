@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { config } from '../config/default';
 
 interface ExtractionItem {
     fileName: string;
@@ -146,8 +147,8 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
 
             const apiEndPoint =
                 template?.settings?.templateType === 'sld'
-                    ? import.meta.env.VITE_ML_SERVICE_NODEJS_EXTRACT_SLD_V2
-                    : import.meta.env.VITE_ML_SERVICE_NODEJS_EXTRACT_DOCUMENT_V1;
+                    ? `${config.mlServiceNodejs}/docsnap/extract-sld-v2`
+                    : `${config.mlServiceNodejs}/docsnap/extract-document-v1`;
 
             const response = await fetch(apiEndPoint, {
                 method: 'POST',

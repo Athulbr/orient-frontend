@@ -33,7 +33,7 @@ export const filledInitialData: TablebuilderSettingsIF = {
     },
     api: {
         getUrlFromEnv: true,
-        envVariable: 'VITE_NODE_URL',
+        envVariable: '',
         url: `${config.nodeApiUrl}`,
         endPoint: '',
         refresh: 1
@@ -88,7 +88,7 @@ export const emptyInitialData: TablebuilderSettingsIF = {
     },
     api: {
         getUrlFromEnv: false,
-        envVariable: 'VITE_NODE_URL',
+        envVariable: '',
         url: `${config.nodeApiUrl}`,
         endPoint: '/user/query',
         refresh: 1

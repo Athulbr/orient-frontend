@@ -26,6 +26,15 @@ const RecentFilesCardComponent: React.FC = () => {
 
     const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
 
+    const rowClickHandler = (row: any) => {
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            navigate(`/document-creation/create/${row._id}`);
+        } else {
+            navigate(`/docsnap/record/view/${row._id}`);
+        }
+    };
+
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
@@ -60,7 +69,7 @@ const RecentFilesCardComponent: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100 bg-white">
                             {state.records.map((row, idx) => (
-                                <tr key={idx} className="cursor-pointer" onClick={() => navigate(`/docsnap/record/view/${row._id}`)}>
+                                <tr key={idx} className="cursor-pointer" onClick={() => rowClickHandler(row)}>
                                     <td title={row.name} className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {row.name}
                                     </td>

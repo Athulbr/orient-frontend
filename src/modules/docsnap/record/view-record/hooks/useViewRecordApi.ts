@@ -113,7 +113,7 @@ export const useViewRecordApi = () => {
     const sendMessage = async (message: string) => {
         try {
             const requestBody = { query: message, botName: state.record?.pdfFileName };
-            const response: any = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_URL}/chatbot/v2/query`, requestBody);
+            const response: any = await httpRequest('POST', `${config.chatbotServicePython}/v2/query`, requestBody);
             setState(prev => ({
                 ...prev,
                 chatLoading: false,
@@ -293,7 +293,7 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_FIELD}`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/regenerate-field`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
@@ -304,7 +304,7 @@ export const useViewRecordApi = () => {
     };
     const sendContentCreationContext = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_CONTENT_CREATION}`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/content-creation`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);

@@ -33,6 +33,7 @@ export interface DocumentCreationEditorStateIF {
     applyingKnowledgeBase: boolean;
     activeId: string;
     showRichTextEditor: boolean;
+    record: any;
 }
 
 const initialState: DocumentCreationEditorStateIF = {
@@ -51,7 +52,8 @@ const initialState: DocumentCreationEditorStateIF = {
     chatLoading: false,
     applyingKnowledgeBase: false,
     activeId: '',
-    showRichTextEditor: false
+    showRichTextEditor: false,
+    record: null
 };
 
 const DocumentCreationEditor: React.FC<DocumentCreationIF> = () => {

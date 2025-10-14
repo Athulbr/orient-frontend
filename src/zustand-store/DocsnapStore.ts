@@ -217,7 +217,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
-                        const res = await httpRequest('POST', `${config.mlServicePython}/api/v5/document/analyze_document_v5`, requestBody);
+                        const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5`, requestBody);
 
                         const createReqObject = {
                             status: 'processing',
@@ -238,7 +238,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         // }
 
                         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-                        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+                        const eventSource = new EventSource(`${config.extractionServicePython}${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
                         eventSource.addEventListener('task_update', async (event: any) => {
                             const data = JSON.parse(event.data);
@@ -340,7 +340,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
-                        const res = await httpRequest('POST', `${config.mlServicePython}/api/v5/document/analyze_document_v5_multi`, requestBody);
+                        const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5_multi`, requestBody);
 
                         const createReqObject = {
                             status: 'processing',
@@ -364,7 +364,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         }
 
                         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-                        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+                        const eventSource = new EventSource(`${config.extractionServicePython}${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
                         eventSource.addEventListener('task_update', async (event: any) => {
                             const data = JSON.parse(event.data);
@@ -433,7 +433,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
         },
         trainChatWithDocumentEngine: async (s3fileName: string, s3Url: string) => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_PYTHON_URL}/chatbot/v2/upload`, {
+                const response = await fetch(`${config.chatbotServicePython}/v2/upload`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

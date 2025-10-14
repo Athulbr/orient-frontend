@@ -8,10 +8,11 @@ export const useDocumentCreationEditorApi = () => {
     const { state, setState } = useDocumentCreationEditorState();
     const toast = useToastStore();
 
-    const getTemplateByIdApi = async (id: string) => {
+    const getRecordByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplate: true }));
-            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${id}`);
+            const response: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${response.data?.templateId?._id}`);
 
             const values: any = {};
             res.data?.fields?.forEach((field: any) => {
@@ -25,7 +26,8 @@ export const useDocumentCreationEditorApi = () => {
                 loadingTemplate: false,
                 formFields: res.data?.fields,
                 formValues: values,
-                documentText: res.data?.documentText
+                documentText: res.data?.documentText,
+                record: response.data
             }));
             return res.data;
         } catch (error) {
@@ -70,5 +72,5 @@ export const useDocumentCreationEditorApi = () => {
         }
     };
 
-    return { getTemplateByIdApi, sendMessageToNode, fillFormFieldsWithAI };
+    return { getRecordByIdApi, sendMessageToNode, fillFormFieldsWithAI };
 };

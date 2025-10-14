@@ -122,7 +122,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
 
     // uploadAudio: async (formData: FormData): Promise<any> => {
     //   try {
-    //     const URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
+    //     const URL = `${config.baseUrl}/transcript/upload_audio/`;
     //     const response = await fetch(URL, {
     //       method: 'POST',
     //       body: formData,
@@ -155,9 +155,9 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
 
     uploadAudio: async (formData: FormData, fileType: string): Promise<any> => {
         try {
-            let URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_audio/`;
+            let URL = `${config.baseUrl}/transcript/upload_audio/`;
             if (fileType === 'text') {
-                URL = `${import.meta.env.VITE_BASE_URL}/transcript/upload_file/`;
+                URL = `${config.baseUrl}/transcript/upload_file/`;
             }
             const response = await fetch(URL, {
                 method: 'POST',
@@ -191,7 +191,7 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
 
     uploadText: async (payload: { medical_text: string }): Promise<any> => {
         try {
-            const URL = `${import.meta.env.VITE_BASE_URL}/transcript/process_text/`;
+            const URL = `${config.baseUrl}/transcript/process_text/`;
             const response = await fetch(URL, {
                 method: 'POST',
                 headers: {
