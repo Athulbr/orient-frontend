@@ -1,5 +1,5 @@
 export const config = {
-    baseUrl: import.meta.env.VITE_BASE_URL,
+    baseUrl: import.meta.env.VITE_NODE_ENV === 'development' ? import.meta.env.VITE_BASE_URL_LOCAL : import.meta.env.VITE_BASE_URL_DEV,
     nodeApiUrl: import.meta.env.VITE_NODE_ENV === 'development' ? import.meta.env.VITE_NODE_URL_DEV : import.meta.env.VITE_NODE_URL_DEV,
     extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
     chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
