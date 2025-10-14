@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
-import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 import { config } from '../../../config/default';
+import GenericFileInput from '../../../components/DragAndDropFileInput';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -60,7 +60,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />
+                <GenericFileInput maxFiles={30} accept="application/pdf,image/*" onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );
