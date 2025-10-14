@@ -11,7 +11,7 @@ interface UseTablebuilderPropsIF {
     customUI?: Record<string, ({ data }: { data: any }) => JSX.Element>;
     externalFilters?: Record<string, any>;
     customFunctions?: Record<string, (row: any, data: any) => void>;
-    actionButtons?: { label: string; action: () => void }[];
+    actionButtons?: { label: string; action: (selectedIds: string[]) => void }[];
     refresh?: number;
     disableLoader?: boolean;
     updatedQuery?: (query: any) => any;

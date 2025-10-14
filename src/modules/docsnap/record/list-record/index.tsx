@@ -35,7 +35,9 @@ export interface ListRecordPageStateIF {
     uploadDone: boolean;
     analyzeDone: boolean;
     dealerSelectionDialog: boolean;
+    assignDialog: boolean;
     query: any;
+    selectedIds: string[];
 }
 
 const initialState = {
@@ -53,7 +55,9 @@ const initialState = {
     uploadDone: false,
     analyzeDone: false,
     dealerSelectionDialog: false,
-    query: {}
+    assignDialog: false,
+    query: {},
+    selectedIds: []
 };
 
 const ListRecordPage: React.FC = () => {

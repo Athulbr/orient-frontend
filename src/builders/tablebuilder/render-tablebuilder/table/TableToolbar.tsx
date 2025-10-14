@@ -15,12 +15,12 @@ import { config } from '../../../../config/default';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
 export function TableToolbar() {
-    const { injectedData } = useTablebuilderState();
+    const { injectedData, state } = useTablebuilderState();
 
     return (
         <div className="mb-2 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4 p-1">
             {injectedData.actionButtons?.map((button, index) => (
-                <Button key={index} outlined onClick={button.action}>
+                <Button key={index} outlined onClick={() => button.action(state.selectedIds)}>
                     {button.loading && <Spinner size={18} />} {button.label}
                 </Button>
             ))}

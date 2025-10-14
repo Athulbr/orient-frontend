@@ -9,6 +9,8 @@ import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
 import { useExtractionStore } from '../../../../zustand-store/extractionStore';
 import { downloadXlsxFile } from './utils/downloadXlsxFile';
+import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
+import httpRequest from '../../../../global-utils/httpRequest';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
 export const Polink = (row: any) => {
@@ -44,7 +46,7 @@ export const ListRecordComponent: React.FC = () => {
     useEffect(() => {
         if (refreshRecord === 100) return;
         setState(prev => ({ ...prev, refresh: refreshRecord }));
-    }, [refreshRecord]);
+    }, [refreshRecord, setState]);
 
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
@@ -63,16 +65,40 @@ export const ListRecordComponent: React.FC = () => {
         documentDate: OnlyDateCustomUI
     };
 
-    const actionButtons = checkPermission('export:record:ardex')
-        ? [
-              {
-                  label: 'Export Record',
-                  action: () => {
-                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
-                  }
-              }
-          ]
-        : [];
+    const actionButtons = [];
+    if (checkPermission('assign:record:rehab')) {
+        actionButtons.push({
+            label: 'Assign',
+            action: (selectedIds: string[]) => {
+                setState(prev => ({ ...prev, assignDialog: true, selectedIds }));
+            }
+        });
+    }
+    if (checkPermission('export:record:ardex')) {
+        actionButtons.push({
+            label: 'Export Record',
+            action: () => {
+                setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+            }
+        });
+    }
+    // checkPermission('export:record:ardex') && tenants.includes(tenantId)
+    // checkPermission('export:record:ardex')
+    //     ? [
+    //           {
+    //               label: 'Export Record',
+    //               action: () => {
+    //                   setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+    //               }
+    //           },
+    //           {
+    //               label: 'Assign',
+    //               action: (selectedIds: string[]) => {
+    //                   setState(prev => ({ ...prev, assignDialog: true, selectedIds }));
+    //               }
+    //           }
+    //       ]
+    //     : [];
     const updatedQuery = (query: any) => {
         setState(prev => ({ ...prev, query }));
         return query;
@@ -127,6 +153,22 @@ export const ListRecordComponent: React.FC = () => {
                     onSubmit={onSubmit}
                     isOpen={state.dealerSelectionDialog}
                     closeDialog={() => setState(prev => ({ ...prev, dealerSelectionDialog: false }))}
+                />
+            )}
+            {state.assignDialog && (
+                <UseFormbuilder
+                    name="Select Validator"
+                    closeDialog={() => setState(prev => ({ ...prev, assignDialog: false }))}
+                    onSubmit={(fields: any) => {
+                        setState(prev => ({ ...prev, assignDialog: false }));
+                        state.selectedIds?.forEach(async (id: string) => {
+                            const requestBody = {
+                                extractedBy: fields?.selectedValidator
+                            };
+                            await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${id}`, requestBody);
+                        });
+                        setState(prev => ({ ...prev, refresh: refreshRecord }));
+                    }}
                 />
             )}
         </>
