@@ -105,8 +105,14 @@ export const ListRecordComponent: React.FC = () => {
     //       ]
     //     : [];
     const updatedQuery = (query: any) => {
-        setState(prev => ({ ...prev, query }));
-        return query;
+        const validators = query.filters?.validators;
+        const updatedQuery = { ...query };
+        if (validators !== undefined) {
+            updatedQuery.filters.extractedBy = validators;
+            delete updatedQuery.filters.validators;
+        }
+        setState(prev => ({ ...prev, query: updatedQuery }));
+        return updatedQuery;
     };
 
     const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
