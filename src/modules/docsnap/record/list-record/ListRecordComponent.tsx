@@ -7,10 +7,11 @@ import { useEffect } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
-import { useExtractionStore } from '../../../../zustand-store/extractionStore';
+// import { useExtractionStore } from '../../../../zustand-store/extractionStore';
 import { downloadXlsxFile } from './utils/downloadXlsxFile';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
 export const Polink = (row: any) => {
@@ -41,7 +42,7 @@ export const ListRecordComponent: React.FC = () => {
     const { checkPermission, user } = usePermissionStore();
     const tenantId = user?.tenant?._id || selectedTenant;
 
-    const { refreshRecord, extractionQueue } = useExtractionStore();
+    const { refreshRecord, extractionQueue } = useDocsnapStore();
 
     useEffect(() => {
         if (refreshRecord === 100) return;

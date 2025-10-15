@@ -204,17 +204,18 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                         });
                         const convertedJson = convertJSON(template?.fields || []);
                         const requestBody: Record<string, any> = {
-                            document_type: template.docType || 'other',
-                            entity_schema: convertedJson,
-                            include_confidence: true,
-                            include_bbox: true,
-                            confidence_threshold: 0.2,
+                            // document_type: template.docType || 'other',
+                            // entity_schema: convertedJson,
+                            // include_confidence: true,
+                            // include_bbox: true,
+                            // confidence_threshold: 0.2,
                             s3_file_name: s3Response?.data?.fileName,
-                            provider_id: 'azure',
-                            model_id: 'gpt-4o',
-                            use_latest: false
+                            template_id: template._id,
+                            // provider_id: 'azure',
+                            // model_id: 'gpt-4o',
+                            // use_latest: false
                         };
-                        if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
+                        // if (template.enableOcr) requestBody.ocr_engine = 'google_vision'; // 'doctr';
                         // const extractionEngine = window.localStorage.getItem('extractionEngine');
 
                         const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5`, requestBody);
