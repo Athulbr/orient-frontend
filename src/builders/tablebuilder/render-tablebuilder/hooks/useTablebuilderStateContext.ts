@@ -12,6 +12,7 @@ interface InjectedDataIF {
     deletePermission?: string;
     updatePermission?: string;
     hiddenColumns?: string[];
+    onRowSelect?: (selectedRows: any) => void;
 }
 
 const TablebuilderStateContext = createContext<

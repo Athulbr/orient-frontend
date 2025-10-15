@@ -18,6 +18,7 @@ interface UseTablebuilderPropsIF {
     deletePermission?: string;
     updatePermission?: string;
     hiddenColumns?: string[];
+    onRowSelect?: (selectedRows: any) => void;
 }
 
 export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
@@ -32,7 +33,8 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
     updatedQuery,
     deletePermission,
     updatePermission,
-    hiddenColumns
+    hiddenColumns,
+    onRowSelect
 }) => {
     const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
     useEffect(() => {
@@ -79,6 +81,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
                 deletePermission={deletePermission}
                 updatePermission={updatePermission}
                 hiddenColumns={hiddenColumns}
+                onRowSelect={onRowSelect}
             />
         </div>
     );

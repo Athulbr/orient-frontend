@@ -159,6 +159,7 @@ export const ListRecordComponent: React.FC = () => {
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
                 hiddenColumns={hiddenColumns}
+                onRowSelect={(selectedRows: any) => console.log('row selected', selectedRows)}
             />
             {state.dealerSelectionDialog && (
                 <DealerListComponent
