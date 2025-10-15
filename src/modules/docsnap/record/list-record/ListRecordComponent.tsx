@@ -51,6 +51,11 @@ export const ListRecordComponent: React.FC = () => {
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
             const url = window.location.href;
+            const module = sessionStorage.getItem('module');
+            if (module === 'documentCreation') {
+                navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+                return;
+            }
             navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
         },

@@ -106,6 +106,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
         toast.success('Record created successfully');
         setShowCreateDialog(false);
+        navigate('/docsnap/record/list');
     };
 
     if (!template) return null;

@@ -60,14 +60,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
                     name: 'Insert Header',
                     icon: 'header',
                     exec: (editor: any) => {
-                        editor.selection.insertHTML('<h2 style="font-size:24px; font-weight:bold; text-align:center;">BRIGADE</h2>');
+                        editor.selection.insertHTML('<h2 style="font-size:24px; font-weight:bold; text-align:center;">COMPANY NAME</h2>');
                     }
                 },
                 {
                     name: 'Insert Footer',
                     icon: 'footer',
                     exec: (editor: any) => {
-                        editor.selection.insertHTML('<footer style="text-align:center; font-size:12px; color:#666; margin-top:20px;">© Brigade 2025</footer>');
+                        editor.selection.insertHTML(
+                            '<footer style="text-align:center; font-size:14px; color:#666; margin-top:20px;">© Company name 2025</footer>'
+                        );
                     }
                 }
             ]
