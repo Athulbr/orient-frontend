@@ -106,7 +106,7 @@ export const useUpdateTemplatePageApi = () => {
                 toast.success('Template fields generated successfully');
                 return true;
             }
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/generate-template-fields`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/template-fields/generate`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
             // const data = convertLLMResponse(newSchema);
