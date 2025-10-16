@@ -4,6 +4,7 @@ import httpRequest from '../../render-tablebuilder/utils/HttpRequest';
 import { safeJsonParse } from '../utils/safeParseJson';
 import { useTablebuilderSettings } from '../hooks/useTablebuilderSettingsContext';
 import { TablebuilderSettingsIF } from '../../render-tablebuilder/interface';
+import { config } from '../../../../config/default';
 
 export const TablebuilderBot = () => {
     const { setSettings } = useTablebuilderSettings();
@@ -15,7 +16,7 @@ export const TablebuilderBot = () => {
         if (!input) return;
         setLoading(true);
         try {
-            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/generate-table-settings`, { prompt });
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/generate-table-settings`, { prompt });
             const parsedJson: any = safeJsonParse(response.data);
 
             if (!parsedJson) {

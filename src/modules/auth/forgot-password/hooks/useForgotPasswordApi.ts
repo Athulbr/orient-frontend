@@ -2,6 +2,7 @@ import { useForgotPasswordState } from './ForgotPasswordStateProvider';
 import { validateEmail } from '../../login/utils';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import { config } from '../../../../config/default';
 
 export const useForgotPasswordApi = () => {
     const { state, setState } = useForgotPasswordState();
@@ -23,7 +24,7 @@ export const useForgotPasswordApi = () => {
         setState(prev => ({ ...prev, loading: true, error: '' }));
 
         try {
-            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password`, { email: state.email });
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/user/forgot/password`, { email: state.email });
 
             if (response.success) {
                 setState(prev => ({ ...prev, success: true }));

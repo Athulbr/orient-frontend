@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import httpRequest from '../../render-tablebuilder/utils/HttpRequest';
 import { useTablebuilderSettings } from './useTablebuilderSettingsContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import { config } from '../../../../config/default';
 
 export const useFetchCreateTB = () => {
     const { settings, setSettings, builder, setBuilder } = useTablebuilderSettings();
@@ -13,7 +14,7 @@ export const useFetchCreateTB = () => {
         setBuilder(prev => ({ ...prev, loading: true }));
         const tableName = prompt('Please enter table name', '');
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder`, {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder`, {
                 name: tableName,
                 settings,
                 description: 'tablebuilder description'
@@ -32,12 +33,12 @@ export const useFetchCreateTB = () => {
     const updateTablebuilderApi = async (id: string) => {
         setBuilder(prev => ({ ...prev, loading: true }));
         try {
-            const res = await httpRequest('PUT', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/${id}`, {
+            const res = await httpRequest('PUT', `${config.nodeApiUrl}/builder/tablebuilder/${id}`, {
                 name: builder.name,
                 settings,
                 description: 'tablebuilder description'
             });
-            const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 });
+            const tablebuilderesponse = await httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 });
             window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(tablebuilderesponse?.data));
             toast.success('Tablebuilder Updated Successfully');
         } catch (error) {
@@ -52,7 +53,7 @@ export const useFetchCreateTB = () => {
 
     const getTablebuilderByIdApi = async (id: string) => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/${id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/builder/tablebuilder/${id}`);
             setSettings(res.data.settings);
             setBuilder(prev => ({ ...prev, name: res.data.name }));
             toast.success('Fetched Tablebuilder List Successfully');
@@ -68,7 +69,7 @@ export const useFetchCreateTB = () => {
     //     if (!input) return;
     //     setLoading(true);
     //     try {
-    //       const response = await httpRequest('POST', '${import.meta.env.VITE_NODE_URL}/generate-table-settings', { prompt });
+    //       const response = await httpRequest('POST', '${config.nodeApiUrl}/generate-table-settings', { prompt });
     //       const parsedJson: any = safeJsonParse(response.data);
 
     //       if (!parsedJson) {

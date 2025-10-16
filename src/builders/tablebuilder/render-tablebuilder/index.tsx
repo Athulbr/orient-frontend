@@ -10,13 +10,14 @@ interface PropsIF {
     externalFilters?: Record<string, string>;
     customFunctions?: Record<string, (row: any, data: any) => void>;
     fluidHeight?: boolean;
-    actionButtons?: { label: string; action: () => void }[];
+    actionButtons?: { label: string; action: (selectedIds: string[]) => void }[];
     refresh?: number;
     disableLoader?: boolean;
     updatedQuery?: (query: any) => any;
     deletePermission?: string;
     updatePermission?: string;
     hiddenColumns?: string[];
+    onRowSelect?: (selectedRows: any) => void;
 }
 
 export const RenderTablebuilder: React.FC<PropsIF> = ({
@@ -31,7 +32,8 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
     updatedQuery,
     deletePermission,
     updatePermission,
-    hiddenColumns
+    hiddenColumns,
+    onRowSelect
 }) => {
     const [state, setState] = useState<TablebuilderStateIF>(tablebuilderInitialState);
     return (
@@ -50,7 +52,8 @@ export const RenderTablebuilder: React.FC<PropsIF> = ({
                     disableLoader,
                     deletePermission,
                     updatePermission,
-                    hiddenColumns
+                    hiddenColumns,
+                    onRowSelect
                 }
             }}
         >

@@ -10,16 +10,17 @@ import { getFiltersObject } from '../utils/getFiltersObject';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { Button } from '../../../../components/Button';
 import Spinner from '../../../../components/Spinner';
+import { config } from '../../../../config/default';
 
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
 export function TableToolbar() {
-    const { injectedData } = useTablebuilderState();
+    const { injectedData, state } = useTablebuilderState();
 
     return (
         <div className="mb-2 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4 p-1">
             {injectedData.actionButtons?.map((button, index) => (
-                <Button key={index} outlined onClick={button.action}>
+                <Button key={index} outlined onClick={() => button.action(state.selectedIds)}>
                     {button.loading && <Spinner size={18} />} {button.label}
                 </Button>
             ))}
@@ -316,7 +317,7 @@ const ExportButton = () => {
                 link.remove();
                 window.URL.revokeObjectURL(url);
             } else if (value === 'all') {
-                // `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
+                // `${config.nodeApiUrl}/idp/history/export/new`;
 
                 const downloadXlsxFile = async () => {
                     const recordId = 'export';
@@ -326,9 +327,9 @@ const ExportButton = () => {
                     // Update this condition based on your tenant settings
                     const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
                     if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
-                        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
+                        exportURL = `${config.nodeApiUrl}/idp/history/export/new`;
                     } else {
-                        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export`;
+                        exportURL = `${config.nodeApiUrl}/idp/history/export`;
                     }
 
                     const response = await fetch(exportURL, {

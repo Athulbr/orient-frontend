@@ -6,7 +6,6 @@ import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { ValidateSkuButton } from '../components/ValidateSkuButton';
-import nunjucks from 'nunjucks';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
@@ -243,11 +242,16 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     useEffect(() => {
         adjustTextareaHeight();
     }, [value?.value]);
+    const renderTemplate = (template: string, data: Record<string, string>) => {
+        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => encodeURIComponent(data[key] ?? ''));
+    };
+
     const validateLink = (validationUrl: string, value: string) => {
         if (!validationUrl.trim() || !value.trim()) return;
-        const finalUrl = nunjucks.renderString(validationUrl, { value });
+        const finalUrl = renderTemplate(validationUrl, { value });
         window.open(finalUrl, '_blank');
     };
+
     const { fieldLabel, validationUrl } = useMemo(() => {
         const fields = state.record?.templateId?.fields;
         const field = fields?.find((item: any) => item.jsonKey === state.tableNames[mainIndex]);

@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useProjectState } from './projectContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const useProjectApi = () => {
     const { state, setState } = useProjectState();
@@ -12,7 +13,7 @@ export const useProjectApi = () => {
     const getProjectApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingProject: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/project/${id}`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/project/${id}`);
             setState(prev => ({ ...prev, loadingProject: false, project: res.data }));
             toast.success('Project fetched successfully');
             return true;
@@ -23,7 +24,7 @@ export const useProjectApi = () => {
     };
     const createProjectApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/project/create`, requestBody);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/project/create`, requestBody);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Project created successfully');
             return true;
@@ -34,7 +35,7 @@ export const useProjectApi = () => {
     };
     const updateProjectApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/project/update/${state.id}`, requestBody);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/project/update/${state.id}`, requestBody);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Project updated successfully');
             return true;
@@ -45,7 +46,7 @@ export const useProjectApi = () => {
     };
     const deleteProjectApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/project/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/project/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Project deleted successfully');
             return true;

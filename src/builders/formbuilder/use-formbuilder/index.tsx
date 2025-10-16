@@ -3,6 +3,7 @@ import { DialogComponent } from '../../../components/DialogComponent';
 import httpRequest from '../../../global-utils/httpRequest';
 import { RenderForm } from '../render-form/RenderForm';
 import { FieldIF } from '../interface';
+import { config } from '../../../config/default';
 
 interface UseFormbuilderIF {
     isOpen?: boolean;
@@ -55,7 +56,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                     return;
                 }
             }
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/name`, { name });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/name`, { name });
             if (fields.length) return;
             setFields(res.data.fields);
             setSettings(res.data.settings);

@@ -15,6 +15,7 @@ import { RenderForm } from '../../render-form/RenderForm';
 import { UseFormbuilder } from '../../use-formbuilder';
 import { ButtonBox } from '../../../../components/ButtonBox';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import { config } from '../../../../config/default';
 
 interface Message {
     id: number;
@@ -97,7 +98,7 @@ const PageActionComponent: React.FC = () => {
         addMessage(prompt, true);
 
         try {
-            const res = await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/${regenerate ? 'regenerate' : 'generate'}`, {
+            const res = await httpAiRequest('POST', `${config.nodeApiUrl}/${regenerate ? 'regenerate' : 'generate'}`, {
                 prompt,
                 fields
             });

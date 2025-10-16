@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
 import { DragAndDropContainer } from '../../../../components/DragAndDropContainer';
 import { LightIconButton } from './components/ImageViewer';
-import { ClassAttributes, InputHTMLAttributes, useEffect, useState } from 'react';
+import { ClassAttributes, InputHTMLAttributes, useEffect, useMemo, useState } from 'react';
 import { JSX } from 'react/jsx-runtime';
 import { dataTypesOption } from './components/temp';
 import { SingleSelect } from '../../../../components/SingleSelect';
@@ -25,11 +25,11 @@ import { FieldIF } from '../../../../builders/formbuilder/interface';
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
 
+    console.log('state.sectionList:===========', state.sectionList);
+
     const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
     const toast = useToastStore();
-
-    console.log('state:===========', state);
 
     useEffect(() => {
         if (!fileName) return;
@@ -418,15 +418,21 @@ const FieldComponent = ({
     // const [showConfigForm, setShowConfigForm] = useState(false);
     const { regenerateInstructionWithAI } = useUpdateTemplatePageApi();
 
+    const module = useMemo(() => sessionStorage.getItem('module'), []);
+
     const updateName = (e: any) => {
         setState(prev => {
             const sectionList = [...prev.sectionList];
             sectionList[mainIndex].subFields[index].name = capitalizeFirstLetter(e.target.value as string);
-            sectionList[mainIndex].subFields[index].jsonKey = (e.target.value as string).toLowerCase().replace(/\s/g, '_');
+            {
+                module !== 'documentCreation' &&
+                    (sectionList[mainIndex].subFields[index].jsonKey = (e.target.value as string).toLowerCase().replace(/\s/g, '_'));
+            }
             return { ...prev, sectionList };
         });
     };
     const updateJsonKey = (e: any) => {
+        if (module === 'documentCreation') return;
         setState(prev => {
             const sectionList = [...prev.sectionList];
             sectionList[mainIndex].subFields[index].jsonKey = e.target.value;
@@ -463,6 +469,7 @@ const FieldComponent = ({
         const templateData = [...state.sectionList];
         const subFields = [...templateData[mainIndex].subFields];
         // Merge incoming config with existing field to avoid overwriting base properties like name/jsonKey/dataType
+        console.log('data:===========', data);
         subFields[index] = { ...subFields[index], ...data };
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
@@ -486,6 +493,7 @@ const FieldComponent = ({
             // setShowConfigForm(false);
         }
     };
+
     return (
         <div className="mt-1 flex items-center gap-2 rounded border bg-white p-2">
             <LightIconButton Icon={GripVertical} onClick={() => {}} title="Drag" />
@@ -493,7 +501,7 @@ const FieldComponent = ({
                 <InputField placeholder="Field Name" value={field?.name} onChange={updateName} />
             </Tooltip>
             <Tooltip text="Json Key" containerClassName="w-full">
-                <InputField placeholder="Json Key" value={field?.jsonKey} onChange={updateJsonKey} />
+                <InputField disabled={module === 'documentCreation'} placeholder="Json Key" value={field?.jsonKey} onChange={updateJsonKey} />
             </Tooltip>
             <Tooltip text="Data Type" containerClassName="w-fit">
                 <SingleSelect options={dataTypesOption} value={field?.dataType} onValueChange={updateDataType} />
@@ -520,7 +528,8 @@ const FieldComponent = ({
                     required: field?.required,
                     validationUrl: field?.validationUrl,
                     postProcessingScript: field?.postProcessingScript,
-                    regenerateFieldValueWithAI: field?.regenerateFieldValueWithAI
+                    regenerateFieldValueWithAI: field?.regenerateFieldValueWithAI,
+                    showTextarea: field?.showTextarea
                 }}
                 onSubmit={handleUpdateField}
                 actionButtonText="Regenerate Instruction"

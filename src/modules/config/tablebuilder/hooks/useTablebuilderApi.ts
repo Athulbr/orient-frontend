@@ -3,6 +3,7 @@ import { useTablebuilderState } from './tablebuilderContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const useTablebuilderApi = () => {
     const { state, setState } = useTablebuilderState();
@@ -17,7 +18,7 @@ export const useTablebuilderApi = () => {
     // ============================= CREATE ==================================
     const createTablebuilderApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tablebuilder/create`, payload);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/tablebuilder/create`, payload);
             setState(prev => ({ ...prev, loading: false, id: '', refresh: prev.refresh + 1 }));
             toast.success('Tablebuilder Created Successfully');
         } catch (error) {
@@ -30,7 +31,7 @@ export const useTablebuilderApi = () => {
     const updateTablebuilderApi = async (tablebuilder: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/tablebuilder/update/${state.id}`, tablebuilder);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/tablebuilder/update/${state.id}`, tablebuilder);
             setState(prev => ({ ...prev, loading: false, id: '', refresh: (prev.refresh || 0) + 1 }));
             toast.success('Tablebuilder Updated Successfully');
         } catch (error) {
@@ -43,7 +44,7 @@ export const useTablebuilderApi = () => {
     const getTablebuilderByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tablebuilder/${id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/tablebuilder/${id}`);
             toast.success('Tablebuilder fetched successfully');
             setState(prev => ({ ...prev, loading: false, tablebuilder: res.data }));
         } catch (error) {
@@ -55,7 +56,7 @@ export const useTablebuilderApi = () => {
     // ============================= DELETE ==================================
     const deleteTablebuilderApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/builder/tablebuilder/delete/${id}`);
             setState(prev => ({ ...prev, id: '', refresh: (prev.refresh || 0) + 1 }));
             toast.success('Tablebuilder deleted successfully');
             return true;
@@ -68,7 +69,7 @@ export const useTablebuilderApi = () => {
     const refreshCache = async () => {
         try {
             setState(prev => ({ ...prev, refreshingCache: true }));
-            const tablebuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/query`, { pageSize: 1000 });
+            const tablebuilderesponse = await httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 });
             window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(tablebuilderesponse?.data));
             toast.success('Cache refreshed successfully');
         } catch (error) {

@@ -11,6 +11,7 @@ import { SingleSelect } from '../../components/SingleSelect';
 import { useEffect, useState } from 'react';
 import { useSettingsStore } from '../../zustand-store/SettingsStore';
 import { cn } from '../../global-utils/twMerge';
+import { config } from '../../config/default';
 
 interface HeaderComponentIF {
     showSidebar?: boolean;
@@ -31,7 +32,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     useEffect(() => {
         if (user?.role?.name !== 'superadmin') return;
         const getTenantList = async () => {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/option-list`, {});
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/tenant/option-list`, {});
             setTenantList(res.data);
         };
         getTenantList();
@@ -44,10 +45,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         }, 2000);
         if (isAuthenticated) {
             instance.logoutRedirect({
-                postLogoutRedirectUri: import.meta.env.VITE_BASE_URL || 'https://demo.makez.ai'
+                postLogoutRedirectUri: config.baseUrl || 'https://demo.makez.ai'
             });
         }
-        const logoutRes = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/logout`, {});
+        const logoutRes = await httpRequest('POST', `${config.nodeApiUrl}/auth/logout`, {});
         toast.success('Logged out successfully');
     };
     const onChangeDropDown = (e: string) => {

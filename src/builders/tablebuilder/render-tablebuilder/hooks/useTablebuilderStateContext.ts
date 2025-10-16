@@ -6,12 +6,13 @@ interface InjectedDataIF {
     externalFilters: Record<string, string>;
     customFunctions: Record<string, (row: any, data?: any) => void>;
     fluidHeight?: boolean;
-    actionButtons?: { label: string; action: () => void; loading?: boolean }[];
+    actionButtons?: { label: string; action: (selectedIds: string[]) => void; loading?: boolean }[];
     disableLoader?: boolean;
     updatedQuery?: (query: any) => any;
     deletePermission?: string;
     updatePermission?: string;
     hiddenColumns?: string[];
+    onRowSelect?: (selectedRows: any) => void;
 }
 
 const TablebuilderStateContext = createContext<

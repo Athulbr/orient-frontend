@@ -26,6 +26,15 @@ const RecentFilesCardComponent: React.FC = () => {
 
     const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
 
+    const rowClickHandler = (row: any) => {
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            navigate(`/document-creation/create/${row._id}`);
+        } else {
+            navigate(`/docsnap/record/view/${row._id}`);
+        }
+    };
+
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
@@ -52,19 +61,23 @@ const RecentFilesCardComponent: React.FC = () => {
                             <tr>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
+                                {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Assigned To</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
                                 {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">PO Link</th>}
-                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Date</th>
+                                {!showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Date</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 bg-white">
                             {state.records.map((row, idx) => (
-                                <tr key={idx} className="cursor-pointer" onClick={() => navigate(`/docsnap/record/view/${row._id}`)}>
+                                <tr key={idx} className="cursor-pointer" onClick={() => rowClickHandler(row)}>
                                     <td title={row.name} className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {row.name}
                                     </td>
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                                    {showPoLink && (
+                                        <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">{row.assignedTo ? row.assignedTo : 'N/A'}</td>
+                                    )}
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
                                         <RecordStatusCustomUI data={row} />
                                     </td>
@@ -73,15 +86,18 @@ const RecentFilesCardComponent: React.FC = () => {
                                             <Polink data={row} />
                                         </td>
                                     )}
-                                    <td
-                                        className={cn(
-                                            'max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900',
-                                            formatDate(row.documentDate, true) === '-' ? 'pl-15' : ''
-                                        )}
-                                    >
-                                        {/* {formatDate(row.updatedAt)} */}
-                                        {formatDate(row.documentDate, true)}
-                                    </td>
+                                    {!showPoLink && (
+                                        <td
+                                            className={cn(
+                                                'max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900',
+                                                formatDate(row.documentDate, true) === '-' ? 'pl-15' : ''
+                                            )}
+                                        >
+                                            {/* {formatDate(row.updatedAt)} */}
+                                            {formatDate(row.documentDate, true)}
+                                        </td>
+                                    )}
+
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
                                     </td>

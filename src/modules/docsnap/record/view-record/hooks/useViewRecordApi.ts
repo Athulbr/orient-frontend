@@ -5,6 +5,7 @@ import httpRequest from '../../../../../global-utils/httpRequest';
 import { fileTypeFromBuffer } from 'file-type';
 import { convertPdfToImages, filterExtractedDataForInvoiceGeneration } from '../utils';
 import { useS3Storage } from '../../../../../zustand-store/S3Storage';
+import { config } from '../../../../../config/default';
 
 export const useViewRecordApi = () => {
     const { state, setState } = useViewRecordState();
@@ -45,7 +46,7 @@ export const useViewRecordApi = () => {
     const getRecordApiById = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/history/${id}`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
             const objectFields: Record<string, any> = {};
             const arrayFields: Record<string, any>[] = [];
             const tableNames: string[] = [];
@@ -75,7 +76,7 @@ export const useViewRecordApi = () => {
             //     const template = templateData?.find((template: any) => template?._id === templateId);
             //     templateSettings = template?.settings;
             // } else {
-            const resp = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${templateId}`);
+            const resp = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
             templateSettings = resp.data?.settings;
             const templateFields = resp.data?.fields;
             // }
@@ -112,7 +113,7 @@ export const useViewRecordApi = () => {
     const sendMessage = async (message: string) => {
         try {
             const requestBody = { query: message, botName: state.record?.pdfFileName };
-            const response: any = await httpRequest('POST', `${import.meta.env.VITE_PYTHON_URL}/chatbot/v2/query`, requestBody);
+            const response: any = await httpRequest('POST', `${config.chatbotServicePython}/v2/query`, requestBody);
             setState(prev => ({
                 ...prev,
                 chatLoading: false,
@@ -129,7 +130,7 @@ export const useViewRecordApi = () => {
     const sendMessageToNode = async (query: string) => {
         try {
             const requestBody = { query, visionOcrText: state.record?.visionOcrText, chatList: state.messages };
-            const response: any = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_CHAT_WITH_DOCUMENT}`, requestBody);
+            const response: any = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/chat-with-document`, requestBody);
             setState(prev => ({
                 ...prev,
                 chatLoading: false,
@@ -156,7 +157,7 @@ export const useViewRecordApi = () => {
                 name: state?.record?.name
             };
             setState(prev => ({ ...prev, loadingData: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/rehab/create`, payload);
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
             navigate('/docsnap/record/list');
         } catch (error) {
@@ -208,7 +209,7 @@ export const useViewRecordApi = () => {
                 updatedData: processArrayFields()
             };
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/update/${id}`, payload);
+            const res: any = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');
             navigate('/');
         } catch (error) {
@@ -221,7 +222,7 @@ export const useViewRecordApi = () => {
     const updateExtractedData = async (extractedData: any) => {
         try {
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
-            const res: any = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/update/${id}`, { extractedData });
+            const res: any = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/update/${id}`, { extractedData });
             toast.success('Record updated successfully');
         } catch (error) {
             console.error('error:===========', error);
@@ -235,7 +236,7 @@ export const useViewRecordApi = () => {
             const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
             setState(prev => ({ ...prev, generatingInvoice: true }));
             // test
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/generate-invoice`, {
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/generate-invoice`, {
                 purchaseOrder: filteredData
             });
             setState(prev => ({
@@ -258,7 +259,7 @@ export const useViewRecordApi = () => {
                 document: state.record?.templateId._id // TODO: update this
             };
             setState(prev => ({ ...prev, creatingRequest: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/request/create`, requestBody);
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/request/create`, requestBody);
             toast.success('Request created successfully');
         } catch (error) {
             console.error('error:===========', error);
@@ -279,7 +280,7 @@ export const useViewRecordApi = () => {
                 templateId: state.record?.templateId._id
             };
             setState(prev => ({ ...prev, creatingRequest: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/comment/create`, requestBody);
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/comment/create`, requestBody);
 
             toast.success('Comment created successfully');
         } catch (error) {
@@ -292,7 +293,7 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_FIELD}`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/regenerate-field`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
@@ -303,7 +304,7 @@ export const useViewRecordApi = () => {
     };
     const sendContentCreationContext = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_CONTENT_CREATION}`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/content-creation`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);

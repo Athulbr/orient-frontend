@@ -1,6 +1,7 @@
 import { useRoleState } from './roleContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const useRolesApi = () => {
     const { state, setState } = useRoleState();
@@ -11,7 +12,7 @@ export const useRolesApi = () => {
     const getSubscriptionModelByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/subscription/${id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/subscription/${id}`);
             toast.success('Subscription Model fetched successfully');
             setState(prev => ({ ...prev, loading: false, subscriptionModel: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -22,7 +23,7 @@ export const useRolesApi = () => {
 
     const createRoleApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/role/create`, payload);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/role/create`, payload);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Role Created Successfully');
         } catch (error) {
@@ -34,7 +35,7 @@ export const useRolesApi = () => {
     const updateRoleApi = async (role: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/role/update/${state.id}`, role);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/role/update/${state.id}`, role);
             setState(prev => ({
                 ...prev,
                 loading: false,
@@ -54,7 +55,7 @@ export const useRolesApi = () => {
     // const getRoleByIdApi = async (id: string) => {
     //   try {
     //     setState(prev => ({ ...prev, loading: true }));
-    //     const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/role/${id}`);
+    //     const res = await httpRequest('GET', `${config.nodeApiUrl}/role/${id}`);
     //     toast.success('Role fetched successfully');
     //     setState(prev => ({ ...prev, loading: false, role: res.data, fields: res.data.fields }));
     //   } catch (error) {
@@ -65,7 +66,7 @@ export const useRolesApi = () => {
 
     const deleteRoleApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/role/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/role/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Role deleted successfully');
             return true;
@@ -77,7 +78,7 @@ export const useRolesApi = () => {
 
     const getAllModulesApi = async () => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/module`, { pageSize: 1000 });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/module`, { pageSize: 1000 });
             const modules = res.data || [];
             setState(prev => ({ ...prev, modules }));
             return modules;
@@ -90,7 +91,7 @@ export const useRolesApi = () => {
 
     const getAllFeaturesApi = async () => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/feature`, { pageSize: 1000 });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/feature`, { pageSize: 1000 });
             const features = res.data || [];
             setState(prev => ({ ...prev, features }));
             return features;

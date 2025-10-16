@@ -1,4 +1,5 @@
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { config } from '../../../../../config/default';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { convertLLMResponse } from '../utils';
 import { useUpdateTemplateState } from './updateTemplateContext';
@@ -14,7 +15,7 @@ export const useUpdateTemplatePageApi = () => {
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, { pageSize: 100 });
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 100 });
             setState(prev => ({ ...prev }));
             // toast.success('Template fetched successfully');
             return true;
@@ -26,7 +27,7 @@ export const useUpdateTemplatePageApi = () => {
     const getTemplateApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplate: true }));
-            const res: any = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${id}`);
+            const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${id}`);
             setState(prev => ({ ...prev, sectionList: res.data?.fields, loadingTemplate: false }));
             // toast.success('Template fetched successfully');
             return res.data;
@@ -38,9 +39,9 @@ export const useUpdateTemplatePageApi = () => {
     const createTemplateApi = async (requestBody: any) => {
         try {
             setState(prev => ({ ...prev, updatingTemplate: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
             setState(prev => ({ ...prev, showCreateForm: false, id: '', updatingTemplate: false }));
-            const resp = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                 pageSize: 1000,
                 custom: true,
                 filters: { deleted: false }
@@ -57,9 +58,9 @@ export const useUpdateTemplatePageApi = () => {
     const updateTemplateApi = async (id: string, requestBody: any, reload = true) => {
         try {
             setState(prev => ({ ...prev, updatingTemplate: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/template/update/${id}`, requestBody);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/template/update/${id}`, requestBody);
             setState(prev => ({ ...prev, id: '', showCreateForm: false, updatingTemplate: false }));
-            const resp = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template`, {
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                 pageSize: 1000,
                 custom: true,
                 filters: { deleted: false }
@@ -80,7 +81,7 @@ export const useUpdateTemplatePageApi = () => {
     };
     const deleteTemplateApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/template/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '' }));
             toast.success('Template deleted successfully');
             return true;
@@ -95,21 +96,17 @@ export const useUpdateTemplatePageApi = () => {
             const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true }));
             if (module === 'documentCreation') {
-                const res = await httpRequest('POST', `http://localhost:6008/document-creation/generate-document-fields`, requestBody);
-                console.log('res:===========', res);
-                const data = [
-                    {
-                        name: 'Document Fields',
-                        dataType: 'dict',
-                        jsonKey: 'document_fields',
-                        subFields: res.data?.documentFields
-                    }
-                ];
-                setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: [res.data?.documentText] }));
+                const res = await httpRequest('POST', `${config.mlServiceNodejs}/document-creation/generate-document-fields`, requestBody);
+                setState(prev => ({
+                    ...prev,
+                    sectionList: res.data?.documentFields,
+                    generatingTemplateFieldsWithAI: false,
+                    visionOcrText: [res.data?.documentText]
+                }));
                 toast.success('Template fields generated successfully');
                 return true;
             }
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_GENERATE_TEMPLATE_FIELDS}`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/generate-template-fields`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
             // const data = convertLLMResponse(newSchema);
@@ -125,7 +122,7 @@ export const useUpdateTemplatePageApi = () => {
     const updateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_UPDATE_TEMPLATE_FIELDS}`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/update-template-fields`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, updatingTemplateFieldsWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');
@@ -139,7 +136,7 @@ export const useUpdateTemplatePageApi = () => {
     const regenerateInstructionWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
-            const res = await httpRequest('POST', `${import.meta.env.VITE_ML_SERVICE_NODEJS_REGENERATE_INSTRUCTION}`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/regenerate-instruction`, requestBody);
             setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');
             return res.data?.updatedInstruction;

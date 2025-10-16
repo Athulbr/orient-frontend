@@ -9,6 +9,7 @@ import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
 import { usePythonSingleDocumentExtractor } from './usePythonSingleDocumentExtractor';
 import { usePythonMultiDocumentExtractor } from './usePythonMultiDocumentExtractor';
+import { config } from '../../../config/default';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -29,7 +30,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             return;
         }
         const getTemplate = async () => {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
             const templateSettings = res.data?.settings;
             if (!templateSettings) {
                 toast.error('Template settings not found, Please update template settings');

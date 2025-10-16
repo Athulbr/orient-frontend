@@ -1,3 +1,4 @@
+import { config } from '../../../config/default';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
 export const useNodeJsDocumentExtractor = () => {
@@ -96,8 +97,8 @@ export const useNodeJsDocumentExtractor = () => {
 
                 const apiEndPoint =
                     template?.settings?.templateType === 'sld'
-                        ? import.meta.env.VITE_ML_SERVICE_NODEJS_EXTRACT_SLD_V2
-                        : import.meta.env.VITE_ML_SERVICE_NODEJS_EXTRACT_DOCUMENT_V1;
+                        ? `${config.mlServiceNodejs}/docsnap/extract-sld`
+                        : `${config.mlServiceNodejs}/docsnap/extract-document`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',

@@ -11,7 +11,7 @@ export const TableBody: FC = () => {
     const { injectedData, settings, state, setState } = useTablebuilderState();
     const { checkPermission } = usePermissionStore();
 
-    const { customFunctions, customUI } = injectedData;
+    const { customFunctions, customUI, onRowSelect } = injectedData;
 
     const { columns, rowSelection, api } = settings;
     const { data, selectedIds, loading } = state;
@@ -39,6 +39,9 @@ export const TableBody: FC = () => {
     };
     const rowCheckHandler = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
         e.stopPropagation();
+        if (onRowSelect) {
+            onRowSelect(e.target.checked ? [...selectedIds, id] : selectedIds.filter(selectedId => selectedId !== id));
+        }
         setState({ ...state, selectedIds: e.target.checked ? [...selectedIds, id] : selectedIds.filter(selectedId => selectedId !== id) });
     };
 

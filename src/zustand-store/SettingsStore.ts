@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import httpRequest from '../global-utils/httpRequest';
 import { useToastStore } from '../components/toast/ToastStore';
 import { usePermissionStore } from './PermissionStore';
+import { config } from '../config/default';
 
 interface SettingsStoreIF {
     // ============================== USER SETTINGS ===============================
@@ -29,7 +30,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     userSettingResponse: '',
     submitUserSettings: async (settings?: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/settings/submit`, {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/user/settings/submit`, {
                 settings
             });
             set({ userSettings: settings, userSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
@@ -39,7 +40,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     getUserSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/user/settings/list`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/user/settings/list`);
             set({ userSettings: res.data.settings });
         } catch (error) {
             // console.log(error);
@@ -50,7 +51,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     docsnapSettingResponse: '',
     submitDocsnapSettings: async (settings?: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/settings/submit`, {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/settings/submit`, {
                 settings
             });
             set({ docsnapSettings: settings, docsnapSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
@@ -60,7 +61,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     getDocsnapSettings: async () => {
         try {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/settings/list`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/settings/list`);
             set({ docsnapSettings: res.data.settings });
             return res.data.settings;
         } catch (error) {
@@ -77,7 +78,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             return;
         }
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/tenant/settings/submit`, {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/tenant/settings/submit`, {
                 settings,
                 tenantId: !get().selectedTenant ? window.sessionStorage.getItem('selectedTenant') : get().selectedTenant
             });
@@ -98,7 +99,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
                 useToastStore.getState().error('Tenant not selected');
                 return;
             }
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list/${tenantId}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/tenant/settings/list/${tenantId}`);
             if (res.data === null) {
                 set({ tenantSettings: {} });
             }
@@ -110,7 +111,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
     },
     setSelectedTenant: async (tenant: any) => {
         window.sessionStorage.setItem('selectedTenant', tenant);
-        const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/tenant/settings/list/${tenant}`);
+        const res = await httpRequest('GET', `${config.nodeApiUrl}/tenant/settings/list/${tenant}`);
         if (res.data === null) {
             set({ tenantSettings: {} });
         }

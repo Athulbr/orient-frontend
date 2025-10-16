@@ -1,5 +1,6 @@
 import { FileUp } from 'lucide-react';
 import React, { useCallback, useState, useRef } from 'react';
+import { cn } from '../global-utils/twMerge';
 
 interface FileInputProps {
     /** Callback function called when files are selected/dropped */
@@ -118,13 +119,15 @@ const GenericFileInput: React.FC<FileInputProps> = ({
             const validFiles: File[] = [];
             const errors: string[] = [];
 
-            // Check max files limit
+            // Check max files limit - but still process files up to the limit
             if (files.length > maxFiles) {
-                errors.push(`Maximum ${maxFiles} files allowed. You selected ${files.length} files.`);
-                return { validFiles, errors };
+                errors.push(`Maximum ${maxFiles} files allowed. You selected ${files.length} files. Only the first ${maxFiles} will be processed.`);
             }
 
-            for (const file of files) {
+            // Process files up to maxFiles limit
+            const filesToProcess = files.slice(0, maxFiles);
+
+            for (const file of filesToProcess) {
                 let isValid = true;
                 let errorMessage = '';
 
@@ -271,7 +274,7 @@ const GenericFileInput: React.FC<FileInputProps> = ({
 
     return (
         <div
-            className={baseClasses}
+            className={cn(baseClasses, 'p-4')}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}

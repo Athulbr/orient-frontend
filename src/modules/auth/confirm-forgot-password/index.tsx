@@ -6,6 +6,7 @@ import Spinner from '../../../components/Spinner';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { CircleX } from 'lucide-react';
 import httpRequest from '../../../global-utils/httpRequest';
+import { config } from '../../../config/default';
 
 interface ConfirmForgotPasswordPageIF {
     test?: string;
@@ -101,7 +102,7 @@ const ConfirmForgotPasswordPage: React.FC<ConfirmForgotPasswordPageIF> = () => {
             setLoading(true);
 
             // TODO: Replace with actual API call
-            const response = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/forgot/password/verify`, { email, token, password });
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/user/forgot/password/verify`, { email, token, password });
 
             toast.success('Password reset successfully!');
             navigate('/login');
