@@ -40,7 +40,7 @@ export const TableBody: FC = () => {
     const rowCheckHandler = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
         e.stopPropagation();
         if (onRowSelect) {
-            onRowSelect([...selectedIds, id]);
+            onRowSelect(e.target.checked ? [...selectedIds, id] : selectedIds.filter(selectedId => selectedId !== id));
         }
         setState({ ...state, selectedIds: e.target.checked ? [...selectedIds, id] : selectedIds.filter(selectedId => selectedId !== id) });
     };

@@ -3,7 +3,7 @@ import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tableb
 import { RecordStatusCustomUI } from './components/RecordStatusCustomUI';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import { useListRecordApi } from './hooks/useListRecordApi';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
@@ -13,6 +13,8 @@ import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+import { config } from '../../../../config/default';
+import { useToastStore } from '../../../../components/toast/ToastStore';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -41,8 +43,11 @@ export const ListRecordComponent: React.FC = () => {
     const [params] = useSearchParams();
     const { checkPermission, user } = usePermissionStore();
     const tenantId = user?.tenant?._id || selectedTenant;
+    const toast = useToastStore();
 
-    const { refreshRecord, extractionQueue } = useDocsnapStore();
+    const [rowSelected, setRowSelected] = useState<boolean>(false);
+
+    const { refreshRecord, updateRefreshRecord, extractionQueue } = useDocsnapStore();
 
     useEffect(() => {
         if (refreshRecord === 100) return;
@@ -72,7 +77,7 @@ export const ListRecordComponent: React.FC = () => {
     };
 
     const actionButtons = [];
-    if (checkPermission('assign:record:rehab')) {
+    if (checkPermission('assign:record:rehab') && rowSelected) {
         actionButtons.push({
             label: 'Assign',
             action: (selectedIds: string[]) => {
@@ -141,7 +146,7 @@ export const ListRecordComponent: React.FC = () => {
         downloadXlsxFile(payload, selectedTenant);
     };
 
-    const hiddenColumns = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? [] : ['poLink'];
+    const hiddenColumns = String(user?.tenant?.name).toLowerCase() == 'rehabmart' ? ['documentDate'] : ['poLink', 'assignedTo'];
 
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     return (
@@ -159,7 +164,13 @@ export const ListRecordComponent: React.FC = () => {
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
                 hiddenColumns={hiddenColumns}
-                onRowSelect={(selectedRows: any) => console.log('row selected', selectedRows)}
+                onRowSelect={(selectedRows: any) => {
+                    if (selectedRows.length > 0) {
+                        setRowSelected(true);
+                    } else {
+                        setRowSelected(false);
+                    }
+                }}
             />
             {state.dealerSelectionDialog && (
                 <DealerListComponent
@@ -172,15 +183,16 @@ export const ListRecordComponent: React.FC = () => {
                 <UseFormbuilder
                     name="Select Validator"
                     closeDialog={() => setState(prev => ({ ...prev, assignDialog: false }))}
-                    onSubmit={(fields: any) => {
+                    onSubmit={async (fields: any) => {
                         setState(prev => ({ ...prev, assignDialog: false }));
-                        state.selectedIds?.forEach(async (id: string) => {
-                            const requestBody = {
-                                extractedBy: fields?.selectedValidator
-                            };
-                            await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${id}`, requestBody);
-                        });
+                        const requestBody = {
+                            ids: state.selectedIds,
+                            assignedTo: fields?.selectedValidator
+                        };
+                        await httpRequest('POST', `${config.nodeApiUrl}/idp/history/bulk/update`, requestBody);
                         setState(prev => ({ ...prev, refresh: refreshRecord }));
+                        updateRefreshRecord();
+                        toast.success('Record Assigned Successfully');
                     }}
                 />
             )}
