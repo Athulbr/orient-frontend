@@ -64,7 +64,7 @@ const RecentFilesCardComponent: React.FC = () => {
                                 {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Assigned To</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
                                 {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">PO Link</th>}
-                                {!showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Date</th>}
+                                {/* {!showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Date</th>} */}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
                             </tr>
                         </thead>
@@ -98,9 +98,9 @@ const RecentFilesCardComponent: React.FC = () => {
                                         </td>
                                     )}
 
-                                    <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
+                                    {/* <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
-                                    </td>
+                                    </td> */}
                                 </tr>
                             ))}
                         </tbody>
