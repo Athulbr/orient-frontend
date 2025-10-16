@@ -9,7 +9,7 @@ export function dataMapper(obj: any, path: string[]) {
         }, obj);
 
         if (result === undefined || result === null) {
-            return 'error';
+            return 'N/A';
         }
 
         // Convert result to string
