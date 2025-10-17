@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import { useDocumentCreationEditorState } from '../../hooks/DocumentCreationEditorContext';
 import { Button } from '../../../../../components/Button';
 import { KnowledgeBaseList } from './KnowledgeBaseList';
+import { config } from '../../../../../config/default';
 
 export const SelectedFileList = () => {
     const { state, setState } = useDocumentCreationEditorState();
@@ -24,7 +25,7 @@ export const SelectedFileList = () => {
         const token = window?.sessionStorage?.getItem('accessToken') || '';
         const formData = new FormData();
         formData.append('file', file);
-        const response = await fetch('http://localhost:6008/document-creation/extract-document-text', {
+        const response = await fetch(`${config.mlServiceNodejs}/document-creation/extract-document-text`, {
             method: 'POST',
             headers: { authorization: `Bearer ${JSON.parse(token)}` },
             body: formData

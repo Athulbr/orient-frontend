@@ -45,7 +45,7 @@ export const useDocumentCreationEditorApi = () => {
                 })
                 .join('\n\n---\n\n');
             const requestBody = { query, visionOcrText: [knowledgeBaseString], chatList: state.messages };
-            const response: any = await httpRequest('POST', `http://localhost:6008/docsnap/chat-with-document`, requestBody);
+            const response: any = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/chat-with-document`, requestBody);
             setState(prev => ({
                 ...prev,
                 chatLoading: false,
@@ -62,7 +62,7 @@ export const useDocumentCreationEditorApi = () => {
     const fillFormFieldsWithAI = async () => {
         try {
             const requestBody = { knowledgeBase: state.knowledgeBase, formFields: state.formFields };
-            const response: any = await httpRequest('POST', `http://localhost:6008/document-creation/fill-form-fields`, requestBody);
+            const response: any = await httpRequest('POST', `${config.mlServiceNodejs}/document-creation/fill-form-fields`, requestBody);
             console.log('response:===========', response);
             setState(prev => ({ ...prev, formData: { ...prev.formData, ...response.data } }));
         } catch (error) {
