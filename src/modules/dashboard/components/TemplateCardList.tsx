@@ -51,9 +51,45 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
         getPredefinedTemplatesApi();
     }, []);
 
+    // Get selected tenant id from localStorage
+    const selectedTenantId = localStorage.getItem('selectedTenant');
+
+    // Calculate total templates count based on tenant id
+    const totalTemplates =
+        !selectedTenantId || selectedTenantId === 'all'
+            ? state.templates.length
+            : state.templates.filter((template: any) => template.tenantId === selectedTenantId).length;
+
     // Calculate how many template cards to show (reserve 1 slot for "View All")
     const templatesToShow = Math.max(0, cardsPerRow - 1);
-    const visibleTemplates = state.templates.slice(0, templatesToShow);
+
+    // Reorder templates: recently clicked first
+    const recentTemplateIds = (() => {
+        try {
+            const arr = localStorage.getItem('recentTemplate');
+            return arr ? JSON.parse(arr) : [];
+        } catch {
+            return [];
+        }
+    })();
+
+    let orderedTemplates: any[] = state.templates;
+    if (Array.isArray(recentTemplateIds) && recentTemplateIds.length > 0) {
+        const recentTemplates: any[] = [];
+        const otherTemplates: any[] = [];
+        orderedTemplates.forEach((template: any) => {
+            if (recentTemplateIds.includes(template._id)) {
+                recentTemplates.push(template);
+            } else {
+                otherTemplates.push(template);
+            }
+        });
+        // Sort recentTemplates by order in recentTemplateIds
+        recentTemplates.sort((a: any, b: any) => recentTemplateIds.indexOf(a._id) - recentTemplateIds.indexOf(b._id));
+        orderedTemplates = [...recentTemplates, ...otherTemplates];
+    }
+
+    const visibleTemplates = orderedTemplates.slice(0, templatesToShow);
 
     return (
         <div className="relative">
@@ -78,7 +114,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
                             refreshPage={() => getTemplatesApi()}
                         />
                     ))}
-                    {state.totalTemplates > templatesToShow && <ViewAllCard totalTemplates={state.totalTemplates} flexBasis={`${100 / cardsPerRow}%`} />}
+                    {totalTemplates > templatesToShow && <ViewAllCard totalTemplates={totalTemplates} flexBasis={`${100 / cardsPerRow}%`} />}
                 </div>
             ) : (
                 <div className="flex h-40 w-full items-center justify-center rounded-2xl bg-white text-gray-400">
