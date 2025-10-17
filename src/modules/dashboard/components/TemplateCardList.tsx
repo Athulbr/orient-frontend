@@ -62,7 +62,34 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
     // Calculate how many template cards to show (reserve 1 slot for "View All")
     const templatesToShow = Math.max(0, cardsPerRow - 1);
-    const visibleTemplates = state.templates.slice(0, templatesToShow);
+
+    // Reorder templates: recently clicked first
+    const recentTemplateIds = (() => {
+        try {
+            const arr = localStorage.getItem('recentTemplate');
+            return arr ? JSON.parse(arr) : [];
+        } catch {
+            return [];
+        }
+    })();
+
+    let orderedTemplates: any[] = state.templates;
+    if (Array.isArray(recentTemplateIds) && recentTemplateIds.length > 0) {
+        const recentTemplates: any[] = [];
+        const otherTemplates: any[] = [];
+        orderedTemplates.forEach((template: any) => {
+            if (recentTemplateIds.includes(template._id)) {
+                recentTemplates.push(template);
+            } else {
+                otherTemplates.push(template);
+            }
+        });
+        // Sort recentTemplates by order in recentTemplateIds
+        recentTemplates.sort((a: any, b: any) => recentTemplateIds.indexOf(a._id) - recentTemplateIds.indexOf(b._id));
+        orderedTemplates = [...recentTemplates, ...otherTemplates];
+    }
+
+    const visibleTemplates = orderedTemplates.slice(0, templatesToShow);
 
     return (
         <div className="relative">
