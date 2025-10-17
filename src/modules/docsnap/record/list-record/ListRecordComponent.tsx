@@ -145,6 +145,13 @@ export const ListRecordComponent: React.FC = () => {
 
         downloadXlsxFile(payload, selectedTenant);
     };
+    const onRowSelect = (selectedRows: any) => {
+        if (selectedRows.length > 0) {
+            setRowSelected(true);
+        } else {
+            setRowSelected(false);
+        }
+    };
 
     const hiddenColumns = String(user?.tenant?.name).toLowerCase() == 'rehabmart' ? ['documentDate'] : ['poLink', 'assignedTo'];
 
@@ -164,13 +171,7 @@ export const ListRecordComponent: React.FC = () => {
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
                 hiddenColumns={hiddenColumns}
-                onRowSelect={(selectedRows: any) => {
-                    if (selectedRows.length > 0) {
-                        setRowSelected(true);
-                    } else {
-                        setRowSelected(false);
-                    }
-                }}
+                onRowSelect={onRowSelect}
             />
             {state.dealerSelectionDialog && (
                 <DealerListComponent

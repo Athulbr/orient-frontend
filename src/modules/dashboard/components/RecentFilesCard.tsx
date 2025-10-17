@@ -41,7 +41,7 @@ const RecentFilesCardComponent: React.FC = () => {
                 <div className="text-gray-800">Recent {state.module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
-                        onClick={() => navigate('/docsnap/record/list')}
+                        onClick={() => navigate(`/${state.module}/record/list`)}
                         className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
                     >
                         View All <ChevronRight size={14} className="text-sky-600" />
@@ -61,6 +61,7 @@ const RecentFilesCardComponent: React.FC = () => {
                             <tr>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
+                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Template</th>
                                 {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Assigned To</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
                                 {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">PO Link</th>}
@@ -75,6 +76,7 @@ const RecentFilesCardComponent: React.FC = () => {
                                         {row.name}
                                     </td>
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.templateId?.name}</td>
                                     {showPoLink && (
                                         <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">{row.assignedTo ? row.assignedTo : 'N/A'}</td>
                                     )}
