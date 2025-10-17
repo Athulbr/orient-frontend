@@ -1,45 +1,57 @@
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { config } from '../../../../../config/default';
 import httpRequest from '../../../../../global-utils/httpRequest';
+import { useSettingsStore } from '../../../../../zustand-store/SettingsStore';
 import { useTemplateState } from './templateContext';
 
 export const useListTemplatePageApi = () => {
     const { state, setState } = useTemplateState();
     const toast = useToastStore();
 
-    // ============================= CREATE TEMPLATE ==================================
+    const filterTemplatesByTenant = (templates: any) => {
+        const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
+        return templates.filter((template: any) =>
+            selectedTenantFromSessionStorage === 'all' ? true : template.tenantId === selectedTenantFromSessionStorage
+        );
+    };
+
+    const filterTemplatesBySearchText = (templates: any) => {
+        return templates.filter((template: any) => template.name.toLowerCase().includes(state.searchText.toLowerCase()));
+    };
+
+    const sortTemplatesByRecentlyUsed = (templates: any) => {
+        const arrayOfRecentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
+        const templatesCopy = [...templates];
+        const finalTemplates: any = [];
+        arrayOfRecentlyUsedTemplates.forEach((id: any) => {
+            const template = templatesCopy.find((template: any) => template._id === id);
+            if (template) {
+                finalTemplates.push(template);
+            }
+        });
+        const remainingTemplates = templatesCopy.filter((template: any) => !arrayOfRecentlyUsedTemplates.includes(template._id));
+        return [...finalTemplates, ...remainingTemplates];
+    };
 
     const getTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
-            const templates = sessionStorage.getItem('templates');
-            setState(prev => ({ ...prev, loadingTemplates: false, templates: JSON.parse(templates || '[]') }));
-            // toast.success('Template fetched successfully');
+            const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
+            const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
+            const filteredTemplatesBySearchText = filterTemplatesBySearchText(filteredTemplatesByTenant);
+            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesBySearchText);
+            setState(prev => ({ ...prev, loadingTemplates: false, templates: sortedTemplates }));
             return true;
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to fetch template list');
         }
     };
-    // const getTemplatesApi = async () => {
-    //     try {
-    //         setState(prev => ({ ...prev, loadingTemplates: true }));
-    //         const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { search: state.searchText || '' });
-    //         setState(prev => ({ ...prev, loadingTemplates: false, templates: res.data }));
-    //         // toast.success('Template fetched successfully');
-    //         return true;
-    //     } catch (error) {
-    //         console.error('error:===========', error);
-    //         toast.error('Failed to fetch template list');
-    //     }
-    // };
     const getPredefinedTemplatesApi = async () => {
         try {
             setState(prev => ({ ...prev, loadingPredefinedTemplates: true }));
-            // const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`);
             const predefinedTemplates = sessionStorage.getItem('predefinedTemplates');
             setState(prev => ({ ...prev, loadingPredefinedTemplates: false, predefinedTemplates: JSON.parse(predefinedTemplates || '[]') }));
-            // toast.success('Template fetched successfully');
             return true;
         } catch (error) {
             console.error('error:===========', error);
@@ -58,20 +70,6 @@ export const useListTemplatePageApi = () => {
             toast.error('Failed to fetch template');
         }
     };
-    // const createTemplateApi = async (requestBody: any) => {
-    //   try {
-    //     setState(prev => ({ ...prev, loadingCreateTemplate: true }));
-    //     const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
-    //     setState(prev => ({ ...prev, id: '' }));
-    //     toast.success('Template created successfully');
-    //     return true;
-    //   } catch (error) {
-    //     console.error('error:===========', error);
-    //     toast.error('Failed to create template');
-    //   } finally {
-    //     setState(prev => ({ ...prev, loadingCreateTemplate: false, showCreateDialog: false }));
-    //   }
-    // };
     const updateTemplateApi = async (requestBody: any) => {
         try {
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/update/${state.id}`, requestBody);

@@ -48,6 +48,8 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
     useEffect(() => {
         getTemplatesApi();
+    }, [state.refresh]);
+    useEffect(() => {
         getPredefinedTemplatesApi();
     }, []);
 
@@ -89,6 +91,14 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
         orderedTemplates = [...recentTemplates, ...otherTemplates];
     }
 
+    const onClickUploadButton = (template: any) => {
+        const recentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
+        const filteredTemplates = recentlyUsedTemplates.filter((item: any) => item !== template._id);
+        const finalTemplates = [template._id, ...filteredTemplates];
+        localStorage.setItem('recentlyUsedTemplates', JSON.stringify(finalTemplates));
+        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
+    };
+
     const visibleTemplates = orderedTemplates.slice(0, templatesToShow);
 
     return (
@@ -110,7 +120,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
                             key={idx}
                             template={template}
                             flexBasis={`${100 / cardsPerRow}%`}
-                            onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
+                            onClickUpload={() => onClickUploadButton(template)}
                             refreshPage={() => getTemplatesApi()}
                         />
                     ))}

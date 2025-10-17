@@ -9,48 +9,21 @@ const ListTemplateComponent: React.FC = () => {
 
     useEffect(() => {
         getTemplatesApi();
-    }, []);
-
-    useEffect(() => {
-        getTemplatesApi();
     }, [state.searchText]);
 
     useEffect(() => {
         if (state.refresh === 1) return;
+        console.log('state.refresh:===========', state.refresh);
         getTemplatesApi();
     }, [state.refresh]);
 
-    // Get selected tenant id from localStorage
-    const selectedTenantId = localStorage.getItem('selectedTenant');
-
-    // Filter templates by tenant id if present
-    let filteredTemplates =
-        !selectedTenantId || selectedTenantId === 'all' ? state.templates : state.templates.filter((template: any) => template.tenantId === selectedTenantId);
-
-    // Reorder templates: recently clicked first
-    const recentTemplateIds = (() => {
-        try {
-            const arr = localStorage.getItem('recentTemplate');
-            return arr ? JSON.parse(arr) : [];
-        } catch {
-            return [];
-        }
-    })();
-
-    if (Array.isArray(recentTemplateIds) && recentTemplateIds.length > 0) {
-        const recentTemplates: any[] = [];
-        const otherTemplates: any[] = [];
-        filteredTemplates.forEach((template: any) => {
-            if (recentTemplateIds.includes(template._id)) {
-                recentTemplates.push(template);
-            } else {
-                otherTemplates.push(template);
-            }
-        });
-        // Sort recentTemplates by order in recentTemplateIds
-        recentTemplates.sort((a: any, b: any) => recentTemplateIds.indexOf(a._id) - recentTemplateIds.indexOf(b._id));
-        filteredTemplates = [...recentTemplates, ...otherTemplates];
-    }
+    const onClickUploadButton = (template: any) => {
+        const recentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
+        const filteredTemplates = recentlyUsedTemplates.filter((item: any) => item !== template._id);
+        const finalTemplates = [template._id, ...filteredTemplates];
+        localStorage.setItem('recentlyUsedTemplates', JSON.stringify(finalTemplates));
+        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
+    };
 
     if (state.loadingTemplates) {
         return (
@@ -71,25 +44,9 @@ const ListTemplateComponent: React.FC = () => {
 
     return (
         <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
-            {filteredTemplates.map((template: any, idx: number) => (
+            {state.templates.map((template: any, idx: number) => (
                 <TemplateCardComponent
-                    onClickUpload={() => {
-                        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template });
-                        // Update recentTemplate array in localStorage
-                        try {
-                            const arr = localStorage.getItem('recentTemplate');
-                            let recent = arr ? JSON.parse(arr) : [];
-                            // Remove if already present
-                            recent = recent.filter((id: string) => id !== template._id);
-                            // Add to front
-                            recent.unshift(template._id);
-                            // Limit to 10 recent templates
-                            if (recent.length > 10) recent = recent.slice(0, 10);
-                            localStorage.setItem('recentTemplate', JSON.stringify(recent));
-                        } catch (e) {
-                            // Ignore localStorage errors
-                        }
-                    }}
+                    onClickUpload={() => onClickUploadButton(template)}
                     key={idx}
                     template={template}
                     refreshPage={() => setState({ ...state, refresh: state.refresh + 1 })}

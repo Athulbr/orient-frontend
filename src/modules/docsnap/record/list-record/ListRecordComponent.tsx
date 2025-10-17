@@ -42,7 +42,6 @@ export const ListRecordComponent: React.FC = () => {
     const { deleteRecordApi } = useListRecordApi();
     const [params] = useSearchParams();
     const { checkPermission, user } = usePermissionStore();
-    const tenantId = user?.tenant?._id || selectedTenant;
     const toast = useToastStore();
 
     const [rowSelected, setRowSelected] = useState<boolean>(false);
@@ -94,22 +93,22 @@ export const ListRecordComponent: React.FC = () => {
         });
     }
     // checkPermission('export:record:ardex') && tenants.includes(tenantId)
-    // checkPermission('export:record:ardex')
-    //     ? [
-    //           {
-    //               label: 'Export Record',
-    //               action: () => {
-    //                   setState(prev => ({ ...prev, dealerSelectionDialog: true }));
-    //               }
-    //           },
-    //           {
-    //               label: 'Assign',
-    //               action: (selectedIds: string[]) => {
-    //                   setState(prev => ({ ...prev, assignDialog: true, selectedIds }));
-    //               }
-    //           }
-    //       ]
-    //     : [];
+    checkPermission('export:record:ardex')
+        ? [
+              {
+                  label: 'Export Record',
+                  action: () => {
+                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                  }
+              },
+              {
+                  label: 'Assign',
+                  action: (selectedIds: string[]) => {
+                      setState(prev => ({ ...prev, assignDialog: true, selectedIds }));
+                  }
+              }
+          ]
+        : [];
     const updatedQuery = (query: any) => {
         const validators = query.filters?.validators;
         const updatedQuery = { ...query };
