@@ -171,6 +171,8 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
                 return <CircleAlert className="text-red-500" />;
             case 'Completed':
                 return <CheckCircle2 className="text-green-500" />;
+            case 'completed':
+                return <CheckCircle2 className="text-green-500" />;
             case 'Failed':
                 return <CircleAlert className="text-red-500" />;
             default:

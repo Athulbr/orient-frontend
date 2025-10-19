@@ -28,24 +28,25 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
 
         const requestBody: Record<string, any> = {
-            document_type: state.record?.docType || 'other',
-            entity_schema: convertedJson,
-            include_confidence: true,
-            include_bbox: true,
-            confidence_threshold: 0.2,
+            // document_type: state.record?.docType || 'other',
+            // entity_schema: convertedJson,
+            // include_confidence: true,
+            // include_bbox: true,
+            // confidence_threshold: 0.2,
             s3_file_name: state.record?.pdfFileName,
-            provider_id: 'azure',
-            model_id: 'gpt-4o',
-            use_latest: false
+            template_id: state.record?.templateId?._id
+            // provider_id: 'azure',
+            // model_id: 'gpt-4o',
+            // use_latest: false
         };
-        requestBody.ocr_engine = 'google_vision'; // 'doctr';
-        const res = await httpRequest('POST', `${config.extractionServicePython}/analyze-document`, requestBody);
+        // requestBody.ocr_engine = 'google_vision'; // 'doctr';
+        const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5`, requestBody);
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
         const eventSource = new EventSource(`${config.extractionServicePython}${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
         eventSource.addEventListener('task_update', async (event: any) => {
             const data = JSON.parse(event.data);
-            if (data.current_step === 'Complete') {
+            if (data.current_step === 'Completed') {
                 eventSource.close();
                 await updateExtractedData(data?.result?.extracted_data || {});
                 setState(prev => ({ ...prev, reExtracting: false }));
