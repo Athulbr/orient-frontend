@@ -34,7 +34,7 @@ const AuthenticatedRoutes = () => {
     const paths = {
         docsnap: '/docsnap',
         dataentry: '/dataentry',
-        transcript: '/audio-transcript/list',
+        transcript: '/transcript',
         sld: '/sld',
         documentCreation: '/document-creation'
     };
@@ -46,6 +46,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/audio-transcript/*" element={<MedicalCodeRoutes />} />
+                <Route path="/transcript" element={<DashboardPage module="transcript" />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
