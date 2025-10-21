@@ -148,15 +148,14 @@ export const useUpdateTemplatePageApi = () => {
     };
     const extractSectionFields = async (requestBody: any = {}) => {
         try {
-            setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
+            setState(prev => ({ ...prev }));
             const res = await httpRequest('POST', `${config.mlServiceNodejs}/extract-section-fields`, requestBody);
-            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
-            toast.success('Template fields updated successfully');
+            setState(prev => ({ ...prev }));
+            toast.success('Section fields extracted successfully');
             return res.data?.updatedInstruction;
         } catch (error) {
-            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false }));
             console.error('error:===========', error);
-            toast.error('Failed to update template fields');
+            toast.error('Failed to extract section fields');
         }
     };
 
