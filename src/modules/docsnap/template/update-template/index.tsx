@@ -23,6 +23,7 @@ export interface UpdateTemplateStateIF {
     showSettingsForm: boolean;
     showTemplateSettingsForm: boolean;
     templateSettings: any;
+    extractingSection: number;
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
@@ -39,7 +40,8 @@ const initialState: UpdateTemplateStateIF = {
     noS3File: false,
     showSettingsForm: false,
     showTemplateSettingsForm: false,
-    templateSettings: null
+    templateSettings: null,
+    extractingSection: -1
 };
 
 const UpdateTemplatePage: React.FC<{ create?: boolean; settings?: boolean }> = ({ create, settings }) => {

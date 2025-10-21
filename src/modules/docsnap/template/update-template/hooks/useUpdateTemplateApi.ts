@@ -146,16 +146,17 @@ export const useUpdateTemplatePageApi = () => {
             toast.error('Failed to update template fields');
         }
     };
-    const extractSectionFields = async (requestBody: any = {}) => {
+    const extractSectionFields = async (requestBody: any = {}, mainIndex: number) => {
         try {
-            setState(prev => ({ ...prev }));
+            setState(prev => ({ ...prev, extractingSection: mainIndex }));
             const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/extract-section-fields`, requestBody);
-            setState(prev => ({ ...prev }));
+            setState(prev => ({ ...prev, extractingSection: -1 }));
             toast.success('Section fields extracted successfully');
             return res.data?.updatedInstruction;
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to extract section fields');
+            return null;
         }
     };
 

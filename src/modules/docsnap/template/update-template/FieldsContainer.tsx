@@ -283,6 +283,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
     const [editFieldDialog, setEditFieldDialog] = useState(-1);
+    const [extractedData, setExtractedData] = useState([]);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -328,7 +329,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         setEditSectionDialog(false);
     };
 
-    const handleExtractSectionFields = () => {
+    const handleExtractSectionFields = async () => {
         const sectionFields = {
             sectionName: section.jsonKey,
             sectionInstruction: section.instruction,
@@ -339,8 +340,8 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                 };
             })
         };
-        extractSectionFields({ sectionFields, s3FileName: fileName || state.templateData?.s3FileName });
-        console.log('state.templateData:===========', state.templateData);
+        const response = await extractSectionFields({ sectionFields, s3FileName: fileName || state.templateData?.s3FileName }, mainIndex);
+        setExtractedData(response);
         console.log('sectionFields:===========', sectionFields);
     };
 
@@ -359,8 +360,14 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     <span className="flex items-center gap-2">
                         {section?.name}
                         <LightIconButton Icon={Edit} onClick={editSectionDialogHandler} title="Edit Section" />
-                        <Button startIcon={<ScanLine size={12} />} className="text-nowrap" small onClick={handleExtractSectionFields} outlined>
-                            Extract Fields
+                        <Button
+                            startIcon={state.extractingSection !== -1 && mainIndex === state.extractingSection ? <Spinner size={12} /> : <ScanLine size={12} />}
+                            className="text-nowrap overflow-hidden"
+                            small
+                            onClick={handleExtractSectionFields}
+                            outlined
+                        >
+                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}...` : 'Extract Fields'}
                         </Button>
                     </span>
                 </div>
@@ -373,6 +380,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             </div>
             {opened && (
                 <div className="flex flex-col gap-4 p-2">
+                    <div className="flex items-center justify-between w-full bg-gray-100 border p-4">Extracted data</div>
                     <DragAndDropContainer
                         items={section?.subFields || []}
                         onDragEnd={reorderedFields => {

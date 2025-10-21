@@ -44,6 +44,12 @@ export const useDashboardApi = () => {
             toast.error('Failed to fetch predefined template list');
         }
     };
+    const filterTemplatesByTenant = (templates: any) => {
+        const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || 'all';
+        return templates.filter((template: any) =>
+            selectedTenantFromSessionStorage === 'all' ? true : template.tenantId === selectedTenantFromSessionStorage
+        );
+    };
     const sortTemplatesByRecentlyUsed = (templates: any) => {
         const arrayOfRecentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
         const templatesCopy = [...templates];
@@ -61,13 +67,14 @@ export const useDashboardApi = () => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
             const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
-            const sortedTemplates = sortTemplatesByRecentlyUsed(parsedTemplates);
+            const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
+            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByTenant);
 
             setState(prev => ({
                 ...prev,
                 loadingTemplates: false,
                 templates: sortedTemplates,
-                totalTemplates: parsedTemplates.length
+                totalTemplates: sortedTemplates.length
             }));
             return true;
         } catch (error) {
