@@ -7,6 +7,7 @@ import { UploadDocumentComponent } from '../../upload-document';
 import { CreateTemplateComponent } from './components/CreateTemplateDialog';
 import PageActionsComponent from './components/PageActionsComponent';
 import ListTemplateComponent from './ListTemplateComponent';
+import { UploadDocumentComponentNew } from '../../upload-document-new';
 
 export interface TemplateStateIF {
     id: string;
@@ -40,7 +41,7 @@ const ListTemplatePage: React.FC = () => {
 
     return (
         <TemplateStateProvider value={{ state, setState }}>
-            <PageContainer className="gap-4 p-6">
+            <PageContainer className="gap-4 p-2 md:p-6">
                 <Breadcrumbs page="listTemplate" />
                 <PageNameComponent name="List of Templates" showBackButton>
                     <PageActionsComponent />
@@ -51,7 +52,10 @@ const ListTemplatePage: React.FC = () => {
             </PageContainer>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+                <>
+                    <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+                    {/* <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} /> */}
+                </>
             )}
         </TemplateStateProvider>
     );

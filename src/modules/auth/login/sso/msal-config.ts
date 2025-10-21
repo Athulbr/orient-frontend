@@ -1,8 +1,10 @@
+import { config } from '../../../../config/default';
+
 export const msalConfig = {
     auth: {
-        clientId: import.meta.env.VITE_AZURE_CLIENT_ID as string,
+        clientId: config.azure.clientId as string,
         authority: `https://login.microsoftonline.com/common`,
-        redirectUri: `${import.meta.env.VITE_BASR_URL}/auth/login`,
+        redirectUri: `${config.baseUrl}/auth/login`,
         postLogoutRedirectUri: '/'
     },
     cache: {

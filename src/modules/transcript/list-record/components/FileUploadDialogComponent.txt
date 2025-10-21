@@ -1,8 +1,7 @@
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { useS3DocumentsStore } from '../../../../../zustand-store/useStoredDocuments';
+import { useS3Storage } from '../../../../../zustand-store/S3Storage';
 import httpRequest from '../../../../../global-utils/httpRequest';
-import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import { useListRecordApi } from '../hooks/useListRecordApi';
@@ -19,7 +18,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
     const { createRecordApi, updateRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine } = useListRecordApi();
     const toast = useToastStore();
     const { updateRefresh } = useViewRecordGlobalStore();
-    const { getS3File } = useS3DocumentsStore();
+    const { getS3File } = useS3Storage();
 
     const analyzeDocument = async (s3FileName: string) => {
         try {
@@ -37,7 +36,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
                 use_latest: false
             };
             if (state.document?.enableOcr) requestBody.ocr_engine = 'doctr';
-            const res = await httpRequest('POST', import.meta.env.VITE_PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
+            const res = await httpRequest('POST', import.meta.env.PYTHON_API_ANALYZE_DOCUMENT_URL, requestBody);
 
             setState(prev => ({ ...prev, analyzeDone: true, analyzing: false }));
             return res;
@@ -79,7 +78,7 @@ const FileUploadDialogComponent: React.FC<FileUploadDialogComponentIF> = () => {
         setState(prev => ({ ...prev, processing: false, fileUploadDialog: false, progress: 0, analyzeDone: false, uploadDone: false }));
 
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-        const eventSource = new EventSource(`${import.meta.env.VITE_PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
+        const eventSource = new EventSource(`${import.meta.env.PYTHON_URL}/ai${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
 
         eventSource.addEventListener('task_update', async (event: any) => {
             const data = JSON.parse(event.data);

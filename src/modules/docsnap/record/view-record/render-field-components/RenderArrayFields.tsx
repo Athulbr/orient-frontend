@@ -1,5 +1,5 @@
 import { Trash2, XCircle } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { Button } from '../../../../../components/Button';
@@ -34,16 +34,16 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         }));
     };
 
-    const addLineItem = () => {
+    const addLineItem = (mainIndex: number) => {
         // Get the column names from the first row to create the same structure
 
-        const crnt = ['Item', 'Description', 'Quantity', 'UM', 'Delivery Date', 'Price', 'Net Amount'];
-
-        const firstRow = Object.values(state.arrayFields[0])[0] || {};
+        const firstRow = Object.values(state.arrayFields[mainIndex])[0] || {};
 
         let columnNames = Object.keys(firstRow);
         if (columnNames.length === 0) {
-            const lineItems = state.record?.templateId?.fields?.find((item: any) => item.name === 'line items');
+            const lineItems = state.record?.templateId?.fields?.find((item: any) => {
+                return item.jsonKey === state.tableNames[mainIndex];
+            });
             if (lineItems?.subFields) {
                 columnNames = lineItems.subFields.map((item: any) => item.name);
             }
@@ -56,9 +56,9 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
 
         const newArrayFields = [...state.arrayFields];
         // Calculate the next index by getting the current number of entries
-        const currentEntries = Object.keys(newArrayFields[0]);
+        const currentEntries = Object.keys(newArrayFields[mainIndex]);
         const nextIndex = currentEntries.length;
-        newArrayFields[0] = { ...newArrayFields[0], [`${nextIndex}`]: newRow };
+        newArrayFields[mainIndex] = { ...newArrayFields[mainIndex], [`${nextIndex}`]: newRow };
 
         setState(prev => {
             return { ...prev, arrayFields: newArrayFields };
@@ -105,7 +105,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                     <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                                         Add Comment
                                     </Button>
-                                    <Button tabIndex={-1} outlined onClick={addLineItem}>
+                                    <Button tabIndex={-1} outlined onClick={() => addLineItem(mainIndex)}>
                                         Add Line Item
                                     </Button>
                                 </div>
@@ -121,13 +121,13 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                         <div className="flex-1 overflow-auto">
                             <table className="min-w-full border-collapse">
                                 <thead>
-                                    <tr className="sticky top-0 left-0 border">
+                                    <tr className="sticky top-0 left-0 border ">
                                         {labels.map((label, i) => (
-                                            <th key={i} className="border bg-gray-50 px-4 py-3 text-left font-semibold">
+                                            <th key={i} className="border bg-gray-50 px-4 py-3 text-left font-semibold whitespace-nowrap text-nowrap">
                                                 {formatFieldLabel(label)}
                                             </th>
                                         ))}
-                                        {Object.keys(lineItems).length > 1 && <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>}
+                                        <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -139,6 +139,8 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                 const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
                                                 return (
                                                     <ArrayFieldTextarea
+                                                        mainIndex={mainIndex}
+                                                        keyName={key}
                                                         key={i}
                                                         value={value}
                                                         fieldId={hoveredFieldId}
@@ -178,27 +180,31 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                                                     />
                                                 );
                                             })}
-                                            {Object.keys(lineItems).length > 1 && (
-                                                <td className="h-full border py-2 pl-9">
-                                                    <Trash2
-                                                        tabIndex={0}
-                                                        onClick={() => deleteLineItem(mainIndex, rowIndex)}
-                                                        onKeyDown={e => {
-                                                            if (e.key === 'Enter') {
-                                                                deleteLineItem(mainIndex, rowIndex);
-                                                            }
-                                                        }}
-                                                        size={20}
-                                                        className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
-                                                    />
-                                                </td>
-                                            )}
+                                            <td className="h-full border py-2 pl-9">
+                                                <Trash2
+                                                    tabIndex={-1}
+                                                    onClick={() => deleteLineItem(mainIndex, rowIndex)}
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter') {
+                                                            deleteLineItem(mainIndex, rowIndex);
+                                                        }
+                                                    }}
+                                                    size={20}
+                                                    className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
+                                                />
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
-                        <CommentDialog jsonKey={'line_item'} isOpen={commentDialog} closeDialog={() => setCommentDialog(false)} />
+                        <CommentDialog
+                            commentList={[]}
+                            setCommentList={() => {}}
+                            jsonKey={'line_item'}
+                            isOpen={commentDialog}
+                            closeDialog={() => setCommentDialog(false)}
+                        />
                     </div>
                 );
             })}
@@ -214,8 +220,11 @@ interface PropsIF {
     onMouseEnter: () => void;
     fieldRefs: any;
     disabled?: boolean;
+    mainIndex: number;
+    keyName: string;
 }
-const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled }) => {
+const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled, mainIndex, keyName }) => {
+    const { state } = useViewRecordState();
     const adjustTextareaHeight = () => {
         const textarea = fieldRefs.current[fieldId];
         if (!textarea) return;
@@ -233,9 +242,38 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
     useEffect(() => {
         adjustTextareaHeight();
     }, [value?.value]);
+    const renderTemplate = (template: string, data: Record<string, string>) => {
+        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => encodeURIComponent(data[key] ?? ''));
+    };
+
+    const validateLink = (validationUrl: string, value: string) => {
+        if (!validationUrl.trim() || !value.trim()) return;
+        const finalUrl = renderTemplate(validationUrl, { value });
+        window.open(finalUrl, '_blank');
+    };
+
+    const { fieldLabel, validationUrl } = useMemo(() => {
+        const fields = state.record?.templateId?.fields;
+        const field = fields?.find((item: any) => item.jsonKey === state.tableNames[mainIndex]);
+        const subField = field?.subFields?.find((item: any) => item.jsonKey === label);
+        return {
+            fieldLabel: subField?.name ? formatFieldLabel(subField.name) : 'formatFieldLabel(label)',
+            validationUrl: subField?.validationUrl || ''
+        };
+    }, [keyName, label]);
     return (
         <td className="border p-1">
-            <ValidateSkuButton label={label} value={value?.value} />
+            {/* <ValidateSkuButton label={label} value={value?.value} /> */}
+            {validationUrl && value?.value && (
+                <div className="mb-0.5 w-full flex justify-end">
+                    <span
+                        onClick={() => validateLink(validationUrl, value?.value)}
+                        className="text-xs text-gray-600 cursor-pointer border  px-2 py-0.5 rounded-md hover:bg-sky-50 hover:border-gray-500"
+                    >
+                        Validate
+                    </span>
+                </div>
+            )}
             <textarea
                 data-gramm="false"
                 id={fieldId}

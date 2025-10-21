@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { Button } from '../../../../../components/Button';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { useViewRecordState } from '../hooks/viewRecordContext';
+import { config } from '../../../../../config/default';
 
 interface ExportButtonPropsIF {
     showExportButton?: boolean;
@@ -11,6 +12,7 @@ interface ExportButtonPropsIF {
 export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true }) => {
     const { state } = useViewRecordState();
     const userData = window?.sessionStorage?.getItem('user');
+    const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
     const user = userData ? JSON.parse(userData) : null;
     const arrays: any = {};
     state.tableNames.forEach((item, index) => {
@@ -37,16 +39,17 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
         let exportURL = '';
         // Update this condition based on your tenant settings
         if (user.tenant._id === '68896ef48e0baa23315c3cfd') {
-            exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
+            exportURL = `${config.nodeApiUrl}/idp/history/export/new`;
         } else {
-            exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export`;
+            exportURL = `${config.nodeApiUrl}/idp/history/export`;
         }
 
         const response = await fetch(exportURL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
+                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`,
+                tenantid: selectedTenant
             },
             body: JSON.stringify({ recordId })
         });

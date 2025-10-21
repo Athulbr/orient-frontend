@@ -5,6 +5,7 @@ import { httpAiRequest } from '../../utils/functions/httpAiRequest';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 const FormBuilderContext = createContext<FormBuilderContextType | undefined>(undefined);
 
@@ -29,7 +30,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
                 toast.error('Form name is required');
                 return;
             }
-            await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder`, {
+            await httpAiRequest('POST', `${config.nodeApiUrl}/builder/formbuilder`, {
                 name,
                 fields,
                 settings: formSettings
@@ -39,6 +40,7 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
             return true;
         } catch (error) {
             console.error(error);
+            toast.error('Formbuilder update failed');
             return false;
         } finally {
             setLoading(false);
@@ -48,19 +50,20 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
         try {
             setLoading(true);
 
-            await httpAiRequest('PUT', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/${id}`, {
+            await httpAiRequest('PUT', `${config.nodeApiUrl}/builder/formbuilder/${id}`, {
                 name,
                 fields,
                 settings: formSettings
             });
 
-            const formbuilderesponse = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/query`, { pageSize: 1000 });
+            const formbuilderesponse = await httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 });
             window?.sessionStorage?.setItem('formbuilder', JSON.stringify(formbuilderesponse?.data));
             toast.success('Formbuilder updated successfully');
             navigate('/config/formbuilder/list');
             return true;
         } catch (error) {
             console.error(error);
+            toast.error('Formbuilder update failed');
             return false;
         } finally {
             setLoading(false);
@@ -69,12 +72,13 @@ export const FormBuilderProvider: React.FC<{ children: ReactNode }> = ({ childre
     const getFormbuilderByIdApi = async () => {
         try {
             setLoading(true);
-            const res = await httpAiRequest('GET', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/${id}`);
+            const res = await httpAiRequest('GET', `${config.nodeApiUrl}/builder/formbuilder/${id}`);
             setFields(res?.data.fields);
             setFormSettings(res?.data.settings);
             return res?.data?.name;
         } catch (error) {
             console.error(error);
+            toast.error('Formbuilder update failed');
             return '';
         } finally {
             setLoading(false);

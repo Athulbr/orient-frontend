@@ -3,9 +3,18 @@ import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tableb
 import { RecordStatusCustomUI } from './components/RecordStatusCustomUI';
 import { useListRecordPageState } from './hooks/listRecordPageContext';
 import { useListRecordApi } from './hooks/useListRecordApi';
-import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
+import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
+// import { useExtractionStore } from '../../../../zustand-store/extractionStore';
+import { downloadXlsxFile } from './utils/downloadXlsxFile';
+import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
+import httpRequest from '../../../../global-utils/httpRequest';
+import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
+const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+import { config } from '../../../../config/default';
+import { useToastStore } from '../../../../components/toast/ToastStore';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -32,17 +41,27 @@ export const ListRecordComponent: React.FC = () => {
     const navigate = useNavigate();
     const { deleteRecordApi } = useListRecordApi();
     const [params] = useSearchParams();
+    const { checkPermission, user } = usePermissionStore();
+    const toast = useToastStore();
 
-    const { refreshRecord, extractionQueue } = useDocsnapStore();
+    const [rowSelected, setRowSelected] = useState<boolean>(false);
+
+    const { refreshRecord, updateRefreshRecord, extractionQueue } = useDocsnapStore();
 
     useEffect(() => {
         if (refreshRecord === 100) return;
         setState(prev => ({ ...prev, refresh: refreshRecord }));
-    }, [refreshRecord]);
+    }, [refreshRecord, setState]);
 
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
-            navigate(`/docsnap/record/view/${row._id}`);
+            const url = window.location.href;
+            const module = sessionStorage.getItem('module');
+            if (module === 'documentCreation') {
+                navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+                return;
+            }
+            navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
         },
         deleteClickHandler: (row: any) => {
@@ -52,69 +71,88 @@ export const ListRecordComponent: React.FC = () => {
 
     const customUI = {
         recordStatus: RecordStatusCustomUI,
-        poLink: Polink
+        poLink: Polink,
+        documentDate: OnlyDateCustomUI
     };
 
-    const rehabMartTenant = `${import.meta.env.VITE_NODE_URL}`.includes('rehabmart');
-
-    const actionButtons = rehabMartTenant
-        ? []
-        : [
+    const actionButtons = [];
+    if (checkPermission('assign:record:rehab') && rowSelected) {
+        actionButtons.push({
+            label: 'Assign',
+            action: (selectedIds: string[]) => {
+                setState(prev => ({ ...prev, assignDialog: true, selectedIds }));
+            }
+        });
+    }
+    if (checkPermission('export:record:ardex')) {
+        actionButtons.push({
+            label: 'Export Record',
+            action: () => {
+                setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+            }
+        });
+    }
+    // checkPermission('export:record:ardex') && tenants.includes(tenantId)
+    checkPermission('export:record:ardex')
+        ? [
               {
                   label: 'Export Record',
                   action: () => {
                       setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
+              },
+              {
+                  label: 'Assign',
+                  action: (selectedIds: string[]) => {
+                      setState(prev => ({ ...prev, assignDialog: true, selectedIds }));
+                  }
               }
-          ];
+          ]
+        : [];
     const updatedQuery = (query: any) => {
-        setState(prev => ({ ...prev, query }));
-        return query;
+        const validators = query.filters?.validators;
+        const updatedQuery = { ...query };
+        if (validators !== undefined) {
+            updatedQuery.filters.extractedBy = validators;
+            delete updatedQuery.filters.validators;
+        }
+        setState(prev => ({ ...prev, query: updatedQuery }));
+        return updatedQuery;
     };
 
-    const downloadXlsxFile = async (payload: any) => {
-        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+    const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
+        let formattedStart: string | null = null;
+        let formattedEnd: string | null = null;
 
-        let exportURL = '';
-        // Update this condition based on your tenant settings
-        const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-        exportURL = `${import.meta.env.VITE_NODE_URL}/idp/history/export/new`;
-
-        const response = await fetch(exportURL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                authorization: `Bearer ${accessToken ? JSON.parse(accessToken) : ''}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (startDate) {
+            const s = new Date(startDate);
+            s.setHours(0, 0, 0, 0); // start of day
+            formattedStart = s.toISOString(); // still UTC, but exact 00:00 local
         }
 
-        const blob = await response.blob();
-
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `table-export-${new Date().getTime()}.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    };
-
-    const onSubmit = (dealers: any) => {
-        const query = state.query;
+        if (endDate) {
+            const e = new Date(endDate);
+            e.setHours(23, 59, 59, 999); // end of day
+            formattedEnd = e.toISOString();
+        }
         const payload = {
-            startDate: query.startDate,
-            endDate: query.endDate,
+            startDate: formattedStart,
+            endDate: formattedEnd,
             format: 'xlsx',
             dealers
         };
-        downloadXlsxFile(payload);
+
+        downloadXlsxFile(payload, selectedTenant);
     };
+    const onRowSelect = (selectedRows: any) => {
+        if (selectedRows.length > 0) {
+            setRowSelected(true);
+        } else {
+            setRowSelected(false);
+        }
+    };
+
+    const hiddenColumns = String(user?.tenant?.name).toLowerCase() == 'rehabmart' ? ['documentDate'] : ['poLink', 'assignedTo'];
 
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     return (
@@ -131,12 +169,31 @@ export const ListRecordComponent: React.FC = () => {
                 updatePermission="update:record"
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
+                hiddenColumns={hiddenColumns}
+                onRowSelect={onRowSelect}
             />
             {state.dealerSelectionDialog && (
                 <DealerListComponent
                     onSubmit={onSubmit}
                     isOpen={state.dealerSelectionDialog}
                     closeDialog={() => setState(prev => ({ ...prev, dealerSelectionDialog: false }))}
+                />
+            )}
+            {state.assignDialog && (
+                <UseFormbuilder
+                    name="Select Validator"
+                    closeDialog={() => setState(prev => ({ ...prev, assignDialog: false }))}
+                    onSubmit={async (fields: any) => {
+                        setState(prev => ({ ...prev, assignDialog: false }));
+                        const requestBody = {
+                            ids: state.selectedIds,
+                            assignedTo: fields?.selectedValidator
+                        };
+                        await httpRequest('POST', `${config.nodeApiUrl}/idp/history/bulk/update`, requestBody);
+                        setState(prev => ({ ...prev, refresh: refreshRecord }));
+                        updateRefreshRecord();
+                        toast.success('Record Assigned Successfully');
+                    }}
                 />
             )}
         </>

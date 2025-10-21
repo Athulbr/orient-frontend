@@ -3,6 +3,8 @@ import { DialogComponent } from '../../../components/DialogComponent';
 import httpRequest from '../../../global-utils/httpRequest';
 import { RenderForm } from '../render-form/RenderForm';
 import { FieldIF } from '../interface';
+import { config } from '../../../config/default';
+import { cn } from '../../../global-utils/twMerge';
 
 interface UseFormbuilderIF {
     isOpen?: boolean;
@@ -16,6 +18,9 @@ interface UseFormbuilderIF {
     loading?: boolean;
     loadingPrimaryButton?: boolean;
     showInDialog?: boolean;
+    actionButtonText?: string;
+    actionButtonClickHandler?: (fields: FieldIF[]) => void;
+    disableBlurCloseDialog?: boolean;
 }
 
 export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
@@ -29,7 +34,10 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
     title,
     loading,
     loadingPrimaryButton,
-    showInDialog = true
+    showInDialog = true,
+    actionButtonText,
+    actionButtonClickHandler,
+    disableBlurCloseDialog
 }) => {
     const [fields, setFields] = useState<FieldIF[]>([]);
     const [hasError, setHasError] = useState(false);
@@ -49,7 +57,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                     return;
                 }
             }
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/formbuilder/name`, { name });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/name`, { name });
             if (fields.length) return;
             setFields(res.data.fields);
             setSettings(res.data.settings);
@@ -91,19 +99,28 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                 submitClickHandler={onSubmit}
                 cancelClickHandler={closeDialog}
                 columns={settings.columns}
-                className="px-0"
+                className={cn('px-0', renderFormClassName)}
             />
         );
     }
 
     return (
-        <DialogComponent loading={loading || fields.length === 0} closeDialog={closeDialog} isOpen={isOpen} name={title ? title : name} className={className}>
+        <DialogComponent
+            disableBlurCloseDialog={disableBlurCloseDialog}
+            loading={loading || fields.length === 0}
+            closeDialog={closeDialog}
+            isOpen={isOpen}
+            name={title ? title : name}
+            className={className}
+        >
             <RenderForm
                 fields={fields}
                 loadingPrimaryButton={loadingPrimaryButton}
                 submitClickHandler={onSubmit}
                 cancelClickHandler={closeDialog}
                 columns={settings.columns}
+                actionButtonText={actionButtonText}
+                actionButtonClickHandler={actionButtonClickHandler ? fields => actionButtonClickHandler(fields) : undefined}
             />
         </DialogComponent>
     );

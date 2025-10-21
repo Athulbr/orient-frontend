@@ -5,11 +5,7 @@ import { TemplateCardComponent } from './components/TemplateCard';
 
 const ListTemplateComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
-    const { getTemplatesApi, getPredefinedTemplatesApi } = useListTemplatePageApi();
-
-    useEffect(() => {
-        getTemplatesApi();
-    }, []);
+    const { getTemplatesApi } = useListTemplatePageApi();
 
     useEffect(() => {
         getTemplatesApi();
@@ -17,8 +13,17 @@ const ListTemplateComponent: React.FC = () => {
 
     useEffect(() => {
         if (state.refresh === 1) return;
+        console.log('state.refresh:===========', state.refresh);
         getTemplatesApi();
     }, [state.refresh]);
+
+    const onClickUploadButton = (template: any) => {
+        const recentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
+        const filteredTemplates = recentlyUsedTemplates.filter((item: any) => item !== template._id);
+        const finalTemplates = [template._id, ...filteredTemplates];
+        localStorage.setItem('recentlyUsedTemplates', JSON.stringify(finalTemplates));
+        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
+    };
 
     if (state.loadingTemplates) {
         return (
@@ -41,7 +46,7 @@ const ListTemplateComponent: React.FC = () => {
         <div className="flex flex-wrap gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
             {state.templates.map((template: any, idx: number) => (
                 <TemplateCardComponent
-                    onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
+                    onClickUpload={() => onClickUploadButton(template)}
                     key={idx}
                     template={template}
                     refreshPage={() => setState({ ...state, refresh: state.refresh + 1 })}

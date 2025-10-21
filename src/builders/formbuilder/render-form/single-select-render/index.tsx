@@ -3,6 +3,7 @@ import { FieldConfigIF, InputFieldRenderPropsIF } from '../../interface';
 import { InputWrapper } from '../input-wrapper';
 import CustomSelect from './SelectInput';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config as configDefault } from '../../../../config/default';
 
 export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, setFields, inputWrapperClassName }) => {
     const field = fields[index];
@@ -15,7 +16,7 @@ export const SingleSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, f
         if (config.optionSourceType === 'from API') {
             const getOptions = async () => {
                 try {
-                    const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}${config.apiEndpoint}`);
+                    const res: any = await httpRequest('POST', `${configDefault.nodeApiUrl}${config.apiEndpoint}`);
                     setOptionList(res.data);
                 } catch (error) {
                     setApiError('Failed to fetch options');

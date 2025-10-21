@@ -57,7 +57,7 @@ export const PlainTextRender: React.FC<InputFieldRenderPropsIF> = ({ index, fiel
 };
 
 export const validatePlainText = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     // Construct allowed character set
     let allowedChars = '';
@@ -65,6 +65,7 @@ export const validatePlainText = (value: string, config: FieldConfigIF): string 
     if (config.numbers) allowedChars += '0-9';
     if (config.emptySpace) allowedChars += ' ';
     if (config.comma) allowedChars += ',';
+    allowedChars += '\\n\\r–”“';
     if (config.allowedSpecialCharacters) {
         // Remove commas and escape other regex special characters
         const safeSpecials = config.allowedSpecialCharacters.replace(/,/g, '').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -72,7 +73,7 @@ export const validatePlainText = (value: string, config: FieldConfigIF): string 
     }
 
     // Validate only allowed characters if any rules were set
-    if (allowedChars) {
+    if (allowedChars && config.allowedSpecialCharacters !== 'all') {
         const specialCharsRegex = new RegExp(`^[${allowedChars}]*$`);
         if (!specialCharsRegex.test(value)) {
             return 'Invalid characters entered.';
@@ -83,7 +84,7 @@ export const validatePlainText = (value: string, config: FieldConfigIF): string 
         return `Minimum length is ${config.minimumLength} characters.`;
     }
 
-    if (config.maximumLength && value.length > config.maximumLength) {
+    if (config.maximumLength && value?.length > config.maximumLength) {
         return `Maximum length is ${config.maximumLength} characters.`;
     }
 

@@ -32,17 +32,31 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                     });
                                 };
 
-                                const label = useMemo(() => {
+                                // console.log('state.templateFields:===========', state.templateFields);
+
+                                const { label, showRegenButton, validationUrl, showTextarea } = useMemo(() => {
                                     const fields = state.record?.templateId?.fields;
-                                    const field = fields?.find((item: any) => item.jsonKey === key);
+                                    let field = fields?.find((item: any) => item.jsonKey === key);
+
                                     const subField = field?.subFields?.find((item: any) => item.jsonKey === subKey);
-                                    return subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey);
+
+                                    return {
+                                        label: subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey),
+                                        showRegenButton: subField?.regenerateFieldValueWithAI || false,
+                                        validationUrl: subField?.validationUrl || '',
+                                        showTextarea: subField?.showTextarea || false
+                                    };
                                 }, [key, subKey]);
+
+                                // console.log('label,showRegenButton:===========', label, showRegenButton);
 
                                 return (
                                     <InputField
                                         key={fieldId}
                                         label={label}
+                                        showRegenButton={showRegenButton}
+                                        validationUrl={validationUrl}
+                                        showTextarea={showTextarea}
                                         jsonKey={subKey}
                                         value={`${value?.value}`}
                                         confidence={`${value?.confidence * 100}`}
@@ -70,6 +84,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                                         hoveredFieldId: fieldId,
                                                         pageNumber: value?.page ? value?.page : prev.pageNumber,
                                                         hoveredOnArrayField: false,
+                                                        showDataEntryImages: false,
                                                         selectedTableName: ''
                                                     }));
                                                     updateWire(fieldId, value?.bbox);
@@ -79,6 +94,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                                     ...prev,
                                                     hoveredFieldId: null,
                                                     hoveredOnArrayField: false,
+                                                    showDataEntryImages: false,
                                                     bbox: null,
                                                     wire: null,
                                                     objectFields: {
@@ -92,6 +108,17 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                             }
                                         }}
                                         onChange={onChange}
+                                        handleRegenerateField={() =>
+                                            setState(prev => ({
+                                                ...prev,
+                                                showRegenerateFieldDialog: {
+                                                    key,
+                                                    subKey,
+                                                    value: value?.value,
+                                                    fieldLabel: label
+                                                }
+                                            }))
+                                        }
                                     />
                                 );
                             })}

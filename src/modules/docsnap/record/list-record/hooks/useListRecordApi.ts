@@ -3,6 +3,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import { useListRecordPageState } from './listRecordPageContext';
+import { config } from '../../../../../config/default';
 
 export const useListRecordApi = () => {
     const { id } = useParams();
@@ -13,7 +14,7 @@ export const useListRecordApi = () => {
 
     const createRecordApi = async (requestBody: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/create`, requestBody);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, requestBody);
             toast.success('Record created successfully');
             return res;
         } catch (error) {
@@ -22,7 +23,7 @@ export const useListRecordApi = () => {
     };
     const updateRecordApi = async (requestBody: any, id: string) => {
         try {
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/idp/history/save/extraction/${id}`, requestBody);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/save/extraction/${id}`, requestBody);
             toast.success('Record updated successfully');
         } catch (error) {
             toast.error('Failed to update record');
@@ -30,7 +31,7 @@ export const useListRecordApi = () => {
     };
     const deleteRecordApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/history/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/history/delete/${id}`);
             setState(prev => ({ ...prev, refresh: prev.refresh + 1 }));
             toast.success('Record deleted successfully');
         } catch (error) {
@@ -42,7 +43,7 @@ export const useListRecordApi = () => {
         try {
             setState(prev => ({ ...prev, processing: true, uploading: true }));
 
-            const res = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, file);
+            const res = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file);
             setState(prev => ({ ...prev, uploading: false, uploadDone: true, analyzing: true }));
 
             return { s3FileName: res.data.fileName, s3FileType: res.data.fileType, url: res.data.url };
@@ -54,7 +55,7 @@ export const useListRecordApi = () => {
 
     const trainChatWithDocumentEngine = async (s3fileName: string, s3Url: string) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASR_URL}/chatbot/upload`, {
+            const response = await fetch(`${config.chatbotServicePython}/v2/upload`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

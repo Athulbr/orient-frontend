@@ -3,7 +3,6 @@ import PageNameComponent from '../../../../components/PageName';
 import { useState } from 'react';
 import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
-import FileUploadDialogComponent from './components/FileUploadDialogComponent';
 import { PromptFieldIF } from '../../document';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -36,7 +35,9 @@ export interface ListRecordPageStateIF {
     uploadDone: boolean;
     analyzeDone: boolean;
     dealerSelectionDialog: boolean;
+    assignDialog: boolean;
     query: any;
+    selectedIds: string[];
 }
 
 const initialState = {
@@ -54,7 +55,9 @@ const initialState = {
     uploadDone: false,
     analyzeDone: false,
     dealerSelectionDialog: false,
-    query: {}
+    assignDialog: false,
+    query: {},
+    selectedIds: []
 };
 
 const ListRecordPage: React.FC = () => {
@@ -77,7 +80,7 @@ const ListRecordPage: React.FC = () => {
                     </Button>
                 </PageNameComponent>
                 <ListRecordComponent />
-                <FileUploadDialogComponent />
+                {/* <FileUploadDialogComponent /> */}
             </PageContainer>
         </ListRecordPageStateProvider>
     );

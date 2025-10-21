@@ -3,6 +3,7 @@ import { useFeatureState } from './featureContext';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useEffect } from 'react';
 import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
 
 export const useFeaturesApi = () => {
     const { state, setState } = useFeatureState();
@@ -18,7 +19,7 @@ export const useFeaturesApi = () => {
 
     const createFeatureApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/feature/create`, payload);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/feature/create`, payload);
             setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Feature Created Successfully');
         } catch (error) {
@@ -30,7 +31,7 @@ export const useFeaturesApi = () => {
     const updateFeatureApi = async (feature: any) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('PATCH', `${import.meta.env.VITE_NODE_URL}/feature/update/${state.id}`, feature);
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/feature/update/${state.id}`, feature);
             setState(prev => ({ ...prev, loading: false, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Feature Updated Successfully');
         } catch (error) {
@@ -42,7 +43,7 @@ export const useFeaturesApi = () => {
     const getFeatureByIdApi = async (id: string) => {
         try {
             setState(prev => ({ ...prev, loading: true }));
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/feature/${id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/feature/${id}`);
             toast.success('Feature fetched successfully');
             setState(prev => ({ ...prev, loading: false, feature: res.data, fields: res.data.fields }));
         } catch (error) {
@@ -53,7 +54,7 @@ export const useFeaturesApi = () => {
 
     const deleteFeatureApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/feature/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/feature/delete/${id}`);
             setState(prev => ({ ...prev, showCreateDialog: false, showCreatePage: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Feature deleted successfully');
             return true;

@@ -62,14 +62,14 @@ const FieldListComponent: React.FC = () => {
                                     {field.type.replace(/_/g, ' ')}
                                 </div>
                                 <input
-                                    className={`${style.fieldInput} ${showFieldInputError && !field.label.trim() ? style.inputRequiredError : ''}`}
+                                    className={`${style.fieldInput} ${showFieldInputError && !field.label?.trim() ? style.inputRequiredError : ''}`}
                                     type="text"
                                     placeholder="Label"
                                     value={field.label}
                                     onChange={e => updateFieldLabel(e, index)}
                                 />
                                 <input
-                                    className={`${style.fieldInput} ${showFieldInputError && !field.key.trim() ? style.inputRequiredError : ''}`}
+                                    className={`${style.fieldInput} ${showFieldInputError && !field.key?.trim() ? style.inputRequiredError : ''}`}
                                     type="text"
                                     placeholder="Key"
                                     value={field.key}
@@ -77,7 +77,7 @@ const FieldListComponent: React.FC = () => {
                                 />
                                 <div className={style.fieldAction}>
                                     <Settings size={20} className={style.icon} onClick={() => setShowSettings(showSettings === index ? -1 : index)} />
-                                    <Copy size={20} className={style.icon} onClick={() => duplicateField(field, index)} />
+                                    {/* <Copy size={20} className={style.icon} onClick={() => duplicateField(field, index)} /> */}
                                     <Trash2 size={20} className={style.icon} onClick={() => removeField(index)} />
                                 </div>
                             </div>

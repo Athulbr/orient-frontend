@@ -18,7 +18,7 @@ const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
 
     const handleLogout = () => {
         instance.logoutRedirect({
-            postLogoutRedirectUri: '/'
+            postLogoutRedirectUri: '/auth/login'
         });
     };
 

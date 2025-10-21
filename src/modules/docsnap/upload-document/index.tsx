@@ -1,50 +1,46 @@
 import { useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
-import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
+import { config } from '../../../config/default';
+import GenericFileInput from '../../../components/DragAndDropFileInput';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
 }
 
 export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
-    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtraction, addToNodeExtractorV1, addToNodeExtractionMultiPO } = useDocsnapStore();
+    const { addToPythonExtraction, addToPythonExtractionMultiPO, addToNodeExtractorV1 } = useDocsnapStore();
     const navigate = useNavigate();
     const toast = useToastStore();
     const [templateData, setTemplateData] = useState<any>(null);
-    const { getDocsnapSettings } = useSettingsStore();
+    const { getTenantSettings } = useSettingsStore();
     useEffect(() => {
         const getTemplate = async () => {
-            const res = await httpRequest('GET', `${import.meta.env.VITE_NODE_URL}/idp/template/${template._id}`);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
             setTemplateData(res.data);
         };
         if (template?._id) {
             getTemplate();
         }
     }, [template?._id]);
-    const onFileDrop = async (files: FileList) => {
-        if (files.length > 20) {
+    const onFileDrop = async (files: File[]) => {
+        const tenantSettings: any = await getTenantSettings();
+        const extractionEngine = tenantSettings?.extractionEngine;
+        const extractionType = tenantSettings?.extractionType;
+        if (files.length > 20 && extractionEngine !== 'node') {
             toast.error('You can select up to 20 files only.');
             return;
         }
-        const docsnapSettings: any = await getDocsnapSettings();
-        const extractionEngine = docsnapSettings?.extractionEngine;
-        const extractionType = docsnapSettings?.extractionType;
         if (extractionEngine === 'node') {
             if (!templateData) {
                 toast.error('Template not found');
                 return;
             }
-            if (extractionType === 'multiPO') {
-                addToNodeExtractionMultiPO(files, templateData || {});
-            } else {
-                addToNodeExtractorV1(files, templateData || '', (path: string) => navigate(path));
-                // addToNodeExtraction(files, templateData || '', (path: string) => navigate(path));
-            }
+            addToNodeExtractorV1(files, templateData);
         } else {
             if (extractionType === 'multiPO') {
                 addToPythonExtractionMultiPO(files, templateData || {});
@@ -64,7 +60,7 @@ export const UploadDocumentComponent: React.FC<UploadDocumentComponentIF> = ({ c
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput onFileDrop={onFileDrop} />
+                <GenericFileInput maxFiles={30} accept="application/pdf,image/*" onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

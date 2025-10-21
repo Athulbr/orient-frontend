@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import BackButton from './BackButton';
 import { ReactElement } from 'react';
 import { cn } from '../global-utils/twMerge';
@@ -12,15 +12,10 @@ interface PageNameComponentIF {
 }
 
 const PageNameComponent: React.FC<PageNameComponentIF> = ({ showBackButton, name, customGoBackFunction, children, className }) => {
-    const navigate = useNavigate();
-
-    const onClickHandler = () => {
-        customGoBackFunction ? customGoBackFunction() : navigate(-1);
-    };
     return (
-        <div className={cn('flex justify-between pb-1', className)}>
+        <div className={cn('flex justify-between pb-1 gap-2', className)}>
             <div className="flex items-center gap-2 text-xl text-nowrap">
-                {showBackButton && <BackButton onClick={onClickHandler} />} {name}
+                {showBackButton && <BackButton onClick={customGoBackFunction} />} {name}
             </div>
             {children}
         </div>

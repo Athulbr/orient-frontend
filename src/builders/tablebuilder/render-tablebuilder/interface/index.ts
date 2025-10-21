@@ -17,6 +17,7 @@ export interface TablebuilderStateIF {
         column: string;
         direction: 'asc' | 'desc';
     }[];
+    failedToFetch: boolean;
 }
 
 interface SearchableColumnsIF {

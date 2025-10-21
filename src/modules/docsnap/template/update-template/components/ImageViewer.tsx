@@ -3,6 +3,10 @@ import { Download, Expand, Shrink, ZoomIn, ZoomOut } from 'lucide-react';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
 import { useUpdateTemplateState } from '../hooks/updateTemplateContext';
 import { cn } from '../../../../../global-utils/twMerge';
+import { useS3Storage } from '../../../../../zustand-store/S3Storage';
+import { useUpdateTemplatePageApi } from '../hooks/useUpdateTemplateApi';
+import { useParams } from 'react-router-dom';
+
 interface ImageViewerProps {
     images: string[];
     name?: string;
@@ -12,6 +16,11 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
     const [zoom, setZoom] = useState(100);
     const [shrinked, setShrinked] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { state } = useUpdateTemplateState();
+    const { uploadS3File } = useS3Storage();
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const { updateTemplateApi } = useUpdateTemplatePageApi();
+    const { id } = useParams();
 
     const zoomIn = () => {
         const newZoom = Math.min(zoom + 10, 200);
@@ -51,6 +60,20 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
         setShrinked(!shrinked);
     };
 
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setUploadingFile(true);
+            const response = await uploadS3File(file);
+            console.log(response);
+            const requestBody = {
+                s3FileName: response?.fileName
+            };
+            if (!id) return;
+            updateTemplateApi(id, requestBody, true);
+        }
+    };
+
     return (
         <div className="flex h-full w-full flex-col">
             <div className="flex h-16 items-center justify-between border border-r-0 bg-white px-4">
@@ -68,25 +91,38 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
                 </div>
                 <LightIconButton Icon={Download} onClick={download} title="Download" />
             </div>
-
-            <div
-                ref={containerRef}
-                className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-50 pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
-            >
-                {images.map((imgSrc, index) => (
-                    <div
-                        className="w-fit bg-green-500 shadow-xl shadow-gray-400"
-                        style={{
-                            width: `${zoom - 10}%`,
-                            height: 'auto'
-                        }}
-                        key={index}
-                    >
-                        <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
+            {state.loadingS3File ? (
+                <FullScreenLoader className="relative bottom-10" text="Loading Document..." />
+            ) : state.noS3File ? (
+                <div className="flex h-full w-full items-center justify-center ">
+                    <div className="flex items-center gap-2 flex-col">
+                        {uploadingFile ? (
+                            <FullScreenLoader text="Uploading Document..." />
+                        ) : (
+                            <input className="relative bottom-10 cursor-pointer border border-gray-200 bg-gray-50 p-2" type="file" onChange={handleUpload} />
+                        )}
                     </div>
-                ))}
-                <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
-            </div>
+                </div>
+            ) : (
+                <div
+                    ref={containerRef}
+                    className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-50 pt-8 pb-50 shadow ${zoom > 100 ? 'items-start' : 'items-center'}`}
+                >
+                    {images.map((imgSrc, index) => (
+                        <div
+                            className="w-fit bg-green-500 shadow-xl shadow-gray-400"
+                            style={{
+                                width: `${zoom - 10}%`,
+                                height: 'auto'
+                            }}
+                            key={index}
+                        >
+                            <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
+                        </div>
+                    ))}
+                    <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+                </div>
+            )}
         </div>
     );
 };

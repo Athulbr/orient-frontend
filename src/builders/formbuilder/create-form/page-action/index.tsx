@@ -15,6 +15,7 @@ import { RenderForm } from '../../render-form/RenderForm';
 import { UseFormbuilder } from '../../use-formbuilder';
 import { ButtonBox } from '../../../../components/ButtonBox';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import { config } from '../../../../config/default';
 
 interface Message {
     id: number;
@@ -73,7 +74,7 @@ const PageActionComponent: React.FC = () => {
 
     const safeParseJson = (data: string): FieldIF[] => {
         try {
-            return JSON.parse(data.replace(/```(json)?/g, '').trim()) || [];
+            return JSON.parse(data.replace(/```(json)?/g, '')?.trim()) || [];
         } catch (error) {
             console.error('JSON Parsing Error:', error);
             return [];
@@ -97,7 +98,7 @@ const PageActionComponent: React.FC = () => {
         addMessage(prompt, true);
 
         try {
-            const res = await httpAiRequest('POST', `${import.meta.env.VITE_NODE_URL}/${regenerate ? 'regenerate' : 'generate'}`, {
+            const res = await httpAiRequest('POST', `${config.nodeApiUrl}/${regenerate ? 'regenerate' : 'generate'}`, {
                 prompt,
                 fields
             });
@@ -136,13 +137,13 @@ const PageActionComponent: React.FC = () => {
 
     const handleSave = () => {
         setShowFieldInputError(true);
-        if (fields.some(item => item.key.trim() === '' || item.label.trim() === '')) return;
+        if (fields.some(item => item.key?.trim() === '' || item.label?.trim() === '')) return;
         setShowNameDialog(true);
     };
 
     const handlePreview = () => {
         setShowFieldInputError(true);
-        if (fields.some(item => item.key.trim() === '' || item.label.trim() === '')) return;
+        if (fields.some(item => item.key?.trim() === '' || item.label?.trim() === '')) return;
         setShowPreview(true);
     };
 

@@ -1,11 +1,12 @@
 import { Search, CircleChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useNavigate } from 'react-router-dom';
 import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput';
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
+import { config } from '../../../../../config/default';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [selectedTemplateName, setSelectedTemplateName] = useState('');
@@ -14,6 +15,14 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState('');
     const [showFileUploadUI, setShowFileUploadUI] = useState(false);
+
+    useEffect(() => {
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            setShowFileUploadUI(true);
+            setSelectedTemplateName('');
+        }
+    }, [state.showCreateTemplateDialog]);
 
     const handleSubmit = async () => {
         if (showFileUploadUI) return;
@@ -28,7 +37,13 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             templateId: selectedTemplate._id
         };
         setState({ ...state, loadingCreateTemplate: true });
-        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/template/create`, requestBody);
+        const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+        const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+            pageSize: 1000,
+            custom: true,
+            filters: { deleted: false }
+        });
+        window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
         if (state.isDashboard) {
             setState({ ...state, loadingCreateTemplate: false });
             navigate('/docsnap/template/list');
@@ -127,16 +142,16 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
 const FileUploadUIComponent = ({ closeDialog }: { closeDialog: () => void }) => {
     const navigate = useNavigate();
     const [uploading, setUploading] = useState(false);
-    const onFileDrop = async (files: FileList) => {
+    const onFileDrop = async (files: File[]) => {
         setUploading(true);
-        const s3Response = await httpUploadRequest(`${import.meta.env.VITE_NODE_URL}/idp/document/upload`, files[0] as File);
+        const s3Response = await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, files[0] as File);
         navigate(`/docsnap/template/create/${s3Response.data?.fileName}`);
         closeDialog();
         setUploading(false);
     };
     return (
         <div className="flex h-[50vh] w-full flex-col items-center justify-center">
-            {uploading ? <FullScreenLoader text="Uploading Document" /> : <DragAndDropFileInput onFileDrop={onFileDrop} />}
+            {uploading ? <FullScreenLoader text="Uploading Document" /> : <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />}
         </div>
     );
 };

@@ -6,6 +6,7 @@ import { loginRequest } from '../sso/msal-config';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useLoginPageState } from '../hooks/LoginPageStateProvider';
+import { config } from '../../../../config/default';
 const ProfileContent: React.FC<any> = ({ data }) => {
     const { instance, accounts } = useMsal();
     const isAuthenticated = useIsAuthenticated();
@@ -26,12 +27,13 @@ const ProfileContent: React.FC<any> = ({ data }) => {
                         email: response.mail,
                         sso: true
                     };
-
                     try {
-                        const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/signup`, ssoRegistraion);
+                        const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/signup`, ssoRegistraion);
                         if (res.data?.accessToken) {
                             window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                             window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
+                            window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                            // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
 
                             toast.success('Logged in successfully');
                             setTimeout(() => {

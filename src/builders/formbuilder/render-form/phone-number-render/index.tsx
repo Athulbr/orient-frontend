@@ -44,12 +44,12 @@ export const PhoneNumberRender: React.FC<InputFieldRenderPropsIF> = ({ index, fi
 };
 
 export const validatePhoneNumber = (value: string, config: FieldConfigIF): string => {
-    if (config.mandatory && !value.trim()) return 'This field is required.';
+    if (config.mandatory && !value?.trim()) return 'This field is required.';
 
     if (config.minimumLength && value.length < config.minimumLength) {
         return `Phone number must be at least ${config.minimumLength} digits.`;
     }
-    if (config.maximumLength && value.length > config.maximumLength) {
+    if (config.maximumLength && value?.length > config.maximumLength) {
         return `Phone number must not exceed ${config.maximumLength} digits.`;
     }
     return '';

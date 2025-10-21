@@ -53,6 +53,46 @@ export const ResizableContainer: React.FC<ResizableContainerProps> = ({
 
     return (
         <div ref={containerRef} className={`flex h-full w-full ${className}`}>
+            <div style={{ width: `${leftWidthPercent}%` }} className="h-full !hidden md:!block">
+                {left}
+            </div>
+            <div
+                onMouseDown={e => {
+                    e.preventDefault();
+                    isDragging.current = true;
+                }}
+                className={`relative w-0.5 cursor-col-resize bg-gray-200 transition-colors hover:bg-blue-500`}
+                style={{
+                    userSelect: 'none',
+                    flexShrink: 0
+                }}
+                draggable={false}
+            >
+                <div
+                    className={`absolute top-1/2 left-1/2 h-8 w-3 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-gray-400 transition-colors hover:bg-blue-500`}
+                >
+                    <div className="flex h-full w-full items-center justify-center">
+                        <div className="h-1 w-0.5 rounded-full bg-gray-300"></div>
+                        <div className="ml-0.5 h-1 w-0.5 rounded-full bg-gray-300"></div>
+                    </div>
+                </div>
+            </div>
+            <div
+                ref={rightRef}
+                style={{
+                    // @ts-ignore
+                    '--right-width': `${100 - leftWidthPercent}%`
+                }}
+                className="h-full overflow-y-auto w-full md:w-[var(--right-width)]"
+            >
+                {right}
+            </div>
+        </div>
+    );
+};
+
+{
+    /* <div ref={containerRef} className={`flex h-full w-full ${className}`}>
             <div style={{ width: `${leftWidthPercent}%` }} className="h-full">
                 {left}
             </div>
@@ -80,6 +120,5 @@ export const ResizableContainer: React.FC<ResizableContainerProps> = ({
             <div ref={rightRef} style={{ width: `${100 - leftWidthPercent}%` }} className="h-full overflow-y-auto">
                 {right}
             </div>
-        </div>
-    );
-};
+        </div> */
+}

@@ -92,7 +92,7 @@ export const Chatbot: React.FC<ChatbotPropsIF> = ({ hideChatbot, messages, handl
     }, [messages, chatLoading, showScrollButton]);
 
     const handleSend = () => {
-        if (!input.trim()) return;
+        if (!input?.trim()) return;
         handleSendPrompt(input);
         setInput('');
     };
@@ -158,7 +158,7 @@ export const Chatbot: React.FC<ChatbotPropsIF> = ({ hideChatbot, messages, handl
                         placeholder="Type your message..."
                         className={styles.input}
                     />
-                    <button onClick={handleSend} className={styles.sendButton} disabled={!input.trim()}>
+                    <button onClick={handleSend} className={styles.sendButton} disabled={!input?.trim()}>
                         <Send size={20} />
                     </button>
                 </div>

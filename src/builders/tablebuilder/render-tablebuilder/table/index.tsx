@@ -11,12 +11,12 @@ interface TableIF {
     refresh?: number;
 }
 
-const Table: React.FC<TableIF> = ({ refresh = 1 }) => {
+const Table: React.FC<TableIF> = ({ refresh = 0 }) => {
     const { injectedData, settings, setState, state } = useTablebuilderState();
     const { getDataFromApi } = useFetchDataFromApi();
 
     useEffect(() => {
-        if (settings.api.refresh === 1) return;
+        if (settings.api.refresh === 0) return;
         setState(prev => ({
             ...prev,
             activeFilters: [],
@@ -47,8 +47,10 @@ const Table: React.FC<TableIF> = ({ refresh = 1 }) => {
                 </table>
                 {state.loading && (state.data.length === 0 || !injectedData.disableLoader) ? (
                     <FullScreenLoader />
+                ) : state.failedToFetch ? (
+                    <div className="flex h-full items-center justify-center text-sm text-gray-400 relative bottom-15">😖&nbsp;Failed to fetch the data</div>
                 ) : !state.loading && state.data.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-sm text-gray-400">🤗 &nbsp;No Data Found</div>
+                    <div className="flex h-full items-center justify-center text-sm text-gray-400 relative bottom-15">🤗 &nbsp;No Data Found</div>
                 ) : null}
             </div>
             <TableFooter />

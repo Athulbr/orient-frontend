@@ -12,5 +12,6 @@ export const tablebuilderInitialState: TablebuilderStateIF = {
     endDate: null,
     searchValue: '',
     sorts: [],
-    skipActiveFilters: false
+    skipActiveFilters: false,
+    failedToFetch: false
 };

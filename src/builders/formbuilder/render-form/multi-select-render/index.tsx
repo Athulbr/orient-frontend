@@ -4,6 +4,7 @@ import { InputWrapper } from '../input-wrapper';
 import CustomMultiSelect from './MultiSelectInput';
 import { Loader } from 'lucide-react';
 import { httpRequest } from '../../utils/functions/httpRequest';
+import { config as defaultConfig } from '../../../../config/default';
 
 export const MultiSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fields, setFields, inputWrapperClassName }) => {
     const field = fields[index];
@@ -14,7 +15,7 @@ export const MultiSelectRender: React.FC<InputFieldRenderPropsIF> = ({ index, fi
     useEffect(() => {
         const callApi = async () => {
             setLoading(true);
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/${config.apiEndpoint}`, {});
+            const res = await httpRequest('POST', `${defaultConfig.nodeApiUrl}/${config.apiEndpoint}`, {});
             setFields(prev => {
                 const updatedFields = [...prev];
                 updatedFields[index].config.options = res.data;

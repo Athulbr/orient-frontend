@@ -1,10 +1,16 @@
+import { config } from '../config/default';
+import clientLogger from './clientLog';
+
 const httpRequest = async <T = any>(method: string, url: string, data: Record<string, any> = {}, token?: string): Promise<T> => {
     const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
+    const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+    const user: any = window?.sessionStorage?.getItem('user') || '';
     const normalizedMethod = method.toUpperCase();
 
     const headers: HeadersInit = {
         Accept: 'application/json',
-        'Content-Type': 'application/json;charset=UTF-8'
+        'Content-Type': 'application/json;charset=UTF-8',
+        tenantid: selectedTenant ? selectedTenant : user?.tenant?.name
     };
 
     if (sessionStorageAccessToken) {
@@ -34,21 +40,57 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
                 signal: controller.signal
             });
 
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                const contentType = response.headers.get('content-type');
-                const isJson = contentType?.includes('application/json');
-
-                const errorData = isJson ? await response.json().catch(() => ({})) : {};
-                throw new Error(errorData.message || `Request failed with status ${response.status}`);
+            // Parse the body as JSON
+            const result = await response.json();
+            if (response?.status === 401) {
+                clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: result.message, data: { url: response?.url } });
+                window.sessionStorage.clear();
+                window?.location?.replace('/');
             }
 
-            return (await response.json()) as T;
+            if (response?.status === 409) {
+                clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: result.message, data: { url: response?.url } });
+                throw new Error(result.message);
+            }
+
+            if (response?.status === 403) {
+                clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: result.message, data: { url: response?.url } });
+                throw new Error(result.message);
+            }
+
+            if (response?.status === 404) {
+                clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
+                throw new Error(`Connection error, try again later`);
+            }
+
+            if (response?.status === 504) {
+                clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
+                throw new Error(`${response?.statusText}`);
+            }
+
+            if (response?.status === 500) {
+                clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
+                const errorMessage = response?.statusText === '' ? 'Connection issue, try again later' : response?.statusText;
+                throw new Error(errorMessage);
+            }
+
+            clearTimeout(timeoutId);
+
+            if (!response?.ok) {
+                const contentType = response?.headers.get('content-type');
+                const isJson = contentType?.includes('application/json');
+
+                const errorData = isJson ? await response?.json().catch(() => ({})) : {};
+                throw new Error(errorData.message || `Request failed with status ${response?.status}`);
+            }
+
+            return (await result) as T;
         } finally {
             clearTimeout(timeoutId);
         }
     } catch (error) {
+        console.log('Error in httpRequest:', error);
+
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw new Error('Request timeout');
         }

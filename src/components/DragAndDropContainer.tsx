@@ -5,9 +5,10 @@ interface DragAndDropContainerProps<T> {
     onDragEnd: (items: T[]) => void;
     children: (item: T, index: number) => ReactNode;
     className?: string;
+    disableDrag?: boolean;
 }
 
-export const DragAndDropContainer = <T,>({ items, onDragEnd, children, className = '' }: DragAndDropContainerProps<T>) => {
+export const DragAndDropContainer = <T,>({ items, onDragEnd, children, className = '', disableDrag = false }: DragAndDropContainerProps<T>) => {
     const [draggedItem, setDraggedItem] = useState<number | null>(null);
     const [dragOverItem, setDragOverItem] = useState<number | null>(null);
     const dragItem = useRef<number | null>(null);
@@ -44,7 +45,7 @@ export const DragAndDropContainer = <T,>({ items, onDragEnd, children, className
             {items.map((item, index) => (
                 <div
                     key={index}
-                    draggable
+                    draggable={!disableDrag}
                     onDragStart={() => handleDragStart(index)}
                     onDragEnter={() => handleDragEnter(index)}
                     onDragOver={e => e.preventDefault()}

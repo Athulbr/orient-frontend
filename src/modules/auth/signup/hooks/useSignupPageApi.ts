@@ -5,10 +5,15 @@ import httpRequest from '../../../../global-utils/httpRequest';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../../login/sso/msal-config';
+import { config } from '../../../../config/default';
 
 export const useSignupPageApi = () => {
     const { state, setState } = useSignupPageState();
     const toast = useToastStore();
+    const { instance, accounts } = useMsal();
+
     const navigate = useNavigate();
 
     // ============================= UseEffect ==================================
@@ -61,7 +66,7 @@ export const useSignupPageApi = () => {
                 password: state.password,
                 confirmPassword: state.confirmPassword
             };
-            const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/user/signup`, requestBody);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/user/signup`, requestBody);
             if (res?.success) setState(prev => ({ ...prev, signUpSuccess: true }));
         } catch (error: any) {
             console.error('error:===========', error.message);
@@ -72,43 +77,57 @@ export const useSignupPageApi = () => {
         }
     };
 
-    // ============================= signup With Google ==================================
+    // ============================= login With Google ==================================
     const signupWithGoogle = useGoogleLogin({
         onSuccess: async (response: any) => {
             try {
                 setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-                const user = await httpRequest('GET', 'https://www.googleapis.com/oauth2/v3/userinfo', {}, response.access_token);
+                const user = await httpRequest('POST', `${config.nodeApiUrl}/auth/google/userinfo`, { access_token: response?.access_token });
                 const ssoRegistration = {
                     firstName: user.given_name,
                     lastName: user.family_name,
-                    email: user.email
+                    email: user.email,
+                    sso: true
                 };
-                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/auth/signup`, ssoRegistration);
+                const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/signup`, ssoRegistration);
                 if (res.data?.accessToken) {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-
+                    window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                    // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+                    const resp = await Promise.all([
+                        httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                        httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 })
+                    ]);
+                    window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+                    window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                     toast.success('Logged in successfully');
-                    setTimeout(() => {
-                        window?.location?.replace('/');
-                    }, 500);
+                    window?.location?.replace('/');
                 } else {
                     setState(prev => ({ ...prev, authError: 'Authentication failed. Please try again.' }));
                 }
             } catch (error: any) {
-                console.error('Google signup error:', error);
-                setState(prev => ({ ...prev, authError: 'Failed to signup with Google. Please try again.' }));
+                console.error('Google login error:', error);
+                setState(prev => ({ ...prev, authError: 'Failed to login with Google. Please try again.' }));
             } finally {
                 setState(prev => ({ ...prev, oAuthLoading: false }));
             }
         },
         onError: error => {
-            console.error('Google Signup Failed:', error);
+            console.error('Google Login Failed:', error);
             setState(prev => ({ ...prev, oAuthLoading: false, authError: 'Failed to connect to Google. Please try again.' }));
         }
     });
 
+    // ============================= login With MSAL ==================================
+    const loginWithMSAL = async () => {
+        console.info('Login with Microsoft initiated');
+        instance.loginRedirect(loginRequest).catch(e => {
+            console.error('Sign In issue---->', e);
+        });
+    };
+
     // ============================= Return ==================================
-    return { signupWithEmailAndPassword, signupWithGoogle };
+    return { signupWithEmailAndPassword, signupWithGoogle, loginWithMSAL };
 };

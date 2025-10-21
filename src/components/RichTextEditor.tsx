@@ -8,7 +8,7 @@ interface RichTextEditorProps {
     height?: string;
 }
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder = 'Start typing...', height = 400 }) => {
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder = 'Start typing...', height = '400px' }) => {
     const editor = useRef(null);
 
     const config = useMemo(
@@ -23,13 +23,19 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
             askBeforePasteHTML: false,
             askBeforePasteFromWord: false,
             defaultActionOnPaste: 'insert_clear_html',
+
+            // 👇 This is important!
+            usePlugins: ['lineHeight', 'font', 'fontsize', 'paragraph', 'justify'],
+
             buttons: [
                 'bold',
                 'italic',
                 'underline',
                 '|',
+                'font',
                 'fontsize',
                 'brush',
+                'lineHeight', // ✅ show the line-height dropdown
                 '|',
                 'align',
                 'ul',
@@ -44,7 +50,29 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
                 'print',
                 'fullsize'
             ],
-            removeButtons: ['source', 'about']
+
+            removeButtons: ['source', 'about'],
+
+            // ✅ Add custom line height values
+            lineHeight: ['1', '1.15', '1.5', '2', '2.5', '3'],
+            extraButtons: [
+                {
+                    name: 'Insert Header',
+                    icon: 'header',
+                    exec: (editor: any) => {
+                        editor.selection.insertHTML('<h2 style="font-size:24px; font-weight:bold; text-align:center;">COMPANY NAME</h2>');
+                    }
+                },
+                {
+                    name: 'Insert Footer',
+                    icon: 'footer',
+                    exec: (editor: any) => {
+                        editor.selection.insertHTML(
+                            '<footer style="text-align:center; font-size:14px; color:#666; margin-top:20px;">© Company name 2025</footer>'
+                        );
+                    }
+                }
+            ]
         }),
         [placeholder, height]
     );
@@ -57,6 +85,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
             config={config}
             onBlur={newContent => onChange(newContent)}
             onChange={newContent => onChange(newContent)}
+            className="w-full h-full"
         />
     );
 };

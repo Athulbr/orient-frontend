@@ -10,10 +10,11 @@ import { RecordStatusCustomUI } from '../../docsnap/record/list-record/component
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import { Polink } from '../../docsnap/record/list-record/ListRecordComponent';
 import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
+import { cn } from '../../../global-utils/twMerge';
 
 const RecentFilesCardComponent: React.FC = () => {
     const { state, setState } = useDashboardState();
-    const { checkPermission } = usePermissionStore();
+    const { checkPermission, user } = usePermissionStore();
     const { refreshRecord } = useDocsnapStore();
 
     const navigate = useNavigate();
@@ -23,13 +24,24 @@ const RecentFilesCardComponent: React.FC = () => {
         getRecordsApi();
     }, [refreshRecord]);
 
+    const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
+
+    const rowClickHandler = (row: any) => {
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            navigate(`/document-creation/create/${row._id}`);
+        } else {
+            navigate(`/docsnap/record/view/${row._id}`);
+        }
+    };
+
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
-                <div className="text-gray-800">Recent Files</div>
+                <div className="text-gray-800">Recent {state.module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
-                        onClick={() => navigate('/docsnap/record/list')}
+                        onClick={() => navigate(`/${state.module}/record/list`)}
                         className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
                     >
                         View All <ChevronRight size={14} className="text-sky-600" />
@@ -38,7 +50,7 @@ const RecentFilesCardComponent: React.FC = () => {
             </div>
             {!checkPermission('read:record') ? (
                 <div className="flex h-full w-full flex-col items-center justify-center text-sm text-gray-400">
-                    You do not have permission to view recent files
+                    You do not have permission to view recent {state.module === 'docsnap' ? 'files' : 'entries'}
                 </div>
             ) : state.loadingRecords ? (
                 <SkeletonLoader />
@@ -48,27 +60,47 @@ const RecentFilesCardComponent: React.FC = () => {
                         <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
                             <tr>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
-                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Type</th>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
+                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Template</th>
+                                {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Assigned To</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
-                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">PO Link</th>
+                                {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">PO Link</th>}
+                                {/* {!showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Date</th>} */}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 bg-white">
                             {state.records.map((row, idx) => (
-                                <tr key={idx} className="cursor-pointer" onClick={() => navigate(`/docsnap/record/view/${row._id}`)}>
+                                <tr key={idx} className="cursor-pointer" onClick={() => rowClickHandler(row)}>
                                     <td title={row.name} className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {row.name}
                                     </td>
-                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.documentType}</td>
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
+                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.templateId?.name}</td>
+                                    {showPoLink && (
+                                        <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">{row.assignedTo ? row.assignedTo : 'N/A'}</td>
+                                    )}
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
                                         <RecordStatusCustomUI data={row} />
                                     </td>
-                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
-                                        <Polink data={row} />
-                                    </td>
+                                    {showPoLink && (
+                                        <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">
+                                            <Polink data={row} />
+                                        </td>
+                                    )}
+                                    {!showPoLink && (
+                                        // <td
+                                        //     className={cn(
+                                        //         'max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900',
+                                        //         formatDate(row.documentDate, true) === '-' ? 'pl-15' : ''
+                                        //     )}
+                                        // >
+                                        //     {/* {formatDate(row.updatedAt)} */}
+                                        //     {formatDate(row.documentDate, true)}
+                                        // </td>
+                                        <></>
+                                    )}
+
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
                                     </td>

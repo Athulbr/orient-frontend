@@ -53,6 +53,15 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
     // Calculate how many template cards to show (reserve 1 slot for "View All")
     const templatesToShow = Math.max(0, cardsPerRow - 1);
+
+    const onClickUploadButton = (template: any) => {
+        const recentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
+        const filteredTemplates = recentlyUsedTemplates.filter((item: any) => item !== template._id);
+        const finalTemplates = [template._id, ...filteredTemplates];
+        localStorage.setItem('recentlyUsedTemplates', JSON.stringify(finalTemplates));
+        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
+        getTemplatesApi();
+    };
     const visibleTemplates = state.templates.slice(0, templatesToShow);
 
     return (
@@ -74,7 +83,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
                             key={idx}
                             template={template}
                             flexBasis={`${100 / cardsPerRow}%`}
-                            onClickUpload={() => setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template })}
+                            onClickUpload={() => onClickUploadButton(template)}
                             refreshPage={() => getTemplatesApi()}
                         />
                     ))}

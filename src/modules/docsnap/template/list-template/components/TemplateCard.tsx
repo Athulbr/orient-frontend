@@ -1,4 +1,4 @@
-import { Edit, MoreVertical, Upload } from 'lucide-react';
+import { Edit, MoreVertical, Plus, Upload } from 'lucide-react';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { Button } from '../../../../../components/Button';
 import httpRequest from '../../../../../global-utils/httpRequest';
@@ -7,6 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { AlertDialog } from '../../../../../components/alert/AlertDialog';
 import { useAlertStore } from '../../../../../components/alert/AlertStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { config } from '../../../../../config/default';
+import { useState } from 'react';
+import { UseFormbuilder } from '../../../../../builders/formbuilder/use-formbuilder';
 interface PropsIF {
     template?: any;
     onClickUpload?: () => void;
@@ -20,11 +23,14 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
     const { checkPermission } = usePermissionStore();
+    const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+    const module = sessionStorage.getItem('module');
 
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
             try {
-                const res = await httpRequest('DELETE', `${import.meta.env.VITE_NODE_URL}/idp/template/delete/${id}`);
+                const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
                 refreshPage && refreshPage();
                 toast.success('Template deleted successfully');
             } catch (error) {
@@ -78,6 +84,31 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         );
     }
 
+    const handleCreateRecord = async (data: any) => {
+        console.log('template:===========', template);
+        const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
+        const values: any = {};
+        res.data?.fields?.forEach((field: any) => {
+            field?.subFields?.forEach((subField: any) => {
+                values[subField.jsonKey] = '_______________';
+            });
+        });
+
+        const createReqObject = {
+            status: 'extracted',
+            extractedData: null,
+            pdfFileName: '',
+            name: data.name,
+            templateId: template._id,
+            description: data.description
+        };
+
+        await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
+        toast.success('Record created successfully');
+        setShowCreateDialog(false);
+        navigate('/docsnap/record/list');
+    };
+
     if (!template) return null;
     const { total, submitted, extracted } = template.count;
 
@@ -124,10 +155,16 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                 >
                     Edit Fields
                 </Button>
-                <Button permission="extract:document" startIcon={<Upload size={14} />} onClick={onClickUpload} small>
-                    Upload
+                <Button
+                    permission="extract:document"
+                    startIcon={module === 'documentCreation' ? <Plus size={14} /> : <Upload size={14} />}
+                    onClick={module === 'documentCreation' ? () => setShowCreateDialog(true) : onClickUpload}
+                    small
+                >
+                    {module === 'documentCreation' ? 'Create' : 'Upload'}
                 </Button>
             </div>
+            {showCreateDialog && <UseFormbuilder name="Create Record Form" closeDialog={() => setShowCreateDialog(false)} onSubmit={handleCreateRecord} />}
         </div>
     );
 };

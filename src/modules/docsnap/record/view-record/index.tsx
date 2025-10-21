@@ -1,14 +1,16 @@
-import { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useState } from 'react';
 import { ViewRecordStateProvider } from './hooks/viewRecordContext';
 import { TabViewContainer } from './components/TabViewContainer';
-import DocumentBotComponent from './DocumentBotComponent';
 import ExtractedDataComponent from './ExtractedDataComponent';
 import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
 import { PreviewComponent } from './PreviewComponent';
-import { InvoiceGenerator } from './components/InvoiceGenerator';
 import { useBackButtonOverride } from '../../../../hooks/useBackButtonOverride';
+import { DataEntryImagesList } from './render-field-components/DataEntryImagesList';
+import RegenerateFieldDialog from './components/RegenerateFieldDialog';
+import ContentCreationComponent from './components/ContentCreationComponent';
+import { InvoiceGenerator } from './components/InvoiceGenerator';
+import ChatWithDocumentComponent from './ChatWithDocumentComponent';
 
 interface WirePoints {
     x1: number;
@@ -69,6 +71,13 @@ export interface ViewRecordStateIF {
     invoiceContent: string;
     generatingInvoice: boolean;
     requestNewFieldDialog: boolean;
+    showDataEntryImages: boolean;
+    dataEntryWebImages: string[];
+    selectedDataEntryImages: string[];
+    showRegenerateFieldDialog: any | null;
+    blogContent: string;
+    templateSettings: any;
+    templateFields: any;
 }
 const initialState = {
     showCreateDialog: false,
@@ -96,7 +105,14 @@ const initialState = {
     reExtracting: false,
     invoiceContent: '',
     generatingInvoice: false,
-    requestNewFieldDialog: false
+    requestNewFieldDialog: false,
+    showDataEntryImages: false,
+    dataEntryWebImages: [],
+    selectedDataEntryImages: [],
+    showRegenerateFieldDialog: null,
+    blogContent: '',
+    templateSettings: null,
+    templateFields: null
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -119,11 +135,15 @@ const ViewRecordPage: React.FC = () => {
                     }
                     right={
                         <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
-                            <TabViewContainer>
-                                <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />
-                                <DocumentBotComponent />
-                                <InvoiceGenerator />
-                            </TabViewContainer>
+                            <TabViewContainer
+                                tabContents={{
+                                    extractedData: <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />,
+                                    chatWithDocument: <ChatWithDocumentComponent />,
+                                    invoiceGenerator: <InvoiceGenerator />,
+                                    contentCreation: <ContentCreationComponent />
+                                }}
+                            />
+                            {/* </TabViewContainer> */}
                         </div>
                     }
                     initialLeftWidthPercent={75}
@@ -136,7 +156,13 @@ const ViewRecordPage: React.FC = () => {
                         <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, containerRef }} updateWire={() => {}} />
                     </div>
                 )}
+                {state.showDataEntryImages && (
+                    <div className="absolute bottom-0 left-0 z-1 flex h-[40vh] w-full flex-col overflow-hidden border-t border-blue-200 bg-gray-50 p-2">
+                        <DataEntryImagesList />
+                    </div>
+                )}
             </div>
+            {Boolean(state.showRegenerateFieldDialog) && <RegenerateFieldDialog />}
         </ViewRecordStateProvider>
     );
 };

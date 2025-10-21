@@ -40,9 +40,9 @@ const LoginPage: FC = () => {
                 <WelComeText />
                 <AuthErrorComponent />
                 <LoginInputs />
-                {/* <Divider /> */}
-                {/* <OAuthButtons /> */}
-                {/* <SignUpRedirectText /> */}
+                <Divider />
+                <OAuthButtons />
+                <SignUpRedirectText />
             </div>
         </LoginPageStateProvider>
     );

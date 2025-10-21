@@ -7,8 +7,8 @@ const SkeletonLoader: React.FC = () => {
                 <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
                     <tr>
                         <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
-                        <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document Type</th>
                         <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
+                        <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Template</th>
                         <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
                         <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Completed On</th>
                     </tr>

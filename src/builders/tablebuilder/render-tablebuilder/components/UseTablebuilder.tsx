@@ -3,6 +3,7 @@ import { RenderTablebuilder } from '..';
 import httpRequest from '../utils/HttpRequest';
 import { TablebuilderSettingsIF } from '../interface';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
+import { config } from '../../../../config/default';
 
 interface UseTablebuilderPropsIF {
     fluidHeight?: boolean;
@@ -10,12 +11,14 @@ interface UseTablebuilderPropsIF {
     customUI?: Record<string, ({ data }: { data: any }) => JSX.Element>;
     externalFilters?: Record<string, any>;
     customFunctions?: Record<string, (row: any, data: any) => void>;
-    actionButtons?: { label: string; action: () => void }[];
+    actionButtons?: { label: string; action: (selectedIds: string[]) => void }[];
     refresh?: number;
     disableLoader?: boolean;
     updatedQuery?: (query: any) => any;
     deletePermission?: string;
     updatePermission?: string;
+    hiddenColumns?: string[];
+    onRowSelect?: (selectedRows: any) => void;
 }
 
 export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
@@ -29,7 +32,9 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
     disableLoader,
     updatedQuery,
     deletePermission,
-    updatePermission
+    updatePermission,
+    hiddenColumns,
+    onRowSelect
 }) => {
     const [settings, setSettings] = useState<TablebuilderSettingsIF | null>(null);
     useEffect(() => {
@@ -45,7 +50,7 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
         }
         const getTableSettings = async () => {
             try {
-                const res: any = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/builder/tablebuilder/name`, { name });
+                const res: any = await httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/name`, { name });
                 setSettings(res?.data?.settings);
             } catch (error: any) {
                 console.error('error.message:===========', error.message);
@@ -75,6 +80,8 @@ export const UseTablebuilder: React.FC<UseTablebuilderPropsIF> = ({
                 updatedQuery={updatedQuery}
                 deletePermission={deletePermission}
                 updatePermission={updatePermission}
+                hiddenColumns={hiddenColumns}
+                onRowSelect={onRowSelect}
             />
         </div>
     );

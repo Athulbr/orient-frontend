@@ -3,6 +3,8 @@ import { Button } from '../../../../../components/Button';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { X } from 'lucide-react';
 import httpRequest from '../../../../../global-utils/httpRequest';
+import { DatePicker } from '../../../../../builders/tablebuilder/render-tablebuilder/components/DatePicker';
+import { config } from '../../../../../config/default';
 
 interface SubDealer {
     name: string;
@@ -18,17 +20,19 @@ interface Dealer {
 interface DealerListComponentProps {
     isOpen: boolean;
     closeDialog: () => void;
-    onSubmit: (dealers: Dealer[]) => void;
+    onSubmit: (dealers: Dealer[], startDate: null | Date, endDate: null | Date) => void;
 }
 
 const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListComponentProps) => {
     const [dealersData, setDealersData] = useState<Dealer[]>([]);
     const toast = useToastStore();
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
 
     useEffect(() => {
         const getDealerList = async () => {
             try {
-                const res = await httpRequest('POST', `${import.meta.env.VITE_NODE_URL}/idp/history/list/dealers`);
+                const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/list/dealers`);
                 setDealersData(res.data?.dealers);
             } catch (error) {
                 toast.error('Failed to fetch dealer list');
@@ -86,7 +90,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
             toast.error('Please select at least one dealer');
             return;
         }
-        onSubmit(selectedDealers);
+        onSubmit(selectedDealers, startDate, endDate);
     };
 
     const selectedDealers = dealersData
@@ -96,17 +100,61 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
         }))
         .filter(dealer => dealer.subDealers.length > 0);
 
+    // Check if all subdealers are selected
+    const allSubdealers = dealersData.flatMap(dealer => dealer.subDealers);
+    const allSelected = allSubdealers.length > 0 && allSubdealers.every(sd => sd.selected);
+    const someSelected = allSubdealers.some(sd => sd.selected) && !allSelected;
+
+    const handleSelectAll = (isSelected: boolean) => {
+        setDealersData(prevData =>
+            prevData.map(dealer => ({
+                ...dealer,
+                subDealers: dealer.subDealers.map(subDealer => ({
+                    ...subDealer,
+                    selected: isSelected
+                }))
+            }))
+        );
+    };
+
     return (
         <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="absolute inset-0 bg-gray-600 opacity-50" onClick={closeDialog}></div>
             <div className="fixed right-0 top-0 h-screen w-1/3 min-w-120  bg-white shadow-lg  overflow-y-auto">
-                <div className="flex sticky bg-white top-0 z-10 justify-between items-center p-6">
-                    <h1 className="text-3xl font-bold">Dealer Selection</h1>
-                    <button onClick={closeDialog} className="text-gray-500 hover:text-gray-700 cursor-pointer p-2 hover:bg-gray-100 rounded-full ">
-                        <X className="text-gray-500 hover:text-gray-700" onClick={closeDialog} />
-                    </button>
+                <div className="sticky top-0 z-10 bg-white">
+                    <div className="flex bg-white top-0 z-10 justify-between items-center p-6">
+                        <h1 className="text-xl font-bold">Dealer Selection</h1>
+                        <button onClick={closeDialog} className="text-gray-500 hover:text-gray-700 cursor-pointer p-2 hover:bg-gray-100 rounded-full ">
+                            <X className="text-gray-500 hover:text-gray-700" onClick={closeDialog} />
+                        </button>
+                    </div>
+                    <div className="px-8 pb-4 font-semibold flex flex-col">
+                        <div className="pb-4">
+                            <DatePicker
+                                from={startDate}
+                                to={endDate}
+                                onSubmit={(from, to) => {
+                                    setStartDate(from), setEndDate(to);
+                                }}
+                            />
+                        </div>
+                        <div className="flex items-center pl-2">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                checked={allSelected}
+                                ref={input => {
+                                    if (input) input.indeterminate = someSelected;
+                                }}
+                                onChange={e => handleSelectAll(e.target.checked)}
+                                id="selectAll"
+                            />
+                            <label htmlFor="selectAll" className="ml-2 cursor-pointer">
+                                Select All
+                            </label>
+                        </div>
+                    </div>
                 </div>
-
                 <ul className="grid gap-4 p-4 pt-0">
                     {dealersData.map((dealer, index) => (
                         <li key={index} className="py-4 px-6 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -118,10 +166,10 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                                         e.stopPropagation();
                                         handleDealerChange(dealer.name, e.target.checked);
                                     }}
-                                    className="form-checkbox h-5 w-5 text-blue-600 rounded cursor-pointer"
+                                    className="form-checkbox h-4 w-4 text-blue-600 rounded cursor-pointer"
                                 />
                                 <div className="flex-grow">
-                                    <h3 className="text-xl font-semibold">{dealer.name}</h3>
+                                    <h3 className="text-md ">{dealer.name}</h3>
                                 </div>
                                 <div>
                                     <svg
@@ -157,7 +205,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                                                 className="form-checkbox h-4 w-4 text-green-600 rounded"
                                             />
                                             <div>
-                                                <p className="font-medium">{subDealer.name}</p>
+                                                <p className="text-sm">{subDealer.name}</p>
                                                 <p className="text-xs text-gray-500">{subDealer.location}</p>
                                             </div>
                                         </li>
@@ -169,15 +217,18 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                 </ul>
 
                 <div className="mt-8 py-6 px-6 bg-gray-100 rounded-lg shadow-sm">
-                    <h2 className="text-2xl font-semibold mb-4">Selected Dealers and Sub Dealers</h2>
+                    <h2 className="text-lg font-semibold mb-4">Selected Dealers and Sub Dealers</h2>
+                    <div className="px-4 py-2 font-semibold">Dealer Name</div>
+                    <div className="px-4 py-2 font-semibold">Location</div>
+
                     {selectedDealers.length > 0 ? (
                         <ul className="space-y-4">
                             {selectedDealers.map((dealer, index) => (
                                 <li key={index} className="p-4 bg-white rounded-lg shadow-sm">
-                                    <h3 className="text-xl font-semibold mb-2">{dealer.name}</h3>
+                                    <h3 className="text-md font-semibold mb-2">{dealer.name}</h3>
                                     <ul className="space-y-2 pl-4 border-l-2 border-gray-200">
                                         {dealer.subDealers.map((subDealer, subIndex) => (
-                                            <li key={subIndex} className="text-gray-700">
+                                            <li key={subIndex} className="text-sm text-gray-700">
                                                 - {subDealer.name} ({subDealer.location})
                                             </li>
                                         ))}

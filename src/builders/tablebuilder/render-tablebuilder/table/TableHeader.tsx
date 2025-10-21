@@ -8,6 +8,7 @@ export function TableHeader() {
     const { selectedIds, data, sorts } = state;
     const { injectedData } = useTablebuilderState();
     const { checkPermission } = usePermissionStore();
+    const { onRowSelect, hiddenColumns, deletePermission, updatePermission } = injectedData;
 
     const selectable = rowSelection.showRowSelection;
 
@@ -15,6 +16,13 @@ export function TableHeader() {
         const sort = sorts.find(s => s.column === columnKey);
         if (!sort) return <ChevronsUpDown className="h-4 w-4" />;
         return sort.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />;
+    };
+
+    const onSelectAllRow = (e: any) => {
+        if (onRowSelect) {
+            onRowSelect(e.target.checked ? data.map(d => d._id) : []);
+        }
+        setState({ ...state, selectedIds: e.target.checked ? data.map(d => d._id) : [] });
     };
 
     return (
@@ -26,14 +34,14 @@ export function TableHeader() {
                             type="checkbox"
                             className="cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             checked={Boolean(selectedIds.length && selectedIds.length === data.length)}
-                            onChange={e => setState({ ...state, selectedIds: e.target.checked ? data.map(d => d._id) : [] })}
+                            onChange={e => onSelectAllRow(e)}
                         />
                     </th>
                 )}
                 {columns.map((column, index) => {
                     if (column.hidden) return null;
-                    if (column.header === 'Actions' && !checkPermission(injectedData.deletePermission) && !checkPermission(injectedData.updatePermission))
-                        return null;
+                    if (hiddenColumns?.includes(column.key)) return null;
+                    if (column.header === 'Actions' && !checkPermission(deletePermission) && !checkPermission(updatePermission)) return null;
 
                     return (
                         <th
