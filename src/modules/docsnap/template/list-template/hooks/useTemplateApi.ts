@@ -9,7 +9,7 @@ export const useListTemplatePageApi = () => {
     const toast = useToastStore();
 
     const filterTemplatesByTenant = (templates: any) => {
-        const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
+        const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || 'all';
         return templates.filter((template: any) =>
             selectedTenantFromSessionStorage === 'all' ? true : template.tenantId === selectedTenantFromSessionStorage
         );
