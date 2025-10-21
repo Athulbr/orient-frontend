@@ -1,7 +1,6 @@
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { config } from '../../../../../config/default';
 import httpRequest from '../../../../../global-utils/httpRequest';
-import { useSettingsStore } from '../../../../../zustand-store/SettingsStore';
 import { useTemplateState } from './templateContext';
 
 export const useListTemplatePageApi = () => {

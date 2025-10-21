@@ -146,6 +146,19 @@ export const useUpdateTemplatePageApi = () => {
             toast.error('Failed to update template fields');
         }
     };
+    const extractSectionFields = async (requestBody: any = {}) => {
+        try {
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/extract-section-fields`, requestBody);
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
+            toast.success('Template fields updated successfully');
+            return res.data?.updatedInstruction;
+        } catch (error) {
+            setState(prev => ({ ...prev, regeneratingInstructionWithAI: false }));
+            console.error('error:===========', error);
+            toast.error('Failed to update template fields');
+        }
+    };
 
     return {
         createTemplateApi,
@@ -155,7 +168,8 @@ export const useUpdateTemplatePageApi = () => {
         getTemplatesApi,
         generateTemplateFieldsWithAI,
         updateTemplateFieldsWithAI,
-        regenerateInstructionWithAI
+        regenerateInstructionWithAI,
+        extractSectionFields
     };
 };
 

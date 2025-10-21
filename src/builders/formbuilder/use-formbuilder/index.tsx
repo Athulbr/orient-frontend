@@ -4,6 +4,7 @@ import httpRequest from '../../../global-utils/httpRequest';
 import { RenderForm } from '../render-form/RenderForm';
 import { FieldIF } from '../interface';
 import { config } from '../../../config/default';
+import { cn } from '../../../global-utils/twMerge';
 
 interface UseFormbuilderIF {
     isOpen?: boolean;
@@ -98,7 +99,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
                 submitClickHandler={onSubmit}
                 cancelClickHandler={closeDialog}
                 columns={settings.columns}
-                className="px-0"
+                className={cn('px-0', renderFormClassName)}
             />
         );
     }

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Plus, Settings, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Plus, ScanLine, Settings, Trash2 } from 'lucide-react';
 import { DragAndDropContainer } from '../../../../components/DragAndDropContainer';
 import { LightIconButton } from './components/ImageViewer';
 import { ClassAttributes, InputHTMLAttributes, useEffect, useMemo, useState } from 'react';
@@ -24,8 +24,6 @@ import { FieldIF } from '../../../../builders/formbuilder/interface';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
-
-    console.log('state.sectionList:===========', state.sectionList);
 
     const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
@@ -279,7 +277,9 @@ const InputField = (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLInputEl
 };
 
 const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: number }) => {
+    const { fileName } = useParams();
     const { state, setState } = useUpdateTemplateState();
+    const { extractSectionFields } = useUpdateTemplatePageApi();
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
     const [editFieldDialog, setEditFieldDialog] = useState(-1);
@@ -328,6 +328,22 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         setEditSectionDialog(false);
     };
 
+    const handleExtractSectionFields = () => {
+        const sectionFields = {
+            sectionName: section.jsonKey,
+            sectionInstruction: section.instruction,
+            sectionFields: section.subFields.map((field: any) => {
+                return {
+                    jsonKey: field.jsonKey,
+                    instruction: field.instruction
+                };
+            })
+        };
+        extractSectionFields({ sectionFields, s3FileName: fileName || state.templateData?.s3FileName });
+        console.log('state.templateData:===========', state.templateData);
+        console.log('sectionFields:===========', sectionFields);
+    };
+
     const deleteSection = (index: number) => {
         const sectionList = [...state.sectionList];
         sectionList.splice(index, 1);
@@ -343,6 +359,9 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     <span className="flex items-center gap-2">
                         {section?.name}
                         <LightIconButton Icon={Edit} onClick={editSectionDialogHandler} title="Edit Section" />
+                        <Button startIcon={<ScanLine size={12} />} className="text-nowrap" small onClick={handleExtractSectionFields} outlined>
+                            Extract Fields
+                        </Button>
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
