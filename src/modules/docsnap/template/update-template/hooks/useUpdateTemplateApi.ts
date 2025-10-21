@@ -122,7 +122,7 @@ export const useUpdateTemplatePageApi = () => {
     const updateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: true }));
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/update-template-fields`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/update-template-fields`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, updatingTemplateFieldsWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');
@@ -136,7 +136,7 @@ export const useUpdateTemplatePageApi = () => {
     const regenerateInstructionWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, regeneratingInstructionWithAI: true }));
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/regenerate-instruction`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-instruction`, requestBody);
             setState(prev => ({ ...prev, regeneratingInstructionWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');
             return res.data?.updatedInstruction;
@@ -149,7 +149,7 @@ export const useUpdateTemplatePageApi = () => {
     const extractSectionFields = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev }));
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/extract-section-fields`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/extract-section-fields`, requestBody);
             setState(prev => ({ ...prev }));
             toast.success('Section fields extracted successfully');
             return res.data?.updatedInstruction;

@@ -27,13 +27,6 @@ const globalEnv: any = {
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL
     },
-    vinayak_dev: {
-        baseUrl: import.meta.env.VITE_BASE_URL_DEV,
-        nodeApiUrl: import.meta.env.VITE_NODE_URL_DEV,
-        extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
-        chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_DEV
-    },
     rehab: {
         baseUrl: import.meta.env.VITE_BASE_URL_REHAB,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_REHAB,

@@ -156,8 +156,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             // formData.append('extractionType', 'single');
             formData.append('file', file);
 
-            console.log('config.mlServiceNodejs:===========', config.mlServiceNodejs);
-
             const response = await fetch(`${config.mlServiceNodejs}/docsnap/extract-document`, {
                 method: 'POST',
                 headers: { authorization: `Bearer ${JSON.parse(token)}` },
@@ -210,7 +208,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             // include_bbox: true,
                             // confidence_threshold: 0.2,
                             s3_file_name: s3Response?.data?.fileName,
-                            template_id: template._id,
+                            template_id: template._id
                             // provider_id: 'azure',
                             // model_id: 'gpt-4o',
                             // use_latest: false
@@ -333,7 +331,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                             // include_bbox: true,
                             // confidence_threshold: 0.2,
                             s3_file_name: s3Response?.data?.fileName,
-                            template_id: template._id,
+                            template_id: template._id
                             // provider_id: 'azure',
                             // model_id: 'gpt-4o',
                             // use_latest: false,

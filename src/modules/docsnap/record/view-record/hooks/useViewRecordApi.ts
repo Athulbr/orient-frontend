@@ -293,7 +293,7 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/regenerate-field`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-field`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
@@ -304,7 +304,7 @@ export const useViewRecordApi = () => {
     };
     const sendContentCreationContext = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/content-creation`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/content-creation`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
