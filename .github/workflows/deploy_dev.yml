@@ -21,3 +21,4 @@ jobs:
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }} # Git token for cloning the repository
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      NPM_READ_TOKEN: ${{ secrets.NPM_READ_TOKEN }}
