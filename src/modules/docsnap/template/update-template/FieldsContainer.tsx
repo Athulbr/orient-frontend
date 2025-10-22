@@ -341,7 +341,8 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                 };
             })
         };
-        const response = await extractSectionFields({ schema: sectionFields, s3FileName: fileName || state.templateData?.s3FileName }, mainIndex);
+        const isTable = section?.dataType === 'list';
+        const response = await extractSectionFields({ schema: sectionFields, s3FileName: fileName || state.templateData?.s3FileName, isTable }, mainIndex);
         setExtractedData(response);
     };
 
@@ -350,6 +351,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         sectionList.splice(index, 1);
         setState(prev => ({ ...prev, sectionList }));
     };
+    console.log('section:===========', section);
 
     return (
         <div className="flex w-full cursor-pointer flex-col gap-0.5 rounded border p-1">
@@ -358,6 +360,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     {opened ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
 
                     <span className="flex items-center gap-2">
+                        {section?.dataType === 'list' && <span className="text-xs border px-2 py-1 text-gray-500">Table</span>}
                         {section?.name}
                         <LightIconButton Icon={Edit} onClick={editSectionDialogHandler} title="Edit Section" />
                         <Button
