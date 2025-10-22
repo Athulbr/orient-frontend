@@ -14,13 +14,14 @@ import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
 import { fileTypeFromBuffer } from 'file-type';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import { convertPdfToImages } from '../../record/view-record/utils';
+import { convertPdfToImages, formatFieldLabel } from '../../record/view-record/utils';
 import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useS3Storage } from '../../../../zustand-store/S3Storage';
 import Spinner from '../../../../components/Spinner';
 import { convertTemplateFields } from './utils/convertTemplateFields';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
+import { TextField } from '../../../../components/TextField';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
@@ -283,7 +284,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
     const [editFieldDialog, setEditFieldDialog] = useState(-1);
-    const [extractedData, setExtractedData] = useState([]);
+    const [extractedData, setExtractedData] = useState<any>([]);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -340,9 +341,8 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                 };
             })
         };
-        const response = await extractSectionFields({ sectionFields, s3FileName: fileName || state.templateData?.s3FileName }, mainIndex);
+        const response = await extractSectionFields({ schema: sectionFields, s3FileName: fileName || state.templateData?.s3FileName }, mainIndex);
         setExtractedData(response);
-        console.log('sectionFields:===========', sectionFields);
     };
 
     const deleteSection = (index: number) => {
@@ -361,13 +361,13 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                         {section?.name}
                         <LightIconButton Icon={Edit} onClick={editSectionDialogHandler} title="Edit Section" />
                         <Button
-                            startIcon={state.extractingSection !== -1 && mainIndex === state.extractingSection ? <Spinner size={12} /> : <ScanLine size={12} />}
+                            startIcon={state.extractingSection !== -1 && mainIndex === state.extractingSection ? <Spinner size={14} /> : null}
                             className="text-nowrap overflow-hidden"
                             small
                             onClick={handleExtractSectionFields}
                             outlined
                         >
-                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}...` : 'Extract Fields'}
+                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}` : 'Extract Fields'}
                         </Button>
                     </span>
                 </div>
@@ -380,7 +380,13 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             </div>
             {opened && (
                 <div className="flex flex-col gap-4 p-2">
-                    <div className="flex items-center justify-between w-full bg-gray-100 border p-4">Extracted data</div>
+                    {extractedData.length > 0 && (
+                        <div className="flex flex-col gap-2 w-full bg-gray-100 border p-4">
+                            {extractedData.map((field: any, index: number) => (
+                                <TextField key={index} label={formatFieldLabel(field.jsonKey)} value={field.value} />
+                            ))}
+                        </div>
+                    )}
                     <DragAndDropContainer
                         items={section?.subFields || []}
                         onDragEnd={reorderedFields => {
