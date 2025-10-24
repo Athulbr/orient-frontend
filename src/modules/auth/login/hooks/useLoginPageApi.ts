@@ -92,11 +92,14 @@ export const useLoginPageApi = () => {
                     // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
                     const resp = await Promise.all([
                         httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                        httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 })
+                        httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
+                        httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
+                        httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
                     ]);
                     window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                     window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
-                    toast.success('Logged in successfully');
+                    window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
+                    window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
                     window?.location?.replace('/');
                 } else {
                     setState(prev => ({ ...prev, authError: 'Authentication failed. Please try again.' }));
