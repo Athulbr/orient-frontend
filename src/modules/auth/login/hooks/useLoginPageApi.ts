@@ -88,6 +88,7 @@ export const useLoginPageApi = () => {
                     window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                     window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                     window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                    window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
                     // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
                     const resp = await Promise.all([
                         httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
