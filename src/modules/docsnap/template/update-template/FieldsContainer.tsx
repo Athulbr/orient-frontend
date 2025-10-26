@@ -22,6 +22,7 @@ import Spinner from '../../../../components/Spinner';
 import { convertTemplateFields } from './utils/convertTemplateFields';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
 import { TextField } from '../../../../components/TextField';
+import { DataRenderer } from './components/RenderTableOrKeyValuePairs';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
@@ -284,7 +285,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
     const [editFieldDialog, setEditFieldDialog] = useState(-1);
-    const [extractedData, setExtractedData] = useState<any>([]);
+    const [extractedData, setExtractedData] = useState<any>(null);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -351,7 +352,6 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
         sectionList.splice(index, 1);
         setState(prev => ({ ...prev, sectionList }));
     };
-    console.log('section:===========', section);
 
     return (
         <div className="flex w-full cursor-pointer flex-col gap-0.5 rounded border p-1">
@@ -383,13 +383,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             </div>
             {opened && (
                 <div className="flex flex-col gap-4 p-2">
-                    {extractedData.length > 0 && (
-                        <div className="flex flex-col gap-2 w-full bg-gray-100 border p-4">
-                            {extractedData.map((field: any, index: number) => (
-                                <TextField key={index} label={formatFieldLabel(field.jsonKey)} value={field.value} />
-                            ))}
-                        </div>
-                    )}
+                    <DataRenderer data={extractedData} />
                     <DragAndDropContainer
                         items={section?.subFields || []}
                         onDragEnd={reorderedFields => {
