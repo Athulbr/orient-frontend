@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
 export const useNodeJsDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, handleCompletion, handleError, addToExtractionQueue } =
         useExtractionStore();
+    const navigate = useNavigate();
 
     const addToNodeJsDocumentExtractor = (files: File[], template: any) => {
         const templateSettings = template?.settings;
@@ -93,6 +95,7 @@ export const useNodeJsDocumentExtractor = () => {
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
                 const formData = new FormData();
                 formData.append('template', JSON.stringify(template));
+                formData.append('templateId', template?._id);
                 formData.append('file', file);
 
                 const apiEndPoint =
@@ -136,14 +139,19 @@ export const useNodeJsDocumentExtractor = () => {
 
         if (nodeJsExtractor) {
             for (const file of Array.from(files)) {
-                // First, remove any existing entry for this file
-                refreshExtractionQueue(file.name);
-                // Then add the new entry
-                addToExtractionQueue(file.name);
-                // Finally, send the request
-                sendApiRequest(file, template);
+                try {
+                    // First, remove any existing entry for this file
+                    refreshExtractionQueue(file.name);
+                    // Then add the new entry
+                    addToExtractionQueue(file.name);
+                    // Finally, send the request
+                    sendApiRequest(file, template);
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                }
             }
         }
+        navigate('/docsnap/record/list');
     };
 
     return {

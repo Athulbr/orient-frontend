@@ -4,6 +4,7 @@ import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from '../../components/Dropdown';
 import ExtractionFloatingWindow from '../docsnap/upload-document/ExtractionFloatingWindow';
+import ExtractionFloatingWindowNew from '../docsnap/upload-document-new/ExtractionFloatingWindow';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { Button } from '../../components/Button';
 import httpRequest from '../../global-utils/httpRequest';
@@ -24,11 +25,11 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const { instance } = useMsal();
     const isAuthenticated = useIsAuthenticated();
     const [tenantList, setTenantList] = useState([]);
-    const { setSelectedTenant, selectedTenant } = useSettingsStore();
+    const { setSelectedTenant } = useSettingsStore();
     const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
-
+    const showNewExtractionWindowUI = localStorage.getItem('user') === 'vinayak' ? true : false;
     useEffect(() => {
         if (user?.role?.name !== 'superadmin') return;
         const getTenantList = async () => {
@@ -105,7 +106,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                     {/* <MoonStar size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                 </div>
             </div>
-            <ExtractionFloatingWindow />
+            {!showNewExtractionWindowUI ? <ExtractionFloatingWindow /> : <ExtractionFloatingWindowNew />}
         </div>
     );
 };

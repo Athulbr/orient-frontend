@@ -33,7 +33,7 @@ const UserPreferencePage: React.FC<UserPreferencePageIF> = () => {
         <div className="h-full w-full">
             <p className="text-xl">User Preference</p>
             <UseFormbuilder
-                renderFormClassName="bg-red-200"
+                renderFormClassName=""
                 showInDialog={false}
                 title="User Preference"
                 name="User Preference Form"

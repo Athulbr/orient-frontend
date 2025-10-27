@@ -10,7 +10,7 @@ interface ExtractionFloatingWindowIF {
     test?: string;
 }
 
-const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
+const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => {
     const { extractionQueue, clearExtractionQueue } = useExtractionStore();
     const [minimize, setMinimize] = useState(false);
 
@@ -133,7 +133,7 @@ const ExtractionFloatingWindow: React.FC<ExtractionFloatingWindowIF> = () => {
     );
 };
 
-export default ExtractionFloatingWindow;
+export default ExtractionFloatingWindowNew;
 
 const sampleTemplate = {
     fields: [

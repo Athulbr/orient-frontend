@@ -46,16 +46,17 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        const templateSettings = latestTemplate?.settings;
-        if (templateSettings?.extractionEngine === 'node') {
-            addToNodeJsDocumentExtractor(files, latestTemplate);
-        } else {
-            if (templateSettings?.extractSingleDocument) {
-                addToPythonSingleDocumentExtractor(files, latestTemplate);
-            } else {
-                addToPythonMultiDocumentExtractor(files, latestTemplate);
-            }
-        }
+        addToNodeJsDocumentExtractor(files, latestTemplate);
+        // const templateSettings = latestTemplate?.settings;
+        // if (templateSettings?.extractionEngine === 'node') {
+        //     addToNodeJsDocumentExtractor(files, latestTemplate);
+        // } else {
+        //     if (templateSettings?.extractSingleDocument) {
+        //         addToPythonSingleDocumentExtractor(files, latestTemplate);
+        //     } else {
+        //         addToPythonMultiDocumentExtractor(files, latestTemplate);
+        //     }
+        // }
     };
 
     return (

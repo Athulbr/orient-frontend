@@ -70,7 +70,7 @@ export const useUpdateTemplatePageApi = () => {
             if (reload) {
                 window.location.reload();
             } else {
-                navigate('/docsnap/template/list');
+                // navigate('/docsnap/template/list');
             }
             return true;
         } catch (error) {

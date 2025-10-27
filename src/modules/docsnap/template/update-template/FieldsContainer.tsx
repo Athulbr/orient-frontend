@@ -148,7 +148,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         setState(prev => ({ ...prev, sectionList }));
     };
     const handleCreateTemplate = (data: any) => {
-        console.log('visionOcrText:===========', state.visionOcrText);
         data.description = state.visionOcrText[0];
         if (create) {
             const requestBody = {
@@ -170,6 +169,16 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     };
     const submitSettingsHandler = (data: any) => {
         setState(prev => ({ ...prev, templateSettings: data, showTemplateSettingsForm: false }));
+        if (!id) return;
+        const requestBody = {
+            fields: state.sectionList,
+            settings: data,
+            s3FileName: fileName,
+            name: state.templateData.name,
+            description: state.templateData.description,
+            active: state.templateData.active
+        };
+        updateTemplateApi(id, requestBody, false);
     };
 
     return (
@@ -495,11 +504,8 @@ const FieldComponent = ({
         setState(prev => ({ ...prev, sectionList: templateData }));
     };
     const handleUpdateField = (data: any) => {
-        // const sampleData={description: 'aqwea', instruction: 'wsa', excludeExtraction: false, isHidden: false, required: true}
         const templateData = [...state.sectionList];
         const subFields = [...templateData[mainIndex].subFields];
-        // Merge incoming config with existing field to avoid overwriting base properties like name/jsonKey/dataType
-        console.log('data:===========', data);
         subFields[index] = { ...subFields[index], ...data };
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
