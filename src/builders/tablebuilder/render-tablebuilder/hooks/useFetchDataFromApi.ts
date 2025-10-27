@@ -22,7 +22,7 @@ export const useFetchDataFromApi = () => {
                     endDate: customQuery?.endDate ?? endDate,
                     search: customQuery?.search ?? searchValue,
                     sortBy: (customQuery?.sorts ?? sorts).map(sort => `${sort.column}:${sort.direction}`).join(','),
-                    searchFields: customQuery?.searchableColumns ?? [],
+                    searchFields: customQuery?.searchableColumns ?? settings.search?.searchableColumns ?? [],
                     dateFieldKey: settings.dateRange.dateFieldKey || 'updatedAt'
                 };
 
