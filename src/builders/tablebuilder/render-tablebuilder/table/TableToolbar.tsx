@@ -113,7 +113,7 @@ function PageSizeSelector() {
             // Update pageSize and reset page using hook
             setPageSizeParam(value);
         },
-        [setState, getDataFromApi, setPageSizeParam]
+        [setState, getDataFromApi]
     );
 
     if (!settings?.pageSize.showPageSizeSelect) return null;
