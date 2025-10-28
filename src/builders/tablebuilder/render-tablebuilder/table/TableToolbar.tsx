@@ -11,6 +11,7 @@ import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { Button } from '../../../../components/Button';
 import Spinner from '../../../../components/Spinner';
 import { config } from '../../../../config/default';
+import useTablepersistance from '../hooks/useTablepersistance';
 
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
@@ -42,6 +43,7 @@ function Filters() {
     const { getDataFromApi } = useFetchDataFromApi();
     const { activeFilters } = state;
     const { injectedData } = useTablebuilderState();
+    const { setFiltersParam } = useTablepersistance();
 
     // Update active filters
     const updateActiveFilter = useCallback(
@@ -54,6 +56,9 @@ function Filters() {
 
             // Convert filters array to object
             const filtersObject = getFiltersObject(newActiveFilters);
+
+            // Update filters and page in URL (centralized in hook)
+            setFiltersParam(filtersObject);
 
             // Get data with new filters
             getDataFromApi({
@@ -99,13 +104,16 @@ function Filters() {
 function PageSizeSelector() {
     const { settings, state, setState } = useTablebuilderState();
     const { getDataFromApi } = useFetchDataFromApi();
+    const { setPageSizeParam } = useTablepersistance();
 
     const onChangePageSize = useCallback(
         (value: string) => {
-            setState(prev => ({ ...prev, pageRows: parseInt(value) }));
+            setState(prev => ({ ...prev, pageRows: parseInt(value), page: 1 }));
             getDataFromApi({ page: 1, pageSize: parseInt(value) });
+            // Update pageSize and reset page using hook
+            setPageSizeParam(value);
         },
-        [setState, getDataFromApi]
+        [setState, getDataFromApi, setPageSizeParam]
     );
 
     if (!settings?.pageSize.showPageSizeSelect) return null;
@@ -129,6 +137,7 @@ function DateRangePicker() {
     const { settings, state, setState } = useTablebuilderState();
     const { startDate, endDate } = state;
     const { getDataFromApi } = useFetchDataFromApi();
+    const { setDateRangeParam } = useTablepersistance();
 
     // Update date range
     const onChangeDateRange = useCallback(
@@ -141,6 +150,7 @@ function DateRangePicker() {
             }));
 
             getDataFromApi({ startDate: newStartDate, endDate: newEndDate });
+            setDateRangeParam(newStartDate, newEndDate);
         },
         [setState, getDataFromApi]
     );
@@ -158,6 +168,7 @@ function SearchInput() {
 
     const { searchValue } = state;
     const { search } = settings;
+    const { setSearchParam } = useTablepersistance();
 
     // Use refs to always get the latest values
     const getDataFromApiRef = useRef(getDataFromApi);
@@ -214,6 +225,9 @@ function SearchInput() {
                 searchValue: newSearchValue,
                 page: 1
             }));
+
+            // Persist search to URL and reset page to 1 (centralized in hook)
+            setSearchParam(newSearchValue);
 
             if (clear) {
                 // Cancel pending debounced/throttled calls when clearing
@@ -389,6 +403,7 @@ const ExportButton = () => {
 const ClearFilterButton = () => {
     const { settings, state, setState } = useTablebuilderState();
     const { getDataFromApi } = useFetchDataFromApi();
+    const { clearFiltersParams } = useTablepersistance();
 
     const clearActiveFilters = useCallback(() => {
         setState(prev => ({
@@ -401,6 +416,8 @@ const ClearFilterButton = () => {
             page: 1, // Reset to page 1
             selectedIds: []
         }));
+        // clear relevant URL params and set page=1 (centralized in hook)
+        clearFiltersParams();
         getDataFromApi({}, true);
     }, [setState, getDataFromApi]);
 
