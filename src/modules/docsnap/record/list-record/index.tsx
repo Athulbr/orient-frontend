@@ -38,6 +38,8 @@ export interface ListRecordPageStateIF {
     assignDialog: boolean;
     query: any;
     selectedIds: string[];
+    loadingRecords: boolean;
+    records: any[];
 }
 
 const initialState = {
@@ -57,7 +59,9 @@ const initialState = {
     dealerSelectionDialog: false,
     assignDialog: false,
     query: {},
-    selectedIds: []
+    selectedIds: [],
+    loadingRecords: false,
+    records: []
 };
 
 const ListRecordPage: React.FC = () => {
