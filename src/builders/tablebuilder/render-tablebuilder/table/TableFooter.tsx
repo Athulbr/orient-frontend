@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-r
 import { useTablebuilderSettings } from '../../create-tablebuilder/hooks/useTablebuilderSettingsContext';
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
+import useTablepersistance from '../hooks/useTablepersistance';
 import { useEffect, useState } from 'react';
 import { Button } from '../../../../components/Button';
 import Tooltip from '../../../../components/Tooltip';
@@ -66,8 +67,11 @@ const PaginationComponent = () => {
 
     const totalPages = Math.ceil(total / pageRows);
 
+    const { setPageQueryParam } = useTablepersistance();
+
     const setPage = (pageNumber: number) => {
         setState(prev => ({ ...prev, page: pageNumber }));
+        setPageQueryParam(pageNumber);
         getDataFromApi({ page: pageNumber });
     };
     if (!pagination.showPaginaion || total === 0) return null;

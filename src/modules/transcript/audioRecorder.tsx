@@ -16,6 +16,7 @@ interface AudioRecorderProps {
     titleName: string;
     setError?: (val: string | null) => void;
     deleteAudioTrack?: boolean;
+    disable?: boolean;
     setMedicalText: (val: string) => void;
     setSource: (val: SourceType) => void;
     setShowPreview?: (value: boolean) => void;
@@ -30,6 +31,7 @@ const AudioRecorder = ({
     titleName,
     setError,
     deleteAudioTrack,
+    disable,
     setMedicalText,
     setSource,
     setShowPreview
@@ -327,14 +329,14 @@ const AudioRecorder = ({
                     </>
                 )} */}
                 {sourceType === 'text' && (
-                    <div className="flex flex-1 flex-col overflow-y-auto gap-4 p-2">
+                    <div className={`flex flex-1 flex-col overflow-y-auto gap-4 p-2 ${disable ? 'pointer-events-none opacity-50' : ''}`}>
                         <textarea
                             className="w-full border rounded-md flex-1 p-2"
                             placeholder="Type your text here..."
                             value={textInput}
                             onChange={e => setTextInput(e.target.value)}
                         />
-                        <div className="flex gap-2 justify-center">
+                        <div className={`flex gap-2 justify-center`}>
                             <Button onClick={handleArrowDownClick} className="Primary text-white">
                                 Upload Text File
                             </Button>
@@ -347,7 +349,7 @@ const AudioRecorder = ({
                 )}
 
                 {sourceType === 'audio' && (
-                    <div className=" flex flex-col items-center justify-center flex-grow gap-4 p-2">
+                    <div className={` flex flex-col items-center justify-center flex-grow gap-4 p-2 ${disable ? 'pointer-events-none opacity-50' : ''}`}>
                         <div className="w-full h-32 bg-gray-100 rounded-md overflow-hidden">
                             <AudioWaveform isRecording={isRecording && !isPaused} />
                         </div>

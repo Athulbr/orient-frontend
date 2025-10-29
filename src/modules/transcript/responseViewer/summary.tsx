@@ -7,9 +7,10 @@ interface TranscriptSummaryProps {
     error?: string | null;
     value?: string;
     onChange?: (val: string) => void;
+    disable?: boolean;
 }
 
-const TranscriptSummary = ({ isProcessing, transcriptionData, error, value, onChange }: TranscriptSummaryProps) => {
+const TranscriptSummary = ({ isProcessing, transcriptionData, error, value, onChange, disable }: TranscriptSummaryProps) => {
     const renderContent = () => {
         if (error) {
             return (
@@ -48,6 +49,7 @@ const TranscriptSummary = ({ isProcessing, transcriptionData, error, value, onCh
                     value={value ?? transcriptionData?.content ?? ''}
                     onChange={e => onChange?.(e.target.value)}
                     placeholder="Edit summary..."
+                    disabled={disable}
                 />
             </div>
         );

@@ -22,6 +22,7 @@ interface ResponseViewerProps {
     transcriptionData: any[];
     error: string | null;
     titleName?: string;
+    disable?: boolean;
     clearData?: () => void;
     onSubmit?: (data?: any[]) => void;
     setTranscriptionData?: (data: any[]) => void;
@@ -34,6 +35,7 @@ const ResponseViewer = ({
     transcriptionData,
     error,
     titleName,
+    disable,
     clearData,
     onSubmit,
     setShowPreview,
@@ -51,15 +53,6 @@ const ResponseViewer = ({
     const [submit, setSubmit] = useState(false);
     const { showAlert, closeAlert } = useAlertStore();
     const [exit, setExit] = useState<boolean>(false);
-
-    const tabs = useMemo(
-        () => [
-            { id: 'transcript', title: 'Transcription' },
-            { id: 'summary', title: 'Summary' },
-            { id: 'cpt', title: 'CPT' }
-        ],
-        []
-    );
 
     const navigate = useNavigate();
     const { id } = useParams();
@@ -80,7 +73,7 @@ const ResponseViewer = ({
         setTitle(titleName?.toLowerCase());
     }, [transcriptionData, titleName, id]);
 
-    // Seed editable state when the data buckets are set
+    // Seed editable state
     useEffect(() => {
         if (transcripts?.content !== undefined) setEditedTranscript(transcripts.content);
     }, [transcripts]);
@@ -108,32 +101,64 @@ const ResponseViewer = ({
         onSubmit?.(newData);
     };
 
+    // 👇 Conditionally remove the "Transcription" tab if disable is true
+    const tabs = useMemo(() => {
+        const baseTabs = [
+            { id: 'transcript', title: 'Transcription' },
+            { id: 'summary', title: 'Summary' },
+            { id: 'cpt', title: 'CPT' }
+        ];
+        return disable ? baseTabs.filter(tab => tab.id !== 'transcript') : baseTabs;
+    }, [disable]);
+
     return (
         <div className="h-full flex flex-col items-start justify-between p-2">
             <Button outlined onClick={() => setShowPreview?.(false)} className="md:hidden">
                 Go to Record{' '}
             </Button>
+
             {/* Tabs */}
             <TabNavComponent tabs={tabs} onChange={setTabIndex} enableFlag={transcripts?.content} />
 
             {/* Tab Content */}
-            {tabIndex === 0 && (
-                <SourcePage isProcessing={isProcessing} transcriptionData={transcripts} error={error} value={editedTranscript} onChange={onHandleChange} />
+            {!disable && tabIndex === 0 && (
+                <SourcePage
+                    isProcessing={isProcessing}
+                    transcriptionData={transcripts}
+                    error={error}
+                    value={editedTranscript}
+                    onChange={onHandleChange}
+                    disable={disable}
+                />
             )}
-            {tabIndex === 1 && (
-                <TranscriptSummary isProcessing={isProcessing} transcriptionData={summary} error={error} value={editedSummary} onChange={onHandleChange} />
+            {(!disable ? tabIndex === 1 : tabIndex === 0) && (
+                <TranscriptSummary
+                    isProcessing={isProcessing}
+                    transcriptionData={summary}
+                    error={error}
+                    value={editedSummary}
+                    onChange={onHandleChange}
+                    disable={disable}
+                />
             )}
-            {tabIndex === 2 && (
-                <TranscriptCpt isProcessing={isProcessing} transcriptionData={cptCode} error={error} value={editedCpt} onChange={onHandleChange} />
+            {(!disable ? tabIndex === 2 : tabIndex === 1) && (
+                <TranscriptCpt
+                    isProcessing={isProcessing}
+                    transcriptionData={cptCode}
+                    error={error}
+                    value={editedCpt}
+                    onChange={onHandleChange}
+                    disable={disable}
+                />
             )}
 
             {/* Action Buttons */}
-            {transcripts?.content && (
+            {!disable && transcripts?.content && (
                 <div className="w-full flex justify-end gap-3 p-3">
                     <Button
                         onClick={() => {
                             showAlert({
-                                alertText: 'Are you sure you want to exit, Exit without saving will lose the edited data?',
+                                alertText: 'Are you sure you want to exit? Exit without saving will lose the edited data?',
                                 primaryButtonText: 'Exit',
                                 onPrimaryAction: async () => {
                                     setExit(true);
