@@ -8,9 +8,10 @@ interface TranscriptCptProps {
     error: string | null;
     value?: string;
     onChange?: (val: string) => void;
+    disable?: boolean;
 }
 
-const TranscriptCpt = ({ isProcessing, transcriptionData, error, value, onChange }: TranscriptCptProps) => {
+const TranscriptCpt = ({ isProcessing, transcriptionData, error, value, onChange, disable }: TranscriptCptProps) => {
     const renderContent = () => {
         if (error) {
             return (
@@ -49,6 +50,7 @@ const TranscriptCpt = ({ isProcessing, transcriptionData, error, value, onChange
                     value={value ?? transcriptionData?.content ?? ''}
                     onChange={e => onChange?.(e.target.value)}
                     placeholder="Edit CPT codes..."
+                    disabled={disable}
                 />
             </div>
         );

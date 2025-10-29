@@ -75,7 +75,9 @@ const RecentFilesCardComponent: React.FC = () => {
                                     <td title={row.name} className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {row.name}
                                     </td>
-                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row?.documentNumber}</td>
+                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
+                                        {row?.documentNumber ? row?.documentNumber : 'N/A'}
+                                    </td>
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
                                     {showPoLink && (
                                         <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">{row.assignedTo ? row.assignedTo : 'N/A'}</td>
