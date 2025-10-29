@@ -7,9 +7,10 @@ interface SourcePageProps {
     error?: string | null;
     value?: string;
     onChange?: (val: string) => void;
+    disable?: boolean;
 }
 
-const SourcePage = ({ isProcessing, transcriptionData, error, value, onChange }: SourcePageProps) => {
+const SourcePage = ({ isProcessing, transcriptionData, error, value, onChange, disable }: SourcePageProps) => {
     const renderContent = () => {
         if (error) {
             return (
@@ -48,6 +49,7 @@ const SourcePage = ({ isProcessing, transcriptionData, error, value, onChange }:
                     value={value ?? transcriptionData?.content ?? ''}
                     onChange={e => onChange?.(e.target.value)}
                     placeholder="Edit source..."
+                    disabled={disable}
                 />
             </div>
         );

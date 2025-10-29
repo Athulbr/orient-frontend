@@ -88,127 +88,118 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
         }));
     };
 
+    const mainIndex = state.tableNames.findIndex(name => name === state.selectedTableName);
+    const firstRow = state.arrayFields[mainIndex][0] || {};
+    const labels = Object.keys(firstRow);
+
     return (
-        <>
-            {state.arrayFields.map((lineItems, mainIndex) => {
-                const firstRow = lineItems[0] || {};
-                const labels = Object.keys(firstRow);
-
-                // const fieldId = `arrayFields:${mainIndex}:0:${labels[0]}`;
-
-                return (
-                    <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
-                        <section className="mb-2 flex justify-between text-lg font-bold capitalize">
-                            {formatFieldLabel(state.tableNames[mainIndex])}
-                            <div className="flex items-center gap-10">
-                                <div className="flex gap-2">
-                                    <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
-                                        Add Comment
-                                    </Button>
-                                    <Button tabIndex={-1} outlined onClick={() => addLineItem(mainIndex)}>
-                                        Add Line Item
-                                    </Button>
-                                </div>
-                                <XCircle
-                                    tabIndex={-1}
-                                    onClick={() =>
-                                        setState(prev => ({ ...prev, selectedTableName: '', hoveredOnArrayField: false, hoveredFieldId: null, bbox: null }))
-                                    }
-                                    className="cursor-pointer text-gray-500 hover:text-red-500"
-                                />
-                            </div>
-                        </section>
-                        <div className="flex-1 overflow-auto">
-                            <table className="min-w-full border-collapse">
-                                <thead>
-                                    <tr className="sticky top-0 left-0 border ">
-                                        {labels.map((label, i) => (
-                                            <th key={i} className="border bg-gray-50 px-4 py-3 text-left font-semibold whitespace-nowrap text-nowrap">
-                                                {formatFieldLabel(label)}
-                                            </th>
-                                        ))}
-                                        <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {Object.entries(lineItems).map(([key, lineItem], rowIndex) => (
-                                        <tr key={rowIndex} className="bg-white">
-                                            {labels.map((label, i) => {
-                                                const value = lineItem[label];
-
-                                                const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
-                                                return (
-                                                    <ArrayFieldTextarea
-                                                        mainIndex={mainIndex}
-                                                        keyName={key}
-                                                        key={i}
-                                                        value={value}
-                                                        fieldId={hoveredFieldId}
-                                                        label={label}
-                                                        fieldRefs={fieldRefs}
-                                                        disabled={state.loadingS3File || state.reExtracting}
-                                                        onChange={(e: any) => {
-                                                            setState(prev => {
-                                                                const updated = [...prev.arrayFields];
-                                                                updated[mainIndex][key][label] = {
-                                                                    ...updated[mainIndex][key][label],
-                                                                    value: e.target.value
-                                                                };
-                                                                return { ...prev, arrayFields: updated };
-                                                            });
-                                                        }}
-                                                        onMouseEnter={() => {
-                                                            const bbox = value?.bbox;
-                                                            if (bbox) {
-                                                                setState(prev => ({
-                                                                    ...prev,
-                                                                    hoveredFieldId: hoveredFieldId,
-                                                                    pageNumber: value.page ? value.page : prev.pageNumber,
-                                                                    hoveredOnArrayField: true
-                                                                }));
-                                                                updateWire(hoveredFieldId, value.bbox);
-                                                            } else {
-                                                                setState(prev => ({
-                                                                    ...prev,
-                                                                    hoveredFieldId: null,
-                                                                    hoveredOnArrayField: false,
-                                                                    bbox: null,
-                                                                    wire: null
-                                                                }));
-                                                            }
-                                                        }}
-                                                    />
-                                                );
-                                            })}
-                                            <td className="h-full border py-2 pl-9">
-                                                <Trash2
-                                                    tabIndex={-1}
-                                                    onClick={() => deleteLineItem(mainIndex, rowIndex)}
-                                                    onKeyDown={e => {
-                                                        if (e.key === 'Enter') {
-                                                            deleteLineItem(mainIndex, rowIndex);
-                                                        }
-                                                    }}
-                                                    size={20}
-                                                    className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <CommentDialog
-                            commentList={[]}
-                            setCommentList={() => {}}
-                            jsonKey={'line_item'}
-                            isOpen={commentDialog}
-                            closeDialog={() => setCommentDialog(false)}
-                        />
+        <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
+            <section className="mb-2 flex justify-between text-lg font-bold capitalize">
+                {formatFieldLabel(state.tableNames[mainIndex])}
+                <div className="flex items-center gap-10">
+                    <div className="flex gap-2">
+                        <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
+                            Add Comment
+                        </Button>
+                        <Button tabIndex={-1} outlined onClick={() => addLineItem(mainIndex)}>
+                            Add Line Item
+                        </Button>
                     </div>
-                );
-            })}
-        </>
+                    <XCircle
+                        tabIndex={-1}
+                        onClick={() => setState(prev => ({ ...prev, selectedTableName: '', hoveredOnArrayField: false, hoveredFieldId: null, bbox: null }))}
+                        className="cursor-pointer text-gray-500 hover:text-red-500"
+                    />
+                </div>
+            </section>
+            <div className="flex-1 overflow-auto">
+                <table className="min-w-full border-collapse">
+                    <thead>
+                        <tr className="sticky top-0 left-0 border ">
+                            {labels.map((label, i) => (
+                                <th key={i} className="border bg-gray-50 px-4 py-3 text-left font-semibold whitespace-nowrap text-nowrap">
+                                    {formatFieldLabel(label)}
+                                </th>
+                            ))}
+                            <th className="border bg-gray-50 px-4 py-2 text-left font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.entries(state.arrayFields[mainIndex]).map(([key, lineItem], rowIndex) => (
+                            <tr key={rowIndex} className="bg-white">
+                                {labels.map((label, i) => {
+                                    const value = lineItem[label];
+
+                                    const hoveredFieldId = `arrayFields:${mainIndex}:${key}:${label}`;
+                                    return (
+                                        <ArrayFieldTextarea
+                                            mainIndex={mainIndex}
+                                            keyName={key}
+                                            key={i}
+                                            value={value}
+                                            fieldId={hoveredFieldId}
+                                            label={label}
+                                            fieldRefs={fieldRefs}
+                                            disabled={state.loadingS3File || state.reExtracting}
+                                            onChange={(e: any) => {
+                                                setState(prev => {
+                                                    const updated = [...prev.arrayFields];
+                                                    updated[mainIndex][key][label] = {
+                                                        ...updated[mainIndex][key][label],
+                                                        value: e.target.value
+                                                    };
+                                                    return { ...prev, arrayFields: updated };
+                                                });
+                                            }}
+                                            onMouseEnter={() => {
+                                                const bbox = value?.bbox;
+                                                if (bbox) {
+                                                    setState(prev => ({
+                                                        ...prev,
+                                                        hoveredFieldId: hoveredFieldId,
+                                                        pageNumber: value.page ? value.page : prev.pageNumber,
+                                                        hoveredOnArrayField: true
+                                                    }));
+                                                    updateWire(hoveredFieldId, value.bbox);
+                                                } else {
+                                                    setState(prev => ({
+                                                        ...prev,
+                                                        hoveredFieldId: null,
+                                                        hoveredOnArrayField: false,
+                                                        bbox: null,
+                                                        wire: null
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                    );
+                                })}
+                                <td className="h-full border py-2 pl-9">
+                                    <Trash2
+                                        tabIndex={-1}
+                                        onClick={() => deleteLineItem(mainIndex, rowIndex)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                deleteLineItem(mainIndex, rowIndex);
+                                            }
+                                        }}
+                                        size={20}
+                                        className="cursor-pointer text-gray-500 hover:text-red-500 focus:text-red-500"
+                                    />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <CommentDialog
+                commentList={[]}
+                setCommentList={() => {}}
+                jsonKey={'line_item'}
+                isOpen={commentDialog}
+                closeDialog={() => setCommentDialog(false)}
+            />
+        </div>
     );
 };
 

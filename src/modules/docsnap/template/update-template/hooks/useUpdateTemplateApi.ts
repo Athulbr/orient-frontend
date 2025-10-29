@@ -70,7 +70,7 @@ export const useUpdateTemplatePageApi = () => {
             if (reload) {
                 window.location.reload();
             } else {
-                navigate('/docsnap/template/list');
+                // navigate('/docsnap/template/list');
             }
             return true;
         } catch (error) {
@@ -152,9 +152,10 @@ export const useUpdateTemplatePageApi = () => {
             const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/extract-section-fields`, requestBody);
             setState(prev => ({ ...prev, extractingSection: -1 }));
             toast.success('Section fields extracted successfully');
-            return res.data?.updatedInstruction;
+            return res.data;
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, extractingSection: -1 }));
             toast.error('Failed to extract section fields');
             return null;
         }

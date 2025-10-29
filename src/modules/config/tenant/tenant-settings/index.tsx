@@ -33,7 +33,7 @@ const TenantSettingsPage: React.FC<TenantSettingsPageIF> = () => {
         <div className="h-full w-full">
             <p className="text-xl">Tenant Settings</p>
             <UseFormbuilder
-                renderFormClassName="bg-red-200"
+                renderFormClassName=""
                 showInDialog={false}
                 title="Tenant Settings"
                 name="Tenant Settings Form"

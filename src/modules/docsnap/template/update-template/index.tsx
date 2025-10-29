@@ -57,9 +57,9 @@ const UpdateTemplatePage: React.FC<{ create?: boolean; settings?: boolean }> = (
                 <ResizableContainer
                     left={<ImageViewer images={state.images} name="Document" />}
                     right={<FieldsContainer create={create} />}
-                    initialLeftWidthPercent={60}
-                    minLeftWidthPercent={40}
-                    maxLeftWidthPercent={65}
+                    initialLeftWidthPercent={50}
+                    minLeftWidthPercent={20}
+                    maxLeftWidthPercent={70}
                 />
             </PageContainer>
         </UpdateTemplateStateProvider>

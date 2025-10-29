@@ -96,11 +96,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
             ) : state.noS3File ? (
                 <div className="flex h-full w-full items-center justify-center ">
                     <div className="flex items-center gap-2 flex-col">
-                        {uploadingFile ? (
-                            <FullScreenLoader text="Uploading Document..." />
-                        ) : (
-                            <input className="relative bottom-10 cursor-pointer border border-gray-200 bg-gray-50 p-2" type="file" onChange={handleUpload} />
-                        )}
+                        {uploadingFile ? <FullScreenLoader text="Uploading Document..." /> : <FileInput handleUpload={handleUpload} />}
                     </div>
                 </div>
             ) : (
@@ -120,6 +116,7 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
                             <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
                         </div>
                     ))}
+                    <FileInput handleUpload={handleUpload} />
                     <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
                 </div>
             )}
@@ -151,5 +148,51 @@ export const LightIconButton = ({
                 {title}
             </div>
         </span>
+    );
+};
+
+const FileInput = ({ handleUpload }: any) => {
+    return (
+        <label
+            htmlFor="file-upload"
+            className="
+// Layout and Positioning
+relative
+mt-20
+inline-block // Important: Makes the label size only around its content
+cursor-pointer
+
+// Appearance
+text-sm
+py-3
+px-6
+border
+rounded-lg
+shadow-md
+transition
+duration-300
+ease-in-out
+
+
+// Hover Effect
+hover:bg-blue-100
+hover:shadow-lg
+// Focus for accessibility
+focus:outline-none 
+focus:ring-4 
+focus:ring-blue-300
+"
+        >
+            Choose File to Upload
+            <input
+                id="file-upload" // Link the label with 'htmlFor' to this ID
+                type="file"
+                onChange={handleUpload}
+                // Visually Hides the default input but keeps it accessible and functional
+                className="
+  sr-only // Tailwind's screen-reader-only utility
+"
+            />
+        </label>
     );
 };
