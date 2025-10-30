@@ -22,7 +22,7 @@ export const TextField: React.FC<TextFieldProps> = ({
 
     return (
         <div className="flex flex-col space-y-1">
-            {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
+            {label && <label className="text-sm font-medium text-gray-700 pl-1">{label}</label>}
 
             <div className="relative">
                 {startIcon && <div className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400">{startIcon}</div>}

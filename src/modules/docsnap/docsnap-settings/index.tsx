@@ -34,7 +34,7 @@ const DocsnapSettingsPage: React.FC<DocsnapSettingsPageIF> = () => {
         <div className="h-full w-full">
             <p className="text-xl">Docsnap Settings</p>
             <UseFormbuilder
-                renderFormClassName="bg-red-200"
+                renderFormClassName=""
                 showInDialog={false}
                 title="Docsnap Settings"
                 name="Docsnap Settings Form"

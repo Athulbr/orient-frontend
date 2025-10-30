@@ -153,7 +153,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             const token = window?.sessionStorage?.getItem('accessToken') || '';
             const formData = new FormData();
             formData.append('template', JSON.stringify(template));
-            // formData.append('extractionType', 'single');
+            formData.append('templateId', template._id);
             formData.append('file', file);
 
             const response = await fetch(`${config.mlServiceNodejs}/docsnap/extract-document`, {
@@ -218,17 +218,17 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
 
                         const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5`, requestBody);
 
-                        const createReqObject = {
-                            status: 'processing',
-                            metadata: res,
-                            extractedData: null,
-                            pdfFileName: s3Response?.data?.fileName,
-                            name: s3Response?.data?.fileName,
-                            templateId: template._id,
-                            documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
-                        };
+                        // const createReqObject = {
+                        //     status: 'processing',
+                        //     metadata: res,
+                        //     extractedData: null,
+                        //     pdfFileName: s3Response?.data?.fileName,
+                        //     name: s3Response?.data?.fileName,
+                        //     templateId: template._id,
+                        //     documentType: s3Response?.data?.fileType ? s3Response.data.fileType : 'application/pdf'
+                        // };
 
-                        const createRecordResponse = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
+                        // const createRecordResponse = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
                         set({ refreshRecord: get().refreshRecord + 1 });
 
                         // const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Processing');
@@ -273,15 +273,15 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                             value: `${user?.email}`
                                         }
                                     };
-                                    const requestBody = {
-                                        extractedData,
-                                        status: 'extracted'
-                                    };
-                                    await httpRequest(
-                                        'PATCH',
-                                        `${config.nodeApiUrl}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
-                                        requestBody
-                                    );
+                                    // const requestBody = {
+                                    //     extractedData,
+                                    //     status: 'extracted'
+                                    // };
+                                    // await httpRequest(
+                                    //     'PATCH',
+                                    //     `${config.nodeApiUrl}/idp/history/save/extraction/${createRecordResponse.data?._id}`,
+                                    //     requestBody
+                                    // );
                                     set({ refreshRecord: get().refreshRecord + 1 });
 
                                     const processingFiles = get().extractionQueue.filter((item: any) => item.status !== 'Complete');

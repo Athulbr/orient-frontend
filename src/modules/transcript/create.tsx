@@ -12,6 +12,7 @@ import { getCurrentDateTime } from '../../global-utils/convert-date-format';
 import { useS3Storage } from '../../zustand-store/S3Storage';
 import { useToastStore } from '../../components/toast/ToastStore';
 import Spinner from '../../components/Spinner';
+import { usePermissionStore } from '../../zustand-store/PermissionStore';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -47,8 +48,10 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const [showPreview, setShowPreview] = useState(false);
     const [disableExport, setDisableExport] = useState(false);
     const { updateTranscript, currentData, gettranscriptData, transcriptData } = useTranscriptStore();
+    const userReadPermission = usePermissionStore.getState().permissions.includes('read:transcription');
 
     useEffect(() => {
+        console.log('userReadPermission', userReadPermission);
         if (id) {
             gettranscriptData(id);
         }
@@ -143,6 +146,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                                 setTranscriptionData={setTranscriptionData}
                                 setError={setError}
                                 deleteAudioTrack={deleteAudio}
+                                disable={userReadPermission}
                                 setMedicalText={setMedicalText}
                                 setSource={setSourceType}
                             />
@@ -152,6 +156,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                                 isProcessing={isProcessing}
                                 transcriptionData={transcriptionData}
                                 titleName={titleName}
+                                disable={userReadPermission}
                                 error={error}
                                 clearData={clearData}
                                 onSubmit={handleSubmit}

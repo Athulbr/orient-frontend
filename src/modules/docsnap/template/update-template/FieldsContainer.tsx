@@ -14,13 +14,15 @@ import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
 import { fileTypeFromBuffer } from 'file-type';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import { convertPdfToImages } from '../../record/view-record/utils';
+import { convertPdfToImages, formatFieldLabel } from '../../record/view-record/utils';
 import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useS3Storage } from '../../../../zustand-store/S3Storage';
 import Spinner from '../../../../components/Spinner';
 import { convertTemplateFields } from './utils/convertTemplateFields';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
+import { TextField } from '../../../../components/TextField';
+import { DataRenderer } from './components/RenderTableOrKeyValuePairs';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
@@ -146,7 +148,6 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         setState(prev => ({ ...prev, sectionList }));
     };
     const handleCreateTemplate = (data: any) => {
-        console.log('visionOcrText:===========', state.visionOcrText);
         data.description = state.visionOcrText[0];
         if (create) {
             const requestBody = {
@@ -168,6 +169,16 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     };
     const submitSettingsHandler = (data: any) => {
         setState(prev => ({ ...prev, templateSettings: data, showTemplateSettingsForm: false }));
+        if (!id) return;
+        const requestBody = {
+            fields: state.sectionList,
+            settings: data,
+            s3FileName: fileName,
+            name: state.templateData.name,
+            description: state.templateData.description,
+            active: state.templateData.active
+        };
+        updateTemplateApi(id, requestBody, false);
     };
 
     return (
@@ -283,7 +294,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const [opened, setOpened] = useState(true);
     const [editSectionDialog, setEditSectionDialog] = useState(false);
     const [editFieldDialog, setEditFieldDialog] = useState(-1);
-    const [extractedData, setExtractedData] = useState([]);
+    const [extractedData, setExtractedData] = useState<any>(null);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -340,9 +351,9 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                 };
             })
         };
-        const response = await extractSectionFields({ sectionFields, s3FileName: fileName || state.templateData?.s3FileName }, mainIndex);
+        const isTable = section?.dataType === 'list';
+        const response = await extractSectionFields({ schema: sectionFields, s3FileName: fileName || state.templateData?.s3FileName, isTable }, mainIndex);
         setExtractedData(response);
-        console.log('sectionFields:===========', sectionFields);
     };
 
     const deleteSection = (index: number) => {
@@ -358,16 +369,17 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     {opened ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
 
                     <span className="flex items-center gap-2">
+                        {section?.dataType === 'list' && <span className="text-xs border px-2 py-1 text-gray-500">Table</span>}
                         {section?.name}
                         <LightIconButton Icon={Edit} onClick={editSectionDialogHandler} title="Edit Section" />
                         <Button
-                            startIcon={state.extractingSection !== -1 && mainIndex === state.extractingSection ? <Spinner size={12} /> : <ScanLine size={12} />}
+                            startIcon={state.extractingSection !== -1 && mainIndex === state.extractingSection ? <Spinner size={14} /> : null}
                             className="text-nowrap overflow-hidden"
                             small
                             onClick={handleExtractSectionFields}
                             outlined
                         >
-                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}...` : 'Extract Fields'}
+                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}` : 'Extract Fields'}
                         </Button>
                     </span>
                 </div>
@@ -380,7 +392,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
             </div>
             {opened && (
                 <div className="flex flex-col gap-4 p-2">
-                    <div className="flex items-center justify-between w-full bg-gray-100 border p-4">Extracted data</div>
+                    <DataRenderer data={extractedData} />
                     <DragAndDropContainer
                         items={section?.subFields || []}
                         onDragEnd={reorderedFields => {
@@ -492,11 +504,8 @@ const FieldComponent = ({
         setState(prev => ({ ...prev, sectionList: templateData }));
     };
     const handleUpdateField = (data: any) => {
-        // const sampleData={description: 'aqwea', instruction: 'wsa', excludeExtraction: false, isHidden: false, required: true}
         const templateData = [...state.sectionList];
         const subFields = [...templateData[mainIndex].subFields];
-        // Merge incoming config with existing field to avoid overwriting base properties like name/jsonKey/dataType
-        console.log('data:===========', data);
         subFields[index] = { ...subFields[index], ...data };
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
