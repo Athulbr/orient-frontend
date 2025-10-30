@@ -3,7 +3,7 @@ import httpRequest from '../../../global-utils/httpRequest';
 import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
-export const usePythonMultiDocumentExtractor = () => {
+export const usePythonDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, handleCompletion, handleError, addToExtractionQueue } =
         useExtractionStore();
 
@@ -129,6 +129,6 @@ export const usePythonMultiDocumentExtractor = () => {
     };
 
     return {
-        addToPythonMultiDocumentExtractor
+        usePythonDocumentExtractor
     };
 };

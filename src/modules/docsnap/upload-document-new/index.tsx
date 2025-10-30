@@ -8,8 +8,8 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 import { useSettingsStore } from '../../../zustand-store/SettingsStore';
 import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
 import { usePythonSingleDocumentExtractor } from './usePythonSingleDocumentExtractor';
-import { usePythonMultiDocumentExtractor } from './usePythonMultiDocumentExtractor';
 import { config } from '../../../config/default';
+import { useDocumentExtractor } from './useDocumentExtractor';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -19,9 +19,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const toast = useToastStore();
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
-    const { addToNodeJsDocumentExtractor } = useNodeJsDocumentExtractor();
-    const { addToPythonSingleDocumentExtractor } = usePythonSingleDocumentExtractor();
-    const { addToPythonMultiDocumentExtractor } = usePythonMultiDocumentExtractor();
+    const { addToDocumentExtractor } = useDocumentExtractor();
 
     useEffect(() => {
         if (!template._id) {
@@ -46,17 +44,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        addToNodeJsDocumentExtractor(files, latestTemplate);
-        // const templateSettings = latestTemplate?.settings;
-        // if (templateSettings?.extractionEngine === 'node') {
-        //     addToNodeJsDocumentExtractor(files, latestTemplate);
-        // } else {
-        //     if (templateSettings?.extractSingleDocument) {
-        //         addToPythonSingleDocumentExtractor(files, latestTemplate);
-        //     } else {
-        //         addToPythonMultiDocumentExtractor(files, latestTemplate);
-        //     }
-        // }
+        addToDocumentExtractor(files, latestTemplate);
     };
 
     return (

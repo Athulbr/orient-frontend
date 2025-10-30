@@ -29,7 +29,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
-    const showNewExtractionWindowUI = localStorage.getItem('user') === 'vinayak' ? true : false;
     useEffect(() => {
         if (user?.role?.name !== 'superadmin') return;
         const getTenantList = async () => {
@@ -95,18 +94,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                             {user?.firstName}
                         </span>
                     </Dropdown>
-                    <Button hidden onClick={callExtractionApi}>
-                        Call API
-                    </Button>
-                    {/* <Dropdown onChange={onChangeDropDown} options={['Light', 'Dark', 'Default']}>
-            <Sun size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          </Dropdown> */}
-
-                    {/* <Settings tabIndex={0} onClick={() => navigate('/config')} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
-                    {/* <MoonStar size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                 </div>
             </div>
-            {!showNewExtractionWindowUI ? <ExtractionFloatingWindow /> : <ExtractionFloatingWindowNew />}
+            <ExtractionFloatingWindowNew />
         </div>
     );
 };

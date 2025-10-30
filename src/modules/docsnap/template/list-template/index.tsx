@@ -38,7 +38,6 @@ const initialState = {
 
 const ListTemplatePage: React.FC = () => {
     const [state, setState] = useState<TemplateStateIF>(initialState);
-    const showNewExtractionWindowUI = localStorage.getItem('user') === 'vinayak' ? true : false;
 
     return (
         <TemplateStateProvider value={{ state, setState }}>
@@ -53,19 +52,7 @@ const ListTemplatePage: React.FC = () => {
             </PageContainer>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <>
-                    {!showNewExtractionWindowUI ? (
-                        <UploadDocumentComponent
-                            template={state.selectedTemplate}
-                            closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })}
-                        />
-                    ) : (
-                        <UploadDocumentComponentNew
-                            template={state.selectedTemplate}
-                            closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })}
-                        />
-                    )}
-                </>
+                <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
             )}
         </TemplateStateProvider>
     );
