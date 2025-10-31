@@ -154,9 +154,9 @@ export const useDocumentExtractor = () => {
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
                 const formData = new FormData();
-                // formData.append('templateId', template?._id);
+                formData.append('template_id', template?._id);
                 formData.append('file', file);
-                const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document?template_id=${template?._id}`;
+                const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
