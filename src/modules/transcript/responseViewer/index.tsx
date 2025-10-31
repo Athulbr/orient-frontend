@@ -163,7 +163,7 @@ const ResponseViewer = ({
                                 onPrimaryAction: async () => {
                                     setExit(true);
                                     closeAlert();
-                                    navigate('/audio-transcript/list');
+                                    navigate('/transcript/record/list');
                                 }
                             });
                         }}

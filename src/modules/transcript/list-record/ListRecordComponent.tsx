@@ -13,7 +13,7 @@ export const ListRecordComponent: React.FC = () => {
 
     const customFunctions = {
         rowClickHandler: (row: any, data: any) => {
-            navigate(`/audio-transcript/view/${row._id}`);
+            navigate(`/transcript/record/view/${row._id}`);
         },
         deleteClickHandler: (row: any) => {
             deleteRecordApi(row._id);
@@ -39,8 +39,6 @@ export const ListRecordComponent: React.FC = () => {
     return (
         <>
             <UseTablebuilder
-                // disableLoader={extractionQueue.length > 0}
-                // customUI={customUI}
                 externalFilters={{ deleted: false, ...selectedFilter }}
                 refresh={state.refresh}
                 name="Medical Code List"
@@ -50,7 +48,6 @@ export const ListRecordComponent: React.FC = () => {
                 updatePermission="update:medicalCode"
                 actionButtons={actionButtons}
                 updatedQuery={updatedQuery}
-                // hiddenColumns={hiddenColumns}
             />
         </>
     );

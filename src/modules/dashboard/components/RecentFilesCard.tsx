@@ -30,6 +30,8 @@ const RecentFilesCardComponent: React.FC = () => {
         const module = sessionStorage.getItem('module');
         if (module === 'documentCreation') {
             navigate(`/document-creation/create/${row._id}`);
+        } else if (module === 'transcript') {
+            navigate(`/transcript/record/view/${row._id}`);
         } else {
             navigate(`/docsnap/record/view/${row._id}`);
         }
@@ -60,7 +62,8 @@ const RecentFilesCardComponent: React.FC = () => {
                         <thead className="sticky top-0 left-0 border-b border-gray-100 bg-white text-nowrap">
                             <tr>
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Name</th>
-                                <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document No.</th>
+                                {state.module === 'transcript' && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Patient ID</th>}
+                                {state.module === 'docsnap' && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Document No.</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Extracted By</th>
                                 {showPoLink && <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Assigned To</th>}
                                 <th className="px-5 py-4 text-left text-sm font-bold text-gray-800">Status</th>
@@ -75,9 +78,14 @@ const RecentFilesCardComponent: React.FC = () => {
                                     <td title={row.name} className="max-w-50 min-w-25 truncate px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {row.name}
                                     </td>
-                                    <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
-                                        {row?.documentNumber ? row?.documentNumber : 'N/A'}
-                                    </td>
+                                    {state.module === 'transcript' && (
+                                        <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.patientId}</td>
+                                    )}
+                                    {state.module === 'docsnap' && (
+                                        <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">
+                                            {row.documentNumber ? row.documentNumber : 'N/A'}
+                                        </td>
+                                    )}
                                     <td className="max-w-50 min-w-25 px-5 py-4 text-sm font-light whitespace-nowrap text-gray-900">{row.extractedBy}</td>
                                     {showPoLink && (
                                         <td className="max-w-50 min-w-25 px-5 py-4 text-sm whitespace-nowrap">{row.assignedTo ? row.assignedTo : 'N/A'}</td>
