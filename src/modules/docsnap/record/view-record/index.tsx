@@ -61,6 +61,7 @@ export interface ViewRecordStateIF {
     images: any[];
     record: any;
     messages: Message[];
+    module: string;
     chatLoading: boolean;
     tableViewDialog: boolean;
     scrollToViewField: number;
@@ -96,6 +97,7 @@ const initialState = {
     images: [],
     record: null,
     messages: [],
+    module: '',
     chatLoading: false,
     tableViewDialog: false,
     leftWidthPercent: 75,

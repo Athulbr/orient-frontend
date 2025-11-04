@@ -93,10 +93,10 @@ export const useViewRecordApi = () => {
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
-                console.log('images', images);
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
+                    module: 'dataentry',
                     images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
                 }));
             } else {
@@ -150,11 +150,12 @@ export const useViewRecordApi = () => {
             const payload = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
+                module: state?.module,
                 extractedData: {
                     ...state?.objectFields,
                     line_items: state?.arrayFields[0]
                 },
-                name: state?.record?.name
+                name: state?.record?.name,
             };
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);

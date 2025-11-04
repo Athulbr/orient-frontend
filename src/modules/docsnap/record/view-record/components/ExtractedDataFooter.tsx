@@ -15,7 +15,7 @@ interface ExtractedDataFooterIF {
 const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
-    const { setState } = useViewRecordState();
+    const { state, setState } = useViewRecordState();
     const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi } = useViewRecordApi();
     const handleSubmit = async () => {
         await submitRecordApi();
@@ -54,8 +54,6 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             }
         });
     };
-
-    const { state } = useViewRecordState();
 
     const skipToNextDocumentHandler = () => {
         const recordIdList = window?.sessionStorage?.getItem('recordIdList') as string;
