@@ -42,6 +42,7 @@ const AuthenticatedRoutes = () => {
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
+                <Route path="dataentry/*" element={<DocSnapRoutes />} />
                 <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
