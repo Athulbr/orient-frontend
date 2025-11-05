@@ -44,13 +44,13 @@ export const InputField = ({
     const [commentList, setCommentList] = useState<{ text: string; date: string; time: string }[]>([]);
 
     const renderTemplate = (template: string, data: Record<string, string>) => {
-        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => encodeURIComponent(data[key] ?? ''));
+        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => data[key] ?? '');
     };
 
     const validateLink = (validationUrl: string, value: string) => {
         if (!validationUrl.trim() || !value.trim()) return;
         const finalUrl = renderTemplate(validationUrl, { value });
-        window.open(finalUrl, '_blank');
+        window.open(finalUrl, '_blank'); // ✅ open in new tab
     };
 
     return (

@@ -55,7 +55,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />
+                <DragAndDropFileInput accept="application/pdf,image/*,.csv,.xlsx,.xls" onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

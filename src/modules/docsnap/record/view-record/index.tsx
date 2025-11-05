@@ -79,6 +79,7 @@ export interface ViewRecordStateIF {
     blogContent: string;
     templateSettings: any;
     templateFields: any;
+    primaryImage: string;
 }
 const initialState = {
     showCreateDialog: false,
@@ -114,7 +115,8 @@ const initialState = {
     showRegenerateFieldDialog: null,
     blogContent: '',
     templateSettings: null,
-    templateFields: null
+    templateFields: null,
+    primaryImage: ''
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -148,7 +150,7 @@ const ViewRecordPage: React.FC = () => {
                             {/* </TabViewContainer> */}
                         </div>
                     }
-                    initialLeftWidthPercent={75}
+                    initialLeftWidthPercent={70}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={80}
                     onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}

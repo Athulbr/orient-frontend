@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { XCircle } from 'lucide-react';
+import { cn } from '../../../../../global-utils/twMerge';
 
 export const DataEntryImagesList: FC = () => {
     const { state, setState } = useViewRecordState();
@@ -30,30 +31,40 @@ export const DataEntryImagesList: FC = () => {
                         return (
                             <div
                                 key={index}
-                                className={
-                                    `relative flex-none ${
-                                        selected
-                                            ? 'border-2 border-sky-500 p-1 rounded-md'
-                                            : 'border-2 border-gray-300 p-1 rounded-md'
-                                    }`
-                                }
+                                className={`group relative flex-none ${
+                                    selected ? 'border-2 border-sky-500 p-1 rounded-md' : 'border-2 border-gray-300 p-1 rounded-md'
+                                }`}
                             >
+                                <label
+                                    className={cn(
+                                        'absolute left-2 top-2 hidden group-hover:flex items-center gap-2 text-sm bg-white/90 px-2 py-1 rounded shadow-md',
+                                        state.primaryImage === image ? 'flex' : 'hidden'
+                                    )}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 accent-blue-600 bg-white rounded shadow cursor-pointer"
+                                        checked={state.primaryImage === image}
+                                        onChange={e => {
+                                            e.stopPropagation();
+                                            setState(prev => ({ ...prev, primaryImage: image === prev.primaryImage ? '' : image }));
+                                        }}
+                                        onClick={e => e.stopPropagation()}
+                                    />
+                                    Set as Primary Image
+                                </label>
                                 <input
                                     type="checkbox"
-                                    className="absolute right-2 top-2 h-5 w-5 accent-blue-600 bg-white rounded shadow cursor-pointer"
+                                    className="absolute right-2 top-2 h-4 w-4 accent-blue-600 bg-white rounded shadow cursor-pointer block"
                                     checked={selected}
-                                    onChange={(e) => {
+                                    onChange={e => {
                                         e.stopPropagation();
                                         toggleImage(image);
                                     }}
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={e => e.stopPropagation()}
                                 />
-                                <img
-                                    onClick={() => toggleImage(image)}
-                                    src={image}
-                                    className={'block h-86 w-auto object-contain'}
-                                    alt=""
-                                />
+
+                                <img onClick={() => toggleImage(image)} src={image} className={'block h-86 w-auto object-contain cursor-pointer'} alt="" />
                             </div>
                         );
                     })}
@@ -61,4 +72,3 @@ export const DataEntryImagesList: FC = () => {
         </div>
     );
 };
-

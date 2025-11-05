@@ -112,7 +112,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                         <div
                             key={idx}
                             className={cn(
-                                'flex items-center flex-col justify-between gap-2 border p-4 rounded-lg border-l-4 border-l-amber-500',
+                                'flex items-center flex-col justify-between gap-1 border p-3 rounded-lg border-l-4 border-l-amber-500',
                                 file.status === 'completed' ? 'border-l-green-500' : file.status === 'failed' ? 'border-l-red-500' : ''
                             )}
                         >

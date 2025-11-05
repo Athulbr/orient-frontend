@@ -155,7 +155,7 @@ export const useViewRecordApi = () => {
                     ...state?.objectFields,
                     line_items: state?.arrayFields[0]
                 },
-                name: state?.record?.name,
+                name: state?.record?.name
             };
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
@@ -294,7 +294,7 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-field`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-description`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);

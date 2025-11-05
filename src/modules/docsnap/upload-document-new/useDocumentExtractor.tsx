@@ -1,83 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
+import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
 
 export const useDocumentExtractor = () => {
-    const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, handleCompletion, handleError, addToExtractionQueue } =
-        useExtractionStore();
+    const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
     const navigate = useNavigate();
 
-    const addToDocumentExtractor = (files: File[], template: any) => {
-        const templateSettings = template?.settings;
+    // console.log('extractionQueue:===========', extractionQueue);
 
-        const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, fileName: string, timer: NodeJS.Timeout) => {
-            const decoder = new TextDecoder('utf-8');
-            let buffer = '';
-
-            try {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        if (!line.trim()) continue;
-                        if (!line.startsWith('data: ')) continue;
-
-                        try {
-                            // Handle SSE format: "data: {json}" or just "{json}"
-                            let jsonString = line;
-                            if (line.startsWith('data: ')) {
-                                jsonString = line.substring(6); // Remove "data: " prefix
-                            }
-
-                            if (!jsonString.trim()) continue;
-
-                            const parsed = JSON.parse(jsonString);
-
-                            // Get fresh state
-                            const processingFiles = extractionQueue.filter(queue => queue.status !== 'completed' && queue.status !== 'failed');
-
-                            // Handle different status types
-                            switch (parsed.status) {
-                                case 'completed':
-                                    handleCompletion(timer, processingFiles, fileName);
-                                    break;
-
-                                case 'failed':
-                                case 'error':
-                                    handleError(timer, processingFiles, fileName);
-                                    break;
-
-                                default:
-                                    if (parsed.status) {
-                                        updateExtractionQueue(fileName, {
-                                            status: parsed.status,
-                                            step: parsed.step,
-                                            progress: parsed.progress
-                                        });
-                                    }
-                                    break;
-                            }
-                        } catch (parseError) {
-                            console.warn('Failed to parse SSE message:', parseError, 'Line:', line);
-                            continue;
-                        }
-                    }
-                }
-            } catch (streamError) {
-                console.error('Stream processing error:', streamError);
-                const processingFiles = extractionQueue.filter(queue => queue.status !== 'completed' && queue.status !== 'failed');
-                handleError(timer, processingFiles, fileName);
-            } finally {
-                clearInterval(timer);
-            }
-        };
-
-        const sendApiRequestToNodeJs = async (file: File, template: any) => {
+    const addToDocumentExtractor = async (files: File[], template: any) => {
+        const sendApiRequestToNodeJsExtractor = async (file: File, template: any) => {
             let timer: NodeJS.Timeout | null = null;
 
             try {
@@ -94,14 +27,11 @@ export const useDocumentExtractor = () => {
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
                 const formData = new FormData();
-                formData.append('template', JSON.stringify(template));
+                // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
                 formData.append('file', file);
 
-                const apiEndPoint =
-                    template?.settings?.templateType === 'sld'
-                        ? `${config.mlServiceNodejs}/docsnap/extract-sld`
-                        : `${config.mlServiceNodejs}/docsnap/extract-document`;
+                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/extract-document`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -137,7 +67,7 @@ export const useDocumentExtractor = () => {
             }
         };
 
-        const sendApiRequestToPython = async (file: File, template: any) => {
+        const sendApiRequestToPythonExtractor = async (file: File, template: any) => {
             let timer: NodeJS.Timeout | null = null;
 
             try {
@@ -207,6 +137,89 @@ export const useDocumentExtractor = () => {
             }
         };
 
+        const sendApiRequestToDataEntry = async (rowData: any, template: any) => {
+            let timer: NodeJS.Timeout | null = null;
+
+            try {
+                const abortController = new AbortController();
+                timer = startTimer(rowData.SKU);
+
+                updateExtractionQueue(rowData.SKU, {
+                    status: 'processing',
+                    time: 0,
+                    abortController,
+                    step: 'uploading',
+                    progress: 5
+                });
+
+                const token = window?.sessionStorage?.getItem('accessToken') || '';
+
+                const requestBody = {
+                    templateId: template?._id,
+                    rowData: rowData
+                };
+
+                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/data-entry`;
+
+                const response = await fetch(apiEndPoint, {
+                    method: 'POST',
+                    headers: { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                // Check response status
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                if (!response.body) {
+                    throw new Error('ReadableStream not supported');
+                }
+
+                const reader = response.body.getReader();
+                await processStream(reader, rowData.SKU, timer);
+            } catch (error) {
+                console.error('API request error:', error);
+
+                if (timer) {
+                    clearInterval(timer);
+                }
+
+                // Handle abort separately
+                if (error instanceof Error && error.name === 'AbortError') {
+                    console.log('Request was aborted');
+                }
+
+                updateExtractionQueue(rowData.SKU, { status: 'failed' });
+            }
+        };
+
+        if (template?.settings?.templateType === 'dataentry') {
+            const csvData = await excelFileToArrayOfObjects(files[0]);
+            let selectedRows: any = [];
+            csvData.forEach((item: any) => {
+                if (selectedRows.length >= 1) {
+                    return;
+                }
+                if (item["Manufacturer's URL"]) {
+                    selectedRows.push(item);
+                }
+            });
+            selectedRows.forEach((item: any, index: number) => {
+                setTimeout(() => {
+                    console.log('item:===========', item);
+                    // First, remove any existing entry for this file
+                    refreshExtractionQueue(item.SKU);
+                    // Then add the new entry
+                    addToExtractionQueue(item.SKU);
+                    // Finally, send the request
+                    sendApiRequestToDataEntry(item, template);
+                }, index * 200);
+            });
+            navigate('/docsnap/record/list');
+            return;
+        }
+
         for (const file of Array.from(files)) {
             try {
                 // First, remove any existing entry for this file
@@ -216,9 +229,9 @@ export const useDocumentExtractor = () => {
                 // Finally, send the request
 
                 if (template?.settings?.extractionEngine === 'node') {
-                    sendApiRequestToNodeJs(file, template);
+                    sendApiRequestToNodeJsExtractor(file, template);
                 } else {
-                    sendApiRequestToPython(file, template);
+                    sendApiRequestToPythonExtractor(file, template);
                 }
             } catch (error) {
                 console.error('Error processing file:', error);
