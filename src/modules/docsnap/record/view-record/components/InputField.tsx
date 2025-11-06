@@ -86,7 +86,7 @@ export const InputField = ({
                 {showTextarea ? (
                     <textarea
                         data-gramm="false"
-                        rows={6}
+                        rows={10}
                         onFocus={() => onMouseAction?.()}
                         onKeyDown={e => {
                             if (e.key === 'Enter') {
@@ -94,7 +94,7 @@ export const InputField = ({
                             }
                         }}
                         ref={ref}
-                        className="min-w-0 flex-1 px-3 text-gray-900 focus:outline-none"
+                        className="min-w-0 flex-1 px-3 text-gray-900 focus:outline-none border mx-1"
                         value={value ? value : ''}
                         onChange={onchange}
                         {...props}
