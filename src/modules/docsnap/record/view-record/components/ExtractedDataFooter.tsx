@@ -75,11 +75,13 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     <SkipForward size={18} className="text-gray-500" />
                 </Button>
             </Tooltip>
-            <Tooltip text="Re Extract">
-                <Button disabled={reExtracting} onClick={handleReExtract} small outlined>
-                    <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
-                </Button>
-            </Tooltip>
+            {state.templateSettings?.reExtraction && (
+                <Tooltip text="Re Extract">
+                    <Button disabled={reExtracting} onClick={handleReExtract} small outlined>
+                        <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
+                    </Button>
+                </Tooltip>
+            )}
             <Button disabled={reExtracting} onClick={() => navigate('/docsnap/record/list')} outlined small>
                 Cancel
             </Button>

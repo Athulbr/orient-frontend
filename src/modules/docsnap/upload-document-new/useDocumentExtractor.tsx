@@ -207,7 +207,6 @@ export const useDocumentExtractor = () => {
             });
             selectedRows.forEach((item: any, index: number) => {
                 setTimeout(() => {
-                    console.log('item:===========', item);
                     // First, remove any existing entry for this file
                     refreshExtractionQueue(item.SKU);
                     // Then add the new entry

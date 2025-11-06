@@ -25,7 +25,7 @@ export const DataEntryImagesList: FC = () => {
             </div>
             <div className="flex  gap-2 overflow-x-auto rounded-lg border bg-white p-3 hover:border-blue-400">
                 {state.dataEntryWebImages
-                    ?.filter(item => !item.includes('logo') && !item.includes('flag'))
+                    ?.filter(item => !item.includes('logo') && !item.includes('flag') && !item.includes('Logo') && !item.includes('width=150'))
                     .map((image, index) => {
                         const selected = state.selectedDataEntryImages.includes(image);
                         return (
