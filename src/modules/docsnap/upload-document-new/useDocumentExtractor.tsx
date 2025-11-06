@@ -196,9 +196,9 @@ export const useDocumentExtractor = () => {
 
         if (template?.settings?.templateType === 'dataentry') {
             const csvData = await excelFileToArrayOfObjects(files[0]);
-            let selectedRows: any = [];
+            const selectedRows: any = [];
             csvData.forEach((item: any) => {
-                if (selectedRows.length >= 1) {
+                if (selectedRows.length >= 5) {
                     return;
                 }
                 if (item["Manufacturer's URL"]) {
