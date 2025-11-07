@@ -52,7 +52,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             console.log('selectedProducts:===========', selectedProducts);
             setSelectedProducts(selectedProducts);
             selectedProducts.forEach(product => {
-                addToDocumentExtractor(latestTemplate, files, product);
+                addToDocumentExtractor(latestTemplate, [], product);
             });
         } else {
             addToDocumentExtractor(latestTemplate, files);
