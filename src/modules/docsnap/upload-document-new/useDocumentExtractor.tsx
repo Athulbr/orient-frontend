@@ -9,7 +9,7 @@ export const useDocumentExtractor = () => {
 
     // console.log('extractionQueue:===========', extractionQueue);
 
-    const addToDocumentExtractor = async (files: File[], template: any) => {
+    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any) => {
         const sendApiRequestToNodeJsExtractor = async (file: File, template: any) => {
             let timer: NodeJS.Timeout | null = null;
 
@@ -195,26 +195,9 @@ export const useDocumentExtractor = () => {
         };
 
         if (template?.settings?.templateType === 'dataentry') {
-            const csvData = await excelFileToArrayOfObjects(files[0]);
-            const selectedRows: any = [];
-            csvData.forEach((item: any) => {
-                if (selectedRows.length >= 2) {
-                    return;
-                }
-                if (item["Manufacturer's URL"]) {
-                    selectedRows.push(item);
-                }
-            });
-            selectedRows.forEach((item: any, index: number) => {
-                setTimeout(() => {
-                    // First, remove any existing entry for this file
-                    refreshExtractionQueue(item.SKU);
-                    // Then add the new entry
-                    addToExtractionQueue(item.SKU);
-                    // Finally, send the request
-                    sendApiRequestToDataEntry(item, template);
-                }, index * 200);
-            });
+            refreshExtractionQueue(rowData.SKU);
+            addToExtractionQueue(rowData.SKU);
+            sendApiRequestToDataEntry(rowData, template);
             navigate('/docsnap/record/list');
             return;
         }

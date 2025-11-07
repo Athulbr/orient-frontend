@@ -52,6 +52,328 @@ export const useViewRecordApi = () => {
             const tableNames: string[] = [];
             if (res.data.extractedData) {
                 const extractedData = JSON.parse(JSON.stringify(res.data.extractedData));
+                // extractedData.variations = [
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT113-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 18" x 30" Black Edge - Black Legs Adjusts 15" - 24"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: 'https://bintiva.com/products/activity-table-with-adjustable-legs-1?variant=43584604667956'
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 99
+                //         },
+                //         CSFP: {
+                //             value: 159.33
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT112-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 18" x 30" Black Edge - Black Legs Adjusts 21" - 30"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 99
+                //         },
+                //         CSFP: {
+                //             value: 159.33
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT111-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 24" x 36" Black Edge - Black Legs Adjusts 15" - 24"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 107
+                //         },
+                //         CSFP: {
+                //             value: 174.67
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT110-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 24" x 36" Black Edge - Black Legs Adjusts 21" - 30"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 107
+                //         },
+                //         CSFP: {
+                //             value: 174.67
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT114-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 24 x 48 (60x120cm) Black Edge - Black Legs Adjusts 15" - 24"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 114
+                //         },
+                //         CSFP: {
+                //             value: 215.33
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT81-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 24 x 48 (60x120cm) Gray Edge - Gray Legs Adjusts 15" - 24"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 114
+                //         },
+                //         CSFP: {
+                //             value: 215.33
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT79-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 24 x 48 (60x120cm) Black Edge - Black Legs Adjusts 21" - 30"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 114
+                //         },
+                //         CSFP: {
+                //             value: 215.33
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT80-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 24 x 48 (60x120cm) Gray Edge - Gray Legs Adjusts 21" - 30"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 114
+                //         },
+                //         CSFP: {
+                //             value: 215.33
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT122-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 36" Round Black Edge - Black Legs Adjusts 21" - 30"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 121
+                //         },
+                //         CSFP: {
+                //             value: 225.6
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     },
+                //     {
+                //         SKU: {
+                //             value: 'BN-KIT151-BT'
+                //         },
+                //         Description: {
+                //             value: 'Activity Table 36" Round Gray Edge - Gray Legs Adjusts 21" - 30"'
+                //         },
+                //         "Manufacturer's URL": {
+                //             value: ''
+                //         },
+                //         UOM: {
+                //             value: 'Each'
+                //         },
+                //         'Qty.': {
+                //             value: 1
+                //         },
+                //         Cost: {
+                //             value: 121
+                //         },
+                //         CSFP: {
+                //             value: 225.6
+                //         },
+                //         'Dlr Ship': {
+                //             value: 0
+                //         },
+                //         "Add'l Fees": {
+                //             value: 0
+                //         },
+                //         'Price Method': {
+                //             value: 'CSFP'
+                //         }
+                //     }
+                // ];
                 // const extractedData = electricalComponents_OCR;
                 Object.entries(extractedData).forEach(([key, value]: any) => {
                     if (Array.isArray(value)) {

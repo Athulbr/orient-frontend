@@ -124,6 +124,7 @@ const ViewRecordPage: React.FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
     useBackButtonOverride('/docsnap/record/list');
+    const module = sessionStorage.getItem('module');
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
@@ -150,7 +151,7 @@ const ViewRecordPage: React.FC = () => {
                             {/* </TabViewContainer> */}
                         </div>
                     }
-                    initialLeftWidthPercent={70}
+                    initialLeftWidthPercent={module === 'dataentry' ? 60 : 70}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={80}
                     onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}

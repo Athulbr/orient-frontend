@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
 import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
-import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
-import { useSettingsStore } from '../../../zustand-store/SettingsStore';
-import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
-import { usePythonSingleDocumentExtractor } from './usePythonSingleDocumentExtractor';
 import { config } from '../../../config/default';
 import { useDocumentExtractor } from './useDocumentExtractor';
+import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
+import { groupVariationsByPageCount } from './functions/groupVariationsByPageCount';
+import { createProductWithVariationGroups } from './functions/createProductWithVariationGroups';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -20,6 +19,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
+    const [selectedProducts, setSelectedProducts] = useState<any>([]);
 
     useEffect(() => {
         if (!template._id) {
@@ -44,7 +44,19 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        addToDocumentExtractor(files, latestTemplate);
+        if (template?.settings?.templateType === 'dataentry') {
+            const csvData = await excelFileToArrayOfObjects(files[0]);
+            const groupedVariations = groupVariationsByPageCount(csvData);
+            const products = createProductWithVariationGroups(groupedVariations);
+            const selectedProducts = products.slice(0, 1);
+            console.log('selectedProducts:===========', selectedProducts);
+            setSelectedProducts(selectedProducts);
+            selectedProducts.forEach(product => {
+                addToDocumentExtractor(latestTemplate, files, product);
+            });
+        } else {
+            addToDocumentExtractor(latestTemplate, files);
+        }
     };
 
     return (
