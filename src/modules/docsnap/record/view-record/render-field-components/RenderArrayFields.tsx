@@ -1,4 +1,4 @@
-import { Edit, Trash2, XCircle } from 'lucide-react';
+import { Edit, Trash2, X, XCircle } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
@@ -101,7 +101,8 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     {showEditTableName ? (
                         <>
                             <TextField className="border" value={state.tableNames[mainIndex]} />
-                            <Button outlined small onClick={() => setShowEditTableName(false)}>
+                            <Button startIcon={<X size={20} />} outlined onClick={() => setShowEditTableName(false)}></Button>
+                            <Button outlined onClick={() => setShowEditTableName(false)}>
                                 Update
                             </Button>
                         </>
