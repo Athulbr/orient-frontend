@@ -9,7 +9,7 @@ export interface ProductRowIF {
     Quantity: number;
     Cost: string;
     CSFP: string;
-    'Dealership Cost': string;
+    'Dealer Shipping Cost': string;
     'Additional Fees': string;
     'Price Method': string;
 }
@@ -41,7 +41,7 @@ const sampleProductRow: ProductRowIF = {
     Quantity: 1,
     Cost: '$99.00',
     CSFP: '$159.33',
-    'Dealership Cost': '$0.00',
+    'Dealer Shipping Cost': '$0.00',
     'Additional Fees': '$0.00',
     'Price Method': 'CSFP'
 };

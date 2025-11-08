@@ -26,7 +26,7 @@ const createVariationsGroup = (variations: ProductRowIF[]) => {
                 Quantity: product.Quantity,
                 Cost: product.Cost,
                 CSFP: product.CSFP,
-                'Dealership Cost': product['Dealership Cost'],
+                'Dealer Shipping Cost': product['Dealer Shipping Cost'],
                 'Additional Fees': product['Additional Fees'],
                 'Price Method': product['Price Method']
             };
