@@ -49,7 +49,8 @@ export const useFetchDataFromApi = () => {
 
                 const updatedQuery = injectedData.updatedQuery ? injectedData.updatedQuery(query) : query;
 
-                const res = await httpRequest('POST', `${url}${api.endPoint}`, clearFilterRequest ? { filters: injectedData.externalFilters } : updatedQuery);
+                const requestBody = clearFilterRequest ? { filters: injectedData.externalFilters, pageSize: customQuery?.pageSize ?? pageRows } : updatedQuery;
+                const res = await httpRequest('POST', `${url}${api.endPoint}`, requestBody);
 
                 if (!res || !res.data) {
                     throw new Error('Invalid API response format');
