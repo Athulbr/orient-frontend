@@ -150,55 +150,54 @@ export const useViewRecordApi = () => {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
-                extractedData: {
-                    ...state?.objectFields,
-                    line_items: state?.arrayFields[0]
-                },
+                extractedData: processArrayFields(),
                 name: state?.record?.name
             };
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
             navigate('/docsnap/record/list');
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to update Record');
-            navigate('/docsnap/record/list');
+        } catch (error: any) {
+            console.error('error:===========', error?.message);
+            toast.error(error?.message);
+            // navigate('/docsnap/record/list');
         } finally {
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
 
+    const processArrayFields = () => {
+        const updatedData = { ...state?.objectFields };
+
+        // Get table names (could be ['line_items', 'specifications'] or other combinations)
+        const tableNames = state?.tableNames || [];
+
+        // Process each array field dynamically
+        tableNames.forEach((tableName, index) => {
+            // Get the corresponding array field by index
+            const arrayFieldRecord = state?.arrayFields[index] || {};
+
+            // Convert Record<string, Record<string, { value: string }>> to array of row objects
+            const arrayData = Object.values(arrayFieldRecord).map(rowObj => {
+                const flatRow = {};
+                Object.entries(rowObj).forEach(([col, valObj]: any) => {
+                    // Copy all properties (value, page, bbox, confidence, etc.)
+                    // @ts-ignore
+                    flatRow[col] = { ...valObj };
+                });
+                return flatRow;
+            });
+
+            // Add to updatedData using the dynamic table name
+            updatedData[tableName] = arrayData;
+        });
+
+        return updatedData;
+    };
+
     const updateRecordApiById = async () => {
         try {
-            const processArrayFields = () => {
-                const updatedData = { ...state?.objectFields };
 
-                // Get table names (could be ['line_items', 'specifications'] or other combinations)
-                const tableNames = state?.tableNames || [];
-
-                // Process each array field dynamically
-                tableNames.forEach((tableName, index) => {
-                    // Get the corresponding array field by index
-                    const arrayFieldRecord = state?.arrayFields[index] || {};
-
-                    // Convert Record<string, Record<string, { value: string }>> to array of row objects
-                    const arrayData = Object.values(arrayFieldRecord).map(rowObj => {
-                        const flatRow = {};
-                        Object.entries(rowObj).forEach(([col, valObj]: any) => {
-                            // Copy all properties (value, page, bbox, confidence, etc.)
-                            // @ts-ignore
-                            flatRow[col] = { ...valObj };
-                        });
-                        return flatRow;
-                    });
-
-                    // Add to updatedData using the dynamic table name
-                    updatedData[tableName] = arrayData;
-                });
-
-                return updatedData;
-            };
 
             // Usage in your payload
             const payload = {
