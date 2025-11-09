@@ -72,6 +72,7 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
     const saveComment = () => {
         setCommentList([...commentList, { text: comment, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() }]);
         setComment('');
+        handleClose();
     };
     if (!isOpen) return null;
 
