@@ -78,14 +78,14 @@ export const CommentDialog: FC<CommentDialogPropsIF> = ({ isOpen, closeDialog, j
     return (
         <div
             ref={dialogRef}
-            className="absolute top-19 right-2 z-10 flex w-[calc(100%-10px)]  flex-col items-end gap-2 rounded-lg border bg-white px-4 py-2 text-lg shadow-xl"
+            className="absolute top-0 right-2 z-10 flex w-[calc(100%-10px)]  flex-col items-end gap-2 rounded-lg border bg-white px-4 py-2 text-lg shadow-xl"
         >
             <header className="w-full font-bold text-gray-600">Add Comment</header>
             <textarea
                 value={comment}
                 onChange={handleCommentChange}
                 className="w-full rounded-lg border p-2 text-sm text-gray-700 focus:outline-1"
-                rows={5}
+                rows={2}
                 placeholder="Add your comment here..."
             />
             <ButtonBox>
