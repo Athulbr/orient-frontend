@@ -61,6 +61,7 @@ export interface ViewRecordStateIF {
     images: any[];
     record: any;
     messages: Message[];
+    module: string;
     chatLoading: boolean;
     tableViewDialog: boolean;
     scrollToViewField: number;
@@ -78,6 +79,7 @@ export interface ViewRecordStateIF {
     blogContent: string;
     templateSettings: any;
     templateFields: any;
+    primaryImage: string;
 }
 const initialState = {
     showCreateDialog: false,
@@ -96,6 +98,7 @@ const initialState = {
     images: [],
     record: null,
     messages: [],
+    module: '',
     chatLoading: false,
     tableViewDialog: false,
     leftWidthPercent: 75,
@@ -112,7 +115,8 @@ const initialState = {
     showRegenerateFieldDialog: null,
     blogContent: '',
     templateSettings: null,
-    templateFields: null
+    templateFields: null,
+    primaryImage: ''
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -120,6 +124,7 @@ const ViewRecordPage: React.FC = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
     useBackButtonOverride('/docsnap/record/list');
+    const module = sessionStorage.getItem('module');
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
@@ -146,7 +151,7 @@ const ViewRecordPage: React.FC = () => {
                             {/* </TabViewContainer> */}
                         </div>
                     }
-                    initialLeftWidthPercent={75}
+                    initialLeftWidthPercent={module === 'dataentry' ? 60 : 70}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={80}
                     onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}

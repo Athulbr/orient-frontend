@@ -47,8 +47,7 @@ export const ListRecordComponent: React.FC = () => {
     const toast = useToastStore();
 
     const [rowSelected, setRowSelected] = useState<boolean>(false);
-    const showNewExtractionWindowUI = localStorage.getItem('user') === 'vinayak' ? true : false;
-    const { refreshRecord, updateRefreshRecord, extractionQueue } = showNewExtractionWindowUI ? useExtractionStore() : useDocsnapStore();
+    const { refreshRecord, updateRefreshRecord, extractionQueue } = useExtractionStore();
 
     useEffect(() => {
         if (refreshRecord === 100) return;

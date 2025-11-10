@@ -52,7 +52,6 @@ export const useViewRecordApi = () => {
             const tableNames: string[] = [];
             if (res.data.extractedData) {
                 const extractedData = JSON.parse(JSON.stringify(res.data.extractedData));
-                // const extractedData = electricalComponents_OCR;
                 Object.entries(extractedData).forEach(([key, value]: any) => {
                     if (Array.isArray(value)) {
                         // its array
@@ -93,10 +92,10 @@ export const useViewRecordApi = () => {
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
-                console.log('images', images);
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
+                    module: 'dataentry',
                     images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
                 }));
             } else {
@@ -150,10 +149,8 @@ export const useViewRecordApi = () => {
             const payload = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
-                extractedData: {
-                    ...state?.objectFields,
-                    line_items: state?.arrayFields[0]
-                },
+                module: state?.module,
+                extractedData: processArrayFields(),
                 name: state?.record?.name
             };
             setState(prev => ({ ...prev, loadingData: true }));
@@ -161,45 +158,46 @@ export const useViewRecordApi = () => {
             toast.success('Record submitted successfully');
             navigate('/docsnap/record/list');
         } catch (error: any) {
-            console.error('error:===========', error.message);
-            toast.error(error.message || 'Failed to submit Record');
+            console.error('error:===========', error?.message);
+            toast.error(error?.message);
             // navigate('/docsnap/record/list');
         } finally {
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
 
+    const processArrayFields = () => {
+        const updatedData = { ...state?.objectFields };
+
+        // Get table names (could be ['line_items', 'specifications'] or other combinations)
+        const tableNames = state?.tableNames || [];
+
+        // Process each array field dynamically
+        tableNames.forEach((tableName, index) => {
+            // Get the corresponding array field by index
+            const arrayFieldRecord = state?.arrayFields[index] || {};
+
+            // Convert Record<string, Record<string, { value: string }>> to array of row objects
+            const arrayData = Object.values(arrayFieldRecord).map(rowObj => {
+                const flatRow = {};
+                Object.entries(rowObj).forEach(([col, valObj]: any) => {
+                    // Copy all properties (value, page, bbox, confidence, etc.)
+                    // @ts-ignore
+                    flatRow[col] = { ...valObj };
+                });
+                return flatRow;
+            });
+
+            // Add to updatedData using the dynamic table name
+            updatedData[tableName] = arrayData;
+        });
+
+        return updatedData;
+    };
+
     const updateRecordApiById = async () => {
         try {
-            const processArrayFields = () => {
-                const updatedData = { ...state?.objectFields };
 
-                // Get table names (could be ['line_items', 'specifications'] or other combinations)
-                const tableNames = state?.tableNames || [];
-
-                // Process each array field dynamically
-                tableNames.forEach((tableName, index) => {
-                    // Get the corresponding array field by index
-                    const arrayFieldRecord = state?.arrayFields[index] || {};
-
-                    // Convert Record<string, Record<string, { value: string }>> to array of row objects
-                    const arrayData = Object.values(arrayFieldRecord).map(rowObj => {
-                        const flatRow = {};
-                        Object.entries(rowObj).forEach(([col, valObj]: any) => {
-                            // Copy all properties (value, page, bbox, confidence, etc.)
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore
-                            flatRow[col] = { ...valObj };
-                        });
-                        return flatRow;
-                    });
-
-                    // Add to updatedData using the dynamic table name
-                    updatedData[tableName] = arrayData;
-                });
-
-                return updatedData;
-            };
 
             // Usage in your payload
             const payload = {
@@ -294,7 +292,7 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-field`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-description`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
@@ -331,6 +329,7 @@ export const useViewRecordApi = () => {
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
+    // @ts-ignore
     const blob = new Blob([binaryData], { type: mimeType });
     return new File([blob], fileName, { type: mimeType });
 };

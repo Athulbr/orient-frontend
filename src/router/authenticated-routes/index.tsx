@@ -42,10 +42,11 @@ const AuthenticatedRoutes = () => {
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
+                <Route path="dataentry/*" element={<DocSnapRoutes />} />
                 <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
-                <Route path="/audio-transcript/*" element={<MedicalCodeRoutes />} />
+                <Route path="/transcript/record/*" element={<MedicalCodeRoutes />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
                 <Route path="/transcript" element={<DashboardPage module="transcript" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />

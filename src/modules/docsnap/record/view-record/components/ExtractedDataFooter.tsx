@@ -15,7 +15,7 @@ interface ExtractedDataFooterIF {
 const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
-    const { setState } = useViewRecordState();
+    const { state, setState } = useViewRecordState();
     const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi } = useViewRecordApi();
     const handleSubmit = async () => {
         await submitRecordApi();
@@ -55,8 +55,6 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         });
     };
 
-    const { state } = useViewRecordState();
-
     const skipToNextDocumentHandler = () => {
         const recordIdList = window?.sessionStorage?.getItem('recordIdList') as string;
         const recordIdListArray = JSON.parse(recordIdList);
@@ -77,11 +75,13 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     <SkipForward size={18} className="text-gray-500" />
                 </Button>
             </Tooltip>
-            <Tooltip text="Re Extract">
-                <Button disabled={reExtracting} onClick={handleReExtract} small outlined>
-                    <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
-                </Button>
-            </Tooltip>
+            {state.templateSettings?.reExtraction && (
+                <Tooltip text="Re Extract">
+                    <Button disabled={reExtracting} onClick={handleReExtract} small outlined>
+                        <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
+                    </Button>
+                </Tooltip>
+            )}
             <Button disabled={reExtracting} onClick={() => navigate('/docsnap/record/list')} outlined small>
                 Cancel
             </Button>

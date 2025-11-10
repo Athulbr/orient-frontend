@@ -44,13 +44,13 @@ export const InputField = ({
     const [commentList, setCommentList] = useState<{ text: string; date: string; time: string }[]>([]);
 
     const renderTemplate = (template: string, data: Record<string, string>) => {
-        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => encodeURIComponent(data[key] ?? ''));
+        return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => data[key] ?? '');
     };
 
     const validateLink = (validationUrl: string, value: string) => {
         if (!validationUrl.trim() || !value.trim()) return;
         const finalUrl = renderTemplate(validationUrl, { value });
-        window.open(finalUrl, '_blank');
+        window.open(finalUrl, '_blank'); // ✅ open in new tab
     };
 
     return (
@@ -86,7 +86,7 @@ export const InputField = ({
                 {showTextarea ? (
                     <textarea
                         data-gramm="false"
-                        rows={6}
+                        rows={10}
                         onFocus={() => onMouseAction?.()}
                         onKeyDown={e => {
                             if (e.key === 'Enter') {
@@ -94,7 +94,7 @@ export const InputField = ({
                             }
                         }}
                         ref={ref}
-                        className="min-w-0 flex-1 px-3 text-gray-900 focus:outline-none"
+                        className="min-w-0 flex-1 px-3 text-gray-900 focus:outline-none border mx-1"
                         value={value ? value : ''}
                         onChange={onchange}
                         {...props}

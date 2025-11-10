@@ -69,7 +69,7 @@ const ListRecordPage: React.FC = () => {
         const payload = { name: values?.patientName, patientId: values?.patientId };
         const result = await createTranscript(payload);
         if (result) {
-            navigate('/audio-transcript/create');
+            navigate('/transcript/record/create');
         }
     };
 

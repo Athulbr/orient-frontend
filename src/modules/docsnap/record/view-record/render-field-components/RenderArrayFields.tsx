@@ -1,4 +1,4 @@
-import { Trash2, XCircle } from 'lucide-react';
+import { Edit, Trash2, X, XCircle } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
@@ -6,11 +6,14 @@ import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { ValidateSkuButton } from '../components/ValidateSkuButton';
+import { TextField } from '../../../../../components/TextField';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
     const { fieldRefs, containerRef } = refs;
     const [commentDialog, setCommentDialog] = useState(false);
+    const [showEditTableName, setShowEditTableName] = useState(false);
+    const [newTableName, setNewTableName] = useState('');
     const toast = useToastStore();
     const updateWire = (fieldId: string, bbox: any) => {
         if (!fieldId || !bbox) return;
@@ -92,17 +95,56 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
     const firstRow = state.arrayFields[mainIndex][0] || {};
     const labels = Object.keys(firstRow);
 
+    const updateTableName = () => {
+        const updatedTableNames = state.tableNames.map((name, index) => {
+            if (index === mainIndex) {
+                return newTableName;
+            }
+            return name;
+        });
+
+        setState(prev => ({
+            ...prev,
+            tableNames: updatedTableNames,
+            selectedTableName: newTableName
+        }));
+
+        setShowEditTableName(false);
+    };
+
     return (
         <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
             <section className="mb-2 flex justify-between text-lg font-bold capitalize">
-                {formatFieldLabel(state.tableNames[mainIndex])}
+                <div className="flex items-center gap-2">
+                    {showEditTableName ? (
+                        <>
+                            <TextField className="border" onChange={e => setNewTableName(e.target.value)} value={newTableName} />
+                            <Button startIcon={<X size={20} />} outlined onClick={() => setShowEditTableName(false)}></Button>
+                            <Button outlined onClick={updateTableName}>
+                                Update
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <span>{formatFieldLabel(state.tableNames[mainIndex])}</span>
+                            <Edit
+                                size={20}
+                                className="cursor-pointer text-blue-500"
+                                onClick={() => {
+                                    setShowEditTableName(true);
+                                    setNewTableName(state.tableNames[mainIndex]);
+                                }}
+                            />
+                        </>
+                    )}
+                </div>
                 <div className="flex items-center gap-10">
                     <div className="flex gap-2">
                         <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                             Add Comment
                         </Button>
                         <Button tabIndex={-1} outlined onClick={() => addLineItem(mainIndex)}>
-                            Add Line Item
+                            Add New Row
                         </Button>
                     </div>
                     <XCircle

@@ -28,7 +28,7 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
         {
             name: 'Transcript',
             icon: <AudioLines size={32} strokeWidth={2.5} className="text-white" />,
-            path: '/audio-transcript/list',
+            path: '/transcript/record/list',
             key: 'transcript',
             permission: 'transcript:module'
         },
