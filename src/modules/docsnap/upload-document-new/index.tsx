@@ -48,7 +48,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             const csvData = await excelFileToArrayOfObjects(files[0]);
             const groupedVariations = groupVariationsByPageCount(csvData);
             const products = createProductWithVariationGroups(groupedVariations);
-            const selectedProducts = products.slice(0, 5);
+            const selectedProducts = products.slice(0, 25);
             setSelectedProducts(selectedProducts);
             selectedProducts.forEach(product => {
                 addToDocumentExtractor(latestTemplate, [], product);

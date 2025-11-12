@@ -24,7 +24,7 @@ export const useDocumentExtractor = () => {
                     time: 0,
                     abortController,
                     step: 'uploading',
-                    progress: 20
+                    progress: 5
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
@@ -137,7 +137,7 @@ export const useDocumentExtractor = () => {
                     time: 0,
                     abortController,
                     step: 'uploading',
-                    progress: 20
+                    progress: 5
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
@@ -210,7 +210,7 @@ export const useDocumentExtractor = () => {
                     time: 0,
                     abortController,
                     step: 'uploading',
-                    progress: 20
+                    progress: 5
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
