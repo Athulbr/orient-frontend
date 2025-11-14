@@ -8,7 +8,7 @@ export function dataMapper(obj: any, path: string[]) {
             return current[key];
         }, obj);
 
-        if (result === undefined || result === null) {
+        if (result === undefined || result === null || result === '') {
             return 'N/A';
         }
 
