@@ -161,11 +161,7 @@ const ViewRecordPage: React.FC = () => {
                         <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, containerRef }} updateWire={() => {}} />
                     </div>
                 )}
-                {state.showDataEntryImages && (
-                    <div className="absolute bottom-0 left-0 z-1 flex h-[40vh] w-full flex-col overflow-hidden border-t border-blue-200 bg-gray-50 p-2">
-                        <DataEntryImagesList />
-                    </div>
-                )}
+                {state.showDataEntryImages && <DataEntryImagesList />}
             </div>
             {Boolean(state.showRegenerateFieldDialog) && <RegenerateFieldDialog />}
         </ViewRecordStateProvider>
