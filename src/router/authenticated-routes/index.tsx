@@ -18,6 +18,7 @@ const AuthenticatedRoutes = () => {
     const transcriptModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'transcript:module');
     const sldModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'sld:module');
     const documentCreationModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'documentCreation:module');
+    const ppeDetectionModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'ppeDetection:module');
 
     const module = docsnapModule
         ? 'docsnap'
@@ -29,14 +30,17 @@ const AuthenticatedRoutes = () => {
               ? 'sld'
               : documentCreationModule
                 ? 'documentCreation'
-                : 'docsnap';
+                : ppeDetectionModule
+                  ? 'ppeDetection'
+                  : 'docsnap';
     sessionStorage.setItem('module', module);
     const paths = {
         docsnap: '/docsnap',
         dataentry: '/dataentry',
         transcript: '/transcript',
         sld: '/sld',
-        documentCreation: '/document-creation'
+        documentCreation: '/document-creation',
+        ppeDetection: '/ppe-detection'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
@@ -53,6 +57,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
                 <Route path="/document-creation" element={<DashboardPage module="documentCreation" />} />
                 <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
+                <Route path="/ppe-detection" element={<DashboardPage module="ppeDetection" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
