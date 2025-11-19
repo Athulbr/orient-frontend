@@ -76,7 +76,7 @@ export const DataEntryImagesList: FC = () => {
     // );
 
     return (
-        <DialogComponent className="w-[90%] h-[95%] p-1" isOpen={true} closeDialog={() => setState(prev => ({ ...prev, showDataEntryImages: false }))}>
+        <DialogComponent className="w-[95%] h-[95%] p-1" isOpen={true} closeDialog={() => setState(prev => ({ ...prev, showDataEntryImages: false }))}>
             <div className="flex w-full flex-col overflow-y-auto flex-1">
                 <div className="flex items-center justify-between  p-3">
                     <div className="flex gap-2 font-semibold text-2xl">Web Images</div>
@@ -127,7 +127,7 @@ export const DataEntryImagesList: FC = () => {
                                         onClick={e => e.stopPropagation()}
                                     />
 
-                                    <img onClick={() => toggleImage(image)} src={image} className={'block h-86 w-auto object-contain cursor-pointer'} alt="" />
+                                    <img onClick={() => toggleImage(image)} src={image} className={'block h-110 w-auto object-contain cursor-pointer'} alt="" />
                                 </div>
                             );
                         })}

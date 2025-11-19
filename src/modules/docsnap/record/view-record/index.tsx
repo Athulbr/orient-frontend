@@ -151,7 +151,7 @@ const ViewRecordPage: React.FC = () => {
                             {/* </TabViewContainer> */}
                         </div>
                     }
-                    initialLeftWidthPercent={module === 'dataentry' ? 60 : 70}
+                    initialLeftWidthPercent={module === 'dataentry' || module === 'ppeDetection' ? 60 : 70}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={80}
                     onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}
