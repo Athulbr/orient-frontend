@@ -51,7 +51,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                 return (
                                     <InputField
                                         key={fieldId}
-                                        label={label}
+                                        label={label === 'Price Method' ? 'Price Method (MAP/CALC/CSFP)' : label}
                                         showRegenButton={showRegenButton}
                                         validationUrl={validationUrl || label === "Manufacturer's URL" ? value?.value : ''}
                                         showTextarea={showTextarea}

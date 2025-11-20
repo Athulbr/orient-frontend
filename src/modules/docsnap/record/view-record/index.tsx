@@ -11,6 +11,9 @@ import RegenerateFieldDialog from './components/RegenerateFieldDialog';
 import ContentCreationComponent from './components/ContentCreationComponent';
 import { InvoiceGenerator } from './components/InvoiceGenerator';
 import ChatWithDocumentComponent from './ChatWithDocumentComponent';
+import { SelectVariationImagesDialog } from './components/SelectVariationImagesDialog';
+import { SelectPrimaryImageDialog } from './components/SelectPrimaryImageDialog';
+import { SelectSliderImagesDialog } from './components/SelectSliderImagesDialog';
 
 interface WirePoints {
     x1: number;
@@ -79,7 +82,12 @@ export interface ViewRecordStateIF {
     blogContent: string;
     templateSettings: any;
     templateFields: any;
-    primaryImage: string;
+    primaryImage: { path: string; caption: string } | null;
+    variationImages: Record<string, any>[];
+    showSelectVariationImagesDialog: number;
+    showSelectPrimaryImageDialog: boolean;
+    sliderImages: { path: string; caption: string }[];
+    showSelectSliderImagesDialog: boolean;
 }
 const initialState = {
     showCreateDialog: false,
@@ -110,13 +118,18 @@ const initialState = {
     generatingInvoice: false,
     requestNewFieldDialog: false,
     showDataEntryImages: false,
-    dataEntryWebImages: [],
-    selectedDataEntryImages: [],
     showRegenerateFieldDialog: null,
     blogContent: '',
     templateSettings: null,
     templateFields: null,
-    primaryImage: ''
+    dataEntryWebImages: [],
+    selectedDataEntryImages: [],
+    showSelectPrimaryImageDialog: false,
+    primaryImage: null,
+    variationImages: [],
+    showSelectVariationImagesDialog: -1,
+    sliderImages: [],
+    showSelectSliderImagesDialog: false
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -125,6 +138,8 @@ const ViewRecordPage: React.FC = () => {
     const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
     useBackButtonOverride('/docsnap/record/list');
     const module = sessionStorage.getItem('module');
+
+    console.log('state:===========', state);
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
@@ -162,6 +177,9 @@ const ViewRecordPage: React.FC = () => {
                     </div>
                 )}
                 {state.showDataEntryImages && <DataEntryImagesList />}
+                {state.showSelectPrimaryImageDialog && <SelectPrimaryImageDialog />}
+                {state.showSelectVariationImagesDialog !== -1 && <SelectVariationImagesDialog />}
+                {state.showSelectSliderImagesDialog && <SelectSliderImagesDialog />}
             </div>
             {Boolean(state.showRegenerateFieldDialog) && <RegenerateFieldDialog />}
         </ViewRecordStateProvider>

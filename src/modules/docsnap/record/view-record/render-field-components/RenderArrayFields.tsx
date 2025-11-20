@@ -4,9 +4,8 @@ import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
-import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { ValidateSkuButton } from '../components/ValidateSkuButton';
 import { TextField } from '../../../../../components/TextField';
+import { DialogComponent } from '../../../../../components/DialogComponent';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
@@ -14,7 +13,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
     const [commentDialog, setCommentDialog] = useState(false);
     const [showEditTableName, setShowEditTableName] = useState(false);
     const [newTableName, setNewTableName] = useState('');
-    const toast = useToastStore();
     const updateWire = (fieldId: string, bbox: any) => {
         if (!fieldId || !bbox) return;
         const fieldEl = fieldRefs.current[fieldId];
@@ -119,10 +117,10 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     {showEditTableName ? (
                         <>
                             <TextField className="border" onChange={e => setNewTableName(e.target.value)} value={newTableName} />
-                            <Button startIcon={<X size={20} />} outlined onClick={() => setShowEditTableName(false)}></Button>
                             <Button outlined onClick={updateTableName}>
                                 Update
                             </Button>
+                            <Button startIcon={<X size={20} />} outlined onClick={() => setShowEditTableName(false)}></Button>
                         </>
                     ) : (
                         <>
@@ -140,6 +138,11 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 </div>
                 <div className="flex items-center gap-10">
                     <div className="flex gap-2">
+                        {labels.includes('Dealer Shipping Cost') && (
+                            <Button tabIndex={-1} outlined onClick={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: mainIndex }))}>
+                                Add Images
+                            </Button>
+                        )}
                         <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                             Add Comment
                         </Button>

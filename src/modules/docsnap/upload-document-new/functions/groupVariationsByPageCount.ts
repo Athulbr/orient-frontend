@@ -13,6 +13,10 @@ export interface ProductRowIF {
     'Dealer Shipping Cost': string;
     'Additional Fees': string;
     'Price Method': string;
+    'Vendor Code': string;
+    'Product Vendor': string;
+    'Product Manufacturer': string;
+    'Product Category': string;
 }
 
 export const groupVariationsByPageCount = (products: ProductRowIF[]): ProductRowIF[][] => {
@@ -45,5 +49,9 @@ const sampleProductRow: ProductRowIF = {
     MAP: '$159.33',
     'Dealer Shipping Cost': '$0.00',
     'Additional Fees': '$0.00',
-    'Price Method': 'CSFP'
+    'Price Method': 'CSFP',
+    'Vendor Code': 'test',
+    'Product Vendor': 'test',
+    'Product Manufacturer': 'test',
+    'Product Category': 'test'
 };
