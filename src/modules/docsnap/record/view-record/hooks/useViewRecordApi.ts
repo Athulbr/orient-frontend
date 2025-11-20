@@ -216,8 +216,6 @@ export const useViewRecordApi = () => {
                 console.log("MIME Type:", fileData.mimeType);
             }
 
-            console.log('See the module------>', state.module);
-
             const payload = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
