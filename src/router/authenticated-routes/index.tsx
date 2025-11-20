@@ -19,6 +19,7 @@ const AuthenticatedRoutes = () => {
     const sldModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'sld:module');
     const documentCreationModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'documentCreation:module');
     const ppeDetectionModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'ppeDetection:module');
+    const invoiceTracking = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'invoiceTracking:module');
 
     const module = docsnapModule
         ? 'docsnap'
@@ -32,7 +33,9 @@ const AuthenticatedRoutes = () => {
                 ? 'documentCreation'
                 : ppeDetectionModule
                   ? 'ppeDetection'
-                  : 'docsnap';
+                  : invoiceTracking
+                    ? 'invoiceTracking'
+                    : 'docsnap';
     sessionStorage.setItem('module', module);
     const paths = {
         docsnap: '/docsnap',
@@ -40,18 +43,21 @@ const AuthenticatedRoutes = () => {
         transcript: '/transcript',
         sld: '/sld',
         documentCreation: '/document-creation',
-        ppeDetection: '/ppe-detection'
+        ppeDetection: '/ppe-detection',
+        invoiceTracking: '/invoice-tracking'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
                 <Route path="dataentry/*" element={<DocSnapRoutes />} />
+                <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/transcript/record/*" element={<MedicalCodeRoutes />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
+                <Route path="/invoice-tracking" element={<DashboardPage module="invoiceTracking" />} />
                 <Route path="/transcript" element={<DashboardPage module="transcript" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
