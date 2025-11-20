@@ -208,23 +208,30 @@ export const useViewRecordApi = () => {
 
     const submitRecordApi = async () => {
         try {
-
-            const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
-
-            if (fileData) {
-                console.log("Base64 Encoded File:", fileData.base64.substring(0, 100) + "...");
-                console.log("MIME Type:", fileData.mimeType);
-            }
-
-            const payload = {
+            let payload: any = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
                 extractedData: processArrayFields(),
-                name: state?.record?.name,
-                fileBase64: fileData?.base64,
-                fileMimeType: fileData?.mimeType,
+                name: state?.record?.name
             };
+
+            if (state?.module !== 'dataentry') {
+                const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
+                if (fileData) {
+                    console.log("Base64 Encoded File:", fileData.base64.substring(0, 100) + "...");
+                    console.log("MIME Type:", fileData.mimeType);
+                }
+                payload = {
+                    apiResponse: state?.record?.extractedData,
+                    recordId: state?.record?._id,
+                    module: state?.module,
+                    extractedData: processArrayFields(),
+                    name: state?.record?.name,
+                    fileBase64: fileData?.base64,
+                    fileMimeType: fileData?.mimeType,
+                };
+            }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
