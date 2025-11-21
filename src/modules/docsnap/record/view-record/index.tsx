@@ -6,7 +6,6 @@ import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
 import { PreviewComponent } from './PreviewComponent';
 import { useBackButtonOverride } from '../../../../hooks/useBackButtonOverride';
-import { DataEntryImagesList } from './render-field-components/DataEntryImagesList';
 import RegenerateFieldDialog from './components/RegenerateFieldDialog';
 import ContentCreationComponent from './components/ContentCreationComponent';
 import { InvoiceGenerator } from './components/InvoiceGenerator';
@@ -176,7 +175,7 @@ const ViewRecordPage: React.FC = () => {
                         <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, containerRef }} updateWire={() => {}} />
                     </div>
                 )}
-                {state.showDataEntryImages && <DataEntryImagesList />}
+                {/* {state.showDataEntryImages && <DataEntryImagesList />} */}
                 {state.showSelectPrimaryImageDialog && <SelectPrimaryImageDialog />}
                 {state.showSelectVariationImagesDialog !== -1 && <SelectVariationImagesDialog />}
                 {state.showSelectSliderImagesDialog && <SelectSliderImagesDialog />}
