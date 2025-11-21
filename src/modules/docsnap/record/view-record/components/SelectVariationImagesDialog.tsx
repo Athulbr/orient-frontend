@@ -2,20 +2,33 @@ import { DialogComponent } from '../../../../../components/DialogComponent';
 import { FC } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { XCircle } from 'lucide-react';
-import { cn } from '../../../../../global-utils/twMerge';
 
-export const SelectVariationImagesDialog: FC<any> = ({ onclick }) => {
+export const SelectVariationImagesDialog: FC<any> = () => {
     const { state, setState } = useViewRecordState();
 
-    console.log('state.showSelectVariationImagesDialog:===========', state.showSelectVariationImagesDialog);
+    const onImageClickHandler = (image: string) => {
+        setState(prev => {
+            const updated = [...prev.arrayFields];
+            updated[state.showSelectVariationImagesDialog?.index || 0][state.showSelectVariationImagesDialog?.key || 0]['Variation Image'] = {
+                ...updated[state.showSelectVariationImagesDialog?.index || 0][state.showSelectVariationImagesDialog?.key || 0]['Variation Image'],
+                value: image
+            };
+            return { ...prev, arrayFields: updated, showSelectVariationImagesDialog: null };
+        });
+    };
+
     return (
-        <DialogComponent className="w-[95%] h-[95%] p-1" isOpen={true} closeDialog={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: -1 }))}>
+        <DialogComponent
+            className="w-[95%] h-[95%] p-1"
+            isOpen={true}
+            closeDialog={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: null }))}
+        >
             <div className="flex w-full flex-col overflow-y-auto flex-1">
                 <div className="flex items-center justify-between  p-3">
                     <div className="flex gap-2 font-semibold text-2xl">Web Images</div>
                     <XCircle
                         tabIndex={-1}
-                        onClick={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: -1 }))}
+                        onClick={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: null }))}
                         className="cursor-pointer text-gray-500 hover:text-red-500"
                     />
                 </div>
@@ -23,7 +36,10 @@ export const SelectVariationImagesDialog: FC<any> = ({ onclick }) => {
                     {state.dataEntryWebImages
                         ?.filter(item => !item.includes('logo') && !item.includes('flag') && !item.includes('Logo') && !item.includes('width=150'))
                         .map((image, index) => {
-                            const selected = state.selectedDataEntryImages.includes(image);
+                            const selected =
+                                state.arrayFields[state.showSelectVariationImagesDialog?.index || 0][state.showSelectVariationImagesDialog?.key || 0][
+                                    'Variation Image'
+                                ]?.value === image;
                             return (
                                 <div
                                     key={index}
@@ -37,12 +53,17 @@ export const SelectVariationImagesDialog: FC<any> = ({ onclick }) => {
                                         checked={selected}
                                         onChange={e => {
                                             e.stopPropagation();
-                                            onclick(image);
+                                            onImageClickHandler(image);
                                         }}
                                         onClick={e => e.stopPropagation()}
                                     />
 
-                                    <img onClick={() => onclick(image)} src={image} className={'block h-110 w-auto object-contain cursor-pointer'} alt="" />
+                                    <img
+                                        onClick={() => onImageClickHandler(image)}
+                                        src={image}
+                                        className={'block h-110 w-auto object-contain cursor-pointer'}
+                                        alt=""
+                                    />
                                 </div>
                             );
                         })}

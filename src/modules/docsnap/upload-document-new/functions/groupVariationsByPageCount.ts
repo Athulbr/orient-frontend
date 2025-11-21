@@ -17,6 +17,7 @@ export interface ProductRowIF {
     'Product Vendor': string;
     'Product Manufacturer': string;
     'Product Category': string;
+    'Variation Image': string;
 }
 
 export const groupVariationsByPageCount = (products: ProductRowIF[]): ProductRowIF[][] => {
@@ -53,5 +54,6 @@ const sampleProductRow: ProductRowIF = {
     'Vendor Code': 'test',
     'Product Vendor': 'test',
     'Product Manufacturer': 'test',
-    'Product Category': 'test'
+    'Product Category': 'test',
+    'Variation Image': 'Not Available'
 };

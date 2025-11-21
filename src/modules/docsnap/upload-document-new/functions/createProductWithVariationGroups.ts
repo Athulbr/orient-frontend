@@ -33,7 +33,8 @@ const createVariationsGroup = (variations: ProductRowIF[]) => {
                 'Vendor Code': product['Vendor Code'],
                 'Product Vendor': product['Product Vendor'],
                 'Product Manufacturer': product['Product Manufacturer'],
-                'Product Category': product['Product Category']
+                'Product Category': product['Product Category'],
+                'Variation Image': 'Not Available'
             };
             accumulator[groupKey].push(data);
             return accumulator;

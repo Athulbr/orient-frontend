@@ -74,7 +74,6 @@ export interface ViewRecordStateIF {
     invoiceContent: string;
     generatingInvoice: boolean;
     requestNewFieldDialog: boolean;
-    showDataEntryImages: boolean;
     dataEntryWebImages: string[];
     selectedDataEntryImages: string[];
     showRegenerateFieldDialog: any | null;
@@ -83,7 +82,7 @@ export interface ViewRecordStateIF {
     templateFields: any;
     primaryImage: { path: string; caption: string } | null;
     variationImages: Record<string, any>[];
-    showSelectVariationImagesDialog: number;
+    showSelectVariationImagesDialog: { index: number; key: string } | null;
     showSelectPrimaryImageDialog: boolean;
     sliderImages: { path: string; caption: string }[];
     showSelectSliderImagesDialog: boolean;
@@ -116,7 +115,6 @@ const initialState = {
     invoiceContent: '',
     generatingInvoice: false,
     requestNewFieldDialog: false,
-    showDataEntryImages: false,
     showRegenerateFieldDialog: null,
     blogContent: '',
     templateSettings: null,
@@ -126,7 +124,7 @@ const initialState = {
     showSelectPrimaryImageDialog: false,
     primaryImage: null,
     variationImages: [],
-    showSelectVariationImagesDialog: -1,
+    showSelectVariationImagesDialog: null,
     sliderImages: [],
     showSelectSliderImagesDialog: false
 };
@@ -175,9 +173,8 @@ const ViewRecordPage: React.FC = () => {
                         <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, containerRef }} updateWire={() => {}} />
                     </div>
                 )}
-                {/* {state.showDataEntryImages && <DataEntryImagesList />} */}
                 {state.showSelectPrimaryImageDialog && <SelectPrimaryImageDialog />}
-                {state.showSelectVariationImagesDialog !== -1 && <SelectVariationImagesDialog />}
+                {Boolean(state.showSelectVariationImagesDialog) && <SelectVariationImagesDialog />}
                 {state.showSelectSliderImagesDialog && <SelectSliderImagesDialog />}
             </div>
             {Boolean(state.showRegenerateFieldDialog) && <RegenerateFieldDialog />}

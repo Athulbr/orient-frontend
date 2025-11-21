@@ -1,4 +1,4 @@
-import { Edit, Trash2, X, XCircle } from 'lucide-react';
+import { Edit, Pencil, Trash2, X, XCircle } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
@@ -138,11 +138,6 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 </div>
                 <div className="flex items-center gap-10">
                     <div className="flex gap-2">
-                        {labels.includes('Dealer Shipping Cost') && (
-                            <Button tabIndex={-1} outlined onClick={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: mainIndex }))}>
-                                Add Images
-                            </Button>
-                        )}
                         <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                             Add Comment
                         </Button>
@@ -260,7 +255,7 @@ interface PropsIF {
     keyName: string;
 }
 const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled, mainIndex, keyName }) => {
-    const { state } = useViewRecordState();
+    const { state, setState } = useViewRecordState();
     const adjustTextareaHeight = () => {
         const textarea = fieldRefs.current[fieldId];
         if (!textarea) return;
@@ -297,6 +292,52 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
             validationUrl: subField?.validationUrl || ''
         };
     }, [keyName, label]);
+
+    if (label === 'Variation Image') {
+        const onUpdate = () => {
+            setState(prev => ({ ...prev, showSelectVariationImagesDialog: { index: mainIndex, key: keyName } }));
+        };
+        const onDelete = () => {
+            setState(prev => {
+                const updated = [...prev.arrayFields];
+                updated[mainIndex][keyName] = {
+                    ...updated[mainIndex][keyName],
+                    ['Variation Image']: {
+                        value: 'Not Available'
+                    }
+                };
+                return { ...prev, arrayFields: updated };
+            });
+        };
+        return (
+            <td className="border p-2">
+                {value?.value === 'Not Available' ? (
+                    <Button
+                        onClick={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: { index: mainIndex, key: keyName } }))}
+                        className="w-full"
+                        outlined
+                    >
+                        Add Image
+                    </Button>
+                ) : (
+                    <div className="relative group w-max">
+                        <img src={value?.value} alt="" className="w-32 h-32 object-cover rounded-md" />
+
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-4 rounded-md">
+                            <button type="button" className="p-2 bg-white rounded-full shadow cursor-pointer" onClick={onUpdate}>
+                                <Pencil size={18} />
+                            </button>
+
+                            <button type="button" className="p-2 bg-white rounded-full shadow cursor-pointer" onClick={onDelete}>
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </td>
+        );
+    }
     return (
         <td className="border p-1">
             {/* <ValidateSkuButton label={label} value={value?.value} /> */}
@@ -315,7 +356,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
                 id={fieldId}
                 aria-label={fieldId}
                 rows={1}
-                className={` ${label === 'Description' ? 'min-w-90' : 'min-w-0'} rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
+                className={` ${label === 'Description' ? 'min-w-90' : 'min-w-35'} rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
                 value={value?.value || ''}
                 // @ts-ignore
                 ref={el => (fieldRefs.current[fieldId] = el)}
