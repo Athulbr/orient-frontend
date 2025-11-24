@@ -32,7 +32,7 @@ export const SelectVariationImagesDialog: FC<any> = () => {
                         className="cursor-pointer text-gray-500 hover:text-red-500"
                     />
                 </div>
-                <div className="flex flex-1 flex-wrap overflow-y-auto  gap-2  rounded-lg border bg-white p-3 ">
+                <div className="grid grid-cols-3 gap-2 flex-1 overflow-y-auto rounded-lg border bg-white p-3">
                     {state.dataEntryWebImages
                         ?.filter(item => !item.includes('logo') && !item.includes('flag') && !item.includes('Logo') && !item.includes('width=150'))
                         .map((image, index) => {
@@ -40,10 +40,11 @@ export const SelectVariationImagesDialog: FC<any> = () => {
                                 state.arrayFields[state.showSelectVariationImagesDialog?.index || 0][state.showSelectVariationImagesDialog?.key || 0][
                                     'Variation Image'
                                 ]?.value === image;
+
                             return (
                                 <div
                                     key={index}
-                                    className={`group relative flex-none ${
+                                    className={`group relative ${
                                         selected ? 'border-2 border-sky-500 p-1 rounded-md' : 'border-2 border-gray-300 p-1 rounded-md'
                                     }`}
                                 >
@@ -61,7 +62,7 @@ export const SelectVariationImagesDialog: FC<any> = () => {
                                     <img
                                         onClick={() => onImageClickHandler(image)}
                                         src={image}
-                                        className={'block h-110 w-auto object-contain cursor-pointer'}
+                                        className="block w-full h-100 object-contain cursor-pointer"
                                         alt=""
                                     />
                                 </div>
