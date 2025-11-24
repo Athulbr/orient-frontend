@@ -32,8 +32,6 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                     });
                                 };
 
-                                // console.log('state.templateFields:===========', state.templateFields);
-
                                 const { label, showRegenButton, validationUrl, showTextarea } = useMemo(() => {
                                     const fields = state.record?.templateId?.fields;
                                     let field = fields?.find((item: any) => item.jsonKey === key);

@@ -35,7 +35,7 @@ export const DataEntryImages: FC = () => {
                 </button>
             </div>
             <div className="flex flex-col cursor-pointer gap-4  justify-between rounded-lg border py-3 pr-3 pl-6 hover:border-blue-400 ">
-                <label className="font-semibold text-lg border-b pb-3 ">Slider Images</label>
+                <label className="font-semibold text-lg border-b pb-3 ">Additional Images</label>
                 {state.additionalImages?.map((image: any, index: number) => (
                     <div className="flex flex-col gap-2 border p-4 rounded-lg hover:border-gray-400" key={index}>
                         <div className="flex justify-evenly items-center">
@@ -72,7 +72,7 @@ export const DataEntryImages: FC = () => {
                     className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6  hover:border-blue-300`}
                 >
                     <SquareMousePointer size={16} />
-                    Add Slider Image
+                    Add Additional Images
                 </button>
             </div>
         </div>

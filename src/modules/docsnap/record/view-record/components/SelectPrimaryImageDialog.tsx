@@ -14,7 +14,6 @@ export const SelectPrimaryImageDialog: FC<any> = () => {
         }));
     };
 
-    console.log('state.showSelectPrimaryImageDialog:===========', state.showSelectPrimaryImageDialog);
     return (
         <DialogComponent className="w-[95%] h-[95%] p-1" isOpen={true} closeDialog={() => setState(prev => ({ ...prev, showSelectPrimaryImageDialog: false }))}>
             <div className="flex w-full flex-col overflow-y-auto flex-1">

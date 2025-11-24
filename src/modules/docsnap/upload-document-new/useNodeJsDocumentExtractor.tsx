@@ -130,7 +130,7 @@ export const useNodeJsDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });

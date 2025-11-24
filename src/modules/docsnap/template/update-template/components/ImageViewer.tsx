@@ -65,7 +65,6 @@ export const ImageViewer: FC<ImageViewerProps> = ({ images, name = 'Document Nam
         if (file) {
             setUploadingFile(true);
             const response = await uploadS3File(file);
-            console.log(response);
             const requestBody = {
                 s3FileName: response?.fileName
             };

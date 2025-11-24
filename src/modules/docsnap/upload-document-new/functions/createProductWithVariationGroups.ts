@@ -30,10 +30,10 @@ const createVariationsGroup = (variations: ProductRowIF[]) => {
                 'Dealer Shipping Cost': product['Dealer Shipping Cost'],
                 'Additional Fees': product['Additional Fees'],
                 'Price Method': product['Price Method'],
-                'Vendor Code': product['Vendor Code'],
-                'Product Vendor': product['Product Vendor'],
-                'Product Manufacturer': product['Product Manufacturer'],
-                'Product Category': product['Product Category'],
+                // 'Vendor Code': product['Vendor Code'],
+                // 'Product Vendor': product['Product Vendor'],
+                // 'Product Manufacturer': product['Product Manufacturer'],
+                // 'Product Category': product['Product Category'],
                 'Variation Image': 'Not Available'
             };
             accumulator[groupKey].push(data);

@@ -15,7 +15,6 @@ export const SelectAdditionalImagesDialog: FC<any> = () => {
         }
     };
 
-    console.log('state.showSelectAdditionalImagesDialog:===========', state.showSelectAdditionalImagesDialog);
     return (
         <DialogComponent
             className="w-[95%] h-[95%] p-1"
@@ -24,7 +23,7 @@ export const SelectAdditionalImagesDialog: FC<any> = () => {
         >
             <div className="flex w-full flex-col overflow-y-auto flex-1">
                 <div className="flex items-center justify-between  p-3">
-                    <div className="flex gap-2 font-semibold text-2xl">Select Slider Images</div>
+                    <div className="flex gap-2 font-semibold text-2xl">Select Additional Images</div>
                     <XCircle
                         tabIndex={-1}
                         onClick={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: false }))}

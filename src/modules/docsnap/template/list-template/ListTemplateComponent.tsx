@@ -13,7 +13,6 @@ const ListTemplateComponent: React.FC = () => {
 
     useEffect(() => {
         if (state.refresh === 1) return;
-        console.log('state.refresh:===========', state.refresh);
         getTemplatesApi();
     }, [state.refresh]);
 

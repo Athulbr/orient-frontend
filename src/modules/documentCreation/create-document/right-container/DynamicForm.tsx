@@ -134,7 +134,6 @@ export const DynamicForm: React.FC = () => {
         setTouched(newTouched);
 
         if (Object.keys(newErrors).length === 0) {
-            console.log('Form submitted:', state.formData);
             alert('Form submitted successfully! Check console for data.');
         }
     };

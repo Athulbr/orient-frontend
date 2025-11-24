@@ -185,13 +185,6 @@ export const useViewRecordApi = () => {
         try {
             const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
 
-            if (fileData) {
-                console.log('Base64 Encoded File:', fileData.base64.substring(0, 100) + '...');
-                console.log('MIME Type:', fileData.mimeType);
-            }
-
-            console.log('See the module------>', state.module);
-
             const payload: any = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
@@ -203,7 +196,7 @@ export const useViewRecordApi = () => {
             };
 
             if (state.module === 'dataentry') {
-                const additionalImages = state.sliderImages.map((image: any) => {
+                const additionalImages = state.additionalImages.map((image: any) => {
                     return {
                         image_path: image.path,
                         image_text: image.caption

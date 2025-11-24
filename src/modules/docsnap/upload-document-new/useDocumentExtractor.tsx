@@ -7,8 +7,6 @@ export const useDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
     const navigate = useNavigate();
 
-    // console.log('extractionQueue:===========', extractionQueue);
-
     const addToDocumentExtractor = async (template: any, files: File[], rowData?: any) => {
         const sendApiRequestToNodeJsExtractor = async (file: File, template: any) => {
             let timer: NodeJS.Timeout | null = null;
@@ -60,7 +58,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });
@@ -100,7 +98,6 @@ export const useDocumentExtractor = () => {
                 }
 
                 const data = await response.json();
-                console.log('data:===========', data);
 
                 // Fetch the stream URL
                 const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
@@ -119,7 +116,6 @@ export const useDocumentExtractor = () => {
                 }
 
                 const reader = streamResponse.body.getReader();
-                console.log('reader:===========', reader);
                 await processStream(reader, file.name, timer);
             } catch (error) {
                 console.error('API request error:', error);
@@ -130,7 +126,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });
@@ -187,7 +183,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(rowData.SKU, { status: 'failed' });
