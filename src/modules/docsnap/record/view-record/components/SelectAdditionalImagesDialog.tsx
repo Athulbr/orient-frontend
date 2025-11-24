@@ -3,27 +3,31 @@ import { FC } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { XCircle } from 'lucide-react';
 
-export const SelectSliderImagesDialog: FC<any> = () => {
+export const SelectAdditionalImagesDialog: FC<any> = () => {
     const { state, setState } = useViewRecordState();
 
     const onImageClickHandler = (image: string) => {
-        const isImageAlreadySelected = state.sliderImages.some(item => item.path === image);
+        const isImageAlreadySelected = state.additionalImages.some(item => item.path === image);
         if (isImageAlreadySelected) {
-            setState(prev => ({ ...prev, sliderImages: prev.sliderImages.filter(item => item.path !== image) }));
+            setState(prev => ({ ...prev, additionalImages: prev.additionalImages.filter(item => item.path !== image) }));
         } else {
-            setState(prev => ({ ...prev, sliderImages: [...prev.sliderImages, { path: image, caption: '' }] }));
+            setState(prev => ({ ...prev, additionalImages: [...prev.additionalImages, { path: image, caption: '' }] }));
         }
     };
 
-    console.log('state.showSelectSliderImagesDialog:===========', state.showSelectSliderImagesDialog);
+    console.log('state.showSelectAdditionalImagesDialog:===========', state.showSelectAdditionalImagesDialog);
     return (
-        <DialogComponent className="w-[95%] h-[95%] p-1" isOpen={true} closeDialog={() => setState(prev => ({ ...prev, showSelectSliderImagesDialog: false }))}>
+        <DialogComponent
+            className="w-[95%] h-[95%] p-1"
+            isOpen={true}
+            closeDialog={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: false }))}
+        >
             <div className="flex w-full flex-col overflow-y-auto flex-1">
                 <div className="flex items-center justify-between  p-3">
                     <div className="flex gap-2 font-semibold text-2xl">Select Slider Images</div>
                     <XCircle
                         tabIndex={-1}
-                        onClick={() => setState(prev => ({ ...prev, showSelectSliderImagesDialog: false }))}
+                        onClick={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: false }))}
                         className="cursor-pointer text-gray-500 hover:text-red-500"
                     />
                 </div>
@@ -31,7 +35,7 @@ export const SelectSliderImagesDialog: FC<any> = () => {
                     {state.dataEntryWebImages
                         ?.filter(item => !item.includes('logo') && !item.includes('flag') && !item.includes('Logo') && !item.includes('width=150'))
                         .map((image, index) => {
-                            const selected = state.sliderImages.some(item => item.path === image);
+                            const selected = state.additionalImages.some(item => item.path === image);
                             return (
                                 <div
                                     key={index}

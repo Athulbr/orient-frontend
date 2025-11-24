@@ -12,7 +12,7 @@ import { InvoiceGenerator } from './components/InvoiceGenerator';
 import ChatWithDocumentComponent from './ChatWithDocumentComponent';
 import { SelectVariationImagesDialog } from './components/SelectVariationImagesDialog';
 import { SelectPrimaryImageDialog } from './components/SelectPrimaryImageDialog';
-import { SelectSliderImagesDialog } from './components/SelectSliderImagesDialog';
+import { SelectAdditionalImagesDialog } from './components/SelectAdditionalImagesDialog';
 
 interface WirePoints {
     x1: number;
@@ -84,8 +84,8 @@ export interface ViewRecordStateIF {
     variationImages: Record<string, any>[];
     showSelectVariationImagesDialog: { index: number; key: string } | null;
     showSelectPrimaryImageDialog: boolean;
-    sliderImages: { path: string; caption: string }[];
-    showSelectSliderImagesDialog: boolean;
+    additionalImages: { path: string; caption: string }[];
+    showSelectAdditionalImagesDialog: boolean;
 }
 const initialState = {
     showCreateDialog: false,
@@ -125,8 +125,8 @@ const initialState = {
     primaryImage: null,
     variationImages: [],
     showSelectVariationImagesDialog: null,
-    sliderImages: [],
-    showSelectSliderImagesDialog: false
+    additionalImages: [],
+    showSelectAdditionalImagesDialog: false
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -135,8 +135,6 @@ const ViewRecordPage: React.FC = () => {
     const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({});
     useBackButtonOverride('/docsnap/record/list');
     const module = sessionStorage.getItem('module');
-
-    console.log('state:===========', state);
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
@@ -175,7 +173,7 @@ const ViewRecordPage: React.FC = () => {
                 )}
                 {state.showSelectPrimaryImageDialog && <SelectPrimaryImageDialog />}
                 {Boolean(state.showSelectVariationImagesDialog) && <SelectVariationImagesDialog />}
-                {state.showSelectSliderImagesDialog && <SelectSliderImagesDialog />}
+                {state.showSelectAdditionalImagesDialog && <SelectAdditionalImagesDialog />}
             </div>
             {Boolean(state.showRegenerateFieldDialog) && <RegenerateFieldDialog />}
         </ViewRecordStateProvider>

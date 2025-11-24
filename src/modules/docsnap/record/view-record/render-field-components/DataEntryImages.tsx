@@ -36,7 +36,7 @@ export const DataEntryImages: FC = () => {
             </div>
             <div className="flex flex-col cursor-pointer gap-4  justify-between rounded-lg border py-3 pr-3 pl-6 hover:border-blue-400 ">
                 <label className="font-semibold text-lg border-b pb-3 ">Slider Images</label>
-                {state.sliderImages?.map((image: any, index: number) => (
+                {state.additionalImages?.map((image: any, index: number) => (
                     <div className="flex flex-col gap-2 border p-4 rounded-lg hover:border-gray-400" key={index}>
                         <div className="flex justify-evenly items-center">
                             <img src={image.path} alt="" className="w-[60%] min-w-0 max-w-50" />
@@ -44,7 +44,7 @@ export const DataEntryImages: FC = () => {
                                 size={40}
                                 className="cursor-pointer text-gray-200 hover:text-red-400"
                                 onClick={() =>
-                                    setState(prev => ({ ...prev, sliderImages: prev.sliderImages.filter((item: any, idx: number) => idx !== index) }))
+                                    setState(prev => ({ ...prev, additionalImages: prev.additionalImages.filter((item: any, idx: number) => idx !== index) }))
                                 }
                             />
                         </div>
@@ -54,7 +54,7 @@ export const DataEntryImages: FC = () => {
                                 onChange={e =>
                                     setState(prev => ({
                                         ...prev,
-                                        sliderImages: prev.sliderImages.map((item: any, idx: number) =>
+                                        additionalImages: prev.additionalImages.map((item: any, idx: number) =>
                                             idx === index ? { ...item, caption: e.target.value } : item
                                         )
                                     }))
@@ -68,7 +68,7 @@ export const DataEntryImages: FC = () => {
 
                 <button
                     tabIndex={-1}
-                    onClick={() => setState(prev => ({ ...prev, showSelectSliderImagesDialog: true }))}
+                    onClick={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: true }))}
                     className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6  hover:border-blue-300`}
                 >
                     <SquareMousePointer size={16} />

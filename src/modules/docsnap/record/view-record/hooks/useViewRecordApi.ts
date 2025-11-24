@@ -78,6 +78,8 @@ export const useViewRecordApi = () => {
             const resp = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
             templateSettings = resp.data?.settings;
             const templateFields = resp.data?.fields;
+            const primaryImage = res.data?.dataEntryImages?.primaryImage;
+            const additionalImages = res.data?.dataEntryImages?.additionalImages || [];
             // }
             setState(prev => ({
                 ...prev,
@@ -88,7 +90,9 @@ export const useViewRecordApi = () => {
                 loadingData: false,
                 dataEntryWebImages,
                 templateSettings,
-                templateFields
+                templateFields,
+                primaryImage,
+                additionalImages
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
@@ -141,29 +145,6 @@ export const useViewRecordApi = () => {
                 chatLoading: false,
                 messages: [...prev.messages, { text: 'Something went wrong, Please try again later', userMessage: false }]
             }));
-        }
-    };
-
-    const getFileAsBase64 = async (fileKey: string): Promise<string | null> => {
-        try {
-            const s3Response: any = await getS3File(fileKey);
-
-            if (!s3Response?.Body?.data) {
-                console.error('File not found or invalid response');
-                return null;
-            }
-
-            // Convert number array to Uint8Array
-            const fileDataArray = s3Response.Body.data;
-            const fileData = new Uint8Array(fileDataArray);
-
-            // Encode to Base64
-            const base64String = btoa(fileData.reduce((data, byte) => data + String.fromCharCode(byte), ''));
-
-            return base64String; // 👉 returns clean base64 string (no prefix)
-        } catch (error) {
-            console.error('Error fetching/encoding file:', error);
-            return null;
         }
     };
 
@@ -271,12 +252,16 @@ export const useViewRecordApi = () => {
                 extractedData: state?.record?.extractedData,
                 metadata: state?.record?.metadata,
                 fileName: state?.record?.name,
+                dataEntryImages: {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                },
                 updatedData: processArrayFields()
             };
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');
-            navigate('/');
+            // navigate('/');
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to update Record');
