@@ -6,6 +6,7 @@ import useTablepersistance from '../hooks/useTablepersistance';
 import { useEffect, useState } from 'react';
 import { Button } from '../../../../components/Button';
 import Tooltip from '../../../../components/Tooltip';
+import PageInput from '../components/PageInput';
 
 export function TableFooter() {
     return (
@@ -85,9 +86,7 @@ const PaginationComponent = () => {
                 <PaginationButton onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} icon={<ChevronLeft className="h-4 w-4" />} />
             </Tooltip>
 
-            <span className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
-                Page {page} of {totalPages}
-            </span>
+            <PageInput page={page} totalPages={totalPages} setPage={setPage} />
             <Tooltip text="Next Page" position="top">
                 <PaginationButton
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
