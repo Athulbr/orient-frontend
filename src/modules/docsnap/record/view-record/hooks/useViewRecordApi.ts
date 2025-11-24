@@ -211,7 +211,7 @@ export const useViewRecordApi = () => {
 
             console.log('See the module------>', state.module);
 
-            const payload = {
+            const payload: any = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
@@ -220,6 +220,18 @@ export const useViewRecordApi = () => {
                 fileBase64: fileData?.base64,
                 fileMimeType: fileData?.mimeType
             };
+
+            if (state.module === 'dataentry') {
+                const additionalImages = state.sliderImages.map((image: any) => {
+                    return {
+                        image_path: image.path,
+                        image_text: image.caption
+                    };
+                });
+                payload['primaryImage'] = state.primaryImage;
+                payload['additionalImages'] = additionalImages;
+                payload['arrayFields'] = state.tableNames;
+            }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
