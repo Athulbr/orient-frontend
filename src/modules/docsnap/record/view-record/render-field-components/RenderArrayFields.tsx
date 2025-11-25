@@ -5,7 +5,7 @@ import { formatFieldLabel } from '../utils';
 import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
 import { TextField } from '../../../../../components/TextField';
-import { DialogComponent } from '../../../../../components/DialogComponent';
+import style from '../viewRecord.module.css';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
@@ -152,7 +152,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     />
                 </div>
             </section>
-            <div className="flex-1 overflow-auto">
+            <div className={style.container}>
                 <table className="min-w-full border-collapse">
                     <thead>
                         <tr className="sticky top-0 left-0 border ">

@@ -20,6 +20,8 @@ export const SelectAdditionalImagesDialog: FC<any> = () => {
             className="w-[95%] h-[95%] p-1"
             isOpen={true}
             closeDialog={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: false }))}
+            primaryButtonText="Submit"
+            onPrimaryAction={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: false }))}
         >
             <div className="flex w-full flex-col overflow-y-auto flex-1">
                 <div className="flex items-center justify-between  p-3">
