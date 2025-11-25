@@ -35,7 +35,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             });
             set({ userSettings: settings, userSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
     getUserSettings: async () => {
@@ -43,7 +43,6 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             const res = await httpRequest('GET', `${config.nodeApiUrl}/user/settings/list`);
             set({ userSettings: res.data.settings });
         } catch (error) {
-            // console.log(error);
         }
     },
     // ============================== DOCSNAP SETTINGS ===============================
@@ -56,7 +55,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             });
             set({ docsnapSettings: settings, docsnapSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
     getDocsnapSettings: async () => {
@@ -65,7 +64,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             set({ docsnapSettings: res.data.settings });
             return res.data.settings;
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
     // ============================== TENANT SETTINGS ===============================
@@ -84,7 +83,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             });
             set({ tenantSettings: settings, tenantSettingResponse: res?.message ? res?.message : 'Setting updated successfully' });
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
     getTenantSettings: async () => {
@@ -106,7 +105,7 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             set({ tenantSettings: res?.data?.settings });
             return res?.data?.settings;
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     },
     setSelectedTenant: async (tenant: any) => {

@@ -29,7 +29,12 @@ const createVariationsGroup = (variations: ProductRowIF[]) => {
                 MAP: product.MAP,
                 'Dealer Shipping Cost': product['Dealer Shipping Cost'],
                 'Additional Fees': product['Additional Fees'],
-                'Price Method': product['Price Method']
+                'Price Method': product['Price Method'],
+                // 'Vendor Code': product['Vendor Code'],
+                // 'Product Vendor': product['Product Vendor'],
+                // 'Product Manufacturer': product['Product Manufacturer'],
+                // 'Product Category': product['Product Category'],
+                'Variation Image': 'Not Available'
             };
             accumulator[groupKey].push(data);
             return accumulator;
@@ -42,7 +47,6 @@ const createVariationsGroup = (variations: ProductRowIF[]) => {
 };
 
 export const createProductWithVariationGroups = (groupedVariations: ProductRowIF[][]) => {
-    console.log('groupedVariations:===========', groupedVariations);
     const products = groupedVariations.map((wholeProduct: ProductRowIF[]) => {
         const firstRow = wholeProduct[0];
         if (firstRow['Product or Variation'] !== 'Product') {

@@ -6,6 +6,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 export const TableNames: FC = () => {
     const { state, setState } = useViewRecordState();
 
+    if (!state.tableNames.length) return null;
+
     return (
         <div className="flex flex-col gap-2 rounded-lg border bg-white p-3 hover:border-blue-400">
             <div className="pl-1 text-lg font-semibold">Tables</div>

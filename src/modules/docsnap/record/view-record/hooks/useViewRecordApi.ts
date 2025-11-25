@@ -78,6 +78,8 @@ export const useViewRecordApi = () => {
             const resp = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
             templateSettings = resp.data?.settings;
             const templateFields = resp.data?.fields;
+            const primaryImage = res.data?.dataEntryImages?.primaryImage;
+            const additionalImages = res.data?.dataEntryImages?.additionalImages || [];
             // }
             setState(prev => ({
                 ...prev,
@@ -88,7 +90,9 @@ export const useViewRecordApi = () => {
                 loadingData: false,
                 dataEntryWebImages,
                 templateSettings,
-                templateFields
+                templateFields,
+                primaryImage,
+                additionalImages
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
@@ -232,9 +236,21 @@ export const useViewRecordApi = () => {
                     // fileMimeType: fileData?.mimeType,
                 };
             }
+            if (state.module === 'dataentry') {
+                const additionalImages = state.additionalImages.map((image: any) => {
+                    return {
+                        image_path: image.path,
+                        image_text: image.caption
+                    };
+                });
+                payload['primaryImage'] = state.primaryImage;
+                payload['additionalImages'] = additionalImages;
+                payload['arrayFields'] = state.tableNames;
+            }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
+            if (state.module === 'dataentry') return;
             navigate('/docsnap/record/list');
         } catch (error: any) {
             console.error('error:===========', error?.message);
@@ -276,20 +292,22 @@ export const useViewRecordApi = () => {
 
     const updateRecordApiById = async () => {
         try {
-
-
             // Usage in your payload
             const payload = {
                 template: state?.record?.templateId,
                 extractedData: state?.record?.extractedData,
                 metadata: state?.record?.metadata,
                 fileName: state?.record?.name,
+                dataEntryImages: {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                },
                 updatedData: processArrayFields()
             };
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');
-            navigate('/');
+            // navigate('/');
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to update Record');

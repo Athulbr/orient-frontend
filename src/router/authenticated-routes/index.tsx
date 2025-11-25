@@ -18,6 +18,8 @@ const AuthenticatedRoutes = () => {
     const transcriptModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'transcript:module');
     const sldModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'sld:module');
     const documentCreationModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'documentCreation:module');
+    const ppeDetectionModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'ppeDetection:module');
+    const invoiceTracking = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'invoiceTracking:module');
 
     const module = docsnapModule
         ? 'docsnap'
@@ -29,30 +31,39 @@ const AuthenticatedRoutes = () => {
               ? 'sld'
               : documentCreationModule
                 ? 'documentCreation'
-                : 'docsnap';
+                : ppeDetectionModule
+                  ? 'ppeDetection'
+                  : invoiceTracking
+                    ? 'invoiceTracking'
+                    : 'docsnap';
     sessionStorage.setItem('module', module);
     const paths = {
         docsnap: '/docsnap',
         dataentry: '/dataentry',
         transcript: '/transcript',
         sld: '/sld',
-        documentCreation: '/document-creation'
+        documentCreation: '/document-creation',
+        ppeDetection: '/ppe-detection',
+        invoiceTracking: '/invoice-tracking'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
                 <Route path="dataentry/*" element={<DocSnapRoutes />} />
+                <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/transcript/record/*" element={<MedicalCodeRoutes />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
+                <Route path="/invoice-tracking" element={<DashboardPage module="invoiceTracking" />} />
                 <Route path="/transcript" element={<DashboardPage module="transcript" />} />
                 <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
                 <Route path="/document-creation" element={<DashboardPage module="documentCreation" />} />
                 <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
+                <Route path="/ppe-detection" element={<DashboardPage module="ppeDetection" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

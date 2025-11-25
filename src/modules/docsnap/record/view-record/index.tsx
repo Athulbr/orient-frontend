@@ -6,11 +6,13 @@ import { RenderArrayFields } from './render-field-components/RenderArrayFields';
 import { ResizableContainer } from '../../template/update-template/components/ResizableContainer';
 import { PreviewComponent } from './PreviewComponent';
 import { useBackButtonOverride } from '../../../../hooks/useBackButtonOverride';
-import { DataEntryImagesList } from './render-field-components/DataEntryImagesList';
 import RegenerateFieldDialog from './components/RegenerateFieldDialog';
 import ContentCreationComponent from './components/ContentCreationComponent';
 import { InvoiceGenerator } from './components/InvoiceGenerator';
 import ChatWithDocumentComponent from './ChatWithDocumentComponent';
+import { SelectVariationImagesDialog } from './components/SelectVariationImagesDialog';
+import { SelectPrimaryImageDialog } from './components/SelectPrimaryImageDialog';
+import { SelectAdditionalImagesDialog } from './components/SelectAdditionalImagesDialog';
 
 interface WirePoints {
     x1: number;
@@ -72,14 +74,18 @@ export interface ViewRecordStateIF {
     invoiceContent: string;
     generatingInvoice: boolean;
     requestNewFieldDialog: boolean;
-    showDataEntryImages: boolean;
     dataEntryWebImages: string[];
     selectedDataEntryImages: string[];
     showRegenerateFieldDialog: any | null;
     blogContent: string;
     templateSettings: any;
     templateFields: any;
-    primaryImage: string;
+    primaryImage: { path: string; caption: string } | null;
+    variationImages: Record<string, any>[];
+    showSelectVariationImagesDialog: { index: number; key: string } | null;
+    showSelectPrimaryImageDialog: boolean;
+    additionalImages: { path: string; caption: string }[];
+    showSelectAdditionalImagesDialog: boolean;
 }
 const initialState = {
     showCreateDialog: false,
@@ -109,14 +115,18 @@ const initialState = {
     invoiceContent: '',
     generatingInvoice: false,
     requestNewFieldDialog: false,
-    showDataEntryImages: false,
-    dataEntryWebImages: [],
-    selectedDataEntryImages: [],
     showRegenerateFieldDialog: null,
     blogContent: '',
     templateSettings: null,
     templateFields: null,
-    primaryImage: ''
+    dataEntryWebImages: [],
+    selectedDataEntryImages: [],
+    showSelectPrimaryImageDialog: false,
+    primaryImage: null,
+    variationImages: [],
+    showSelectVariationImagesDialog: null,
+    additionalImages: [],
+    showSelectAdditionalImagesDialog: false
 };
 
 const ViewRecordPage: React.FC = () => {
@@ -151,7 +161,7 @@ const ViewRecordPage: React.FC = () => {
                             {/* </TabViewContainer> */}
                         </div>
                     }
-                    initialLeftWidthPercent={module === 'dataentry' ? 60 : 70}
+                    initialLeftWidthPercent={module === 'dataentry' || module === 'ppeDetection' ? 60 : 70}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={80}
                     onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}
@@ -161,11 +171,9 @@ const ViewRecordPage: React.FC = () => {
                         <RenderArrayFields refs={{ fieldRefs, isScrollingRef: 0, containerRef }} updateWire={() => {}} />
                     </div>
                 )}
-                {state.showDataEntryImages && (
-                    <div className="absolute bottom-0 left-0 z-1 flex h-[40vh] w-full flex-col overflow-hidden border-t border-blue-200 bg-gray-50 p-2">
-                        <DataEntryImagesList />
-                    </div>
-                )}
+                {state.showSelectPrimaryImageDialog && <SelectPrimaryImageDialog />}
+                {Boolean(state.showSelectVariationImagesDialog) && <SelectVariationImagesDialog />}
+                {state.showSelectAdditionalImagesDialog && <SelectAdditionalImagesDialog />}
             </div>
             {Boolean(state.showRegenerateFieldDialog) && <RegenerateFieldDialog />}
         </ViewRecordStateProvider>

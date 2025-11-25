@@ -98,9 +98,6 @@ const AudioRecorder = ({
                     type: 'application/zip'
                 });
                 Promise.all([processZipResponse(response), uploadFileToS3(transcriptedFile)]).then(([transcriptions, transcriptedFileResponse]) => {
-                    console.log('transcriptions', transcriptions);
-                    console.log('transcriptedFileResponse', transcriptedFileResponse);
-
                     setTranscriptionData?.(transcriptions);
                     const payload = { medicalText: textInput, sourceType: 'text', transcriptions, transcriptedFile: transcriptedFileResponse?.data?.fileName };
                     if (currentData?._id) updateTranscript(payload, currentData._id);
@@ -208,7 +205,7 @@ const AudioRecorder = ({
         try {
             return await httpUploadRequest(`${config.nodeApiUrl}/idp/document/upload`, file);
         } catch (err) {
-            console.log('Error:', err);
+            console.error('Error:', err);
         }
     };
 
@@ -447,9 +444,7 @@ const AudioRecorder = ({
                                 {transcription.length === 0 && (
                                     <span
                                         onClick={() => {
-                                            console.log('clicked delete');
                                             deleteAudio();
-                                            // setClicked(true);
                                         }}
                                         className="text-red-600 cursor-pointer"
                                     >

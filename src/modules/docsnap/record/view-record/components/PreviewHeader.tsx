@@ -76,7 +76,6 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
         setDownloading(true);
         try {
             if (state.record?.imageFileNames?.length > 0) {
-                console.log('state.record.imageFileNames:===========', state.record.imageFileNames);
                 exportToPDF();
                 return;
             }

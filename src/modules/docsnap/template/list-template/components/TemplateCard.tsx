@@ -85,7 +85,6 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     }
 
     const handleCreateRecord = async (data: any) => {
-        console.log('template:===========', template);
         const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
         const values: any = {};
         res.data?.fields?.forEach((field: any) => {
