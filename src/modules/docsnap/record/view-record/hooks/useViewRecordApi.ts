@@ -217,11 +217,7 @@ export const useViewRecordApi = () => {
                 recordId: state?.record?._id,
                 module: state?.module,
                 extractedData: processArrayFields(),
-                name: state?.record?.name,
-                dataEntryImages: {
-                    primaryImage: state.primaryImage,
-                    additionalImages: state.additionalImages
-                }
+                name: state?.record?.name
             };
 
             if (state?.module !== 'dataentry') {
@@ -241,15 +237,11 @@ export const useViewRecordApi = () => {
                 };
             }
             if (state.module === 'dataentry') {
-                const additionalImages = state.additionalImages.map((image: any) => {
-                    return {
-                        image_path: image.path,
-                        image_text: image.caption
-                    };
-                });
-                payload['primaryImage'] = state.primaryImage;
-                payload['additionalImages'] = additionalImages;
                 payload['arrayFields'] = state.tableNames;
+                payload['dataEntryImages'] = {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                }
             }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
