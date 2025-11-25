@@ -13,8 +13,13 @@ export const DataEntryImages: FC = () => {
             <div className="flex flex-col cursor-pointer gap-3   justify-between rounded-lg border py-3 pr-3 pl-6  hover:border-blue-400 ">
                 <label className="font-semibold text-lg border-b pb-3">Primary Image</label>
                 {state.primaryImage && (
-                    <div className="flex justify-center items-center">
+                    <div className="flex justify-evenly items-center">
                         <img src={state.primaryImage.path} alt="" className="min-w-0 max-w-100" />
+                        <Trash2
+                            size={40}
+                            className="cursor-pointer text-gray-200 hover:text-red-400"
+                            onClick={() => setState(prev => ({ ...prev, primaryImage: null }))}
+                        />
                     </div>
                 )}
                 <div className="flex flex-col gap-1">
@@ -28,7 +33,7 @@ export const DataEntryImages: FC = () => {
                 <button
                     tabIndex={-1}
                     onClick={() => setState(prev => ({ ...prev, showSelectPrimaryImageDialog: true }))}
-                    className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6  hover:border-blue-300`}
+                    className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6 hover:bg-blue-50  hover:border-blue-300`}
                 >
                     <SquareMousePointer size={16} />
                     Select Primary Image
@@ -69,7 +74,7 @@ export const DataEntryImages: FC = () => {
                 <button
                     tabIndex={-1}
                     onClick={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: true }))}
-                    className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6  hover:border-blue-300`}
+                    className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6  hover:bg-blue-50  hover:border-blue-300`}
                 >
                     <SquareMousePointer size={16} />
                     Add Additional Images
