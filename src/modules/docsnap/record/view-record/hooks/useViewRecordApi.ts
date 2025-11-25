@@ -217,7 +217,11 @@ export const useViewRecordApi = () => {
                 recordId: state?.record?._id,
                 module: state?.module,
                 extractedData: processArrayFields(),
-                name: state?.record?.name
+                name: state?.record?.name,
+                dataEntryImages: {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                }
             };
 
             if (state?.module !== 'dataentry') {
