@@ -212,7 +212,7 @@ export const useViewRecordApi = () => {
 
     const submitRecordApi = async () => {
         try {
-            let payload: any = {
+            const payload: any = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
@@ -221,20 +221,14 @@ export const useViewRecordApi = () => {
             };
 
             if (state?.module !== 'dataentry') {
-                // const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
-                // if (fileData) {
-                //     console.log("Base64 Encoded File:", fileData.base64.substring(0, 100) + "...");
-                //     console.log("MIME Type:", fileData.mimeType);
-                // }
-                payload = {
-                    apiResponse: state?.record?.extractedData,
-                    recordId: state?.record?._id,
-                    module: state?.module,
-                    extractedData: processArrayFields(),
-                    name: state?.record?.name,
-                    // fileBase64: fileData?.base64,
-                    // fileMimeType: fileData?.mimeType,
-                };
+                const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
+                if (user.role.name.toLowerCase() === 'admin') {
+                    const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
+                    if (fileData) {
+                        payload['fileBase64'] = fileData?.base64;
+                        payload['fileMimeType'] = fileData?.mimeType;
+                    }
+                }
             }
             if (state.module === 'dataentry') {
                 payload['arrayFields'] = state.tableNames;
