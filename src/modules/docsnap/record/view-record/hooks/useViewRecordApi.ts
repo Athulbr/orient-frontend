@@ -191,6 +191,10 @@ export const useViewRecordApi = () => {
                 module: state?.module,
                 extractedData: processArrayFields(),
                 name: state?.record?.name,
+                dataEntryImages: {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                },
                 fileBase64: fileData?.base64,
                 fileMimeType: fileData?.mimeType
             };
