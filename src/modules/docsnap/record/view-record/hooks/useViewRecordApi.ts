@@ -183,32 +183,26 @@ export const useViewRecordApi = () => {
 
     const submitRecordApi = async () => {
         try {
-            const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
-
             const payload: any = {
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
                 extractedData: processArrayFields(),
-                name: state?.record?.name,
-                dataEntryImages: {
-                    primaryImage: state.primaryImage,
-                    additionalImages: state.additionalImages
-                },
-                fileBase64: fileData?.base64,
-                fileMimeType: fileData?.mimeType
+                name: state?.record?.name
             };
 
+            if (state.module !== 'dataentry') {
+                const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
+                payload['fileBase64'] = fileData?.base64;
+                payload['fileMimeType'] = fileData?.mimeType;
+            }
+
             if (state.module === 'dataentry') {
-                const additionalImages = state.additionalImages.map((image: any) => {
-                    return {
-                        image_path: image.path,
-                        image_text: image.caption
-                    };
-                });
-                payload['primaryImage'] = state.primaryImage;
-                payload['additionalImages'] = additionalImages;
                 payload['arrayFields'] = state.tableNames;
+                payload['dataEntryImages'] = {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                }
             }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
