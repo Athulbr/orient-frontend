@@ -221,14 +221,14 @@ export const useViewRecordApi = () => {
             };
 
             if (state?.module !== 'dataentry') {
-                const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-                if (user.role.name.toLowerCase() === 'admin') {
-                    const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
-                    if (fileData) {
-                        payload['fileBase64'] = fileData?.base64;
-                        payload['fileMimeType'] = fileData?.mimeType;
-                    }
+                // const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
+                // if (user.role.name.toLowerCase() === 'admin') {
+                const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
+                if (fileData) {
+                    payload['fileBase64'] = fileData?.base64;
+                    payload['fileMimeType'] = fileData?.mimeType;
                 }
+                // }
             }
             if (state.module === 'dataentry') {
                 payload['arrayFields'] = state.tableNames;
