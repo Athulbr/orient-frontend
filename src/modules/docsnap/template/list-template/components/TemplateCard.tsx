@@ -31,6 +31,17 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         const deleteTemplateApi = async (id: string) => {
             try {
                 const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
+                // remove the deleted template from sessionStorage so UI stays in sync
+                try {
+                    const stored = sessionStorage.getItem('templates');
+                    if (stored) {
+                        const parsed = JSON.parse(stored || '[]');
+                        const filtered = parsed.filter((t: any) => t._id !== id);
+                        sessionStorage.setItem('templates', JSON.stringify(filtered));
+                    }
+                } catch (err) {
+                    console.warn('Failed to update sessionStorage templates', err);
+                }
                 refreshPage && refreshPage();
                 toast.success('Template deleted successfully');
             } catch (error) {
