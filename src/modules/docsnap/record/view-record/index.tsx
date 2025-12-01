@@ -13,6 +13,7 @@ import ChatWithDocumentComponent from './ChatWithDocumentComponent';
 import { SelectVariationImagesDialog } from './components/SelectVariationImagesDialog';
 import { SelectPrimaryImageDialog } from './components/SelectPrimaryImageDialog';
 import { SelectAdditionalImagesDialog } from './components/SelectAdditionalImagesDialog';
+import { Button } from '../../../../components/Button';
 
 interface WirePoints {
     x1: number;
@@ -150,15 +151,24 @@ const ViewRecordPage: React.FC = () => {
                     }
                     right={
                         <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
-                            <TabViewContainer
-                                tabContents={{
-                                    extractedData: <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />,
-                                    chatWithDocument: <ChatWithDocumentComponent />,
-                                    invoiceGenerator: <InvoiceGenerator />,
-                                    contentCreation: <ContentCreationComponent />
-                                }}
-                            />
-                            {/* </TabViewContainer> */}
+                            {state.record?.error?.message ? (
+                                <div className="flex h-full gap-4 flex-col items-center justify-center">
+                                    {/* <Button small outlined>
+                                        Retry Extraction
+                                    </Button> */}
+                                    <h1 className="text-2xl font-bold">Extraction Failed</h1>
+                                    <p className="mt-2 text-red-500 text-xs">{state.record?.error?.message}</p>
+                                </div>
+                            ) : (
+                                <TabViewContainer
+                                    tabContents={{
+                                        extractedData: <ExtractedDataComponent containerRef={containerRef} fieldRefs={fieldRefs} />,
+                                        chatWithDocument: <ChatWithDocumentComponent />,
+                                        invoiceGenerator: <InvoiceGenerator />,
+                                        contentCreation: <ContentCreationComponent />
+                                    }}
+                                />
+                            )}
                         </div>
                     }
                     initialLeftWidthPercent={module === 'dataentry' || module === 'ppeDetection' ? 60 : 70}

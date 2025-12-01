@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
-import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
 
 export const useDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
@@ -155,7 +154,7 @@ export const useDocumentExtractor = () => {
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/data-entry`;
+                const apiEndPoint = `${config.mlServiceNodejs}/data-entry`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -191,8 +190,12 @@ export const useDocumentExtractor = () => {
         };
 
         if (template?.settings?.templateType === 'dataentry') {
+            // First, remove any existing entry for this file
             refreshExtractionQueue(rowData.SKU);
+            // Then add the new entry
             addToExtractionQueue(rowData.SKU);
+
+            // Finally, send the request
             sendApiRequestToDataEntry(rowData, template);
             navigate('/docsnap/record/list');
             return;
@@ -204,8 +207,8 @@ export const useDocumentExtractor = () => {
                 refreshExtractionQueue(file.name);
                 // Then add the new entry
                 addToExtractionQueue(file.name);
-                // Finally, send the request
 
+                // Finally, send the request
                 if (template?.settings?.extractionEngine === 'node') {
                     sendApiRequestToNodeJsExtractor(file, template);
                 } else {
