@@ -28,7 +28,7 @@ export const useDocumentExtractor = () => {
                 formData.append('templateId', template?._id);
                 formData.append('file', file);
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/extract-document`;
+                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : '/docsnap/extract-document'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
