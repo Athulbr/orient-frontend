@@ -5,7 +5,7 @@ import { TemplateCardComponent } from './components/TemplateCard';
 
 const ListTemplateComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
-    const { getTemplatesApi } = useListTemplatePageApi();
+    const { getTemplatesApi, getTemplateApi } = useListTemplatePageApi();
 
     useEffect(() => {
         getTemplatesApi();
@@ -22,6 +22,19 @@ const ListTemplateComponent: React.FC = () => {
         const finalTemplates = [template._id, ...filteredTemplates];
         localStorage.setItem('recentlyUsedTemplates', JSON.stringify(finalTemplates));
         setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
+    };
+
+    const exportTemplate = async (id: string) => {
+        const template = await getTemplateApi(id);
+        const data = {
+            name: template.name,
+            fields: template.fields,
+            settings: template.settings,
+            templateType: template.templateType,
+            active: true
+        };
+        console.log(data);
+        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
     };
 
     if (state.loadingTemplates) {
@@ -49,6 +62,7 @@ const ListTemplateComponent: React.FC = () => {
                     key={idx}
                     template={template}
                     refreshPage={() => setState({ ...state, refresh: state.refresh + 1 })}
+                    exportTemplate={exportTemplate}
                 />
             ))}
         </div>
