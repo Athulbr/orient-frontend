@@ -223,8 +223,8 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                                         if (!state.generatingTemplateFieldsWithAI && !state.updatingTemplateFieldsWithAI) {
                                             updateTemplateFieldsWithAI({
                                                 existingFields: convertTemplateFields(state.sectionList),
-                                                visionOcrText: state.visionOcrText,
-                                                userQuery: state.userQuery
+                                                userQuery: state.userQuery,
+                                                s3FileName: fileName
                                             });
                                         }
                                     }
@@ -241,8 +241,8 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                             onClick={() =>
                                 updateTemplateFieldsWithAI({
                                     existingFields: convertTemplateFields(state.sectionList),
-                                    visionOcrText: state.visionOcrText,
-                                    userQuery: state.userQuery
+                                    userQuery: state.userQuery,
+                                    s3FileName: fileName
                                 })
                             }
                             className="w-full "
