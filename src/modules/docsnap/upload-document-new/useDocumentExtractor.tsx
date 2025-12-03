@@ -154,7 +154,7 @@ export const useDocumentExtractor = () => {
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}/data-entry`;
+                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/data-entry`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
