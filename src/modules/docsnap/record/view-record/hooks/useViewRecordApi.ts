@@ -183,7 +183,9 @@ export const useViewRecordApi = () => {
 
     const submitRecordApi = async () => {
         try {
+            const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') || '');
             const payload: any = {
+                tenantName: loginUser?.tenant?.name,
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
