@@ -80,6 +80,7 @@ export const useViewRecordApi = () => {
             const templateFields = resp.data?.fields;
             const primaryImage = res.data?.dataEntryImages?.primaryImage;
             const additionalImages = res.data?.dataEntryImages?.additionalImages || [];
+            const inputText = res.data?.inputText;
             // }
             setState(prev => ({
                 ...prev,
@@ -92,7 +93,8 @@ export const useViewRecordApi = () => {
                 templateSettings,
                 templateFields,
                 primaryImage,
-                additionalImages
+                additionalImages,
+                inputText
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
@@ -202,7 +204,7 @@ export const useViewRecordApi = () => {
                 payload['dataEntryImages'] = {
                     primaryImage: state.primaryImage,
                     additionalImages: state.additionalImages
-                }
+                };
             }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);

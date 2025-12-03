@@ -87,6 +87,7 @@ export interface ViewRecordStateIF {
     showSelectPrimaryImageDialog: boolean;
     additionalImages: { path: string; caption: string }[];
     showSelectAdditionalImagesDialog: boolean;
+    inputText: string;
 }
 const initialState = {
     showCreateDialog: false,
@@ -127,7 +128,8 @@ const initialState = {
     variationImages: [],
     showSelectVariationImagesDialog: null,
     additionalImages: [],
-    showSelectAdditionalImagesDialog: false
+    showSelectAdditionalImagesDialog: false,
+    inputText: ''
 };
 
 const ViewRecordPage: React.FC = () => {
