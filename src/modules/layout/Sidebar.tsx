@@ -59,6 +59,13 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             path: '/invoice-tracking',
             key: 'invoice-tracking',
             permission: 'invoiceTracking:module'
+        },
+        {
+            name: 'Content Creation',
+            icon: <FileText size={32} strokeWidth={2.5} className="text-white" />,
+            path: '/content-creation',
+            key: 'content-creation',
+            permission: 'contentCreation:module'
         }
     ]);
 

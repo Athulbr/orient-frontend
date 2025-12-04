@@ -32,6 +32,8 @@ const RecentFilesCardComponent: React.FC = () => {
             navigate(`/document-creation/create/${row._id}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);
+        } else if (module === 'invoiceTracking') {
+            navigate(`/invoice-tracking/record/view/${row._id}`);
         } else {
             navigate(`/docsnap/record/view/${row._id}`);
         }

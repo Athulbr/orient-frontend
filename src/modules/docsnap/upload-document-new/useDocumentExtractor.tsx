@@ -154,7 +154,7 @@ export const useDocumentExtractor = () => {
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}/data-entry/add-product`;
+                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'dataentry' ? '/data-entry/add-product' : '/content-creation/create-blog'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -189,7 +189,7 @@ export const useDocumentExtractor = () => {
             }
         };
 
-        if (template?.settings?.templateType === 'dataentry') {
+        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
             // First, remove any existing entry for this file
             refreshExtractionQueue(rowData.SKU);
             // Then add the new entry
