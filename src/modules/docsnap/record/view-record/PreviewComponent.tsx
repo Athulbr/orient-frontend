@@ -281,16 +281,16 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                 name={state.record?.name}
             />
 
-            {state.loadingS3File ? (
-                <div className="flex h-full w-full flex-col items-center justify-center">
-                    <FullScreenLoader text="Loading Document..." />
-                </div>
-            ) : (
-                <div
-                    ref={imageContainerRef}
-                    className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
-                >
-                    {state.images.map((imgSrc, index) => (
+            <div
+                ref={imageContainerRef}
+                className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
+            >
+                {state.loadingS3File ? (
+                    <div className="flex h-full w-full flex-col items-center justify-center">
+                        <FullScreenLoader text="Loading Document..." />
+                    </div>
+                ) : (
+                    state.images.map((imgSrc, index) => (
                         <div
                             className="relative w-fit bg-green-500 shadow-xl shadow-gray-400"
                             style={{
@@ -425,31 +425,32 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                                 </div>
                             )}
                         </div>
-                    ))}
-                    {state.inputText && state.inputText !== 'Email Body' && (
-                        <div className="p-10 max-w-200 bg-white shadow-2xl shadow-gray-500">
-                            <h2 className="font-semibold text-lg text-center">Email Body</h2>
+                    ))
+                )}
+                {state.inputText && state.inputText !== 'Email Body' && (
+                    <div className="p-10 max-w-200 bg-white shadow-2xl shadow-gray-500">
+                        <h2 className="font-semibold text-lg text-center">Email Body</h2>
 
-                            {state.inputText.split('\n').map((line, index) => {
-                                // const trackingId = state.objectFields?.order_details?.tracking_id?.value || '';
-                                // const orderId = state.objectFields?.order_details?.order_id?.value || '';
+                        {state.inputText.split('\n').map((line, index) => {
+                            // const trackingId = state.objectFields?.order_details?.tracking_id?.value || '';
+                            // const orderId = state.objectFields?.order_details?.order_id?.value || '';
 
-                                // const isMatched =
-                                //     (trackingId.length >= 5 && line.includes(trackingId.substring(0, 5))) ||
-                                //     (orderId.length >= 5 && line.includes(orderId.substring(0, 5)));
+                            // const isMatched =
+                            //     (trackingId.length >= 5 && line.includes(trackingId.substring(0, 5))) ||
+                            //     (orderId.length >= 5 && line.includes(orderId.substring(0, 5)));
 
-                                return (
-                                    <div key={index} className={`mt-2 overflow-x-hidden`}>
-                                        {line}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                            return (
+                                <div key={index} className={`mt-2 overflow-x-hidden`}>
+                                    {line}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
-                    <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
-                </div>
-            )}
+                <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+            </div>
+
             <AnnotationLine bboxRef={bboxRef} />
         </div>
     );
