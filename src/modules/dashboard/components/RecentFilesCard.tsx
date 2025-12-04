@@ -32,8 +32,6 @@ const RecentFilesCardComponent: React.FC = () => {
             navigate(`/document-creation/create/${row._id}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);
-        } else if (module === 'invoiceTracking') {
-            navigate(`/invoice-tracking/record/view/${row._id}`);
         } else {
             navigate(`/docsnap/record/view/${row._id}`);
         }
@@ -45,7 +43,7 @@ const RecentFilesCardComponent: React.FC = () => {
                 <div className="text-gray-800">Recent {state.module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
-                        onClick={() => navigate(`/${state.module}/record/list`)}
+                        onClick={() => navigate(`/${state.module === 'invoiceTracking' ? 'invoice-tracking' : state.module}/record/list`)}
                         className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
                     >
                         View All <ChevronRight size={14} className="text-sky-600" />
