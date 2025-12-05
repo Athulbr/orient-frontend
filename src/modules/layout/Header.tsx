@@ -80,7 +80,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                             className="min-w-40"
                             value={selectedTenantFromSessionStorage}
                             onValueChange={e => {
-                                setSelectedTenant(e);
+                                const allOptions = [{ label: 'All Tenants', value: 'all' }, ...tenantList];
+                                const selectedOption = allOptions.find((tenant: { label: string; value: string }) => tenant.value === e);
+                                setSelectedTenant(e, selectedOption?.label);
                                 window.location.reload();
                             }}
                             options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}

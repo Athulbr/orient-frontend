@@ -186,8 +186,9 @@ export const useViewRecordApi = () => {
     const submitRecordApi = async () => {
         try {
             const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') || '');
+            const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
             const payload: any = {
-                tenantName: loginUser?.tenant?.name,
+                tenantName: loginUser?.tenant?.name ? loginUser?.tenant?.name : selectedTenantName,
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
@@ -273,7 +274,7 @@ export const useViewRecordApi = () => {
             console.error('error:===========', error);
             toast.error('Failed to update Record');
         } finally {
-            setState(prev => ({ ...prev, loadingData: false }));
+            setState(prev => ({ ...prev, loadingData: false, loadingS3File: false }));
         }
     };
     const updateExtractedData = async (extractedData: any) => {
