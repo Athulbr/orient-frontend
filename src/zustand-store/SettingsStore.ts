@@ -21,7 +21,7 @@ interface SettingsStoreIF {
     selectedTenant: any;
     submitTenantSettings: (settings?: any) => Promise<void>;
     getTenantSettings: () => Promise<void>;
-    setSelectedTenant: (tenant: any) => void;
+    setSelectedTenant: (tenant: any, tenantName?: string) => void;
 }
 
 export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
@@ -108,8 +108,11 @@ export const useSettingsStore = create<SettingsStoreIF>((set, get) => ({
             console.error(error);
         }
     },
-    setSelectedTenant: async (tenant: any) => {
+    setSelectedTenant: async (tenant: any, tenantName?: string) => {
         window.sessionStorage.setItem('selectedTenant', tenant);
+        if (tenantName) {
+            window.sessionStorage.setItem('selectedTenantName', tenantName);
+        }
         const res = await httpRequest('GET', `${config.nodeApiUrl}/tenant/settings/list/${tenant}`);
         if (res.data === null) {
             set({ tenantSettings: {} });
