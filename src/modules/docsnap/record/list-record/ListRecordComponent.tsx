@@ -89,7 +89,12 @@ export const ListRecordComponent: React.FC = () => {
         actionButtons.push({
             label: 'Export Record',
             action: () => {
-                setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') as string);
+                const payload = {
+                    tenantId: loginUser?.tenant?._id ? loginUser?.tenant?._id : selectedTenant
+                };
+                downloadXlsxFile(payload, selectedTenant);
+                // setState(prev => ({ ...prev, dealerSelectionDialog: true }));
             }
         });
     }
@@ -99,7 +104,7 @@ export const ListRecordComponent: React.FC = () => {
               {
                   label: 'Export Record',
                   action: () => {
-                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                      //   setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
               },
               {
