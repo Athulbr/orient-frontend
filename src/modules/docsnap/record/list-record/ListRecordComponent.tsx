@@ -89,12 +89,7 @@ export const ListRecordComponent: React.FC = () => {
         actionButtons.push({
             label: 'Export Record',
             action: () => {
-                const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-                const payload = {
-                    tenantId: loginUser?.tenant?._id ? loginUser?.tenant?._id : selectedTenant
-                };
-                downloadXlsxFile(payload, selectedTenant);
-                // setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                setState(prev => ({ ...prev, dealerSelectionDialog: true }));
             }
         });
     }
@@ -130,6 +125,8 @@ export const ListRecordComponent: React.FC = () => {
         let formattedStart: string | null = null;
         let formattedEnd: string | null = null;
 
+        const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') as string);
+
         if (startDate) {
             const s = new Date(startDate);
             s.setHours(0, 0, 0, 0); // start of day
@@ -144,8 +141,9 @@ export const ListRecordComponent: React.FC = () => {
         const payload = {
             startDate: formattedStart,
             endDate: formattedEnd,
-            format: 'xlsx',
-            dealers
+            // format: 'xlsx',
+            // dealers,
+            tenantId: loginUser?.tenant?._id ? loginUser?.tenant?._id : selectedTenant
         };
 
         downloadXlsxFile(payload, selectedTenant);
