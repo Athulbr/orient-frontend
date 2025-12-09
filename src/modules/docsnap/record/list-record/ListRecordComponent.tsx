@@ -125,7 +125,7 @@ export const ListRecordComponent: React.FC = () => {
         return updatedQuery;
     };
 
-    const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
+    const onSubmit = async (dealers: any, startDate: null | Date, endDate: null | Date) => {
         let formattedStart: string | null = null;
         let formattedEnd: string | null = null;
 
@@ -150,7 +150,8 @@ export const ListRecordComponent: React.FC = () => {
             tenantId: loginUser?.tenant?._id ? loginUser?.tenant?._id : selectedTenant
         };
 
-        downloadXlsxFile(payload, selectedTenant);
+        await downloadXlsxFile(payload, selectedTenant);
+        setState(prev => ({ ...prev, dealerSelectionDialog: false }));
     };
     const onRowSelect = (selectedRows: any) => {
         if (selectedRows.length > 0) {
