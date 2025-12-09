@@ -281,16 +281,16 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                 name={state.record?.name}
             />
 
-            <div
-                ref={imageContainerRef}
-                className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
-            >
-                {state.loadingS3File ? (
-                    <div className="flex h-full w-full flex-col items-center justify-center">
-                        <FullScreenLoader text="Loading Document..." />
-                    </div>
-                ) : (
-                    state.images.map((imgSrc, index) => (
+            {state.loadingS3File ? (
+                <div className="flex h-full w-full flex-col items-center justify-center">
+                    <FullScreenLoader text="Loading Document..." />
+                </div>
+            ) : (
+                <div
+                    ref={imageContainerRef}
+                    className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 pb-[45vh] shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
+                >
+                    {state.images.map((imgSrc, index) => (
                         <div
                             className="relative w-fit bg-green-500 shadow-xl shadow-gray-400"
                             style={{
@@ -299,7 +299,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                             }}
                             key={index}
                         >
-                            {(state.reExtracting || (state.generatingInvoice && state.tabIndex === 2)) && (
+                            {(state.reExtracting || !state.record?.extractedData || (state.generatingInvoice && state.tabIndex === 2)) && (
                                 <div className="absolute top-0 left-0 z-1000 flex h-full w-full items-center justify-center overflow-hidden border-3 border-sky-300 bg-[#1fa9f033]">
                                     <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
                                 </div>
@@ -425,37 +425,11 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                                 </div>
                             )}
                         </div>
-                    ))
-                )}
-                {state.inputText && state.inputText !== 'Email Body' && (
-                    <div className="p-10 max-w-200 bg-white shadow-2xl shadow-gray-500">
-                        <h2 className="font-semibold text-lg text-center">Email Body</h2>
-
-                        {state.inputText.split('\n').map((line, index) => {
-                            // const trackingId = state.objectFields?.order_details?.tracking_id?.value || '';
-                            // const orderId = state.objectFields?.order_details?.order_id?.value || '';
-
-                            // const isMatched =
-                            //     (trackingId.length >= 5 && line.includes(trackingId.substring(0, 5))) ||
-                            //     (orderId.length >= 5 && line.includes(orderId.substring(0, 5)));
-
-                            return (
-                                <div key={index} className={`mt-2 overflow-x-hidden`}>
-                                    {line}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
-            </div>
-
+                    ))}
+                    <div className="absolute top-0 right-0 z-10 h-full w-1 shadow-2xl shadow-gray-500"></div>
+                </div>
+            )}
             <AnnotationLine bboxRef={bboxRef} />
         </div>
     );
 };
-
-const innerText =
-    "--------- Forwarded message ---------\nFrom: Bhuvaneswaran V <bhuvaneswaran.v@xfactr.ai>\nDate: Thu, Nov 20, 2025 at 12:11 PM\nSubject: UPS Ship Notification, Tracking Number 1ZE030W80393189853\nTo: admin@makez.ai <admin@makez.ai>\n\n\n\n[image: UPS logo]\n\n*You have a package coming.*\n*Estimated Delivery Date:*\nMonday, 11/10/2025\n*Estimated Delivery Time:*\nby 7:00 PM\n\nThis message was sent to you at the request of Sunset Healthcare Solutions\nInc to notify you that the shipment information below has been transmitted\nto UPS. The physical package may or may not have actually been tendered to\nUPS for shipment. To verify the actual transit status of your shipment,\nclick on the tracking link below.\nShipment Details\n------------------------------\n*From:*\nSUNSET HEALTHCARE SOLUTIONS\n*Tracking Number:*\n*1ZE030W80393189853\n<https://www.ups.com/track?loc=en_US&Requester=NES&tracknum=1ZE030W80393189853&AgreeToTermsAndConditions=yes&WT.z_eCTAid=ct1_eml_Tracking__ct1_eml_qvn_eml_5shp&WT.z_edatesent=11062025>*\n*Ship To:*\nShipping\nREHABMART, LLC\n3651 Mars Hill Rd\nBLDG 2400\nWatkinsville, GA 306775985\nUS\n*UPS Service:*\nUPS GROUND\n*Number of Packages:*\n1\n*Weight:*\n1.0 LBS\n*Reference Number 1:*\n909845\n*Reference Number 2:*\nRM289380\n\n© 2025 United Parcel Service of America, Inc. UPS, the UPS brandmark, and\nthe color brown are trademarks of United Parcel Service of America, Inc.\nAll rights reserved.\n\nAll trademarks, trade names, or service marks that appear in connection\nwith UPS's services are the property of their respective owners.\n\nPlease do not reply directly to this email. UPS will not receive any reply\nmessage.\n*Review the UPS Privacy Notice\n<https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions/privacy-notice?WT.svl=eFooter>*\n*For Questions, Visit Our Help and Support Center\n<https://www.ups.com/us/en/support/tracking-support.page?WT.svl=eFooter>*\n";
-const innerHTML1 = `<p>---------- Forwarded message ---------<br/>From: &lt;<a href="mailto:belinda@clinton-ind.com">belinda@clinton-ind.com</a>&gt;<br/>Date: Fri, Nov 28, 2025 at 7:46&#x202F;PM<br/>Subject: Invoice from Clinton Industries, Inc.<br/>To: &lt;<a href="mailto:accounting@rehabmart.com">accounting@rehabmart.com</a>&gt;, &lt;<a href="mailto:invoicepay@rehabmart.com">invoicepay@rehabmart.com</a>&gt;, &lt;<br/><a href="mailto:order@rehabmart.com">order@rehabmart.com</a>&gt;</p><p>Dear Customer :</p><p>Your invoice appears below. Please remit payment at your earliest<br/>convenience.</p><p>Thank you for your business - we appreciate it very much.</p><p>Sincerely,</p><p>Clinton Industries, Inc.</p>`;
