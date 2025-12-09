@@ -139,6 +139,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                                     setStartDate(from);
                                     setEndDate(to);
                                 }}
+                                disableFutureDates={true}
                                 disabled={selectAll}
                             />
                         </div>
