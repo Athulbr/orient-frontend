@@ -28,18 +28,19 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
     const toast = useToastStore();
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+    const [selectAll, setSelectAll] = useState(false);
 
-    useEffect(() => {
-        const getDealerList = async () => {
-            try {
-                const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/list/dealers`);
-                setDealersData(res.data?.dealers);
-            } catch (error) {
-                toast.error('Failed to fetch dealer list');
-            }
-        };
-        getDealerList();
-    }, []);
+    // useEffect(() => {
+    //     const getDealerList = async () => {
+    //         try {
+    //             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/list/dealers`);
+    //             setDealersData(res.data?.dealers);
+    //         } catch (error) {
+    //             toast.error('Failed to fetch dealer list');
+    //         }
+    //     };
+    //     getDealerList();
+    // }, []);
 
     const [expandedDealer, setExpandedDealer] = useState<string | null>(null);
 
@@ -86,8 +87,8 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
             }))
             .filter(dealer => dealer.subDealers.length > 0);
 
-        if (selectedDealers.length === 0) {
-            toast.error('Please select at least one dealer');
+        if (!selectAll && (!startDate || !endDate)) {
+            toast.error('Please select date range');
             return;
         }
         onSubmit(selectedDealers, startDate, endDate);
@@ -123,31 +124,39 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
             <div className="fixed right-0 top-0 h-screen w-1/3 min-w-120  bg-white shadow-lg  overflow-y-auto">
                 <div className="sticky top-0 z-10 bg-white">
                     <div className="flex bg-white top-0 z-10 justify-between items-center p-6">
-                        <h1 className="text-xl font-bold">Dealer Selection</h1>
+                        <h1 className="text-xl font-bold">Choose Date Range</h1>
                         <button onClick={closeDialog} className="text-gray-500 hover:text-gray-700 cursor-pointer p-2 hover:bg-gray-100 rounded-full ">
                             <X className="text-gray-500 hover:text-gray-700" onClick={closeDialog} />
                         </button>
                     </div>
                     <div className="px-8 pb-4 font-semibold flex flex-col">
-                        <div className="pb-4">
+                        <div className="pb-4 flex">
                             <DatePicker
                                 from={startDate}
                                 to={endDate}
                                 onSubmit={(from, to) => {
-                                    setStartDate(from), setEndDate(to);
+                                    setStartDate(from);
+                                    setEndDate(to);
                                 }}
+                                disabled={selectAll}
                             />
                         </div>
-                        <div className="flex items-center pl-2">
+                        <h4 className="flex items-center pl-13">or</h4>
+
+                        <div className="flex items-center pl-2 mt-3">
                             <input
                                 type="checkbox"
                                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                checked={allSelected}
+                                checked={selectAll}
                                 ref={input => {
                                     if (input) input.indeterminate = someSelected;
                                 }}
-                                onChange={e => handleSelectAll(e.target.checked)}
+                                onChange={e => {
+                                    setSelectAll(e.target.checked);
+                                    // handleSelectAll(e.target.checked);
+                                }}
                                 id="selectAll"
+                                disabled={startDate && endDate ? true : false}
                             />
                             <label htmlFor="selectAll" className="ml-2 cursor-pointer">
                                 Select All
@@ -155,7 +164,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                         </div>
                     </div>
                 </div>
-                <ul className="grid gap-4 p-4 pt-0">
+                {/* <ul className="grid gap-4 p-4 pt-0">
                     {dealersData.map((dealer, index) => (
                         <li key={index} className="py-4 px-6 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
                             <div className="flex items-center space-x-4 cursor-pointer" onClick={() => toggleDealerExpansion(dealer.name)}>
@@ -214,9 +223,9 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                             )}
                         </li>
                     ))}
-                </ul>
+                </ul> */}
 
-                <div className="mt-8 py-6 px-6 bg-gray-100 rounded-lg shadow-sm">
+                {/* <div className="mt-8 py-6 px-6 bg-gray-100 rounded-lg shadow-sm">
                     <h2 className="text-lg font-semibold mb-4">Selected Dealers and Sub Dealers</h2>
                     <div className="px-4 py-2 font-semibold">Dealer Name</div>
                     <div className="px-4 py-2 font-semibold">Location</div>
@@ -239,7 +248,7 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                     ) : (
                         <p className="text-gray-500">No dealers or sub dealers selected yet.</p>
                     )}
-                </div>
+                </div> */}
 
                 <div className="p-4 sticky bottom-0 bg-white flex justify-end">
                     <Button onClick={handleSubmit}>Export Records</Button>
