@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PreviewContainer from './preview-container';
 import RightContainer from './right-container';
 import { ResizableContainer } from '../docsnap/template/update-template/components/ResizableContainer';
 import { ContentCreationEditorStateProvider } from './hooks/DocumentCreationEditorContext';
+import httpRequest from '../../global-utils/httpRequest';
+import { config } from '../../config/default';
+import { useParams } from 'react-router-dom';
 
 interface ContentCreationIF {
     test?: string;
@@ -20,6 +23,16 @@ const initialState: ContentCreationEditorStateIF = {};
 
 const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
     const [state, setState] = useState<ContentCreationEditorStateIF>(initialState);
+    const { id } = useParams();
+    const [content, setContent] = useState('');
+
+    useEffect(() => {
+        const getRecord = async () => {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/${id}`);
+            setContent(res.data?.content);
+        };
+        getRecord();
+    }, []);
 
     return (
         <ContentCreationEditorStateProvider value={{ state, setState }}>
