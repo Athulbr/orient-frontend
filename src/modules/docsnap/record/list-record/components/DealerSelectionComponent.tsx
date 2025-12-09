@@ -121,8 +121,9 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
     return (
         <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="absolute inset-0 bg-gray-600 opacity-50" onClick={closeDialog}></div>
-            <div className="fixed right-0 top-0 h-screen w-1/3 min-w-120  bg-white shadow-lg  overflow-y-auto">
-                <div className="sticky top-0 z-10 bg-white">
+            {/* h-screen (temporarly removed this from next line) replaced with  h-[calc(100vh-71vh)] */}
+            <div className="fixed right-0 top-0 h-[calc(100vh-71vh)] w-1/3 min-w-120  bg-white shadow-lg  overflow-y-auto">
+                <div className="sticky top-0 z-10 bg-white border border-solid border-gray-300">
                     <div className="flex bg-white top-0 z-10 justify-between items-center p-6">
                         <h1 className="text-xl font-bold">Choose Date Range</h1>
                         <button onClick={closeDialog} className="text-gray-500 hover:text-gray-700 cursor-pointer p-2 hover:bg-gray-100 rounded-full ">
@@ -162,6 +163,10 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                                 Select All
                             </label>
                         </div>
+                    </div>
+
+                    <div className="p-4 sticky bottom-0 bg-white flex justify-end">
+                        <Button onClick={handleSubmit}>Export Records</Button>
                     </div>
                 </div>
                 {/* <ul className="grid gap-4 p-4 pt-0">
@@ -250,9 +255,9 @@ const DealerListComponent = ({ isOpen, closeDialog, onSubmit }: DealerListCompon
                     )}
                 </div> */}
 
-                <div className="p-4 sticky bottom-0 bg-white flex justify-end">
+                {/* <div className="p-4 sticky bottom-0 bg-white flex justify-end">
                     <Button onClick={handleSubmit}>Export Records</Button>
-                </div>
+                </div> */}
             </div>
         </div>
     );
