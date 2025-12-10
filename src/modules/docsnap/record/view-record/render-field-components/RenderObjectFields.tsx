@@ -103,7 +103,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                                 }));
                                             }
                                         }}
-                                        onChange={onChange}
+                                        onchange={onChange}
                                         handleRegenerateField={() =>
                                             setState(prev => ({
                                                 ...prev,

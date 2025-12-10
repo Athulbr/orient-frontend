@@ -351,11 +351,12 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-description`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/data-entry/regenerate-description`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
-            toast.error('Failed to create Comment');
+            toast.error('Failed to regenerate description');
+            return null
         } finally {
             setState(prev => ({ ...prev }));
         }
