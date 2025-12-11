@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
 import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
-import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
 import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
-import { useSettingsStore } from '../../../zustand-store/SettingsStore';
-import { useNodeJsDocumentExtractor } from './useNodeJsDocumentExtractor';
-import { usePythonSingleDocumentExtractor } from './usePythonSingleDocumentExtractor';
-import { usePythonMultiDocumentExtractor } from './usePythonMultiDocumentExtractor';
 import { config } from '../../../config/default';
+import { useDocumentExtractor } from './useDocumentExtractor';
+import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
+import { groupVariationsByPageCount } from './functions/groupVariationsByPageCount';
+import { createProductWithVariationGroups } from './functions/createProductWithVariationGroups';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -19,9 +18,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const toast = useToastStore();
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
-    const { addToNodeJsDocumentExtractor } = useNodeJsDocumentExtractor();
-    const { addToPythonSingleDocumentExtractor } = usePythonSingleDocumentExtractor();
-    const { addToPythonMultiDocumentExtractor } = usePythonMultiDocumentExtractor();
+    const { addToDocumentExtractor } = useDocumentExtractor();
+    const [selectedProducts, setSelectedProducts] = useState<any>([]);
 
     useEffect(() => {
         if (!template._id) {
@@ -46,15 +44,17 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        const templateSettings = latestTemplate?.settings;
-        if (templateSettings?.extractionEngine === 'node') {
-            addToNodeJsDocumentExtractor(files, latestTemplate);
+        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
+            const csvData = await excelFileToArrayOfObjects(files[0]);
+            const groupedVariations = groupVariationsByPageCount(csvData);
+            const products = createProductWithVariationGroups(groupedVariations);
+            const selectedProducts = products.slice(0, 1);
+            setSelectedProducts(selectedProducts);
+            selectedProducts.forEach(product => {
+                addToDocumentExtractor(latestTemplate, [], product);
+            });
         } else {
-            if (templateSettings?.extractSingleDocument) {
-                addToPythonSingleDocumentExtractor(files, latestTemplate);
-            } else {
-                addToPythonMultiDocumentExtractor(files, latestTemplate);
-            }
+            addToDocumentExtractor(latestTemplate, files);
         }
     };
 
@@ -66,7 +66,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput accept="application/pdf,image/*" onFilesChange={onFileDrop} />
+                <DragAndDropFileInput accept="application/pdf,image/*,.csv,.xlsx,.xls" onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

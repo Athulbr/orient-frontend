@@ -5,6 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { useS3Storage } from '../../../../../zustand-store/S3Storage';
+import { jsPDF } from 'jspdf';
+import { useState } from 'react';
+import Spinner from '../../../../../components/Spinner';
+
 interface PreviewHeaderComponentProps {
     zoom: number;
     zoomOut: () => void;
@@ -19,12 +23,65 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
     const navigate = useNavigate();
     const { getS3File } = useS3Storage();
     const { state } = useViewRecordState();
+    const [downloading, setDownloading] = useState(false);
     const toast = useToastStore();
 
+    const exportToPDF = async () => {
+        const images = state.images;
+        if (images.length === 0) {
+            alert('Please add images first');
+            return;
+        }
+
+        const pdf = new jsPDF();
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        for (let i = 0; i < images.length; i++) {
+            if (i > 0) {
+                pdf.addPage();
+            }
+
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+
+                img.onload = () => {
+                    const imgWidth = img.width;
+                    const imgHeight = img.height;
+
+                    // Fit to page width, maintain aspect ratio
+                    const width = pageWidth;
+                    const height = (imgHeight / imgWidth) * pageWidth;
+
+                    // Start from top-left corner
+                    const x = 0;
+                    const y = 0;
+
+                    pdf.addImage(images[i], 'JPEG', x, y, width, height);
+                    resolve(true);
+                };
+
+                img.onerror = () => {
+                    reject(new Error(`Failed to load image ${i}`));
+                };
+
+                img.src = images[i];
+            });
+            setDownloading(false);
+        }
+
+        pdf.save('images.pdf');
+    };
     const handleDownload = async () => {
+        setDownloading(true);
         try {
+            if (state.record?.imageFileNames?.length > 0) {
+                exportToPDF();
+                return;
+            }
             if (!state.record?.pdfFileName) {
                 toast.error('No file to download');
+                setDownloading(false);
                 return;
             }
 
@@ -32,6 +89,7 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
 
             if (!s3Response?.Body?.data) {
                 toast.error('File not found or invalid response');
+                setDownloading(false);
                 return;
             }
 
@@ -70,6 +128,7 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
         } catch (error) {
             console.error('Error downloading file:', error);
             toast.error(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setDownloading(false);
         }
     };
 
@@ -92,7 +151,7 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
                     <LightIconButton Icon={Shrink} onClick={shrinkExpandHandler} title="Shrink" />
                 )}
             </div>
-            <LightIconButton Icon={Download} onClick={handleDownload} title="Download" />
+            {downloading ? <Spinner size={16} className="text-gray-400 m-2" /> : <LightIconButton Icon={Download} onClick={handleDownload} title="Download" />}
         </div>
     );
 };

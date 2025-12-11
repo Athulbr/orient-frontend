@@ -89,7 +89,7 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
             clearTimeout(timeoutId);
         }
     } catch (error) {
-        console.log('Error in httpRequest:', error);
+        console.error('Error in httpRequest:', error);
 
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw new Error('Request timeout');

@@ -11,7 +11,18 @@ export const useListRecordApi = () => {
     const { state, setState } = useListRecordPageState();
 
     // ============================= CREATE ==================================
-
+    const getRecordsApi = async () => {
+        try {
+            // if (!checkPermission('read:record')) return;
+            setState(prev => ({ ...prev, loadingRecords: true }));
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { pageSize: 10, filters: { deleted: false } });
+            setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
+            window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
+            return true;
+        } catch (error) {
+            toast.error('Failed to fetch record');
+        }
+    };
     const createRecordApi = async (requestBody: any) => {
         try {
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, requestBody);
@@ -109,5 +120,5 @@ export const useListRecordApi = () => {
         }
     };
 
-    return { createRecordApi, updateRecordApi, deleteRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine };
+    return { getRecordsApi, createRecordApi, updateRecordApi, deleteRecordApi, uploadFilesToAwsS3, trainChatWithDocumentEngine };
 };

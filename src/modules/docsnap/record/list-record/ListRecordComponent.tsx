@@ -12,9 +12,11 @@ import { downloadXlsxFile } from './utils/downloadXlsxFile';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
-const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 import { config } from '../../../../config/default';
 import { useToastStore } from '../../../../components/toast/ToastStore';
+import { useExtractionStore } from '../../../../zustand-store/extractionStore';
+import { ListRecordCustomTable } from './ListRecordCustomTable';
+const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -45,8 +47,7 @@ export const ListRecordComponent: React.FC = () => {
     const toast = useToastStore();
 
     const [rowSelected, setRowSelected] = useState<boolean>(false);
-
-    const { refreshRecord, updateRefreshRecord, extractionQueue } = useDocsnapStore();
+    const { refreshRecord, updateRefreshRecord, extractionQueue } = useExtractionStore();
 
     useEffect(() => {
         if (refreshRecord === 100) return;
@@ -59,6 +60,10 @@ export const ListRecordComponent: React.FC = () => {
             const module = sessionStorage.getItem('module');
             if (module === 'documentCreation') {
                 navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+                return;
+            }
+            if (module === 'contentCreation') {
+                navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
                 return;
             }
             navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
@@ -98,7 +103,7 @@ export const ListRecordComponent: React.FC = () => {
               {
                   label: 'Export Record',
                   action: () => {
-                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                      //   setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
               },
               {
@@ -120,9 +125,11 @@ export const ListRecordComponent: React.FC = () => {
         return updatedQuery;
     };
 
-    const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
+    const onSubmit = async (dealers: any, startDate: null | Date, endDate: null | Date) => {
         let formattedStart: string | null = null;
         let formattedEnd: string | null = null;
+
+        const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') as string);
 
         if (startDate) {
             const s = new Date(startDate);
@@ -138,11 +145,13 @@ export const ListRecordComponent: React.FC = () => {
         const payload = {
             startDate: formattedStart,
             endDate: formattedEnd,
-            format: 'xlsx',
-            dealers
+            // format: 'xlsx',
+            // dealers,
+            tenantId: loginUser?.tenant?._id ? loginUser?.tenant?._id : selectedTenant
         };
 
-        downloadXlsxFile(payload, selectedTenant);
+        await downloadXlsxFile(payload, selectedTenant);
+        setState(prev => ({ ...prev, dealerSelectionDialog: false }));
     };
     const onRowSelect = (selectedRows: any) => {
         if (selectedRows.length > 0) {
@@ -172,6 +181,8 @@ export const ListRecordComponent: React.FC = () => {
                 hiddenColumns={hiddenColumns}
                 onRowSelect={onRowSelect}
             />
+
+            {/* <ListRecordCustomTable /> */}
             {state.dealerSelectionDialog && (
                 <DealerListComponent
                     onSubmit={onSubmit}

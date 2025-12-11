@@ -3,10 +3,8 @@ import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from '../../components/Dropdown';
-import ExtractionFloatingWindow from '../docsnap/upload-document/ExtractionFloatingWindow';
 import ExtractionFloatingWindowNew from '../docsnap/upload-document-new/ExtractionFloatingWindow';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { Button } from '../../components/Button';
 import httpRequest from '../../global-utils/httpRequest';
 import { SingleSelect } from '../../components/SingleSelect';
 import { useEffect, useState } from 'react';
@@ -29,7 +27,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
-    const showNewExtractionWindowUI = localStorage.getItem('user') === 'vinayak' ? true : false;
     useEffect(() => {
         if (user?.role?.name !== 'superadmin') return;
         const getTenantList = async () => {
@@ -49,7 +46,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                 postLogoutRedirectUri: config.baseUrl || 'https://demo.makez.ai'
             });
         }
-        const logoutRes = await httpRequest('POST', `${config.nodeApiUrl}/auth/logout`, {});
+        await httpRequest('POST', `${config.nodeApiUrl}/auth/logout`, {});
         toast.success('Logged out successfully');
     };
     const onChangeDropDown = (e: string) => {
@@ -83,7 +80,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                             className="min-w-40"
                             value={selectedTenantFromSessionStorage}
                             onValueChange={e => {
-                                setSelectedTenant(e);
+                                const allOptions = [{ label: 'All Tenants', value: 'all' }, ...tenantList];
+                                const selectedOption = allOptions.find((tenant: { label: string; value: string }) => tenant.value === e);
+                                setSelectedTenant(e, selectedOption?.label);
                                 window.location.reload();
                             }}
                             options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
@@ -95,18 +94,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                             {user?.firstName}
                         </span>
                     </Dropdown>
-                    <Button hidden onClick={callExtractionApi}>
-                        Call API
-                    </Button>
-                    {/* <Dropdown onChange={onChangeDropDown} options={['Light', 'Dark', 'Default']}>
-            <Sun size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          </Dropdown> */}
-
-                    {/* <Settings tabIndex={0} onClick={() => navigate('/config')} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
-                    {/* <MoonStar size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                 </div>
             </div>
-            {!showNewExtractionWindowUI ? <ExtractionFloatingWindow /> : <ExtractionFloatingWindowNew />}
+            <ExtractionFloatingWindowNew />
         </div>
     );
 };

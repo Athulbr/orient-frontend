@@ -66,11 +66,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
 
     return (
         <div className="relative">
-            {!checkPermission('read:record') ? (
-                <div className="flex h-full min-h-40 w-full flex-col items-center justify-center rounded-2xl bg-white text-sm text-gray-400">
-                    You do not have permission to view templates
-                </div>
-            ) : state.loadingTemplates ? (
+            {state.loadingTemplates ? (
                 <div className="flex min-h-40 gap-6">
                     {Array.from({ length: cardsPerRow }).map((_, idx) => (
                         <TemplateCardComponent key={idx} isLoading flexBasis={`${100 / cardsPerRow}%`} />

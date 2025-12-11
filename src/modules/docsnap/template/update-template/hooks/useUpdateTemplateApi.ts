@@ -106,9 +106,9 @@ export const useUpdateTemplatePageApi = () => {
                 toast.success('Template fields generated successfully');
                 return true;
             }
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/template-fields/generate`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/template-fields/generate`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
-            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false, visionOcrText: res.data?.visionOcrText }));
+            setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false }));
             // const data = convertLLMResponse(newSchema);
             // setState(prev => ({ ...prev, sectionList: data, generatingTemplateFieldsWithAI: false }));
             toast.success('Template fields generated successfully');
@@ -122,7 +122,7 @@ export const useUpdateTemplatePageApi = () => {
     const updateTemplateFieldsWithAI = async (requestBody: any = {}) => {
         try {
             setState(prev => ({ ...prev, updatingTemplateFieldsWithAI: true }));
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/update-template-fields`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/template-fields/update`, requestBody);
             const data = convertLLMResponse(res.data?.templateFields || {});
             setState(prev => ({ ...prev, sectionList: data, updatingTemplateFieldsWithAI: false, userQuery: '' }));
             toast.success('Template fields updated successfully');

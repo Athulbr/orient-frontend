@@ -7,9 +7,6 @@ interface DataMap {
 }
 
 export const RenderContent: React.FC<{ template: string; data: DataMap }> = ({ template, data }) => {
-    console.log('template:===========', template);
-    console.log('data:===========', data);
-    // Split the text into literal and placeholder parts
     if (!template) return null;
     return (
         <div>

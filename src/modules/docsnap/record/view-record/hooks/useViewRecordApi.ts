@@ -52,7 +52,6 @@ export const useViewRecordApi = () => {
             const tableNames: string[] = [];
             if (res.data.extractedData) {
                 const extractedData = JSON.parse(JSON.stringify(res.data.extractedData));
-                // const extractedData = electricalComponents_OCR;
                 Object.entries(extractedData).forEach(([key, value]: any) => {
                     if (Array.isArray(value)) {
                         // its array
@@ -79,6 +78,9 @@ export const useViewRecordApi = () => {
             const resp = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
             templateSettings = resp.data?.settings;
             const templateFields = resp.data?.fields;
+            const primaryImage = res.data?.dataEntryImages?.primaryImage;
+            const additionalImages = res.data?.dataEntryImages?.additionalImages || [];
+            const inputText = res.data?.inputText;
             // }
             setState(prev => ({
                 ...prev,
@@ -89,14 +91,17 @@ export const useViewRecordApi = () => {
                 loadingData: false,
                 dataEntryWebImages,
                 templateSettings,
-                templateFields
+                templateFields,
+                primaryImage,
+                additionalImages,
+                inputText
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
-                console.log('images', images);
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
+                    module: 'dataentry',
                     images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
                 }));
             } else {
@@ -145,78 +150,131 @@ export const useViewRecordApi = () => {
         }
     };
 
+    const getFileAsBase64WithMime = async (fileKey: string): Promise<{ base64: string; mimeType: string } | null> => {
+        try {
+            const s3Response: any = await getS3File(fileKey);
+
+            if (!s3Response?.Body?.data) {
+                console.error('File not found or invalid response');
+                return null;
+            }
+
+            // Convert number array to Uint8Array
+            const fileDataArray = s3Response.Body.data;
+            const fileData = new Uint8Array(fileDataArray);
+
+            // Encode to Base64
+            const base64String = btoa(fileData.reduce((data, byte) => data + String.fromCharCode(byte), ''));
+
+            // Guess MIME type from file extension
+            const fileName = fileKey.split('/').pop()?.toLowerCase() || '';
+            let mimeType = 'application/octet-stream';
+
+            if (fileName.endsWith('.pdf')) mimeType = 'application/pdf';
+            else if (fileName.endsWith('.png')) mimeType = 'image/png';
+            else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) mimeType = 'image/jpeg';
+            else if (fileName.endsWith('.txt')) mimeType = 'text/plain';
+            else if (fileName.endsWith('.csv')) mimeType = 'text/csv';
+
+            return { base64: base64String, mimeType };
+        } catch (error) {
+            console.error('Error fetching/encoding file:', error);
+            return null;
+        }
+    };
+
     const submitRecordApi = async () => {
         try {
-            const payload = {
+            const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') || '');
+            const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
+            const payload: any = {
+                tenantName: loginUser?.tenant?.name ? loginUser?.tenant?.name : selectedTenantName,
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
-                extractedData: {
-                    ...state?.objectFields,
-                    line_items: state?.arrayFields[0]
-                },
+                module: state?.module,
+                extractedData: processArrayFields(),
                 name: state?.record?.name
             };
+
+            if (state.module !== 'dataentry') {
+                const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
+                payload['fileBase64'] = fileData?.base64;
+                payload['fileMimeType'] = fileData?.mimeType;
+            }
+
+            if (state.module === 'dataentry') {
+                payload['arrayFields'] = state.tableNames;
+                payload['dataEntryImages'] = {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                };
+            }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
+            if (state.module === 'dataentry') return;
             navigate('/docsnap/record/list');
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to update Record');
-            navigate('/docsnap/record/list');
+        } catch (error: any) {
+            console.error('error:===========', error?.message);
+            toast.error(error?.message);
+            // navigate('/docsnap/record/list');
         } finally {
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
 
+    const processArrayFields = () => {
+        const updatedData = { ...state?.objectFields };
+
+        // Get table names (could be ['line_items', 'specifications'] or other combinations)
+        const tableNames = state?.tableNames || [];
+
+        // Process each array field dynamically
+        tableNames.forEach((tableName, index) => {
+            // Get the corresponding array field by index
+            const arrayFieldRecord = state?.arrayFields[index] || {};
+
+            // Convert Record<string, Record<string, { value: string }>> to array of row objects
+            const arrayData = Object.values(arrayFieldRecord).map(rowObj => {
+                const flatRow = {};
+                Object.entries(rowObj).forEach(([col, valObj]: any) => {
+                    // Copy all properties (value, page, bbox, confidence, etc.)
+                    // @ts-ignore
+                    flatRow[col] = { ...valObj };
+                });
+                return flatRow;
+            });
+
+            // Add to updatedData using the dynamic table name
+            updatedData[tableName] = arrayData;
+        });
+
+        return updatedData;
+    };
+
     const updateRecordApiById = async () => {
         try {
-            const processArrayFields = () => {
-                const updatedData = { ...state?.objectFields };
-
-                // Get table names (could be ['line_items', 'specifications'] or other combinations)
-                const tableNames = state?.tableNames || [];
-
-                // Process each array field dynamically
-                tableNames.forEach((tableName, index) => {
-                    // Get the corresponding array field by index
-                    const arrayFieldRecord = state?.arrayFields[index] || {};
-
-                    // Convert Record<string, Record<string, { value: string }>> to array of row objects
-                    const arrayData = Object.values(arrayFieldRecord).map(rowObj => {
-                        const flatRow = {};
-                        Object.entries(rowObj).forEach(([col, valObj]: any) => {
-                            // Copy all properties (value, page, bbox, confidence, etc.)
-                            // @ts-ignore
-                            flatRow[col] = { ...valObj };
-                        });
-                        return flatRow;
-                    });
-
-                    // Add to updatedData using the dynamic table name
-                    updatedData[tableName] = arrayData;
-                });
-
-                return updatedData;
-            };
-
             // Usage in your payload
             const payload = {
                 template: state?.record?.templateId,
                 extractedData: state?.record?.extractedData,
                 metadata: state?.record?.metadata,
                 fileName: state?.record?.name,
+                dataEntryImages: {
+                    primaryImage: state.primaryImage,
+                    additionalImages: state.additionalImages
+                },
                 updatedData: processArrayFields()
             };
             setState(prev => ({ ...prev, loadingData: true, loadingS3File: true }));
             const res: any = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/update/${id}`, payload);
             toast.success('Record updated successfully');
-            navigate('/');
+            // navigate('/');
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to update Record');
         } finally {
-            setState(prev => ({ ...prev, loadingData: false }));
+            setState(prev => ({ ...prev, loadingData: false, loadingS3File: false }));
         }
     };
     const updateExtractedData = async (extractedData: any) => {
@@ -293,11 +351,12 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-field`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/data-entry/regenerate-description`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
-            toast.error('Failed to create Comment');
+            toast.error('Failed to regenerate description');
+            return null
         } finally {
             setState(prev => ({ ...prev }));
         }
@@ -330,6 +389,7 @@ export const useViewRecordApi = () => {
 };
 
 export const binaryToFile = async (binaryData: Uint8Array, fileName: string, mimeType: string = 'application/pdf'): Promise<File> => {
+    // @ts-ignore
     const blob = new Blob([binaryData], { type: mimeType });
     return new File([blob], fileName, { type: mimeType });
 };

@@ -32,8 +32,6 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                     });
                                 };
 
-                                // console.log('state.templateFields:===========', state.templateFields);
-
                                 const { label, showRegenButton, validationUrl, showTextarea } = useMemo(() => {
                                     const fields = state.record?.templateId?.fields;
                                     let field = fields?.find((item: any) => item.jsonKey === key);
@@ -48,14 +46,12 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                     };
                                 }, [key, subKey]);
 
-                                // console.log('label,showRegenButton:===========', label, showRegenButton);
-
                                 return (
                                     <InputField
                                         key={fieldId}
-                                        label={label}
+                                        label={label === 'Price Method' ? 'Price Method (MAP/CALC/CSFP)' : label}
                                         showRegenButton={showRegenButton}
-                                        validationUrl={validationUrl}
+                                        validationUrl={validationUrl || label === "Manufacturer's URL" ? value?.value : ''}
                                         showTextarea={showTextarea}
                                         jsonKey={subKey}
                                         value={`${value?.value}`}
@@ -107,7 +103,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                                 }));
                                             }
                                         }}
-                                        onChange={onChange}
+                                        onchange={onChange}
                                         handleRegenerateField={() =>
                                             setState(prev => ({
                                                 ...prev,

@@ -3,11 +3,11 @@ import PageContainer from '../../../../components/PageContainer';
 import PageNameComponent from '../../../../components/PageName';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { TemplateStateProvider } from './hooks/templateContext';
-import { UploadDocumentComponent } from '../../upload-document';
 import { CreateTemplateComponent } from './components/CreateTemplateDialog';
 import PageActionsComponent from './components/PageActionsComponent';
 import ListTemplateComponent from './ListTemplateComponent';
 import { UploadDocumentComponentNew } from '../../upload-document-new';
+import ImportDialogComponent from './components/ImportDialogComponent';
 
 export interface TemplateStateIF {
     id: string;
@@ -21,6 +21,7 @@ export interface TemplateStateIF {
     loadingPredefinedTemplates: boolean;
     loadingCreateTemplate: boolean;
     searchText: string;
+    showImportTemplateDialog: boolean;
 }
 const initialState = {
     id: '',
@@ -33,12 +34,12 @@ const initialState = {
     predefinedTemplates: [],
     loadingPredefinedTemplates: false,
     loadingCreateTemplate: false,
-    searchText: ''
+    searchText: '',
+    showImportTemplateDialog: false
 };
 
 const ListTemplatePage: React.FC = () => {
     const [state, setState] = useState<TemplateStateIF>(initialState);
-    const showNewExtractionWindowUI = localStorage.getItem('user') === 'vinayak' ? true : false;
 
     return (
         <TemplateStateProvider value={{ state, setState }}>
@@ -53,20 +54,9 @@ const ListTemplatePage: React.FC = () => {
             </PageContainer>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <>
-                    {!showNewExtractionWindowUI ? (
-                        <UploadDocumentComponent
-                            template={state.selectedTemplate}
-                            closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })}
-                        />
-                    ) : (
-                        <UploadDocumentComponentNew
-                            template={state.selectedTemplate}
-                            closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })}
-                        />
-                    )}
-                </>
+                <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
             )}
+            {<ImportDialogComponent />}
         </TemplateStateProvider>
     );
 };

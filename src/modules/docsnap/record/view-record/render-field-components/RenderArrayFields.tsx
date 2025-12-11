@@ -1,17 +1,18 @@
-import { Trash2, XCircle } from 'lucide-react';
+import { Edit, Pencil, Trash2, X, XCircle } from 'lucide-react';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
 import { Button } from '../../../../../components/Button';
 import { CommentDialog } from '../components/CommentDialog';
-import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { ValidateSkuButton } from '../components/ValidateSkuButton';
+import { TextField } from '../../../../../components/TextField';
+import style from '../viewRecord.module.css';
 
 export const RenderArrayFields: FC<any> = ({ refs }) => {
     const { state, setState } = useViewRecordState();
     const { fieldRefs, containerRef } = refs;
     const [commentDialog, setCommentDialog] = useState(false);
-    const toast = useToastStore();
+    const [showEditTableName, setShowEditTableName] = useState(false);
+    const [newTableName, setNewTableName] = useState('');
     const updateWire = (fieldId: string, bbox: any) => {
         if (!fieldId || !bbox) return;
         const fieldEl = fieldRefs.current[fieldId];
@@ -92,17 +93,56 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
     const firstRow = state.arrayFields[mainIndex][0] || {};
     const labels = Object.keys(firstRow);
 
+    const updateTableName = () => {
+        const updatedTableNames = state.tableNames.map((name, index) => {
+            if (index === mainIndex) {
+                return newTableName;
+            }
+            return name;
+        });
+
+        setState(prev => ({
+            ...prev,
+            tableNames: updatedTableNames,
+            selectedTableName: newTableName
+        }));
+
+        setShowEditTableName(false);
+    };
+
     return (
         <div key={mainIndex} className="mb-1 flex flex-1 flex-col overflow-hidden rounded-lg border bg-white p-4 pt-2 hover:border-blue-400">
             <section className="mb-2 flex justify-between text-lg font-bold capitalize">
-                {formatFieldLabel(state.tableNames[mainIndex])}
+                <div className="flex items-center gap-2">
+                    {showEditTableName ? (
+                        <>
+                            <TextField className="border" onChange={e => setNewTableName(e.target.value)} value={newTableName} />
+                            <Button outlined onClick={updateTableName}>
+                                Update
+                            </Button>
+                            <Button startIcon={<X size={20} />} outlined onClick={() => setShowEditTableName(false)}></Button>
+                        </>
+                    ) : (
+                        <>
+                            <span>{formatFieldLabel(state.tableNames[mainIndex])}</span>
+                            <Edit
+                                size={20}
+                                className="cursor-pointer text-blue-500"
+                                onClick={() => {
+                                    setShowEditTableName(true);
+                                    setNewTableName(state.tableNames[mainIndex]);
+                                }}
+                            />
+                        </>
+                    )}
+                </div>
                 <div className="flex items-center gap-10">
                     <div className="flex gap-2">
                         <Button tabIndex={-1} outlined onClick={() => setCommentDialog(true)}>
                             Add Comment
                         </Button>
                         <Button tabIndex={-1} outlined onClick={() => addLineItem(mainIndex)}>
-                            Add Line Item
+                            Add New Row
                         </Button>
                     </div>
                     <XCircle
@@ -112,7 +152,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                     />
                 </div>
             </section>
-            <div className="flex-1 overflow-auto">
+            <div className={style.container}>
                 <table className="min-w-full border-collapse">
                     <thead>
                         <tr className="sticky top-0 left-0 border ">
@@ -215,7 +255,7 @@ interface PropsIF {
     keyName: string;
 }
 const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMouseEnter, fieldRefs, disabled, mainIndex, keyName }) => {
-    const { state } = useViewRecordState();
+    const { state, setState } = useViewRecordState();
     const adjustTextareaHeight = () => {
         const textarea = fieldRefs.current[fieldId];
         if (!textarea) return;
@@ -252,6 +292,52 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
             validationUrl: subField?.validationUrl || ''
         };
     }, [keyName, label]);
+
+    if (label === 'Variation Image') {
+        const onUpdate = () => {
+            setState(prev => ({ ...prev, showSelectVariationImagesDialog: { index: mainIndex, key: keyName } }));
+        };
+        const onDelete = () => {
+            setState(prev => {
+                const updated = [...prev.arrayFields];
+                updated[mainIndex][keyName] = {
+                    ...updated[mainIndex][keyName],
+                    ['Variation Image']: {
+                        value: 'Not Available'
+                    }
+                };
+                return { ...prev, arrayFields: updated };
+            });
+        };
+        return (
+            <td className="border p-2">
+                {value?.value === 'Not Available' ? (
+                    <Button
+                        onClick={() => setState(prev => ({ ...prev, showSelectVariationImagesDialog: { index: mainIndex, key: keyName } }))}
+                        className="w-full"
+                        outlined
+                    >
+                        Add Image
+                    </Button>
+                ) : (
+                    <div className="relative group w-max">
+                        <img src={value?.value} alt="" className="w-32 h-32 object-cover rounded-md" />
+
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-4 rounded-md">
+                            <button type="button" className="p-2 bg-white rounded-full shadow cursor-pointer" onClick={onUpdate}>
+                                <Pencil size={18} />
+                            </button>
+
+                            <button type="button" className="p-2 bg-white rounded-full shadow cursor-pointer" onClick={onDelete}>
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </td>
+        );
+    }
     return (
         <td className="border p-1">
             {/* <ValidateSkuButton label={label} value={value?.value} /> */}
@@ -270,7 +356,7 @@ const ArrayFieldTextarea: FC<PropsIF> = ({ value, fieldId, label, onChange, onMo
                 id={fieldId}
                 aria-label={fieldId}
                 rows={1}
-                className={` ${label === 'Description' ? 'min-w-90' : 'min-w-0'} rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
+                className={` ${label === 'Description' ? 'min-w-90' : 'min-w-35'} rounded-md border p-2 px-4 outline-none ${value?.checked ? 'border-[#438f20]' : ''} hover:border-blue-500 focus:border-blue-500 ${label === 'description' ? 'w-full min-w-100' : 'w-full'}`}
                 value={value?.value || ''}
                 // @ts-ignore
                 ref={el => (fieldRefs.current[fieldId] = el)}

@@ -51,7 +51,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     const userReadPermission = usePermissionStore.getState().permissions.includes('read:transcription');
 
     useEffect(() => {
-        console.log('userReadPermission', userReadPermission);
         if (id) {
             gettranscriptData(id);
         }
@@ -78,7 +77,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     };
 
     // const handleExport = () => {
-    //     console.log('See the zip blob instead--->', transcriptionData);
 
     //     if (!zipBlob) return;
     //     const url = window.URL.createObjectURL(zipBlob);
@@ -130,7 +128,7 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
                 <PageNameComponent
                     name={id ? 'Update Operating Notes' : 'Create Operating Notes'}
                     showBackButton={true}
-                    customGoBackFunction={() => navigate('/audio-transcript/list')}
+                    customGoBackFunction={() => navigate('/transcript/record/list')}
                 >
                     <Button startIcon={<ArrowDownToLine size={16} className="text-gray-500" />} outlined onClick={composeZipFile} disabled={disableExport}>
                         Export

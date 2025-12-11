@@ -3,9 +3,9 @@ import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
 import { StatusCardComponent } from './components/StatusCard';
-import { UploadDocumentComponent } from '../docsnap/upload-document';
 import { CreateTemplateComponent } from '../docsnap/template/list-template/components/CreateTemplateDialog';
 import { TemplateCardListComponent } from './components/TemplateCardList';
+import { UploadDocumentComponentNew } from '../docsnap/upload-document-new';
 
 export interface DashboardStateIF {
     totalTemplates: number;
@@ -27,7 +27,6 @@ export interface DashboardStateIF {
 }
 
 const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
-    console.log('module:===========', module);
     const initialState = {
         totalTemplates: 0,
         isDashboard: true,
@@ -69,7 +68,7 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
             </div>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <UploadDocumentComponent template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+                <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
             )}
         </DashboardStateProvider>
     );

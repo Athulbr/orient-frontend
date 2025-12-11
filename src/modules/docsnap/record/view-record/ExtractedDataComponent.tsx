@@ -108,8 +108,8 @@ const ExtractedDataComponent: FC<ExtractedDataComponentProps> = ({ containerRef,
             </div>
             <div ref={extractedDataContainerRef} className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 pt-3 pb-50">
                 <RenderObjectFields refs={{ fieldRefs, isScrollingRef }} updateWire={updateWire} />
-                <TableNames />
                 <DataEntryImages />
+                <TableNames />
             </div>
             <ExtractedDataFooter />
         </div>
