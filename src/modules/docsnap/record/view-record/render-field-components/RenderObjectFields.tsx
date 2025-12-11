@@ -29,22 +29,18 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                 const fieldId = `objectFields:${key}:${subKey}`;
                                 const onChange = (e: any) => {
                                     const newValue = e.target.value;
-                                    const currentValue = value?.value || '';
 
                                     // Check if this field is required and log if it's being altered
                                     if (isRequired) {
-                                        // console.log('caught');
+                                        console.log('caught');
 
-                                        // Prevent deletion if it would make required field empty
-                                        if ((!newValue || newValue.trim() === '') && currentValue.length > 0) {
-                                            // Show error message
+                                        // Check if required field is empty and set error
+                                        if (!newValue || newValue.trim() === '') {
                                             setFieldErrors(prev => ({
                                                 ...prev,
                                                 [fieldId]: 'This field is required and cannot be empty'
                                             }));
-                                            // Don't update the state - prevent deletion
-                                            return;
-                                        } else if (newValue && newValue.trim() !== '') {
+                                        } else {
                                             // Clear error if field has value
                                             setFieldErrors(prev => {
                                                 const updated = { ...prev };
