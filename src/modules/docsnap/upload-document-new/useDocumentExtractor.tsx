@@ -1,13 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
-import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
 
 export const useDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
     const navigate = useNavigate();
-
-    // console.log('extractionQueue:===========', extractionQueue);
 
     const addToDocumentExtractor = async (template: any, files: File[], rowData?: any) => {
         const sendApiRequestToNodeJsExtractor = async (file: File, template: any) => {
@@ -31,7 +28,7 @@ export const useDocumentExtractor = () => {
                 formData.append('templateId', template?._id);
                 formData.append('file', file);
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/extract-document`;
+                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : '/docsnap/extract-document'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -60,7 +57,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });
@@ -100,7 +97,6 @@ export const useDocumentExtractor = () => {
                 }
 
                 const data = await response.json();
-                console.log('data:===========', data);
 
                 // Fetch the stream URL
                 const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
@@ -119,7 +115,6 @@ export const useDocumentExtractor = () => {
                 }
 
                 const reader = streamResponse.body.getReader();
-                console.log('reader:===========', reader);
                 await processStream(reader, file.name, timer);
             } catch (error) {
                 console.error('API request error:', error);
@@ -130,7 +125,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });
@@ -159,7 +154,7 @@ export const useDocumentExtractor = () => {
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/data-entry`;
+                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'dataentry' ? '/data-entry/add-product' : '/content-creation/create-blog'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -187,16 +182,20 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(rowData.SKU, { status: 'failed' });
             }
         };
 
-        if (template?.settings?.templateType === 'dataentry') {
+        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
+            // First, remove any existing entry for this file
             refreshExtractionQueue(rowData.SKU);
+            // Then add the new entry
             addToExtractionQueue(rowData.SKU);
+
+            // Finally, send the request
             sendApiRequestToDataEntry(rowData, template);
             navigate('/docsnap/record/list');
             return;
@@ -208,8 +207,8 @@ export const useDocumentExtractor = () => {
                 refreshExtractionQueue(file.name);
                 // Then add the new entry
                 addToExtractionQueue(file.name);
-                // Finally, send the request
 
+                // Finally, send the request
                 if (template?.settings?.extractionEngine === 'node') {
                     sendApiRequestToNodeJsExtractor(file, template);
                 } else {

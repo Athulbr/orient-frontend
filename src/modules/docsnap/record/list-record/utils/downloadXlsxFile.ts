@@ -1,6 +1,6 @@
 import { config } from '../../../../../config/default';
 
-export const downloadXlsxFile = async (payload: any, selectedTenant: string) => {
+export const downloadXlsxFile = async (payload = {}, selectedTenant: string) => {
     const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
 
     let exportURL = '';

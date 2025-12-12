@@ -1,4 +1,4 @@
-import { RefObject, useId, useState } from 'react';
+import { Ref, useId, useState, useRef, useEffect } from 'react'; // 1. Import Ref
 import { CircleCheck, Eye, MessageSquareText } from 'lucide-react';
 import { CommentDialog } from './CommentDialog';
 import { ConfidenceScore } from './ConfidenceScore';
@@ -9,7 +9,10 @@ interface InputFieldProps {
     errorMessage?: string;
     onMouseAction?: () => void;
     onchange: (bbox: any) => void;
-    ref?: RefObject<any>;
+
+    // 2. CHANGE: Use Ref<any> to allow both Objects and Functions
+    ref?: Ref<any>;
+
     value: string;
     checked?: boolean;
     checkClickHandler?: (checked: boolean) => void;
@@ -43,6 +46,17 @@ export const InputField = ({
     const id = useId();
     const [commentList, setCommentList] = useState<{ text: string; date: string; time: string }[]>([]);
 
+    // Internal ref for auto-height calculation
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    // Auto-height adjustment
+    useEffect(() => {
+        if (showTextarea && textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [value, showTextarea]);
+
     const renderTemplate = (template: string, data: Record<string, string>) => {
         return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => data[key] ?? '');
     };
@@ -50,7 +64,7 @@ export const InputField = ({
     const validateLink = (validationUrl: string, value: string) => {
         if (!validationUrl.trim() || !value.trim()) return;
         const finalUrl = renderTemplate(validationUrl, { value });
-        window.open(finalUrl, '_blank'); // ✅ open in new tab
+        window.open(finalUrl, '_blank');
     };
 
     return (
@@ -62,7 +76,7 @@ export const InputField = ({
                         {showRegenButton && (
                             <span
                                 onClick={handleRegenerateField}
-                                className="text-xs text-gray-600 cursor-pointer border  px-2 py-0.5 rounded-md hover:bg-sky-50 hover:border-gray-500"
+                                className="text-xs text-gray-600 cursor-pointer border px-2 py-0.5 rounded-md hover:bg-sky-50 hover:border-gray-500"
                             >
                                 Regenerate
                             </span>
@@ -70,7 +84,7 @@ export const InputField = ({
                         {validationUrl && (
                             <span
                                 onClick={() => validateLink(validationUrl, value)}
-                                className="text-xs text-gray-600 cursor-pointer border  px-2 py-0.5 rounded-md hover:bg-sky-50 hover:border-gray-500"
+                                className="text-xs text-gray-600 cursor-pointer border px-2 py-0.5 rounded-md hover:bg-sky-50 hover:border-gray-500"
                             >
                                 Validate
                             </span>
@@ -81,20 +95,33 @@ export const InputField = ({
             )}
 
             <div
-                className={`mt-0.5 flex h-10.5 ${showTextarea ? 'h-auto py-2' : 'h-10.5'} w-full items-center justify-between overflow-hidden rounded-sm border ${checked ? 'border border-green-500' : 'border-gray-400'} bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb]`}
+                className={`mt-0.5 flex w-full items-center justify-between overflow-hidden rounded-sm border ${
+                    checked ? 'border border-green-500' : 'border-gray-400'
+                } bg-white group-hover:border-[#2563eb] focus-within:border-[#2563eb] ${showTextarea ? 'h-auto py-2' : 'h-10.5'}`}
             >
                 {showTextarea ? (
                     <textarea
                         data-gramm="false"
-                        rows={10}
+                        rows={1}
                         onFocus={() => onMouseAction?.()}
                         onKeyDown={e => {
                             if (e.key === 'Enter') {
                                 checkClickHandler?.(true);
                             }
                         }}
-                        ref={ref}
-                        className="min-w-0 flex-1 px-3 text-gray-900 focus:outline-none border mx-1"
+                        // 3. Merging Refs Logic
+                        ref={element => {
+                            // Set internal ref
+                            textareaRef.current = element;
+
+                            // Handle external ref
+                            if (typeof ref === 'function') {
+                                ref(element);
+                            } else if (ref) {
+                                (ref as any).current = element;
+                            }
+                        }}
+                        className="min-w-0 flex-1 p-3 text-gray-900 focus:outline-none border mx-1 resize-none overflow-hidden"
                         value={value ? value : ''}
                         onChange={onchange}
                         {...props}
@@ -119,7 +146,7 @@ export const InputField = ({
                     />
                 )}
 
-                <div className="mr-1">
+                <div className="mr-1 h-full flex items-center">
                     {checked ? (
                         <CircleCheck
                             onClick={e => {
@@ -136,7 +163,7 @@ export const InputField = ({
 
                 <div
                     onClick={() => setCommentDialog(true)}
-                    className="relative flex h-full w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-300 hover:bg-gray-100"
+                    className="relative flex h-full min-h-[40px] w-10 cursor-pointer items-center justify-center rounded-r-sm border-l border-gray-300 hover:bg-gray-100"
                 >
                     {commentList.length > 0 && <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-green-600"></span>}
                     <MessageSquareText size={20} strokeWidth={1.3} />

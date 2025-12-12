@@ -77,7 +77,6 @@ const TranscriptProjectPage: React.FC<PropsIF> = ({ update }) => {
     };
 
     // const handleExport = () => {
-    //     console.log('See the zip blob instead--->', transcriptionData);
 
     //     if (!zipBlob) return;
     //     const url = window.URL.createObjectURL(zipBlob);

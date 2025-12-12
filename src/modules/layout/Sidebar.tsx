@@ -1,4 +1,4 @@
-import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, Tractor, UserSearch, X } from 'lucide-react';
+import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, Tractor, UserSearch, X, LocateFixed } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
@@ -52,6 +52,20 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             path: '/ppe-detection',
             key: 'ppe-detection',
             permission: 'ppeDetection:module'
+        },
+        {
+            name: 'Invoice Tracking',
+            icon: <LocateFixed size={32} strokeWidth={2.5} className="text-white" />,
+            path: '/invoice-tracking',
+            key: 'invoice-tracking',
+            permission: 'invoiceTracking:module'
+        },
+        {
+            name: 'Content Creation',
+            icon: <FileText size={32} strokeWidth={2.5} className="text-white" />,
+            path: '/content-creation',
+            key: 'content-creation',
+            permission: 'contentCreation:module'
         }
     ]);
 

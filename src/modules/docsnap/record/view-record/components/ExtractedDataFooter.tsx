@@ -72,7 +72,6 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         }
 
         const data = await response.json();
-        console.log('data:===========', data);
 
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
         const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(accessToken)}`, {
