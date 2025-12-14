@@ -62,15 +62,15 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                 </div>
                 <div className="flex gap-2 items-center">
                     {state.totalRecords && <p className="text-green-600 text-sm pr-4">Total Records: {state.totalRecords}</p>}
-                    <Button outlined disabled={state.loading} startIcon={state.loading ? <Spinner className="h-4 w-4 animate-spin" /> : <Upload size={14} />}>
+                    {/* <Button outlined disabled={state.loading} startIcon={state.loading ? <Spinner className="h-4 w-4 animate-spin" /> : <Upload size={14} />}>
                         Export JSON
                     </Button>
                     <Button outlined disabled={state.loading} startIcon={state.loading ? <Spinner className="h-4 w-4 animate-spin" /> : <Upload size={14} />}>
                         Export .XLSX
-                    </Button>
+                    </Button> */}
                 </div>
             </header>
-            <ExcelExportDialogNew hideDownloadButtons template={state.exportbuilder?.sheets || []} inputData={state.records} />
+            <ExcelExportDialogNew totalRecords={state.totalRecords} template={state.exportbuilder?.sheets || []} inputData={state.records} />
             <div className="w-full h-[400px] p-4 flex gap-4">
                 <DateTimePicker
                     onChange={(range: DateRange) => {

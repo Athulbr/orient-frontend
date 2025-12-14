@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { ExcelSheetConfig } from '../builder/ExcelExportBuilder';
+import { useToastStore } from '../../../components/toast/ToastStore';
 
 // --- Interfaces ---
 
@@ -11,16 +12,10 @@ interface ExcelColumn {
     javascript?: string;
 }
 
-// export interface ExcelSheetConfig {
-//     id: string;
-//     sheetName: string;
-//     columns: ExcelColumn[];
-// }
-
 interface ExcelExportDialogNewIF {
     template: ExcelSheetConfig[];
     inputData: any[];
-    hideDownloadButtons?: boolean;
+    totalRecords?: number;
 }
 
 // --- Utility Functions ---
@@ -169,9 +164,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 // --- Component ---
 
-export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ template, inputData, hideDownloadButtons }) => {
+export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ template, inputData, totalRecords }) => {
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
     const [downloadError, setDownloadError] = useState<string | null>(null);
+    const toast = useToastStore();
 
     // const inputData: any[] = [
     //     {
@@ -430,6 +426,10 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
     }, [inputData, activeSheet]);
 
     const handleDownloadJson = () => {
+        if (Number(totalRecords) > 100) {
+            toast.error('Total records are more than 100. Please download in chunks');
+            return;
+        }
         try {
             setDownloadError(null);
 
@@ -485,6 +485,10 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
 
     // --- Logic: Handle Download ---
     const handleDownload = () => {
+        if (Number(totalRecords) > 100) {
+            toast.error('Total records are more than 100. Please download in chunks');
+            return;
+        }
         try {
             setDownloadError(null);
             const workbook = XLSX.utils.book_new();
@@ -577,22 +581,20 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
                             </svg>
                             <span>Excel Preview</span>
                         </div>
-                        {!hideDownloadButtons && (
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleDownloadJson}
-                                    className="bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm"
-                                >
-                                    Download JSON
-                                </button>
-                                <button
-                                    onClick={handleDownload}
-                                    className="bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm"
-                                >
-                                    Download .XLSX
-                                </button>
-                            </div>
-                        )}
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleDownloadJson}
+                                className="bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm"
+                            >
+                                Download JSON
+                            </button>
+                            <button
+                                onClick={handleDownload}
+                                className="bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm"
+                            >
+                                Download .XLSX
+                            </button>
+                        </div>
                     </div>
 
                     {/* 2. Formula Bar Simulation (Visual only) */}

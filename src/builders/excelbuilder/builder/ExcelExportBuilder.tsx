@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Code, FileSpreadsheet, X, MousePointerClick, Edit2, Check, ChevronRight, Maximize2, Eraser, Save } from 'lucide-react';
 import { Button } from '../../../components/Button';
+import { capitalize } from 'lodash';
 
 // --- Types ---
 
@@ -175,8 +176,10 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
     };
 
     const handlePathSelect = (path: string) => {
+        const columnName = path.split('.')[path.split('.').length - 2]?.replace('_', ' ') || 'New Column';
         if (editingColId) {
             updateColumn(editingColId, 'jsonPath', path);
+            updateColumn(editingColId, 'columnName', capitalize(columnName));
             setPathPickerOpen(false);
             setEditingColId(null);
         }
@@ -295,7 +298,7 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
                                                         className="p-2 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors cursor-pointer"
                                                         title="Pick from Data"
                                                     >
-                                                        <Maximize2 size={16} />
+                                                        <MousePointerClick size={16} className="text-blue-500" />
                                                     </button>
                                                 </div>
                                             </div>
