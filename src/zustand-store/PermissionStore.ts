@@ -143,6 +143,13 @@ const allSettings: SettingsIF[] = [
                 path: '/config/tablebuilder/list',
                 key: 'tablebuilder',
                 permission: 'read:tablebuilder'
+            },
+            {
+                name: 'Exportbuilder',
+                iconName: 'Upload',
+                path: '/config/exportbuilder/list',
+                key: 'exportbuilder',
+                permission: 'read:exportbuilder'
             }
         ]
     },
