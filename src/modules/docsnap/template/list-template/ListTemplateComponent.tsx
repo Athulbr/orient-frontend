@@ -31,6 +31,8 @@ const ListTemplateComponent: React.FC = () => {
             fields: template.fields,
             settings: template.settings,
             templateType: template.templateType,
+            s3FileName: template.s3FileName,
+            description: template.description,
             active: true
         };
         console.log(data);

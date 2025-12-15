@@ -20,7 +20,8 @@ import {
     Sheet,
     Book,
     MessageSquareText,
-    SquareTerminal
+    SquareTerminal,
+    Upload
 } from 'lucide-react';
 
 // Lazy imports for all pages
@@ -58,6 +59,7 @@ const ConfigRoutes = () => {
                         <Route path="module/list" element={<ListModulePage />} />
                         <Route path="formbuilder/*" element={<FormbuilderRoutes />} />
                         <Route path="tablebuilder/list" element={<ListTablebuilderPage />} />
+                        <Route path="exportbuilder/list" element={<ListExportbuilderPage />} />
                         <Route path="project/list" element={<ListProjectPage />} />
                         <Route path="prompt-tuning" element={<UpdatedFieldsListPage />} />
                         <Route path="user/list" element={<ListUserPage />} />
@@ -78,6 +80,7 @@ export default ConfigRoutes;
 import { FC, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import FullScreenLoader from '../../../components/FullScreenLoader';
+import ListExportbuilderPage from '../../../modules/config/exportbuilder';
 
 const NavigationComponent: FC = () => {
     const navigate = useNavigate();
@@ -159,6 +162,8 @@ const getIcon = (iconName: string) => {
             return <MessageSquareText strokeWidth={1.5} size={18} />;
         case 'SquareTerminal':
             return <SquareTerminal strokeWidth={1.5} size={18} />;
+        case 'Upload':
+            return <Upload strokeWidth={1.5} size={18} />;
         default:
             return null;
     }

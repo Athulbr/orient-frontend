@@ -149,7 +149,7 @@ export const useUpdateTemplatePageApi = () => {
     const extractSectionFields = async (requestBody: any = {}, mainIndex: number) => {
         try {
             setState(prev => ({ ...prev, extractingSection: mainIndex }));
-            const res = await httpRequest('POST', `${config.mlServiceNodejs}/docsnap/extract-section-fields`, requestBody);
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/template-fields/extract-section-fields`, requestBody);
             setState(prev => ({ ...prev, extractingSection: -1 }));
             toast.success('Section fields extracted successfully');
             return res.data;
