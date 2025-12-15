@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { Button } from '../../../../components/Button';
 import { DialogComponent } from '../../../../components/DialogComponent';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import ExcelExportDialogNew from './components/ExcelExportDialogNew';
 import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBuilder';
 interface Project {
@@ -73,8 +74,10 @@ const ListRecordPage: React.FC = () => {
     const [state, setState] = useState<ListRecordPageStateIF>(initialState);
     const navigate = useNavigate();
     const [params] = useSearchParams();
+    const { checkPermission } = usePermissionStore();
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     const generateId = () => Math.random().toString(36).substr(2, 9);
+    const actionButtons = checkPermission('export:record:ardex');
 
     const [sheets, setSheets] = useState<ExcelSheetConfig[]>([{ id: generateId(), sheetName: 'Sheet 1', columns: [] }]);
 
@@ -88,9 +91,11 @@ const ListRecordPage: React.FC = () => {
                     customGoBackFunction={() => navigate('/')}
                 >
                     <div className="flex gap-2">
-                        <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
-                            Export Records New
-                        </Button>
+                        {actionButtons && (
+                            <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
+                                Export Records
+                            </Button>
+                        )}
                         <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                             Manage Templates
                         </Button>
