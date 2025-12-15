@@ -3,10 +3,8 @@ import { MakezLogoHeader } from '../../assets/svg-icons/MakezLogoHeader';
 import { useToastStore } from '../../components/toast/ToastStore';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from '../../components/Dropdown';
-import ExtractionFloatingWindow from '../docsnap/upload-document/ExtractionFloatingWindow';
 import ExtractionFloatingWindowNew from '../docsnap/upload-document-new/ExtractionFloatingWindow';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { Button } from '../../components/Button';
 import httpRequest from '../../global-utils/httpRequest';
 import { SingleSelect } from '../../components/SingleSelect';
 import { useEffect, useState } from 'react';
@@ -48,7 +46,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                 postLogoutRedirectUri: config.baseUrl || 'https://demo.makez.ai'
             });
         }
-        const logoutRes = await httpRequest('POST', `${config.nodeApiUrl}/auth/logout`, {});
+        await httpRequest('POST', `${config.nodeApiUrl}/auth/logout`, {});
         toast.success('Logged out successfully');
     };
     const onChangeDropDown = (e: string) => {
@@ -82,7 +80,9 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                             className="min-w-40"
                             value={selectedTenantFromSessionStorage}
                             onValueChange={e => {
-                                setSelectedTenant(e);
+                                const allOptions = [{ label: 'All Tenants', value: 'all' }, ...tenantList];
+                                const selectedOption = allOptions.find((tenant: { label: string; value: string }) => tenant.value === e);
+                                setSelectedTenant(e, selectedOption?.label);
                                 window.location.reload();
                             }}
                             options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}

@@ -31,7 +31,7 @@ export const useDocumentExtractor = () => {
                 formData.append('templateId', template?._id);
                 formData.append('file', file);
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/extract-document`;
+                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : '/docsnap/extract-document'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -216,7 +216,7 @@ export const useDocumentExtractor = () => {
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/data-entry`;
+                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'dataentry' ? '/data-entry/add-product' : '/content-creation/create-blog'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -251,9 +251,13 @@ export const useDocumentExtractor = () => {
             }
         };
 
-        if (template?.settings?.templateType === 'dataentry') {
+        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
+            // First, remove any existing entry for this file
             refreshExtractionQueue(rowData.SKU);
+            // Then add the new entry
             addToExtractionQueue(rowData.SKU);
+
+            // Finally, send the request
             sendApiRequestToDataEntry(rowData, template);
             navigate('/docsnap/record/list');
             return;
@@ -265,8 +269,8 @@ export const useDocumentExtractor = () => {
                 refreshExtractionQueue(file.name);
                 // Then add the new entry
                 addToExtractionQueue(file.name);
-                // Finally, send the request
 
+                // Finally, send the request
                 if (template?.settings?.extractionEngine === 'node') {
                     sendApiRequestToNodeJsExtractor(file, template);
                 } else {

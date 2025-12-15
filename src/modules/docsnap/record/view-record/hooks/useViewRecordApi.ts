@@ -80,6 +80,7 @@ export const useViewRecordApi = () => {
             const templateFields = resp.data?.fields;
             const primaryImage = res.data?.dataEntryImages?.primaryImage;
             const additionalImages = res.data?.dataEntryImages?.additionalImages || [];
+            const inputText = res.data?.inputText;
             // }
             setState(prev => ({
                 ...prev,
@@ -92,7 +93,8 @@ export const useViewRecordApi = () => {
                 templateSettings,
                 templateFields,
                 primaryImage,
-                additionalImages
+                additionalImages,
+                inputText
             }));
             if (res.data?.imageFileNames?.length > 0) {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
@@ -212,7 +214,10 @@ export const useViewRecordApi = () => {
 
     const submitRecordApi = async () => {
         try {
+            const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') || '');
+            const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
             const payload: any = {
+                tenantName: loginUser?.tenant?.name ? loginUser?.tenant?.name : selectedTenantName,
                 apiResponse: state?.record?.extractedData,
                 recordId: state?.record?._id,
                 module: state?.module,
@@ -220,22 +225,18 @@ export const useViewRecordApi = () => {
                 name: state?.record?.name
             };
 
-            if (state?.module !== 'dataentry') {
-                // const user = JSON.parse(window?.sessionStorage?.getItem('user') as string);
-                // if (user.role.name.toLowerCase() === 'admin') {
+            if (state.module !== 'dataentry') {
                 const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
-                if (fileData) {
-                    payload['fileBase64'] = fileData?.base64;
-                    payload['fileMimeType'] = fileData?.mimeType;
-                }
-                // }
+                payload['fileBase64'] = fileData?.base64;
+                payload['fileMimeType'] = fileData?.mimeType;
             }
+
             if (state.module === 'dataentry') {
                 payload['arrayFields'] = state.tableNames;
                 payload['dataEntryImages'] = {
                     primaryImage: state.primaryImage,
                     additionalImages: state.additionalImages
-                }
+                };
             }
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
@@ -302,7 +303,7 @@ export const useViewRecordApi = () => {
             console.error('error:===========', error);
             toast.error('Failed to update Record');
         } finally {
-            setState(prev => ({ ...prev, loadingData: false }));
+            setState(prev => ({ ...prev, loadingData: false, loadingS3File: false }));
         }
     };
     const updateExtractedData = async (extractedData: any) => {
@@ -379,11 +380,12 @@ export const useViewRecordApi = () => {
     };
     const sendRegenerateMessage = async (data: any) => {
         try {
-            const res = httpRequest('POST', `${config.mlServiceNodejs}/docsnap/regenerate-description`, data);
+            const res = httpRequest('POST', `${config.mlServiceNodejs}/data-entry/regenerate-description`, data);
             return res;
         } catch (error) {
             console.error('error:===========', error);
-            toast.error('Failed to create Comment');
+            toast.error('Failed to regenerate description');
+            return null
         } finally {
             setState(prev => ({ ...prev }));
         }

@@ -10,15 +10,17 @@ interface DatePickerProps {
     onSubmit: (from: Date | null, to: Date | null) => void;
     className?: string;
     disabled?: boolean;
+    disableFutureDates?: boolean;
 }
 
-export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, className = '', disabled = false }) => {
+export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, className = '', disabled = false, disableFutureDates = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [hoverDate, setHoverDate] = useState<Date | null>(null);
     const [tempFrom, setTempFrom] = useState<Date | null>(from);
     const [tempTo, setTempTo] = useState<Date | null>(to);
     const pickerRef = useRef<HTMLDivElement>(null);
+    const today = startOfDay(new Date());
 
     // Update temporary dates when props change
     useEffect(() => {
@@ -39,6 +41,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
     }, []);
 
     const handleDayClick = (date: Date) => {
+        if (disableFutureDates && isAfter(date, today)) return;
         // Set selected date to 12:00 (noon)
         const normalizedDate = setHours(startOfDay(date), 23);
 
@@ -181,19 +184,30 @@ export const DatePicker: React.FC<DatePickerProps> = ({ from, to, onSubmit, clas
                         </div>
 
                         <div className="grid grid-cols-7 gap-1">
-                            {days.map((day, i) => (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => handleDayClick(day)}
-                                    onMouseEnter={() => tempFrom && !tempTo && setHoverDate(day)}
-                                    onMouseLeave={() => setHoverDate(null)}
-                                    // disabled={isAfter(day, new Date())}
-                                    className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm transition-colors ${isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-400 opacity-50'} ${isDaySelected(day) ? 'bg-blue-600 text-white hover:bg-blue-700' : ''} ${isDayInRange(day) ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-gray-100'}`}
-                                >
-                                    {day.getDate()}
-                                </button>
-                            ))}
+                            {days.map((day, i) => {
+                                const isFuture = isAfter(day, today);
+                                return (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        disabled={disableFutureDates && isFuture}
+                                        onClick={() => handleDayClick(day)}
+                                        onMouseEnter={() => !isFuture && tempFrom && !tempTo && setHoverDate(day)}
+                                        onMouseLeave={() => setHoverDate(null)}
+                                        className={cn(
+                                            'flex h-8 w-8 items-center justify-center rounded-full text-sm',
+                                            isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-400 opacity-50',
+                                            isDaySelected(day) && 'bg-blue-600 text-white',
+                                            isDayInRange(day) && 'bg-blue-100',
+                                            disableFutureDates && isFuture ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'
+                                        )}
+                                        // disabled={isAfter(day, new Date())}
+                                        // className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-sm transition-colors ${isCurrentMonth(day) ? 'text-gray-600' : 'text-gray-400 opacity-50'} ${isDaySelected(day) ? 'bg-blue-600 text-white hover:bg-blue-700' : ''} ${isDayInRange(day) ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-gray-100'}`}
+                                    >
+                                        {day.getDate()}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 

@@ -62,6 +62,10 @@ export const ListRecordComponent: React.FC = () => {
                 navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
                 return;
             }
+            if (module === 'contentCreation') {
+                navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
+                return;
+            }
             navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
         },
@@ -99,7 +103,7 @@ export const ListRecordComponent: React.FC = () => {
               {
                   label: 'Export Record',
                   action: () => {
-                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                      //   setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
               },
               {
@@ -121,9 +125,11 @@ export const ListRecordComponent: React.FC = () => {
         return updatedQuery;
     };
 
-    const onSubmit = (dealers: any, startDate: null | Date, endDate: null | Date) => {
+    const onSubmit = async (dealers: any, startDate: null | Date, endDate: null | Date) => {
         let formattedStart: string | null = null;
         let formattedEnd: string | null = null;
+
+        const loginUser = JSON.parse(window?.sessionStorage?.getItem('user') as string);
 
         if (startDate) {
             const s = new Date(startDate);
@@ -139,11 +145,13 @@ export const ListRecordComponent: React.FC = () => {
         const payload = {
             startDate: formattedStart,
             endDate: formattedEnd,
-            format: 'xlsx',
-            dealers
+            // format: 'xlsx',
+            // dealers,
+            tenantId: loginUser?.tenant?._id ? loginUser?.tenant?._id : selectedTenant
         };
 
-        downloadXlsxFile(payload, selectedTenant);
+        await downloadXlsxFile(payload, selectedTenant);
+        setState(prev => ({ ...prev, dealerSelectionDialog: false }));
     };
     const onRowSelect = (selectedRows: any) => {
         if (selectedRows.length > 0) {

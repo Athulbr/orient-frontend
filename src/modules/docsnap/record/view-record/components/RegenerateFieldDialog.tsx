@@ -73,11 +73,27 @@ const RegenerateFieldDialog: React.FC<RegenerateFieldDialogIF> = () => {
 
         const chatList = [...messages, userMessage];
         const response: any = await sendRegenerateMessage({
-            context: state.record?.extractedData,
+            context: {
+                ...state.record?.extractedData?.product_information,
+                ...state.record?.extractedData?.descriptions_and_benefits,
+                ...state.record?.extractedData?.product_specifications
+            },
+            currentValue: state.showRegenerateFieldDialog?.value ?? '',
             chatList,
             userQuery: inputValue,
             fieldLabel: state.showRegenerateFieldDialog?.fieldLabel
         });
+        if (!response) {
+            setIsTyping(false);
+            const aiMessage: Message = {
+                id: Date.now().toString(),
+                text: 'Something went wrong',
+                isUser: false,
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, aiMessage]);
+            return;
+        }
         const aiMessage: Message = {
             id: Date.now().toString(),
             text: response.data?.answer,

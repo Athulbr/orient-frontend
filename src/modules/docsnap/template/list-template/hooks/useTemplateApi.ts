@@ -61,9 +61,9 @@ export const useListTemplatePageApi = () => {
         try {
             setState(prev => ({ ...prev, loadingTemplate: true }));
             const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${id}`);
-            setState(prev => ({ ...prev, loadingTemplate: false, templates: res.data }));
+            setState(prev => ({ ...prev, loadingTemplate: false }));
             toast.success('Template fetched successfully');
-            return true;
+            return res.data;
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to fetch template');
@@ -94,5 +94,25 @@ export const useListTemplatePageApi = () => {
         }
     };
 
-    return { updateTemplateApi, getTemplateApi, deleteTemplateApi, getTemplatesApi, getPredefinedTemplatesApi };
+    const importTemplateApi = async (requestBody: any) => {
+        try {
+            setState(prev => ({ ...prev, importingTemplate: true }));
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+            setState(prev => ({ ...prev, showImportTemplateDialog: false, importingTemplate: false }));
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+            toast.success('Template created successfully');
+            window.location.reload();
+            return true;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to create template');
+        }
+    };
+
+    return { updateTemplateApi, getTemplateApi, deleteTemplateApi, getTemplatesApi, getPredefinedTemplatesApi, importTemplateApi };
 };

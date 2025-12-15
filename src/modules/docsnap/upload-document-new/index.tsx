@@ -44,7 +44,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        if (template?.settings?.templateType === 'dataentry') {
+        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
             const csvData = await excelFileToArrayOfObjects(files[0]);
             const groupedVariations = groupVariationsByPageCount(csvData);
             const products = createProductWithVariationGroups(groupedVariations);

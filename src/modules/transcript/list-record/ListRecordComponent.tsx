@@ -25,7 +25,7 @@ export const ListRecordComponent: React.FC = () => {
               {
                   label: 'Export Record',
                   action: () => {
-                      setState(prev => ({ ...prev, dealerSelectionDialog: true }));
+                      //   setState(prev => ({ ...prev, dealerSelectionDialog: true }));
                   }
               }
           ]
