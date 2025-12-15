@@ -1,4 +1,4 @@
-import { ExcelSheetConfig } from '../builder/ExcelExportBuilder';
+import { ExcelSheetConfig } from '../builder';
 
 export const sampleExcelTemplate: ExcelSheetConfig[] = [
     {

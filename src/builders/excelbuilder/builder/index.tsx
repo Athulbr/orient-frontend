@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Code, FileSpreadsheet, X, MousePointerClick, Edit2, Check, ChevronRight, Maximize2, Eraser, Save } from 'lucide-react';
+import { Plus, Code, FileSpreadsheet, X, MousePointerClick, Edit2, Check, ChevronRight, Maximize2, Eraser, Save, ChevronLeft } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { capitalize } from 'lodash';
+import PathPickerDialog from './pathPickerDialog';
+import JsEditorDialog from './JsEditor';
+import SheetSelector from './SheetSelector';
 
 // --- Types ---
 
-interface ExcelColumn {
+export interface ExcelColumnIF {
     id: string;
     columnName: string;
     jsonPath: string;
@@ -15,101 +18,10 @@ interface ExcelColumn {
 export interface ExcelSheetConfig {
     id: string;
     sheetName: string;
-    columns: ExcelColumn[];
+    columns: ExcelColumnIF[];
 }
 
-// --- Sample Data ---
-// const inputData: any[] = [
-//     {
-//         name: 'John Doe',
-//         email: 'john@example.com',
-//         age: 30,
-//         address: { street: '123 Main St', city: 'Anytown' },
-//         games: [
-//             { name: 'chess', type: 'indoor' },
-//             { name: 'swimming', type: 'outdoor' }
-//         ],
-//         extra: {
-//             hobbies: [
-//                 { name: { value: 'writing' }, type: { value: 'indoor' } },
-//                 { name: { value: 'basketball' }, type: { value: 'outdoor' } }
-//             ]
-//         },
-//         test: { test1: { test2: [{ test3: 'A1' }, { test3: 'A2' }] } }
-//     }
-// ];
-
-// --- Helper Functions ---
-
 const generateId = () => Math.random().toString(36).substr(2, 9);
-
-const normalizePath = (path: string) => {
-    return path.replace(/\[\d+\]/g, '[*]');
-};
-
-// --- Sub-Components ---
-
-/**
- * Visual JSON Path Selector (Box inside Box)
- */
-const JsonVisualizer = ({ data, path = '', onSelect }: { data: any; path?: string; onSelect: (p: string) => void }) => {
-    const isObject = data !== null && typeof data === 'object';
-    const isArray = Array.isArray(data);
-
-    if (data === null || data === undefined) {
-        return <span className="text-gray-400 italic text-xs">null</span>;
-    }
-
-    if (!isObject) {
-        return (
-            <button
-                onClick={e => {
-                    e.stopPropagation();
-                    onSelect(normalizePath(path));
-                }}
-                className="hover:bg-blue-100 hover:text-blue-700 bg-gray-50 px-3 py-1 rounded border border-gray-200 text-sm font-mono text-gray-700 transition-colors cursor-pointer shadow-sm hover:shadow"
-            >
-                {String(data)}
-            </button>
-        );
-    }
-
-    return (
-        <div
-            className={`
-            flex flex-col gap-2 p-3 rounded border
-            ${path === '' ? 'border-none p-0' : 'border-gray-300 bg-white shadow-sm ml-4'}
-        `}
-        >
-            {path && (
-                <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0 select-none">
-                    {path
-                        .split('.')
-                        .pop()
-                        ?.replace(/\[.*?\]/, ' []')}
-                </div>
-            )}
-
-            <div className="flex flex-wrap gap-3 items-start">
-                {Object.keys(data).map(key => {
-                    if (isArray && parseInt(key) > 1) return null;
-
-                    const currentPath = path ? (isArray ? `${path}[${key}]` : `${path}.${key}`) : key;
-
-                    return (
-                        <div key={key} className="flex flex-col">
-                            {!isArray && <span className="text-xs font-semibold text-gray-600 mb-1 ml-1 select-none">{key}:</span>}
-                            <JsonVisualizer data={data[key]} path={currentPath} onSelect={onSelect} />
-                        </div>
-                    );
-                })}
-                {isArray && data.length > 2 && <span className="text-xs text-gray-400 self-center">...more</span>}
-            </div>
-        </div>
-    );
-};
-
-// --- Main Component ---
 
 interface ExcelExportBuilderProps {
     sheets: ExcelSheetConfig[];
@@ -118,16 +30,12 @@ interface ExcelExportBuilderProps {
 }
 
 export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, setSheets, inputData }) => {
-    // const [sheets, setSheets] = useState<ExcelSheetConfig[]>([{ id: generateId(), sheetName: 'Sheet 1', columns: [] }]);
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
 
-    // Modal States
     const [pathPickerOpen, setPathPickerOpen] = useState(false);
     const [jsEditorOpen, setJsEditorOpen] = useState(false);
     const [editingColId, setEditingColId] = useState<string | null>(null);
     const [tempJsCode, setTempJsCode] = useState('');
-
-    // --- Actions ---
 
     const addSheet = () => {
         setSheets([...sheets, { id: generateId(), sheetName: `Sheet ${sheets.length + 1}`, columns: [] }]);
@@ -143,7 +51,7 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
     };
 
     const addColumn = () => {
-        const newCol: ExcelColumn = {
+        const newCol: ExcelColumnIF = {
             id: generateId(),
             columnName: 'New Column',
             jsonPath: ''
@@ -153,7 +61,7 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
         setSheets(updatedSheets);
     };
 
-    const updateColumn = (colId: string, field: keyof ExcelColumn, value: string) => {
+    const updateColumn = (colId: string, field: keyof ExcelColumnIF, value: string) => {
         const updatedSheets = [...sheets];
         const col = updatedSheets[activeSheetIndex].columns.find(c => c.id === colId);
         if (col) {
@@ -167,6 +75,19 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
         updatedSheets[activeSheetIndex].columns = updatedSheets[activeSheetIndex].columns.filter(c => c.id !== colId);
         setSheets(updatedSheets);
     };
+
+    const moveColumn = (fromIndex: number, toIndex: number) => {
+        const updatedSheets = [...sheets];
+        const cols = [...updatedSheets[activeSheetIndex].columns];
+        if (toIndex < 0 || toIndex >= cols.length || fromIndex === toIndex) return;
+        const [moved] = cols.splice(fromIndex, 1);
+        cols.splice(toIndex, 0, moved);
+        updatedSheets[activeSheetIndex].columns = cols;
+        setSheets(updatedSheets);
+    };
+
+    const moveColumnLeft = (index: number) => moveColumn(index, index - 1);
+    const moveColumnRight = (index: number) => moveColumn(index, index + 1);
 
     // --- Modal Handlers ---
 
@@ -205,38 +126,14 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
         <>
             <div className="flex flex-col w-full h-full max-h-[400px] border rounded-lg bg-white shadow-lg font-sans overflow-hidden relative">
                 {/* Header / Tabs */}
-                <div className="flex items-center bg-gray-50 border-b overflow-x-auto no-scrollbar">
-                    {sheets.map((sheet, idx) => (
-                        <div
-                            key={sheet.id}
-                            onClick={() => setActiveSheetIndex(idx)}
-                            className={`
-                                group flex items-center px-4 py-2 cursor-pointer text-sm font-medium border-r transition-all min-w-[120px] justify-between
-                                ${activeSheetIndex === idx ? 'bg-white text-blue-600 border-b-2 border-b-blue-600' : 'text-gray-500 hover:bg-gray-100'}
-                            `}
-                        >
-                            <input
-                                className="bg-transparent focus:outline-none w-full cursor-pointer"
-                                value={sheet.sheetName}
-                                onChange={e => {
-                                    const newSheets = [...sheets];
-                                    newSheets[idx].sheetName = e.target.value;
-                                    setSheets(newSheets);
-                                }}
-                            />
-                            {sheets.length > 1 && (
-                                <Trash2
-                                    size={14}
-                                    className="ml-2 text-gray-300 group-hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={e => deleteSheet(e, idx)}
-                                />
-                            )}
-                        </div>
-                    ))}
-                    <button onClick={addSheet} className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Add Sheet">
-                        <Plus size={18} />
-                    </button>
-                </div>
+                <SheetSelector
+                    sheets={sheets}
+                    activeSheetIndex={activeSheetIndex}
+                    setActiveSheetIndex={setActiveSheetIndex}
+                    setSheets={setSheets}
+                    addSheet={addSheet}
+                    deleteSheet={deleteSheet}
+                />
 
                 {/* Main Content Area */}
                 <div className="flex-1 overflow-hidden flex flex-col p-2 bg-gray-50/50">
@@ -328,6 +225,18 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
                                                     </button>
                                                 )}
                                             </div>
+                                            <div className="flex justify-between">
+                                                <ChevronLeft
+                                                    onClick={() => moveColumnLeft(idx)}
+                                                    size={16}
+                                                    className="text-gray-500 cursor-pointer hover:bg-gray-200 rounded"
+                                                />
+                                                <ChevronRight
+                                                    onClick={() => moveColumnRight(idx)}
+                                                    size={16}
+                                                    className="text-gray-500 cursor-pointer hover:bg-gray-200 rounded"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -338,98 +247,18 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
             </div>
 
             {/* --- Dialog: JSON Path Picker (FULL SCREEN) --- */}
-            {pathPickerOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6">
-                    <div className="bg-white w-full h-full rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                    <MousePointerClick size={24} className="text-blue-500" />
-                                    Select JSON Path
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">Navigate the schema below. Click a value to auto-generate its path.</p>
-                            </div>
-
-                            <button
-                                onClick={() => setPathPickerOpen(false)}
-                                className="p-2 cursor-pointer bg-gray-200 rounded-full transition-colors mr-2 hover:bg-red-200"
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-auto p-10 bg-slate-50">
-                            <div className="inline-block min-w-full">
-                                <JsonVisualizer data={inputData[0]} onSelect={handlePathSelect} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <PathPickerDialog isOpen={pathPickerOpen} closeDialog={() => setPathPickerOpen(false)} inputData={inputData} handlePathSelect={handlePathSelect} />
 
             {/* --- Dialog: JS Editor (FULL SCREEN) --- */}
-            {jsEditorOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6">
-                    <div className="bg-white w-full h-full rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                    <Code size={24} className="text-blue-600" />
-                                    JavaScript Transformer
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">Write a function to transform the raw data before export.</p>
-                            </div>
-                            <button
-                                onClick={() => setJsEditorOpen(false)}
-                                className="p-2 cursor-pointer bg-gray-200 rounded-full transition-colors mr-2 hover:bg-red-200"
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 flex relative">
-                            {/* Editor Area */}
-                            <div className="flex-1 flex flex-col border-r border-gray-200 p-6 rounded-b-lg">
-                                <textarea
-                                    value={tempJsCode}
-                                    onChange={e => setTempJsCode(e.target.value)}
-                                    className="flex-1 w-full p-6 font-mono text-base bg-[#1e1e1e] text-[#d4d4d4] resize-none rounded outline-none focus:ring-0 leading-relaxed"
-                                    spellCheck={false}
-                                />
-                            </div>
-
-                            {/* Sidebar / Documentation */}
-                            <div className="w-80 bg-gray-50 p-6 flex flex-col gap-4 border-l">
-                                <h4 className="font-bold text-gray-700">Arguments</h4>
-                                <div className="bg-white border rounded p-3 shadow-sm">
-                                    <code className="text-blue-600 font-bold">data</code>
-                                    <p className="text-xs text-gray-500 mt-1">The value found at the JSON path for the current record.</p>
-                                </div>
-
-                                <h4 className="font-bold text-gray-700 mt-4">Example</h4>
-                                <div className="bg-gray-900 text-gray-300 text-xs p-3 rounded font-mono overflow-x-auto">
-                                    <pre>{`function(data) {\n  if (!data) return "N/A";\n  return data.toUpperCase();\n}`}</pre>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-4 border-t bg-gray-50 flex justify-end gap-3">
-                            <Button
-                                outlined
-                                startIcon={<Eraser size={16} />}
-                                onClick={() => {
-                                    setJsEditorOpen(false);
-                                    updateColumn(editingColId!, 'javascript', '');
-                                }}
-                            >
-                                Remove Script
-                            </Button>
-                            <Button startIcon={<Save size={16} />} onClick={saveJsCode}>
-                                Save Function
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <JsEditorDialog
+                isOpen={jsEditorOpen}
+                closeDialog={() => setJsEditorOpen(false)}
+                setTempJsCode={setTempJsCode}
+                tempJsCode={tempJsCode}
+                updateColumn={updateColumn}
+                editingColId={editingColId}
+                saveJsCode={saveJsCode}
+            />
         </>
     );
 };

@@ -5,8 +5,8 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 import { useExportbuilderState } from '../../../modules/config/exportbuilder/hooks/exportbuilderContext';
 import { useExportbuilderApi } from '../../../modules/config/exportbuilder/hooks/useExportbuilderApi';
 import Spinner from '../../../components/Spinner';
-import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview/ExcelPreviewComponent';
-import { ExcelExportBuilder, ExcelSheetConfig } from '../../../builders/excelbuilder/builder/ExcelExportBuilder';
+import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview';
+import { ExcelExportBuilder, ExcelSheetConfig } from '../../../builders/excelbuilder/builder';
 
 interface CreateExportbuilderIF {}
 
@@ -73,31 +73,3 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
         </div>
     );
 };
-
-// import { useEffect } from 'react';
-// import { CreateExportbuilder } from '../../../builders/excelbuilder/create-exportbuilder';
-// import { useExportbuilderState } from './hooks/exportbuilderContext';
-// import { useExportbuilderApi } from './hooks/useExportbuilderApi';
-
-// interface CreateExportbuilderPageIF {
-//     update?: boolean;
-//     id?: string;
-// }
-
-// const CreateExportbuilderPage: React.FC<CreateExportbuilderPageIF> = () => {
-// const { getExportbuilderByIdApi, getRecordsApi } = useExportbuilderApi();
-// const { state } = useExportbuilderState();
-
-// useEffect(() => {
-//     getRecordsApi({});
-// }, []);
-// useEffect(() => {
-//     if (state.id) {
-//         getExportbuilderByIdApi(state.id);
-//     }
-// }, [state.id]);
-
-//     return <CreateExportbuilder />;
-// };
-
-// export default CreateExportbuilderPage;

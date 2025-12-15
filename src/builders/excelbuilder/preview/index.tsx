@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { ExcelSheetConfig } from '../builder/ExcelExportBuilder';
+import { ExcelSheetConfig } from '../builder';
 import { useToastStore } from '../../../components/toast/ToastStore';
 
 // --- Interfaces ---
@@ -17,8 +17,6 @@ interface ExcelExportDialogNewIF {
     inputData: any[];
     totalRecords?: number;
 }
-
-// --- Utility Functions ---
 
 /**
  * HELPER: Safely access deeply nested objects/arrays.
@@ -162,223 +160,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     }
 }
 
-// --- Component ---
-
 export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ template, inputData, totalRecords }) => {
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const toast = useToastStore();
-
-    // const inputData: any[] = [
-    //     {
-    //         name: 'John Doe',
-    //         email: 'john@example_john@example_john@example.com',
-    //         age: 30,
-    //         address: {
-    //             street: '123 Main St',
-    //             city: 'Anytown'
-    //         },
-    //         games: [
-    //             { name: 'chess', type: 'indoor' },
-    //             { name: 'swimming', type: 'outdoor' }
-    //         ],
-    //         extra: {
-    //             hobbies: [
-    //                 { name: { value: 'writing' }, type: { value: 'indoor' } },
-    //                 { name: { value: 'basketball' }, type: { value: 'outdoor' } }
-    //             ]
-    //         },
-    //         test: {
-    //             test1: {
-    //                 test2: [{ test3: 'A1' }, { test3: 'A2' }]
-    //             }
-    //         }
-    //     },
-
-    //     // Missing some game properties
-    //     {
-    //         name: 'Kiran',
-    //         email: 'kiran@example.com',
-    //         age: 25,
-    //         address: {
-    //             street: '456 Oak Ave',
-    //             city: 'Othertown'
-    //         },
-    //         games: [
-    //             { name: 'cooking', type: 'indoor' },
-    //             { name: 'traveling' }, // type missing
-    //             { type: 'outdoor' } // name missing
-    //         ],
-    //         extra: {
-    //             hobbies: [
-    //                 { name: { value: 'painting' }, type: { value: 'indoor' } },
-    //                 { name: { value: 'cycling' }, type: { value: 'outdoor' } }
-    //             ]
-    //         },
-    //         test: {
-    //             test1: {
-    //                 test2: [{ test3: 'B1' }]
-    //             }
-    //         }
-    //     },
-
-    //     // Missing email, missing nested hobby type
-    //     {
-    //         name: 'Aarav',
-    //         email: null,
-    //         age: 28,
-    //         address: {
-    //             street: null,
-    //             city: 'Bengaluru'
-    //         },
-    //         games: [],
-    //         extra: {
-    //             hobbies: [
-    //                 { name: { value: 'gardening' }, type: null },
-    //                 { name: null, type: { value: 'indoor' } }
-    //             ]
-    //         },
-    //         test: {
-    //             test1: {
-    //                 test2: [] // empty test array
-    //             }
-    //         }
-    //     },
-
-    //     // Missing address, missing hobbies entirely
-    //     {
-    //         name: 'Sophia',
-    //         email: 'sophia@example.com',
-    //         age: null,
-    //         address: null,
-    //         games: [{ name: 'piano', type: 'indoor' }],
-    //         extra: {},
-    //         test: {
-    //             test1: {
-    //                 test2: [
-    //                     { test3: null } // null test value
-    //                 ]
-    //             }
-    //         }
-    //     },
-
-    //     // Nested objects missing inside test structure
-    //     {
-    //         name: 'Rohan',
-    //         email: 'rohan@example.com',
-    //         age: 22,
-    //         address: {
-    //             street: 'MG Road',
-    //             city: null
-    //         },
-    //         games: [{ name: 'carrom', type: 'indoor' }],
-    //         extra: {
-    //             hobbies: [
-    //                 { name: { value: 'music' } }, // type missing
-    //                 { type: { value: 'outdoor' } } // name missing
-    //             ]
-    //         },
-    //         test: {
-    //             test1: null // entire branch missing
-    //         }
-    //     },
-
-    //     // Several fields missing
-    //     {
-    //         name: 'Emily Watson',
-    //         email: undefined,
-    //         age: 31,
-    //         address: {
-    //             street: 'Sunset Blvd',
-    //             city: 'Los Angeles'
-    //         },
-    //         games: [
-    //             { name: 'tennis' } // type missing
-    //         ],
-    //         extra: {},
-    //         test: {
-    //             test1: {
-    //                 test2: [{ test3: 'E1' }]
-    //             }
-    //         }
-    //     },
-
-    //     // Almost everything missing
-    //     {
-    //         name: 'Unknown User',
-    //         email: null,
-    //         age: null,
-    //         address: null,
-    //         games: null,
-    //         extra: null,
-    //         test: null
-    //     },
-
-    //     // Edge case hobby: missing value inside name
-    //     {
-    //         name: 'Zara Khan',
-    //         email: 'zara@example.com',
-    //         age: 26,
-    //         address: {
-    //             street: 'Hill Top',
-    //             city: 'Hyderabad'
-    //         },
-    //         games: [{ name: 'table tennis' }],
-    //         extra: {
-    //             hobbies: [
-    //                 { name: { value: 'crafting' } }, // missing type
-    //                 { type: { value: 'outdoor' } } // missing name
-    //             ]
-    //         },
-    //         test: {
-    //             test1: {
-    //                 test2: [{ test3: 'Z1' }]
-    //             }
-    //         }
-    //     }
-    // ];
-
-    // const template: ExcelSheetConfig[] = [
-    //     {
-    //         sheetName: 'Sheet 1 (Games)',
-    //         columns: [
-    //             { columnName: 'Name', jsonPath: 'name' },
-    //             { columnName: 'Email', jsonPath: 'email' },
-
-    //             {
-    //                 columnName: 'Name with Email',
-    //                 jsonPath: '',
-    //                 javascript: `
-    //                 function(data){
-    //                     return (data?.name || "UNKNOWN") + "_" + (data?.email || "N/A");
-    //                 }
-    //             `
-    //             },
-
-    //             // Games array
-    //             { columnName: 'Game Name', jsonPath: 'games[*].name' },
-    //             { columnName: 'Game Type', jsonPath: 'games[*].type' },
-
-    //             // Deep nested test path
-    //             { columnName: 'Test Value', jsonPath: 'test.test1.test2[*].test3' }
-    //         ]
-    //     },
-
-    //     {
-    //         sheetName: 'Sheet 2 (Nested Hobbies)',
-    //         columns: [
-    //             { columnName: 'Name', jsonPath: 'name' },
-    //             { columnName: 'Age', jsonPath: 'age' },
-
-    //             // Hobby paths (1 nested array only)
-    //             { columnName: 'Hobby Name', jsonPath: 'extra.hobbies[*].name.value' },
-    //             { columnName: 'Hobby Type', jsonPath: 'extra.hobbies[*].type.value' },
-
-    //             // verify test again
-    //             { columnName: 'Test Value', jsonPath: 'test.test1.test2[*].test3' }
-    //         ]
-    //     }
-    // ];
 
     if (template.length === 0) {
         return <div className="h-screen w-screen flex items-center justify-center bg-gray-100 text-gray-600 text-lg">No template data available</div>;
