@@ -89,7 +89,7 @@ const ListRecordPage: React.FC = () => {
                 >
                     <div className="flex gap-2">
                         <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
-                            Export Records
+                            Export Records New
                         </Button>
                         <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                             Manage Templates
