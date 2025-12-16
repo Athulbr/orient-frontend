@@ -139,6 +139,8 @@ const ViewRecordPage: React.FC = () => {
     useBackButtonOverride('/docsnap/record/list');
     const module = sessionStorage.getItem('module');
 
+    const initialLeftWidthPercent = module === 'dataentry' || module === 'ppeDetection' ? 60 : 70;
+
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
             <div
@@ -173,7 +175,7 @@ const ViewRecordPage: React.FC = () => {
                             )}
                         </div>
                     }
-                    initialLeftWidthPercent={module === 'dataentry' || module === 'ppeDetection' ? 60 : 70}
+                    initialLeftWidthPercent={initialLeftWidthPercent}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={80}
                     onResize={(leftWidthPercent: number) => setState(prev => ({ ...prev, leftWidthPercent }))}
