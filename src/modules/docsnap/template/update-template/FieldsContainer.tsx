@@ -224,7 +224,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                                             updateTemplateFieldsWithAI({
                                                 existingFields: convertTemplateFields(state.sectionList),
                                                 userQuery: state.userQuery,
-                                                s3FileName: fileName
+                                                s3FileName: fileName || state.templateData?.s3FileName
                                             });
                                         }
                                     }
@@ -242,7 +242,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                                 updateTemplateFieldsWithAI({
                                     existingFields: convertTemplateFields(state.sectionList),
                                     userQuery: state.userQuery,
-                                    s3FileName: fileName
+                                    s3FileName: fileName || state.templateData?.s3FileName
                                 })
                             }
                             className="w-full "
