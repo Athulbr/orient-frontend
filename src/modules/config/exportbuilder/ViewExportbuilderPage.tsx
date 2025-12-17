@@ -5,6 +5,7 @@ import { useExportbuilderApi } from './hooks/useExportbuilderApi';
 import { useEffect, useMemo, useState } from 'react';
 import DateTimePicker, { DateRange } from '../../../components/DateTimePicker';
 import { SingleSelect } from '../../../components/SingleSelect';
+import { Button } from '../../../components/Button';
 
 interface ViewExportbuilderPageIF {
     test?: string;
@@ -67,51 +68,40 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     </Button> */}
                 </div>
             </header>
-            <ExcelExportDialogNew totalRecords={state.totalRecords} template={state.exportbuilder?.sheets || []} inputData={state.records} />
-            <div className="w-full h-[400px] p-4 flex gap-4">
+            <div className="w-full  p-4 flex gap-4">
+                <SingleSelect
+                    // label="Templates"
+                    options={[{ label: 'All Templates', value: '' }, ...tenant.templates]}
+                    value={selectedTemplateId}
+                    placeholder="Select Template"
+                    className="min-w-60"
+                    onValueChange={(value: string) => setSelectedTemplateId(value)}
+                />
+
+                <SingleSelect
+                    // label="Status"
+                    options={[
+                        { label: 'All Status', value: '' },
+                        { label: 'Processing', value: 'processing' },
+                        { label: 'Extracted', value: 'extracted' },
+                        { label: 'Viewed', value: 'viewed' },
+                        { label: 'Submitted', value: 'submitted' },
+                        { label: 'Failed', value: 'failed' },
+                        { label: 'Invalid', value: 'invalid' }
+                    ]}
+                    value={selectedStatus}
+                    placeholder="Select Status"
+                    className="min-w-60"
+                    onValueChange={(value: string) => setSelectedStatus(value)}
+                />
                 <DateTimePicker
                     onChange={(range: DateRange) => {
                         setStartDate(range.startDate);
                         setEndDate(range.endDate);
                     }}
                 />
-                <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-xl shadow-lg transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-4 border-b pb-3">
-                        <h3 className="text-lg font-semibold text-gray-800">Select Template</h3>
-                    </div>
-
-                    <SingleSelect
-                        label="Templates"
-                        options={[{ label: 'All Templates', value: '' }, ...tenant.templates]}
-                        value={selectedTemplateId}
-                        placeholder="Select Template"
-                        className="w-full"
-                        onValueChange={(value: string) => setSelectedTemplateId(value)}
-                    />
-                </div>
-                <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-xl shadow-lg transition-shadow duration-200">
-                    <div className="flex items-center justify-between mb-4 border-b pb-3">
-                        <h3 className="text-lg font-semibold text-gray-800">Select Status</h3>
-                    </div>
-
-                    <SingleSelect
-                        label="Status"
-                        options={[
-                            { label: 'All Status', value: '' },
-                            { label: 'Processing', value: 'processing' },
-                            { label: 'Extracted', value: 'extracted' },
-                            { label: 'Viewed', value: 'viewed' },
-                            { label: 'Submitted', value: 'submitted' },
-                            { label: 'Failed', value: 'failed' },
-                            { label: 'Invalid', value: 'invalid' }
-                        ]}
-                        value={selectedStatus}
-                        placeholder="Select Status"
-                        className="w-full"
-                        onValueChange={(value: string) => setSelectedStatus(value)}
-                    />
-                </div>
             </div>
+            <ExcelExportDialogNew totalRecords={state.totalRecords} template={state.exportbuilder?.sheets || []} inputData={state.records} />
         </div>
     );
 };
