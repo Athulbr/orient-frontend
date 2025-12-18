@@ -49,7 +49,7 @@ export const useExportbuilderApi = () => {
     // ============================= DELETE ==================================
     const deleteExportbuilderApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/builder/recordbuilder/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/builder/recordbuilder/${id}`);
             setState(prev => ({ ...prev, id: '', refresh: (prev.refresh || 0) + 1 }));
             toast.success('Exportbuilder deleted successfully');
             return true;
