@@ -7,6 +7,7 @@ import { useExportbuilderApi } from '../../../modules/config/exportbuilder/hooks
 import Spinner from '../../../components/Spinner';
 import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview';
 import { ExcelExportBuilder, ExcelSheetConfig } from '../../../builders/excelbuilder/builder';
+import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 
 interface CreateExportbuilderIF {}
 
@@ -16,6 +17,7 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
     const toast = useToastStore();
     const { createExportbuilderApi, updateExportbuilderApi, getExportbuilderByIdApi, getRecordsApi } = useExportbuilderApi();
     const [sheets, setSheets] = useState<ExcelSheetConfig[]>([{ id: generateId(), sheetName: 'Sheet 1', columns: [] }]);
+    const [showCreateDialog, setShowCreateDialog] = useState(false); // controls meta form dialog
 
     useEffect(() => {
         getRecordsApi({ pageSize: 20, filters: { deleted: false }, startDate: null, endDate: null });
@@ -33,23 +35,42 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
         }
     }, [state.exportbuilder]);
 
-    const handleCreateExportbuilder = async () => {
-        setState(prev => ({ ...prev, loading: true }));
+    const handleCreateExportbuilder = () => {
         if (sheets[0]?.columns?.length === 0) {
             toast.error('Please add at least one column to the first sheet before creating the export builder');
             return;
         }
+        setShowCreateDialog(true); // open meta form
+    };
+
+    const handleCreateRecord = async (data: any) => {
+        setState(prev => ({ ...prev, loading: true }));
+        if (sheets[0]?.columns?.length === 0) {
+            toast.error('Please add at least one column to the first sheet before creating the export builder');
+            setState(prev => ({ ...prev, loading: false }));
+            return;
+        }
+
         const payload = {
-            name: 'Albert Test 4',
+            name: data?.name || 'Untitled Export',
+            description: data?.description || '',
             sheets: sheets
         };
-        if (state.id) {
-            await updateExportbuilderApi(payload);
-        } else {
-            await createExportbuilderApi(payload);
+
+        try {
+            if (state.id) {
+                await updateExportbuilderApi(payload);
+            } else {
+                await createExportbuilderApi(payload);
+            }
+            toast.success('Exportbuilder created successfully');
+            setShowCreateDialog(false);
+            setState(prev => ({ ...prev, id: '', exportbuilder: null, createDialog: false, loading: false }));
+        } catch (err) {
+            console.error('Failed to create exportbuilder', err);
+            toast.error('Failed to create export builder');
+            setState(prev => ({ ...prev, loading: false }));
         }
-        setState(prev => ({ ...prev, id: '', exportbuilder: null, createDialog: false, loading: false }));
-        toast.success('Exportbuilder created successfully');
     };
 
     return (
@@ -70,6 +91,13 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             </header>
             <ExcelExportDialogNew template={sheets} inputData={state.records} />
             <ExcelExportBuilder sheets={sheets} setSheets={setSheets} inputData={state.records} />
+            {showCreateDialog && (
+                <UseFormbuilder
+                    name="Create Record Form" // form definition should include name/description
+                    closeDialog={() => setShowCreateDialog(false)}
+                    onSubmit={handleCreateRecord} // collects meta and calls create/update
+                />
+            )}
         </div>
     );
 };
