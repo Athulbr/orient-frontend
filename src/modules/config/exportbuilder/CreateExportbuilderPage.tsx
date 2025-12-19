@@ -96,6 +96,8 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
                     name="Create Record Form" // form definition should include name/description
                     closeDialog={() => setShowCreateDialog(false)}
                     onSubmit={handleCreateRecord} // collects meta and calls create/update
+                    existingData={state.id ? state.exportbuilder || {} : {}}
+                    loadingPrimaryButton={state.loading}
                 />
             )}
         </div>

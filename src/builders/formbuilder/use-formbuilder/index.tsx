@@ -86,7 +86,7 @@ export const UseFormbuilder: React.FC<UseFormbuilderIF> = ({
             }));
             setFields(updatedFields);
         }
-    }, [existingData]);
+    }, [existingData, fields]);
 
     if (hasError) {
         return null;
