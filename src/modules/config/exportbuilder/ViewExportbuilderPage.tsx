@@ -3,6 +3,7 @@ import { useExportbuilderState } from './hooks/exportbuilderContext';
 import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview';
 import { useExportbuilderApi } from './hooks/useExportbuilderApi';
 import { useEffect, useMemo, useState } from 'react';
+import { useToastStore } from '../../../components/toast/ToastStore';
 import DateTimePicker, { DateRange } from '../../../components/DateTimePicker';
 import { SingleSelect } from '../../../components/SingleSelect';
 import { Button } from '../../../components/Button';
@@ -12,12 +13,14 @@ interface ViewExportbuilderPageIF {
 }
 
 const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
-    const { getExportbuilderByIdApi, getRecordsApi } = useExportbuilderApi();
+    const { getExportbuilderByIdApi, getRecordsApi, exportBuilderApi } = useExportbuilderApi();
     const { state, setState } = useExportbuilderState();
     const [startDate, setStartDate] = useState<string | null>(null);
     const [endDate, setEndDate] = useState<string | null>(null);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
     const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [exporting, setExporting] = useState(false);
+    const toast = useToastStore();
     const tenant = useMemo(() => {
         const allTemplates = JSON.parse(sessionStorage.getItem('templates') || '');
         const tenantId = sessionStorage.getItem('selectedTenant') ?? JSON.parse(sessionStorage.getItem('user') || '').tenant?._id;
@@ -50,6 +53,59 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
             getExportbuilderByIdApi(state.id);
         }
     }, [state.id]);
+
+    const buildHistoryPayload = () => {
+        const payload: any = {
+            pageSize: 1000,
+            filters: { deleted: false },
+            startDate: startDate,
+            endDate: endDate,
+            tenantId: tenant.tenantId || ''
+        };
+        if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
+        if (selectedStatus) payload.filters.status = selectedStatus;
+        return payload;
+    };
+
+    const handleServerExport = async (format: 'json' | 'xlsx', activeSheetIndex = 0) => {
+        try {
+            setExporting(true);
+            const payload = {
+                ...buildHistoryPayload(),
+                format,
+                exportbuilder: state.exportbuilder,
+                activeSheetIndex,
+            };
+
+            const result = await exportBuilderApi(payload);
+
+            if (result?.blob) {
+                const url = window.URL.createObjectURL(result.blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = result.fileName || 'Record_Export.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } else if (result?.jsonData) {
+                const jsonString = JSON.stringify(result.jsonData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = result.fileName || 'Record_Export.json';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            toast.error('Failed to export records');
+        } finally {
+            setExporting(false);
+        }
+    };
 
     return (
         <div className="absolute top-0 left-0 w-screen h-screen bg-white max-h-screen flex flex-col">
@@ -101,7 +157,14 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     }}
                 />
             </div>
-            <ExcelExportDialogNew totalRecords={state.totalRecords} template={state.exportbuilder?.sheets || []} inputData={state.records} />
+            <ExcelExportDialogNew
+                totalRecords={state.totalRecords}
+                template={state.exportbuilder?.sheets || []}
+                inputData={state.records}
+                serverExportLoading={exporting}
+                onServerJsonExport={(activeSheetIndex: number) => handleServerExport('json', activeSheetIndex)}
+                onServerXlsxExport={() => handleServerExport('xlsx')}
+            />
         </div>
     );
 };
