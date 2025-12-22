@@ -249,18 +249,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({ labels, datasets }) => 
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-4 md:p-8">
-            <div className="max-w-5xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-block mb-4">
-                        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-transparent bg-clip-text">
-                            <h1 className="text-4xl md:text-5xl font-bold mb-2">Chart Visualizer</h1>
-                        </div>
-                    </div>
-                    <p className="text-gray-600 text-sm md:text-base">Select a chart type to visualize your data</p>
-                </div>
-
-                {/* Chart Type Selector */}
+            <div className=" mx-auto">
                 <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200">
                     <h2 className="text-gray-800 font-semibold text-sm mb-4 flex items-center gap-2">
                         <span className="text-lg">🎨</span>
