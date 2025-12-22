@@ -26,9 +26,12 @@ export const useDocumentExtractor = () => {
                 const formData = new FormData();
                 // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
+                formData.append('template', JSON.stringify(template)); // For only SLD module
                 formData.append('file', file);
 
-                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : '/docsnap/extract-document'}`;
+                const templateType = template?.settings?.templateType;
+
+                const apiEndPoint = `${config.mlServiceNodejs}${templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : templateType === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
@@ -154,7 +157,7 @@ export const useDocumentExtractor = () => {
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}${template?.settings?.templateType === 'dataentry' ? '/data-entry/add-product' : '/content-creation/create-blog'}`;
+                const apiEndPoint = `${config.mlServiceNodejs}/data-entry/add-product`;
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
