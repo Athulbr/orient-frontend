@@ -23,6 +23,7 @@ export const useDocumentExtractor = () => {
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
                 const formData = new FormData();
                 // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
@@ -33,9 +34,14 @@ export const useDocumentExtractor = () => {
 
                 const apiEndPoint = `${config.mlServiceNodejs}${templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : templateType === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
 
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
+
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
-                    headers: { authorization: `Bearer ${JSON.parse(token)}` },
+                    headers,
                     body: formData,
                     signal: abortController.signal
                 });
@@ -83,14 +89,20 @@ export const useDocumentExtractor = () => {
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
                 const formData = new FormData();
                 formData.append('template_id', template?._id);
                 formData.append('file', file);
                 const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document`;
 
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
+
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
-                    headers: { authorization: `Bearer ${JSON.parse(token)}` },
+                    headers,
                     body: formData,
                     signal: abortController.signal
                 });
@@ -103,9 +115,13 @@ export const useDocumentExtractor = () => {
 
                 // Fetch the stream URL
                 const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                const streamHeaders: Record<string, string> = { authorization: `Bearer ${JSON.parse(accessToken)}` };
+                if (selectedTenant) {
+                    streamHeaders.tenantId = selectedTenant;
+                }
                 const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(accessToken)}`, {
                     method: 'GET',
-                    headers: { authorization: `Bearer ${JSON.parse(accessToken)}` },
+                    headers: streamHeaders,
                     signal: abortController.signal
                 });
 
@@ -151,6 +167,7 @@ export const useDocumentExtractor = () => {
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
 
                 const requestBody = {
                     templateId: template?._id,
@@ -159,9 +176,14 @@ export const useDocumentExtractor = () => {
 
                 const apiEndPoint = `${config.mlServiceNodejs}/data-entry/add-product`;
 
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
+
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
-                    headers: { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(requestBody)
                 });
 
