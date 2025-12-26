@@ -142,6 +142,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
         };
 
         onChange(payload);
+        setShowDialog(false);
     }, [startValue, endValue, minDate, maxDate, onChange, toLocalISOStringWithOffset, formatDateForInput]);
 
     // Handle Enter key press

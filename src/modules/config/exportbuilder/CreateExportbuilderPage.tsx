@@ -91,13 +91,14 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             </header>
             <ExcelExportDialogNew template={sheets} inputData={state.records} />
             <ExcelExportBuilder sheets={sheets} setSheets={setSheets} inputData={state.records} />
-            {showCreateDialog && (
-                <UseFormbuilder
-                    name="Create Record Form" // form definition should include name/description
-                    closeDialog={() => setShowCreateDialog(false)}
-                    onSubmit={handleCreateRecord} // collects meta and calls create/update
-                />
-            )}
+            <UseFormbuilder
+                isOpen={showCreateDialog}
+                name="Create Record Form" // form definition should include name/description
+                closeDialog={() => setShowCreateDialog(false)}
+                onSubmit={handleCreateRecord} // collects meta and calls create/update
+                existingData={state.id ? state.exportbuilder || {} : {}}
+                loadingPrimaryButton={state.loading}
+            />
         </div>
     );
 };
