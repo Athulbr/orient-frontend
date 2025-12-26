@@ -103,8 +103,8 @@ const ListRecordPage: React.FC = () => {
                         </Button>
                     </div>
                 </PageNameComponent>
-                {/* <ListRecordComponent /> */}
-                <ListRecordCustomTable />
+                <ListRecordComponent />
+                {/* <ListRecordCustomTable /> */}
                 <DialogComponent
                     fullScreen
                     isOpen={state.showExcelExportDialog}
