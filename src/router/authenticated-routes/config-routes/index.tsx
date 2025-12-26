@@ -60,6 +60,7 @@ const ConfigRoutes = () => {
                         <Route path="formbuilder/*" element={<FormbuilderRoutes />} />
                         <Route path="tablebuilder/list" element={<ListTablebuilderPage />} />
                         <Route path="exportbuilder/list" element={<ListExportbuilderPage />} />
+                        <Route path="exportbuilder/quick-report" element={<ExportQuickReportPage />} />
                         <Route path="project/list" element={<ListProjectPage />} />
                         <Route path="prompt-tuning" element={<UpdatedFieldsListPage />} />
                         <Route path="user/list" element={<ListUserPage />} />
@@ -81,6 +82,7 @@ import { FC, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import ListExportbuilderPage from '../../../modules/config/exportbuilder';
+import ExportQuickReportPage from '../../../modules/config/exportbuilder/quick-report';
 
 const NavigationComponent: FC = () => {
     const navigate = useNavigate();

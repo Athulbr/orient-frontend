@@ -163,7 +163,14 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     }
 }
 
-export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ template, inputData, totalRecords, serverExportLoading = false, onServerJsonExport, onServerXlsxExport }) => {
+export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({
+    template,
+    inputData,
+    totalRecords,
+    serverExportLoading = false,
+    onServerJsonExport,
+    onServerXlsxExport
+}) => {
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const toast = useToastStore();
@@ -474,7 +481,7 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
                                     </tr>
                                 ))}
                                 {/* Empty rows filler for visual aesthetics */}
-                                {Array.from({ length: 20 }).map((_, i) => (
+                                {Array.from({ length: 25 }).map((_, i) => (
                                     <tr key={`filler-${i}`} className="h-8">
                                         <td className="bg-gray-100 border-r border-b border-gray-300 sticky left-0 text-center text-xs text-gray-400">
                                             {renderedRows.length + i + 2}

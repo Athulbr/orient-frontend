@@ -11,6 +11,7 @@ import { DialogComponent } from '../../../../components/DialogComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import ExcelExportDialogNew from './components/ExcelExportDialogNew';
 import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBuilder';
+import { ListRecordCustomTable } from './ListRecordCustomTable';
 interface Project {
     _id: string;
     name: string;
@@ -91,6 +92,9 @@ const ListRecordPage: React.FC = () => {
                     customGoBackFunction={() => navigate('/')}
                 >
                     <div className="flex gap-2">
+                        <Button outlined onClick={() => navigate('/config/exportbuilder/quick-report')}>
+                            Quick Report
+                        </Button>
                         <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
                             Export Records New
                         </Button>
@@ -99,7 +103,8 @@ const ListRecordPage: React.FC = () => {
                         </Button>
                     </div>
                 </PageNameComponent>
-                <ListRecordComponent />
+                {/* <ListRecordComponent /> */}
+                <ListRecordCustomTable />
                 <DialogComponent
                     fullScreen
                     isOpen={state.showExcelExportDialog}
