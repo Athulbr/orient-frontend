@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, FileSpreadsheet } from 'lucide-react';
+import { Plus, FileSpreadsheet, Filter } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { capitalize } from 'lodash';
 import PathPickerDialog from './pathPickerDialog';
@@ -7,6 +7,7 @@ import JsEditorDialog from './JsEditor';
 import SheetSelector from './SheetSelector';
 import { useAutoColumns } from './useAutoColumnsHook';
 import { cn } from '../../../global-utils/twMerge';
+import { FilterItemIF } from './FiltersBuilder';
 import ColumnCard from './ColumnCard';
 import AutoColumnSelectorDialog from './AutoColumnSelectorDialog';
 import FullScreenLoader from '../../../components/FullScreenLoader';
@@ -30,9 +31,13 @@ interface ExcelExportBuilderProps {
     sheets: ExcelSheetConfig[];
     setSheets: React.Dispatch<React.SetStateAction<ExcelSheetConfig[]>>;
     inputData: any;
+    filters?: FilterItemIF[];
+    setFilters?: React.Dispatch<React.SetStateAction<FilterItemIF[]>>;
+    showFiltersView?: boolean;
+    onToggleFiltersView?: () => void;
 }
 
-export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, setSheets, inputData }) => {
+export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, setSheets, inputData, filters: externalFilters, setFilters: externalSetFilters, showFiltersView, onToggleFiltersView }) => {
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
 
     const [pathPickerOpen, setPathPickerOpen] = useState(false);
@@ -162,6 +167,8 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
                     deleteSheet={deleteSheet}
                     showColumns={showColumns}
                     setShowColumns={setShowColumns}
+                    showFiltersView={showFiltersView}
+                    onToggleFiltersView={onToggleFiltersView}
                 />
 
                 {/* Main Content Area */}

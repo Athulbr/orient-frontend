@@ -7,6 +7,7 @@ import { useExportbuilderApi } from '../../../modules/config/exportbuilder/hooks
 import Spinner from '../../../components/Spinner';
 import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview';
 import { ExcelExportBuilder, ExcelSheetConfig } from '../../../builders/excelbuilder/builder';
+import { FiltersBuilder, FilterItemIF } from '../../../builders/excelbuilder/builder/FiltersBuilder';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 
 interface CreateExportbuilderIF {}
@@ -17,6 +18,8 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
     const toast = useToastStore();
     const { createExportbuilderApi, updateExportbuilderApi, getExportbuilderByIdApi, getRecordsApi } = useExportbuilderApi();
     const [sheets, setSheets] = useState<ExcelSheetConfig[]>([{ id: generateId(), sheetName: 'Sheet 1', columns: [] }]);
+    const [filters, setFilters] = useState<FilterItemIF[]>([]);
+    const [showFiltersView, setShowFiltersView] = useState(false);
     const [showCreateDialog, setShowCreateDialog] = useState(false); // controls meta form dialog
 
     useEffect(() => {
@@ -32,6 +35,13 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
     useEffect(() => {
         if (state.exportbuilder) {
             setSheets(state.exportbuilder.sheets);
+            // Map filters to FilterItemIF structure
+            const loadedFilters = (state.exportbuilder.filters || []).map((f: any) => ({
+                id: f.id || generateId(),
+                key: f.key || '',
+                jsonPath: f.jsonPath
+            }));
+            setFilters(loadedFilters);
         }
     }, [state.exportbuilder]);
 
@@ -54,7 +64,10 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
         const payload = {
             name: data?.name || 'Untitled Export',
             description: data?.description || '',
-            sheets: sheets
+            sheets: sheets,
+            filters: filters.map(f => ({ 
+                jsonPath: f.jsonPath
+            }))
         };
 
         try {
@@ -90,7 +103,25 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
                 </Button>
             </header>
             <ExcelExportDialogNew template={sheets} inputData={state.records} />
-            <ExcelExportBuilder sheets={sheets} setSheets={setSheets} inputData={state.records} />
+            {showFiltersView ? (
+                <FiltersBuilder
+                    filters={filters}
+                    setFilters={setFilters}
+                    inputData={state.records}
+                    showFiltersView={showFiltersView}
+                    onToggleFiltersView={() => setShowFiltersView(!showFiltersView)}
+                />
+            ) : (
+                <ExcelExportBuilder
+                    sheets={sheets}
+                    setSheets={setSheets}
+                    inputData={state.records}
+                    filters={filters}
+                    setFilters={setFilters}
+                    showFiltersView={showFiltersView}
+                    onToggleFiltersView={() => setShowFiltersView(!showFiltersView)}
+                />
+            )}
             <UseFormbuilder
                 isOpen={showCreateDialog}
                 name="Create Record Form" // form definition should include name/description

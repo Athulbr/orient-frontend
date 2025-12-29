@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, Filter } from 'lucide-react';
 import type { ExcelSheetConfig } from './index';
 
 interface SheetSelectorProps {
@@ -11,6 +11,8 @@ interface SheetSelectorProps {
     deleteSheet: (e: React.MouseEvent, index: number) => void;
     showColumns: boolean;
     setShowColumns: React.Dispatch<React.SetStateAction<boolean>>;
+    showFiltersView?: boolean;
+    onToggleFiltersView?: () => void;
 }
 
 const SheetSelector: React.FC<SheetSelectorProps> = ({
@@ -21,7 +23,9 @@ const SheetSelector: React.FC<SheetSelectorProps> = ({
     addSheet,
     deleteSheet,
     showColumns,
-    setShowColumns
+    setShowColumns,
+    showFiltersView,
+    onToggleFiltersView
 }) => {
     return (
         <div className="flex justify-between items-center pr-4 border-b">
@@ -57,6 +61,17 @@ const SheetSelector: React.FC<SheetSelectorProps> = ({
                     <Plus size={18} />
                 </button>
             </div>
+            <div className="flex items-center gap-2">
+                {onToggleFiltersView && (
+                    <button
+                        onClick={onToggleFiltersView}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        title={showFiltersView ? 'Switch to Columns Builder' : 'Switch to Filters Builder'}
+                    >
+                        <Filter size={14} />
+                        {showFiltersView ? 'Columns' : 'Filters'}
+                    </button>
+                )}
             {showColumns ? (
                 <ChevronDown
                     onClick={e => {
@@ -76,6 +91,7 @@ const SheetSelector: React.FC<SheetSelectorProps> = ({
                     className="text-gray-500 border h-6 w-6 rounded cursor-pointer pt-0.5 hover:bg-gray-100 transition-colors"
                 />
             )}
+            </div>
         </div>
     );
 };
