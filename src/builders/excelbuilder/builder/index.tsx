@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, FileSpreadsheet } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { capitalize } from 'lodash';
@@ -10,6 +10,7 @@ import { cn } from '../../../global-utils/twMerge';
 import ColumnCard from './ColumnCard';
 import AutoColumnSelectorDialog from './AutoColumnSelectorDialog';
 import FullScreenLoader from '../../../components/FullScreenLoader';
+import { DialogComponent } from '../../../components/DialogComponent';
 
 export interface ExcelColumnIF {
     id: string;
@@ -42,18 +43,30 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
     const [editingColId, setEditingColId] = useState<string | null>(null);
     const [tempJsCode, setTempJsCode] = useState('');
     const [autoDialogOpen, setAutoDialogOpen] = useState(false);
+    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
     const detectedColumns = useAutoColumns({ inputData, sheets, setSheets, activeSheetIndex });
 
-    React.useEffect(() => {
-        if (!inputData || !Array.isArray(inputData)) return;
-        const hasNoColumns = sheets[activeSheetIndex]?.columns.length === 0;
-        if (hasNoColumns && detectedColumns.length > 0) {
-            setAutoDialogOpen(true);
-            setLoading(false);
-        }
+    useEffect(() => {
+        // Stop blocking UI regardless of detected columns; dialog will open via Populate button
+        setLoading(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputData, activeSheetIndex]);
+
+    useEffect(() => {
+        setShowTemplateSelector(true);
+    }, []);
+
+    const templateOptions: { id: string; name: string }[] = (() => {
+        try {
+            const templateList = JSON.parse(sessionStorage.getItem('templates') || '[]');
+            const selectedTenant = sessionStorage.getItem('selectedTenant');
+            return (templateList || []).filter((t: any) => !selectedTenant || t?.tenantId === selectedTenant).map((t: any) => ({ id: t?._id, name: t?.name }));
+        } catch (_e) {
+            return [] as { id: string; name: string }[];
+        }
+    })();
 
     const addSheet = () => {
         setSheets([...sheets, { id: generateId(), sheetName: `Sheet ${sheets.length + 1}`, columns: [] }]);
@@ -172,9 +185,14 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
                                 <h2 className="text-lg font-semibold text-gray-800">{activeSheet.sheetName} Configuration</h2>
                                 <p className="text-xs text-gray-500">Define columns for this Excel sheet.</p>
                             </div>
-                            <Button onClick={addColumn} outlined>
-                                <Plus size={16} /> Add Column
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <Button onClick={() => setAutoDialogOpen(true)} outlined>
+                                    Select Columns
+                                </Button>
+                                <Button onClick={addColumn} outlined>
+                                    <Plus size={16} /> Add Column
+                                </Button>
+                            </div>
                         </div>
 
                         {/* Horizontal Column List */}
@@ -239,6 +257,40 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
                     setAutoDialogOpen(false);
                 }}
             />
+
+            {/* --- Dialog: Initial Template Selector --- */}
+            <DialogComponent
+                name="Select a Template"
+                isOpen={showTemplateSelector}
+                closeDialog={() => setShowTemplateSelector(false)}
+                secondaryButtonText="Close"
+                className="w-[640px]"
+            >
+                <div className="p-6 space-y-4">
+                    {templateOptions.length === 0 ? (
+                        <div className="text-sm text-gray-500">No templates found for the selected tenant.</div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-2">
+                            {templateOptions.map((t: any) => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => {
+                                        setSelectedTemplateId(t.id);
+                                        setShowTemplateSelector(false);
+                                    }}
+                                    className={cn(
+                                        'w-full cursor-pointer text-left px-4 py-3 rounded border hover:bg-gray-50 transition-colors',
+                                        selectedTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                    )}
+                                >
+                                    <div className="font-medium text-gray-800">{t.name}</div>
+                                    <div className="text-xs text-gray-500">{t.id}</div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </DialogComponent>
         </>
     );
 };
