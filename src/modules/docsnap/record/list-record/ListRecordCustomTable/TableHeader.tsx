@@ -1,10 +1,19 @@
 import { FC } from 'react';
+import { useDocsnapStore } from '../../../../../zustand-store/DocsnapStore';
+import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi';
+import { useEffect } from 'react';
 
 interface TableHeaderIF {
-    columns: { label: string; key: string }[];
+    columns: { label: string }[];
 }
 
 export const TableHeader: FC<TableHeaderIF> = ({ columns }) => {
+    const { refreshRecord } = useDocsnapStore();
+    const { getRecordsApi } = useListRecordCustomTableApi();
+
+    useEffect(() => {
+        getRecordsApi({});
+    }, [refreshRecord]);
     return (
         <thead>
             <tr>
@@ -19,7 +28,7 @@ export const TableHeader: FC<TableHeaderIF> = ({ columns }) => {
                 {columns.map((column: any, index: number) => {
                     return (
                         <th
-                            key={index + 5}
+                            key={index}
                             scope="col"
                             className={`sticky top-0 z-1 h-14 bg-gray-50 px-2 py-3 text-left text-xs font-medium tracking-wider text-nowrap text-gray-500 uppercase xl:px-5`}
                         >
