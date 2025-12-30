@@ -23,11 +23,13 @@ export const useRolesApi = () => {
 
     const createRoleApi = async (payload: any) => {
         try {
+            setState(prev => ({ ...prev, loading: true }));
             const res = await httpRequest('POST', `${config.nodeApiUrl}/role/create`, payload);
-            setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
+            setState(prev => ({ ...prev, loading: false, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Role Created Successfully');
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, loading: false }));
             toast.error('Failed to Create Role');
         }
     };
@@ -48,6 +50,7 @@ export const useRolesApi = () => {
             toast.success('Role Updated Successfully');
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, loading: false }));
             toast.error('Failed to Create Role');
         }
     };

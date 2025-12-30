@@ -59,13 +59,15 @@ const useTranscriptStore = create<RoleState>((set, get) => ({
 
     createTranscript: async payload => {
         try {
-            set({ currentData: null, transcriptData: null });
+            set({ loading: true, currentData: null, transcriptData: null });
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/transcript/create`, payload);
             set({ currentData: res.data, transcriptData: null });
             return true;
         } catch (error: any) {
             useToastStore.getState().error(error.message);
             return false;
+        } finally {
+            set({ loading: false });
         }
     },
     updateTranscript: async (payload, id) => {

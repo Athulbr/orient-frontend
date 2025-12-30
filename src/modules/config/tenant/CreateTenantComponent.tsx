@@ -41,6 +41,7 @@ const CreateTenantComponent: React.FC<CreateTenantComponentIF> = () => {
             existingData={state.tenant || {}}
             onSubmit={onSubmit}
             closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', tenant: null }))}
+            loadingPrimaryButton={state.loading}
         />
     );
 };
