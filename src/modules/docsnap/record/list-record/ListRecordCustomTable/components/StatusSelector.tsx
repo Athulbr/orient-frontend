@@ -14,19 +14,13 @@ const statusList = [
 
 const StatusSelector: React.FC<StatusSelectorIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
-    const { getRecordsApi } = useListRecordCustomTableApi();
     return (
         <MultiSelect
             className="w-fit"
             placeholder="All Status"
             options={statusList}
             values={state.selectedStatuses}
-            onValuesChange={(values: string[]) => {
-                setState(prev => ({ ...prev, selectedStatuses: values }));
-                getRecordsApi({
-                    selectedStatuses: values
-                });
-            }}
+            onValuesChange={(values: string[]) => setState(prev => ({ ...prev, selectedStatuses: values }))}
         />
     );
 };

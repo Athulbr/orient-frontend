@@ -3,13 +3,13 @@ import { Button } from './Button';
 import { DialogComponent } from './DialogComponent';
 
 // Define the shape of the data sent back to the parent
-export interface DateRange {
+export interface DateRangeIF {
     startDate: string;
     endDate: string;
 }
 
 interface DateTimePickerProps {
-    onChange: (range: DateRange) => void;
+    onChange: (range: DateRangeIF) => void;
     initialStartDate?: string;
     initialEndDate?: string;
     minDate?: string;
@@ -136,7 +136,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
             }
         }
 
-        const payload: DateRange = {
+        const payload: DateRangeIF = {
             startDate: toLocalISOStringWithOffset(startValue),
             endDate: toLocalISOStringWithOffset(endValue)
         };

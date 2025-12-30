@@ -19,7 +19,6 @@ templateList.map((template: any) => {
 
 const TemplateSelector: React.FC<TemplateSelectorIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
-    console.log('state:===========', state);
     return (
         <MultiSelect
             className=" w-80"

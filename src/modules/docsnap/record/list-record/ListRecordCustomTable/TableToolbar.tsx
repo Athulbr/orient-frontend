@@ -1,5 +1,6 @@
 import { ClearButton } from './components/ClearButton';
 import DateRangePicker from './components/DateRangePicker';
+import DeleteSelectedButton from './components/DeleteSelectedButton';
 import { PageSizeSelector } from './components/PageSizeSelector';
 import { SearchInput } from './components/SearchInput';
 import StatusSelector from './components/StatusSelector';
@@ -13,6 +14,7 @@ interface TableToolbarIF {
 const TableToolbar: React.FC<TableToolbarIF> = () => {
     return (
         <div className="p-2 flex flex-1 flex-row-reverse flex-wrap-reverse justify-start gap-4">
+            <DeleteSelectedButton />
             <ClearButton />
             <SearchInput />
             <DateRangePicker />

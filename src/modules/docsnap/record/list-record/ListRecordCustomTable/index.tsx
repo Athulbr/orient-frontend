@@ -1,24 +1,15 @@
 import { TableBody } from './TableBody';
 import { TableHeader } from './TableHeader';
-import { useEffect, useState } from 'react';
-import { useDocsnapStore } from '../../../../../zustand-store/DocsnapStore';
+import { useState } from 'react';
 import TableFooter from './TableFooter';
 import TableToolbar from './TableToolbar';
-import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi';
 import { ListRecordCustomTableStateProvider, useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
-import { cn } from '../../../../../global-utils/twMerge';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 
 interface ListRecordCustomTableIF {
     test?: string;
 }
-const columns = [
-    { label: 'Name' },
-    { label: 'Document Number' },
-    { label: 'Status' },
-    { label: 'Extracted By' },
-    { label: 'Processed Date' },
-    { label: 'Actions' }
-];
+
 export interface ListRecordCustomTableStateIF {
     records: Record<string, any>[];
     loadingRecords: boolean;
@@ -29,6 +20,9 @@ export interface ListRecordCustomTableStateIF {
     selectedTemplates: string[];
     selectedValidator: string;
     searchText: string;
+    startDate: string;
+    endDate: string;
+    selectedRows: string[];
 }
 
 const initialState = {
@@ -40,11 +34,29 @@ const initialState = {
     selectedStatuses: [],
     selectedTemplates: [],
     selectedValidator: '',
-    searchText: ''
+    searchText: '',
+    startDate: '',
+    endDate: '',
+    selectedRows: []
 };
 
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
+    const { user } = usePermissionStore();
+
     const [state, setState] = useState<ListRecordCustomTableStateIF>(initialState);
+
+    const columns = [
+        { label: 'Name', visible: true },
+        { label: 'Document Number', visible: true },
+        { label: 'Status', visible: true },
+        {
+            label: 'Polink',
+            visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
+        },
+        { label: 'Extracted By', visible: true },
+        { label: 'Processed Date', visible: true },
+        { label: 'Actions', visible: true }
+    ];
 
     return (
         <ListRecordCustomTableStateProvider value={{ state, setState }}>

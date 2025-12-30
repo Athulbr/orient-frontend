@@ -2,18 +2,28 @@ import { FC } from 'react';
 import { useDocsnapStore } from '../../../../../zustand-store/DocsnapStore';
 import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi';
 import { useEffect } from 'react';
+import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 
 interface TableHeaderIF {
-    columns: { label: string }[];
+    columns: { label: string; visible?: boolean }[];
 }
 
 export const TableHeader: FC<TableHeaderIF> = ({ columns }) => {
     const { refreshRecord } = useDocsnapStore();
+    const { state, setState } = useListRecordCustomTableState();
     const { getRecordsApi } = useListRecordCustomTableApi();
 
+    console.log('state:===========', state);
+
+    const { selectedStatuses, selectedTemplates, selectedValidator, searchText, startDate, endDate, pageSize, page } = state;
+
     useEffect(() => {
-        getRecordsApi({});
-    }, [refreshRecord]);
+        getRecordsApi();
+    }, [refreshRecord, selectedStatuses.length, selectedTemplates.length, selectedValidator, searchText, startDate, endDate, pageSize, page]);
+
+    const onSelectAllRows = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setState(prev => ({ ...prev, selectedRows: e.target.checked ? state.records.map((item: any) => item._id) : [] }));
+    };
     return (
         <thead>
             <tr>
@@ -21,11 +31,12 @@ export const TableHeader: FC<TableHeaderIF> = ({ columns }) => {
                     <input
                         type="checkbox"
                         className="cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        // checked={Boolean(selectedIds.length && selectedIds.length === data.length)}
-                        // onChange={e => onSelectAllRow(e)}
+                        checked={Boolean(state.selectedRows.length && state.selectedRows.length === state.records.length)}
+                        onChange={onSelectAllRows}
                     />
                 </th>
                 {columns.map((column: any, index: number) => {
+                    if (!column.visible) return null;
                     return (
                         <th
                             key={index}

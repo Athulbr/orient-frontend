@@ -2,43 +2,31 @@ import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../../global-utils/httpRequest';
 import { useListRecordCustomTableState } from './listRecordCustomTableStateContext';
 import { config } from '../../../../../../config/default';
+import { useDocsnapStore } from '../../../../../../zustand-store/DocsnapStore';
 
 export const useListRecordCustomTableApi = () => {
     const toast = useToastStore();
     const { state, setState } = useListRecordCustomTableState();
+    const { updateRefreshRecord } = useDocsnapStore();
 
     // ============================= CREATE ==================================
-    const getRecordsApi = async (filters: any) => {
+    const getRecordsApi = async () => {
         try {
             const payload = {
-                search: filters.searchText ?? state.searchText,
-                pageSize: filters.pageSize ?? state.pageSize,
-                page: filters.page ?? state.page,
-                searchFields: ['status'],
-                filters: { deleted: false }
+                searchFields: ['name'],
+                filters: { deleted: false },
+                search: state.searchText,
+                pageSize: state.pageSize,
+                page: state.page,
+                startDate: state.startDate,
+                endDate: state.endDate
             };
-
-            // if (typeof filters.searchText === 'string') {
-            //     // @ts-ignore
-            //     payload.filters.search = filters.searchText;
-            // } else {
-            //     // @ts-ignore
-            //     payload.filters.search = state.searchText;
-            // }
-
-            if (Array.isArray(filters.selectedStatuses)) {
-                if (filters.selectedStatuses.length > 0) {
-                    // @ts-ignore
-                    payload.filters.status = { $in: filters.selectedStatuses };
-                }
-            } else if (state.selectedStatuses.length > 0) {
-                // @ts-ignore
-                payload.filters.status = { $in: state.selectedStatuses };
-            }
+            // @ts-ignore
+            if (state.selectedStatuses.length > 0) payload.filters.status = { $in: state.selectedStatuses };
 
             setState(prev => ({ ...prev, loadingRecords: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, payload);
-            setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
+            setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;
         } catch (error) {
@@ -65,7 +53,7 @@ export const useListRecordCustomTableApi = () => {
     const deleteRecordApi = async (id: string) => {
         try {
             const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/history/delete/${id}`);
-            setState(prev => ({ ...prev }));
+            updateRefreshRecord();
             toast.success('Record deleted successfully');
         } catch (error) {
             toast.error('Failed to delete record');

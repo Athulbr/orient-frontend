@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useListRecordCustomTableState } from '../hooks/listRecordCustomTableStateContext';
 import { useListRecordCustomTableApi } from '../hooks/useListRecordCustomTableApi';
 
@@ -7,16 +7,7 @@ interface SearchInputIF {}
 
 export const SearchInput: React.FC<SearchInputIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
-    const { getRecordsApi } = useListRecordCustomTableApi();
     const [isFocused, setIsFocused] = useState(false);
-
-    const handleClear = () => {
-        // Handle clear functionality if needed
-    };
-    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setState(prev => ({ ...prev, searchText: e.target.value }));
-        getRecordsApi({ searchText: e.target.value });
-    };
 
     return (
         <div className={`relative max-w-90 min-w-60 flex-1`}>
@@ -29,11 +20,21 @@ export const SearchInput: React.FC<SearchInputIF> = () => {
                 }`}
                 placeholder="Search..."
                 value={state.searchText}
-                onChange={handleOnChange}
+                onChange={e => setState(prev => ({ ...prev, searchText: e.target.value }))}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 disabled={false}
             />
+            {state.searchText && (
+                <button
+                    onClick={() => setState(prev => ({ ...prev, searchText: '' }))}
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+                    tabIndex={-1}
+                >
+                    <X size={16} />
+                </button>
+            )}
         </div>
     );
 };

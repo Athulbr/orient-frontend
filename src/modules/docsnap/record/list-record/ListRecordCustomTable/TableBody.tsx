@@ -1,18 +1,36 @@
+import { formatDate } from '../../../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
 import { cn } from '../../../../../global-utils/twMerge';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { Polink } from '../ListRecordComponent';
 import { ActionButtons } from './components/ActionButtons';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 
 export const TableBody: React.FC = () => {
-    const { state } = useListRecordCustomTableState();
+    const { state, setState } = useListRecordCustomTableState();
+    const { checkPermission, user } = usePermissionStore();
 
     const rowStyle = 'w-fit max-w-[300px] min-w-[80px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm';
+
+    const showPolink = String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart';
+
+    const handleRowSelect = (row: any) => {
+        const updatedSelectedRows = state.selectedRows.includes(row._id)
+            ? state.selectedRows.filter((id: string) => id !== row._id)
+            : [...state.selectedRows, row._id];
+        setState(prev => ({ ...prev, selectedRows: updatedSelectedRows }));
+    };
     return (
         <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
             {state.records?.map((row: any, index: number) => {
                 return (
                     <tr key={index}>
-                        <td onClick={e => e.stopPropagation()} className="px-5 py-4 whitespace-nowrap">
-                            <input type="checkbox" className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500" />
+                        <td className="px-5 py-4 whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                checked={state.selectedRows.includes(row._id)}
+                                onChange={() => handleRowSelect(row)}
+                                className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
+                            />
                         </td>
 
                         <td className="px-2 py-4 xl:px-5">
@@ -24,11 +42,16 @@ export const TableBody: React.FC = () => {
                         <td className="px-2 py-4 xl:px-5">
                             <div className={cn(rowStyle)}>{row.status}</div>
                         </td>
+                        {showPolink && (
+                            <td className="px-2 py-4 xl:px-5">
+                                <Polink />
+                            </td>
+                        )}
                         <td className="px-2 py-4 xl:px-5">
                             <div className={cn(rowStyle)}>{row.extractedBy || 'N/A'}</div>
                         </td>
                         <td className="px-2 py-4 xl:px-5">
-                            <div className={cn(rowStyle)}>{row.createdAt}</div>
+                            <div className={cn(rowStyle)}>{formatDate(row.updatedAt)}</div>
                         </td>
                         <td className="px-2 py-4 xl:px-5">
                             <ActionButtons row={row} />
