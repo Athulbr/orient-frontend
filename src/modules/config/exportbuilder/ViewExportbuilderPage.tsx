@@ -4,7 +4,7 @@ import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview';
 import { useExportbuilderApi } from './hooks/useExportbuilderApi';
 import { useEffect, useMemo, useState } from 'react';
 import { useToastStore } from '../../../components/toast/ToastStore';
-import DateTimePicker, { DateRange } from '../../../components/DateTimePicker';
+import DateTimePicker, { DateRangeIF } from '../../../components/DateTimePicker';
 import { SingleSelect } from '../../../components/SingleSelect';
 import { Button } from '../../../components/Button';
 
@@ -74,7 +74,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                 ...buildHistoryPayload(),
                 format,
                 exportbuilder: state.exportbuilder,
-                activeSheetIndex,
+                activeSheetIndex
             };
 
             const result = await exportBuilderApi(payload);
@@ -151,7 +151,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     onValueChange={(value: string) => setSelectedStatus(value)}
                 />
                 <DateTimePicker
-                    onChange={(range: DateRange) => {
+                    onChange={(range: DateRangeIF) => {
                         setStartDate(range.startDate);
                         setEndDate(range.endDate);
                     }}
