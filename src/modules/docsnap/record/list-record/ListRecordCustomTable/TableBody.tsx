@@ -4,8 +4,10 @@ import { usePermissionStore } from '../../../../../zustand-store/PermissionStore
 import { Polink } from '../ListRecordComponent';
 import { ActionButtons } from './components/ActionButtons';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
+import { useNavigate } from 'react-router-dom';
 
 export const TableBody: React.FC = () => {
+    const navigate = useNavigate();
     const { state, setState } = useListRecordCustomTableState();
     const { checkPermission, user } = usePermissionStore();
 
@@ -19,11 +21,25 @@ export const TableBody: React.FC = () => {
             : [...state.selectedRows, row._id];
         setState(prev => ({ ...prev, selectedRows: updatedSelectedRows }));
     };
+    const rowClickHandler = (row: any, data: any) => {
+        const url = window.location.href;
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+            return;
+        }
+        if (module === 'contentCreation') {
+            navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
+            return;
+        }
+        navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
+        window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
+    };
     return (
         <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
             {state.records?.map((row: any, index: number) => {
                 return (
-                    <tr key={index}>
+                    <tr key={index} onClick={() => rowClickHandler(row, state.records)}>
                         <td className="px-5 py-4 whitespace-nowrap">
                             <input
                                 type="checkbox"
