@@ -46,6 +46,7 @@ export interface ListRecordPageStateIF {
     loadingRecords: boolean;
     records: any[];
     showExcelExportDialog: boolean;
+    assigningRecords: boolean;
 }
 
 const initialState = {
@@ -68,7 +69,8 @@ const initialState = {
     selectedIds: [],
     loadingRecords: false,
     records: [],
-    showExcelExportDialog: false
+    showExcelExportDialog: false,
+    assigningRecords: false
 };
 
 const ListRecordPage: React.FC = () => {

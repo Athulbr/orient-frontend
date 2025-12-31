@@ -48,6 +48,7 @@ const PageActionComponent: React.FC = () => {
     const [showSettings, setShowSettings] = useState(false);
     const [name, setName] = useState('');
     const [showNameDialog, setShowNameDialog] = useState(false);
+    const [loadingSettings, setLoadingSettings] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -148,8 +149,10 @@ const PageActionComponent: React.FC = () => {
     };
 
     const handleSubmitSettings = (e: any) => {
+        setLoadingSettings(true);
         setFormSettings(e);
         setShowSettings(false);
+        setLoadingSettings(false);
     };
 
     return (
@@ -188,6 +191,7 @@ const PageActionComponent: React.FC = () => {
                 name="Formbuilder Settings Form"
                 closeDialog={() => setShowSettings(false)}
                 onSubmit={handleSubmitSettings}
+                loadingPrimaryButton={loadingSettings}
             />
             <DialogComponent isOpen={showNameDialog} closeDialog={() => setShowNameDialog(false)} name="Formbuilder Name">
                 <div className="flex w-100 flex-col gap-4 p-4">

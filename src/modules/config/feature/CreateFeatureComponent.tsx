@@ -19,6 +19,7 @@ const CreateFeatureComponent: React.FC<CreateFeatureComponentIF> = () => {
             existingData={state.feature || {}}
             onSubmit={e => (state.feature ? updateFeatureApi(e) : createFeatureApi(e))}
             closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', feature: null }))}
+            loadingPrimaryButton={state.loading}
         />
     );
 };
