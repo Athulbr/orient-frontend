@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useListRecordCustomTableState } from '../hooks/listRecordCustomTableStateContext';
 import { useListRecordCustomTableApi } from '../hooks/useListRecordCustomTableApi';
@@ -7,20 +7,28 @@ import useTablepersistance from '../../../../../../hooks/useTablepersistance';
 interface SearchInputIF {}
 
 export const SearchInput: React.FC<SearchInputIF> = () => {
+
     const { state, setState } = useListRecordCustomTableState();
     const [isFocused, setIsFocused] = useState(false);
-    const { setSearchParam, getSearchFromQuery } = useTablepersistance();
-
+    const { setSearchParam } = useTablepersistance();
+    const [inputValue, setInputValue] = useState(state.searchText);
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        setState(prev => ({ ...prev, searchText: value, page: 1 }));
-        setSearchParam(value);
+        setInputValue(value);
+        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+        debounceTimeout.current = setTimeout(() => {
+            setState(prev => ({ ...prev, searchText: value, page: 1 }));
+            setSearchParam(value);
+        }, 400);
     };
 
     const handleClear = () => {
+        setInputValue('');
         setState(prev => ({ ...prev, searchText: '', page: 1 }));
         setSearchParam('');
+        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
 
     return (
@@ -33,7 +41,7 @@ export const SearchInput: React.FC<SearchInputIF> = () => {
                     isFocused ? 'border-blue-400' : 'border-gray-300'
                 }`}
                 placeholder="Search..."
-                value={state.searchText}
+                value={inputValue}
                 onChange={handleChange}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
