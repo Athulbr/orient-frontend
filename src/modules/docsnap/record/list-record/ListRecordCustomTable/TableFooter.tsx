@@ -1,6 +1,7 @@
 import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { useState } from 'react';
+import useTablepersistance from '../../../../../hooks/useTablepersistance';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 
 interface TableFooterIF {
@@ -10,6 +11,14 @@ interface TableFooterIF {
 const TableFooter: React.FC<TableFooterIF> = () => {
     const [showPageInput, setShowPageInput] = useState(false);
     const { state, setState } = useListRecordCustomTableState();
+    const { setPageQueryParam } = useTablepersistance();
+
+    // Helper to update both state and URL param
+    const handleSetPage = (page: number) => {
+        setState(prev => ({ ...prev, page }));
+        setPageQueryParam(page);
+    };
+
     return (
         <div className="flex justify-between">
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500 pl-2">
@@ -20,11 +29,11 @@ const TableFooter: React.FC<TableFooterIF> = () => {
             </div>
             <div className="relative mt-2 mr-4 flex items-center gap-2">
                 <Tooltip text="First Page" position="top">
-                    <PaginationButton onClick={() => setState(prev => ({ ...prev, page: 1 }))} disabled={false} icon={<ChevronsLeft className="h-4 w-4" />} />
+                    <PaginationButton onClick={() => handleSetPage(1)} disabled={false} icon={<ChevronsLeft className="h-4 w-4" />} />
                 </Tooltip>
                 <Tooltip text="Prev Page" position="top">
                     <PaginationButton
-                        onClick={() => setState(prev => ({ ...prev, page: prev.page - 1 }))}
+                        onClick={() => handleSetPage(state.page - 1)}
                         disabled={false}
                         icon={<ChevronLeft className="h-4 w-4" />}
                     />
@@ -36,14 +45,14 @@ const TableFooter: React.FC<TableFooterIF> = () => {
                 </span>
                 <Tooltip text="Next Page" position="top">
                     <PaginationButton
-                        onClick={() => setState(prev => ({ ...prev, page: prev.page + 1 }))}
+                        onClick={() => handleSetPage(state.page + 1)}
                         disabled={false}
                         icon={<ChevronRight className="h-4 w-4" />}
                     />
                 </Tooltip>
                 <Tooltip text="Last Page" position="top">
                     <PaginationButton
-                        onClick={() => setState(prev => ({ ...prev, page: Math.ceil(state.totalRecords / state.pageSize) }))}
+                        onClick={() => handleSetPage(Math.ceil(state.totalRecords / state.pageSize))}
                         disabled={false}
                         icon={<ChevronsRight className="h-4 w-4" />}
                     />
