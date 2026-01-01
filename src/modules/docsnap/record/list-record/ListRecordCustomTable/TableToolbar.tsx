@@ -20,8 +20,8 @@ const TableToolbar: React.FC<TableToolbarIF> = () => {
             <DateRangePicker />
             <StatusSelector />
             <PageSizeSelector />
-            <ValidatorSelector />
             <TemplateSelector />
+            <ValidatorSelector />
         </div>
     );
 };

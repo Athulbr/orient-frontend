@@ -3,17 +3,29 @@ import { useDocsnapStore } from '../../../../../zustand-store/DocsnapStore';
 import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi';
 import { useEffect } from 'react';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
+import { useExtractionStore } from '../../../../../zustand-store/extractionStore';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 
-interface TableHeaderIF {
-    columns: { label: string; visible?: boolean }[];
-}
+interface TableHeaderIF {}
 
-export const TableHeader: FC<TableHeaderIF> = ({ columns }) => {
-    const { refreshRecord } = useDocsnapStore();
+export const TableHeader: FC<TableHeaderIF> = () => {
+    const { refreshRecord } = useExtractionStore();
     const { state, setState } = useListRecordCustomTableState();
     const { getRecordsApi } = useListRecordCustomTableApi();
+    const { user, checkPermission } = usePermissionStore();
 
-    console.log('state:===========', state);
+    const columns = [
+        { label: 'Name', visible: true },
+        { label: 'Document Number', visible: true },
+        { label: 'Status', visible: true },
+        {
+            label: 'Polink',
+            visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
+        },
+        { label: 'Extracted By', visible: true },
+        { label: 'Processed Date', visible: true },
+        { label: 'Actions', visible: checkPermission('delete:record') || checkPermission('update:record') }
+    ];
 
     const { selectedStatuses, selectedTemplates, selectedValidator, searchText, startDate, endDate, pageSize, page } = state;
 

@@ -41,22 +41,7 @@ const initialState = {
 };
 
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
-    const { user } = usePermissionStore();
-
     const [state, setState] = useState<ListRecordCustomTableStateIF>(initialState);
-
-    const columns = [
-        { label: 'Name', visible: true },
-        { label: 'Document Number', visible: true },
-        { label: 'Status', visible: true },
-        {
-            label: 'Polink',
-            visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
-        },
-        { label: 'Extracted By', visible: true },
-        { label: 'Processed Date', visible: true },
-        { label: 'Actions', visible: true }
-    ];
 
     return (
         <ListRecordCustomTableStateProvider value={{ state, setState }}>
@@ -65,7 +50,7 @@ export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
                 <div className="h-full overflow-y-auto rounded-lg border">
                     <TableLineLoader />
                     <table className="min-w-full table-fixed">
-                        <TableHeader columns={columns} />
+                        <TableHeader />
                         <TableBody />
                     </table>
                 </div>

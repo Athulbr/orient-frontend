@@ -1,6 +1,7 @@
 import { formatDate } from '../../../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
 import { cn } from '../../../../../global-utils/twMerge';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { RecordStatusCustomUI } from '../components/RecordStatusCustomUI';
 import { Polink } from '../ListRecordComponent';
 import { ActionButtons } from './components/ActionButtons';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
@@ -56,7 +57,9 @@ export const TableBody: React.FC = () => {
                             <div className={cn(rowStyle)}>{row.documentNumber || 'N/A'}</div>
                         </td>
                         <td className="px-2 py-4 xl:px-5">
-                            <div className={cn(rowStyle)}>{row.status}</div>
+                            <div className={cn(rowStyle)}>
+                                <RecordStatusCustomUI data={row} />
+                            </div>
                         </td>
                         {showPolink && (
                             <td className="px-2 py-4 xl:px-5">
