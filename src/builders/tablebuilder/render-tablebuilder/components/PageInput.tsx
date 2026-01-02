@@ -12,10 +12,22 @@ const PageInput: React.FC<InputProps> = ({ page, totalPages, setPage, className 
     const [committed, setCommitted] = useState<boolean>(false);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const mirrorRef = useRef<HTMLSpanElement | null>(null);
+    const lastCallRef = useRef<number>(0);
+    const throttleTimeoutRef = useRef<number | null>(null);
+    const THROTTLE_MS = 500;
 
     useEffect(() => {
         setValue(String(page));
     }, [page]);
+
+    useEffect(() => {
+        return () => {
+            if (throttleTimeoutRef.current) {
+                window.clearTimeout(throttleTimeoutRef.current);
+                throttleTimeoutRef.current = null;
+            }
+        };
+    }, []);
 
     useLayoutEffect(() => {
         if (!inputRef.current || !mirrorRef.current) return;
@@ -67,6 +79,37 @@ const PageInput: React.FC<InputProps> = ({ page, totalPages, setPage, className 
         }
     };
 
+    const callSetPageIfValid = (val: string) => {
+        const parsed = Number(val);
+        if (!Number.isFinite(parsed) || parsed <= 0) return;
+
+        const clamped = Math.min(Math.max(1, Math.floor(parsed)), Math.max(1, totalPages || 1));
+        if (setPage) setPage(clamped);
+    };
+
+    const handleChange = (raw: string) => {
+        const sanitized = raw.replace(/[^0-9]/g, '');
+        setValue(sanitized);
+
+        // do not trigger API for empty input
+        if (!sanitized || !setPage) return;
+
+        const now = Date.now();
+        const since = now - (lastCallRef.current || 0);
+
+        if (since >= THROTTLE_MS) {
+            lastCallRef.current = now;
+            callSetPageIfValid(sanitized);
+        } else {
+            if (throttleTimeoutRef.current) window.clearTimeout(throttleTimeoutRef.current);
+            throttleTimeoutRef.current = window.setTimeout(() => {
+                lastCallRef.current = Date.now();
+                callSetPageIfValid(sanitized);
+                throttleTimeoutRef.current = null;
+            }, THROTTLE_MS - since) as unknown as number;
+        }
+    };
+
     const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
         if (e.key === 'Enter') commit();
     };
@@ -94,7 +137,7 @@ const PageInput: React.FC<InputProps> = ({ page, totalPages, setPage, className 
                     inputMode="numeric"
                     pattern="[0-9]*"
                     value={value}
-                    onChange={e => setValue(e.target.value.replace(/[^0-9]/g, ''))}
+                    onChange={e => handleChange(e.target.value)}
                     onBlur={commit}
                     onKeyDown={onKeyDown}
                     onFocus={onFocus}
