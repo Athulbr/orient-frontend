@@ -63,10 +63,9 @@ export const useDocumentCreationEditorApi = () => {
         try {
             const requestBody = { knowledgeBase: state.knowledgeBase, formFields: state.formFields };
             const response: any = await httpRequest('POST', `${config.mlServiceNodejs}/document-creation/fill-form-fields`, requestBody);
-            console.log('response:===========', response);
             setState(prev => ({ ...prev, formData: { ...prev.formData, ...response.data } }));
         } catch (error) {
-            console.log('error:===========', error);
+            console.error('error:===========', error);
         } finally {
             setState(prev => ({ ...prev, applyingKnowledgeBase: false }));
         }

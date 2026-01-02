@@ -17,7 +17,34 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
     const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi } = useViewRecordApi();
+
+    // Validate that all required object sub-fields have a value before save/submit
+    const validateRequiredFields = (): boolean => {
+        const templateFields = state.record?.templateId?.fields || [];
+
+        for (const field of templateFields) {
+            // Only object-type fields (rendered in RenderObjectFields) have subFields here
+            if (!field?.subFields?.length) continue;
+
+            const objectFieldValues = state.objectFields?.[field.jsonKey];
+            if (!objectFieldValues) continue;
+
+            for (const subField of field.subFields) {
+                if (!subField?.required) continue;
+
+                const currentValue = objectFieldValues?.[subField.jsonKey]?.value;
+                if (currentValue === undefined || currentValue === null || `${currentValue}`.trim() === '') {
+                    toast.error(`${subField.name || subField.jsonKey} is required and cannot be empty`);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    };
+
     const handleSubmit = async () => {
+        if (!validateRequiredFields()) return;
         await submitRecordApi();
     };
 
@@ -45,7 +72,6 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         }
 
         const data = await response.json();
-        console.log('data:===========', data);
 
         const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
         const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(accessToken)}`, {
@@ -166,7 +192,15 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 Cancel
             </Button>
             <Tooltip text="Save Updated Data">
-                <Button disabled={reExtracting} onClick={() => updateRecordApiById()} outlined small>
+                <Button
+                    disabled={reExtracting}
+                    onClick={async () => {
+                        if (!validateRequiredFields()) return;
+                        await updateRecordApiById();
+                    }}
+                    outlined
+                    small
+                >
                     Save
                 </Button>
             </Tooltip>

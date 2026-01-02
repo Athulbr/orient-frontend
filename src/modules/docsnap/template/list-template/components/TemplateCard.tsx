@@ -16,14 +16,16 @@ interface PropsIF {
     isLoading?: boolean;
     refreshPage?: () => void;
     flexBasis?: string;
+    exportTemplate?: (id: string) => void;
 }
 
-export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis }) => {
+export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis, exportTemplate }) => {
     const toast = useToastStore();
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
     const { checkPermission } = usePermissionStore();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [creatingRecord, setCreatingRecord] = useState(false);
 
     const module = sessionStorage.getItem('module');
 
@@ -31,8 +33,15 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         const deleteTemplateApi = async (id: string) => {
             try {
                 const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
-                refreshPage && refreshPage();
+                const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                    pageSize: 1000,
+                    custom: true,
+                    filters: { deleted: false }
+                });
+                window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
                 toast.success('Template deleted successfully');
+                window.location.reload();
+                return true;
             } catch (error) {
                 console.error('error:===========', error);
                 toast.error('Failed to delete Template');
@@ -44,6 +53,9 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                 primaryButtonText: 'Delete',
                 onPrimaryAction: () => deleteTemplateApi(template._id)
             });
+        }
+        if (option === 'Export') {
+            exportTemplate && exportTemplate(template._id);
         }
     };
 
@@ -85,7 +97,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     }
 
     const handleCreateRecord = async (data: any) => {
-        console.log('template:===========', template);
+        setCreatingRecord(true);
         const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
         const values: any = {};
         res.data?.fields?.forEach((field: any) => {
@@ -106,6 +118,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
         toast.success('Record created successfully');
         setShowCreateDialog(false);
+        setCreatingRecord(false);
         navigate('/docsnap/record/list');
     };
 
@@ -122,7 +135,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
             <div className="mb-2.5 flex w-full items-start justify-between">
                 <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
                 {checkPermission('delete:template') && (
-                    <Dropdown options={['Delete']} onChange={handleDropdownOptionChange}>
+                    <Dropdown options={exportTemplate ? ['Delete', 'Export'] : ['Delete']} onChange={handleDropdownOptionChange}>
                         <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
                             <MoreVertical size={18} />
                         </button>
@@ -164,7 +177,14 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                     {module === 'documentCreation' ? 'Create' : 'Upload'}
                 </Button>
             </div>
-            {showCreateDialog && <UseFormbuilder name="Create Record Form" closeDialog={() => setShowCreateDialog(false)} onSubmit={handleCreateRecord} />}
+            {showCreateDialog && (
+                <UseFormbuilder
+                    name="Create Record Form"
+                    closeDialog={() => setShowCreateDialog(false)}
+                    onSubmit={handleCreateRecord}
+                    loadingPrimaryButton={creatingRecord}
+                />
+            )}
         </div>
     );
 };

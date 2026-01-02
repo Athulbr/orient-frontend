@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { cn } from '../global-utils/twMerge';
 
 export interface SelectOption {
     value: string;
@@ -43,11 +44,11 @@ export const SingleSelect: React.FC<SelectProps> = ({
     const selectedOption = options.find(option => option.value === value);
 
     return (
-        <div ref={selectRef} className={`relative w-fit ${className}`}>
+        <div ref={selectRef} className={cn('relative w-fit', className)}>
             {label && <label className="pl-1 text-sm text-gray-500">{label}</label>}
             <button
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={`flex h-10 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-sm transition-all duration-200 ${isOpen ? 'border-blue-400' : 'border-gray-200'} ${value && value !== 'all' ? 'bg-blue-50' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-gray-400 focus:border-blue-400'}`}
+                className={`flex h-10 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-sm transition-all duration-200 ${isOpen ? 'border-blue-400' : 'border-gray-300'} ${value && value !== 'all' ? 'bg-blue-50' : ''} ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-gray-400 focus:border-blue-400'}`}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 disabled={disabled}
@@ -59,7 +60,7 @@ export const SingleSelect: React.FC<SelectProps> = ({
             </button>
             {isOpen && (
                 <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg">
-                    <ul className="max-h-60 overflow-auto py-1" role="listbox">
+                    <ul className="max-h-45 overflow-auto py-1" role="listbox">
                         {options.map(option => (
                             <li
                                 key={option.value}

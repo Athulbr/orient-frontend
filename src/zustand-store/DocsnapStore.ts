@@ -70,10 +70,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
 
                         if (!jsonString.trim()) continue;
 
-                        console.log('Processing line:', jsonString);
-
                         const parsed = JSON.parse(jsonString);
-                        console.log('Parsed data:', parsed);
 
                         const processingFiles = get().extractionQueue.filter(queue => queue.status !== 'Complete' && queue.status !== 'failed');
 
@@ -89,7 +86,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                 break;
 
                             case 'Connected':
-                                console.log('SSE connection established');
                                 updateQueue(fileName, { status: 'Processing' });
                                 break;
 
@@ -128,7 +124,6 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
             set({ refreshRecord: get().refreshRecord + 1 });
         }
         updateQueue(fileName, { status: 'Complete' });
-        console.log(`File ${fileName} processing completed successfully`);
     };
 
     // Helper function to handle errors
@@ -289,7 +284,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                         set({ refreshRecord: get().refreshRecord + 1 });
                                     }
                                 } catch (error) {
-                                    console.log('error:===========', error);
+                                    console.error('error:===========', error);
                                 }
                             }
                         });
@@ -415,7 +410,7 @@ export const useDocsnapStore = create<DocsnapStoreIF>((set, get) => {
                                         set({ refreshRecord: get().refreshRecord + 1 });
                                     }
                                 } catch (error) {
-                                    console.log('error:===========', error);
+                                    console.error('error:===========', error);
                                 }
                             }
                         });

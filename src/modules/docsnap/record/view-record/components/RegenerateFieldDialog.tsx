@@ -19,12 +19,14 @@ import { Send, Bot, User } from 'lucide-react';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
+import { cn } from '../../../../../global-utils/twMerge';
 
 interface Message {
     id: string;
     text: string;
     isUser: boolean;
     timestamp: Date;
+    error?: boolean;
 }
 
 interface RegenerateFieldDialogIF {
@@ -34,6 +36,7 @@ interface RegenerateFieldDialogIF {
 const RegenerateFieldDialog: React.FC<RegenerateFieldDialogIF> = () => {
     const { state, setState } = useViewRecordState();
     const { sendRegenerateMessage } = useViewRecordApi();
+    console.log('state:===========', state);
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -73,11 +76,28 @@ const RegenerateFieldDialog: React.FC<RegenerateFieldDialogIF> = () => {
 
         const chatList = [...messages, userMessage];
         const response: any = await sendRegenerateMessage({
-            context: state.record?.extractedData,
+            context: {
+                ...state.record?.extractedData?.product_information,
+                ...state.record?.extractedData?.descriptions_and_benefits,
+                ...state.record?.extractedData?.product_specifications
+            },
             chatList,
             userQuery: inputValue,
-            fieldLabel: state.showRegenerateFieldDialog?.fieldLabel
+            fieldLabel: state.showRegenerateFieldDialog?.fieldLabel,
+            innerText: state.inputText || ''
         });
+        if (!response) {
+            setIsTyping(false);
+            const aiMessage: Message = {
+                error: true,
+                id: Date.now().toString(),
+                text: 'Something went wrong',
+                isUser: false,
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, aiMessage]);
+            return;
+        }
         const aiMessage: Message = {
             id: Date.now().toString(),
             text: response.data?.answer,
@@ -145,9 +165,11 @@ const RegenerateFieldDialog: React.FC<RegenerateFieldDialogIF> = () => {
 
                                 {/* Message Bubble */}
                                 <div
-                                    className={`rounded-lg px-4 py-2 ${
-                                        message.isUser ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm border'
-                                    }`}
+                                    className={cn(
+                                        'rounded-lg px-4 py-2',
+                                        message.isUser ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm border',
+                                        message.error && 'text-red-500 border border-red-500'
+                                    )}
                                 >
                                     <p className="font-sans leading-relaxed">{message.text}</p>
                                     <div className={`text-xs mt-1 w-full  flex justify-between ${message.isUser ? 'text-blue-100' : 'text-gray-400'}`}>
@@ -155,7 +177,7 @@ const RegenerateFieldDialog: React.FC<RegenerateFieldDialogIF> = () => {
                                             hour: '2-digit',
                                             minute: '2-digit'
                                         })}
-                                        {!message.isUser && index > 0 && (
+                                        {!message.isUser && !message.error && index > 0 && (
                                             <div
                                                 onClick={() => chooseResponseHandler(message.text)}
                                                 className="border border-gray-300 rounded-lg px-2 py-1 hover:bg-gray-100 cursor-pointer hover:text-blue-600"

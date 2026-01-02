@@ -18,8 +18,15 @@ const PageActionsComponent: React.FC = () => {
         getPredefinedTemplatesApi();
     };
 
+    const importTemplate = () => {
+        setState({ ...state, showImportTemplateDialog: true });
+    };
+
     return (
         <div className="flex w-full justify-end gap-4">
+            <Button outlined onClick={importTemplate}>
+                Import Template
+            </Button>
             <div className=" h-10 w-full max-w-100 flex-1 items-center rounded-md border px-3  hidden md:flex">
                 <Search className="text-gray-500" size={20} />
                 <input

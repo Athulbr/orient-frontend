@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
@@ -15,6 +15,9 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
     const { state, setState } = useViewRecordState();
     const { fieldRefs, isScrollingRef } = refs;
 
+    // State to track field errors
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
     return (
         <>
             {Object.entries(state.objectFields).map(([key, valueMain]) => {
@@ -25,16 +28,38 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                             {Object.entries(valueMain).map(([subKey, value]) => {
                                 const fieldId = `objectFields:${key}:${subKey}`;
                                 const onChange = (e: any) => {
+                                    const newValue = e.target.value;
+
+                                    // Check if this field is required and log if it's being altered
+                                    if (isRequired) {
+                                        console.log('caught');
+
+                                        // Check if required field is empty and set error
+                                        if (!newValue || newValue.trim() === '') {
+                                            setFieldErrors(prev => ({
+                                                ...prev,
+                                                [fieldId]: 'This field is required and cannot be empty'
+                                            }));
+                                        } else {
+                                            // Clear error if field has value
+                                            setFieldErrors(prev => {
+                                                const updated = { ...prev };
+                                                delete updated[fieldId];
+                                                return updated;
+                                            });
+                                        }
+                                    }
+
                                     setState(prev => {
                                         const updated = prev.objectFields;
-                                        updated[key][subKey] = { ...updated[key][subKey], value: e.target.value };
+                                        updated[key][subKey] = { ...updated[key][subKey], value: newValue };
                                         return { ...prev, objectFields: updated };
                                     });
                                 };
 
                                 // console.log('state.templateFields:===========', state.templateFields);
 
-                                const { label, showRegenButton, validationUrl, showTextarea } = useMemo(() => {
+                                const { label, showRegenButton, validationUrl, showTextarea, isRequired } = useMemo(() => {
                                     const fields = state.record?.templateId?.fields;
                                     let field = fields?.find((item: any) => item.jsonKey === key);
 
@@ -44,14 +69,15 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                         label: subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey),
                                         showRegenButton: subField?.regenerateFieldValueWithAI || false,
                                         validationUrl: subField?.validationUrl || '',
-                                        showTextarea: subField?.showTextarea || false
+                                        showTextarea: subField?.showTextarea || false,
+                                        isRequired: subField?.required || false
                                     };
                                 }, [key, subKey]);
 
                                 return (
                                     <InputField
                                         key={fieldId}
-                                        label={label}
+                                        label={label === 'Price Method' ? 'Price Method (MAP/CALC/CSFP)' : label}
                                         showRegenButton={showRegenButton}
                                         validationUrl={validationUrl || label === "Manufacturer's URL" ? value?.value : ''}
                                         showTextarea={showTextarea}
@@ -60,6 +86,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                         confidence={`${value?.confidence * 100}`}
                                         checked={value?.checked}
                                         disabled={state.loadingS3File || state.reExtracting}
+                                        errorMessage={fieldErrors[fieldId] || ''}
                                         checkClickHandler={(checked: boolean) => {
                                             setState(prev => ({
                                                 ...prev,
@@ -105,7 +132,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                                 }));
                                             }
                                         }}
-                                        onChange={onChange}
+                                        onchange={onChange}
                                         handleRegenerateField={() =>
                                             setState(prev => ({
                                                 ...prev,

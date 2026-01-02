@@ -1,13 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
-import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
 
 export const useDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
     const navigate = useNavigate();
-
-    // console.log('extractionQueue:===========', extractionQueue);
 
     const addToDocumentExtractor = async (template: any, files: File[], rowData?: any) => {
         const sendApiRequestToNodeJsExtractor = async (file: File, template: any) => {
@@ -26,16 +23,25 @@ export const useDocumentExtractor = () => {
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
                 const formData = new FormData();
                 // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
+                formData.append('template', JSON.stringify(template)); // For only SLD module
                 formData.append('file', file);
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/extract-document`;
+                const templateType = template?.settings?.templateType;
+
+                const apiEndPoint = `${config.mlServiceNodejs}${templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : templateType === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
+
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
-                    headers: { authorization: `Bearer ${JSON.parse(token)}` },
+                    headers,
                     body: formData,
                     signal: abortController.signal
                 });
@@ -60,7 +66,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });
@@ -83,14 +89,20 @@ export const useDocumentExtractor = () => {
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
                 const formData = new FormData();
                 formData.append('template_id', template?._id);
                 formData.append('file', file);
                 const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document`;
 
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
+
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
-                    headers: { authorization: `Bearer ${JSON.parse(token)}` },
+                    headers,
                     body: formData,
                     signal: abortController.signal
                 });
@@ -100,13 +112,16 @@ export const useDocumentExtractor = () => {
                 }
 
                 const data = await response.json();
-                console.log('data:===========', data);
 
                 // Fetch the stream URL
                 const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                const streamHeaders: Record<string, string> = { authorization: `Bearer ${JSON.parse(accessToken)}` };
+                if (selectedTenant) {
+                    streamHeaders.tenantId = selectedTenant;
+                }
                 const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(accessToken)}`, {
                     method: 'GET',
-                    headers: { authorization: `Bearer ${JSON.parse(accessToken)}` },
+                    headers: streamHeaders,
                     signal: abortController.signal
                 });
 
@@ -119,7 +134,6 @@ export const useDocumentExtractor = () => {
                 }
 
                 const reader = streamResponse.body.getReader();
-                console.log('reader:===========', reader);
                 await processStream(reader, file.name, timer);
             } catch (error) {
                 console.error('API request error:', error);
@@ -130,7 +144,7 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(file.name, { status: 'failed' });
@@ -153,17 +167,23 @@ export const useDocumentExtractor = () => {
                 });
 
                 const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
 
                 const requestBody = {
                     templateId: template?._id,
                     rowData: rowData
                 };
 
-                const apiEndPoint = `${config.mlServiceNodejs}/docsnap/data-entry`;
+                const apiEndPoint = `${config.mlServiceNodejs}/data-entry/add-product`;
+
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
 
                 const response = await fetch(apiEndPoint, {
                     method: 'POST',
-                    headers: { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(requestBody)
                 });
 
@@ -187,16 +207,20 @@ export const useDocumentExtractor = () => {
 
                 // Handle abort separately
                 if (error instanceof Error && error.name === 'AbortError') {
-                    console.log('Request was aborted');
+                    console.error('Request was aborted');
                 }
 
                 updateExtractionQueue(rowData.SKU, { status: 'failed' });
             }
         };
 
-        if (template?.settings?.templateType === 'dataentry') {
+        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
+            // First, remove any existing entry for this file
             refreshExtractionQueue(rowData.SKU);
+            // Then add the new entry
             addToExtractionQueue(rowData.SKU);
+
+            // Finally, send the request
             sendApiRequestToDataEntry(rowData, template);
             navigate('/docsnap/record/list');
             return;
@@ -208,8 +232,8 @@ export const useDocumentExtractor = () => {
                 refreshExtractionQueue(file.name);
                 // Then add the new entry
                 addToExtractionQueue(file.name);
-                // Finally, send the request
 
+                // Finally, send the request
                 if (template?.settings?.extractionEngine === 'node') {
                     sendApiRequestToNodeJsExtractor(file, template);
                 } else {

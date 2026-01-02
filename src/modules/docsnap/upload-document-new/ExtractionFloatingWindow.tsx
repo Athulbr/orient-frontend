@@ -117,7 +117,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                             )}
                         >
                             <div className="flex justify-between items-center w-full">
-                                <div className="flex items-center">
+                                <div className="flex items-center max-w-[250px]">
                                     <p className="truncate text-sm">{file.fileName}</p>
                                     &nbsp;&nbsp;
                                     <span className="text-sm text-nowrap text-green-600">( {file.time}s )</span>
