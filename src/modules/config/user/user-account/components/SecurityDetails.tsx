@@ -33,6 +33,7 @@ export const SecurityDetails = () => {
                 isOpen={state.updatePasswordDialog}
                 closeDialog={() => setState(prev => ({ ...prev, updatePasswordDialog: false }))}
                 onSubmit={onSubmit}
+                loadingPrimaryButton={state.loadingUser}
             />
         </DetailsCard>
     );

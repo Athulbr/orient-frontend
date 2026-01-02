@@ -13,11 +13,13 @@ export const useSubscriptionModelsApi = () => {
 
     const createSubscriptionModelApi = async (payload: any) => {
         try {
+            setState(prev => ({ ...prev, loading: true }));
             const res = await httpRequest('POST', `${config.nodeApiUrl}/subscription/create`, payload);
-            setState(prev => ({ ...prev, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
+            setState(prev => ({ ...prev, loading: false, showCreateDialog: false, id: '', refresh: state.refresh + 1 }));
             toast.success('Subscription Model Created Successfully');
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, loading: false }));
             toast.error('Failed to Create Subscription Model');
         }
     };
@@ -30,6 +32,7 @@ export const useSubscriptionModelsApi = () => {
             toast.success('Subscription Model Updated Successfully');
         } catch (error) {
             console.error('error:===========', error);
+            setState(prev => ({ ...prev, loading: false }));
             toast.error('Failed to Update Subscription Model');
         }
     };

@@ -55,7 +55,6 @@ const getInitialState = (
 };
 
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
-    const { user } = usePermissionStore();
     const { getPageFromQuery, getPageSizeFromQuery, getSearchFromQuery, getDateRangeFromQuery, getFiltersFromQuery } = useTablepersistance();
     const [state, setState] = useState<ListRecordCustomTableStateIF>(() => getInitialState(
         getPageFromQuery,
@@ -65,19 +64,6 @@ export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
         getFiltersFromQuery
     ));
 
-    const columns = [
-        { label: 'Name', visible: true },
-        { label: 'Document Number', visible: true },
-        { label: 'Status', visible: true },
-        {
-            label: 'Polink',
-            visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
-        },
-        { label: 'Extracted By', visible: true },
-        { label: 'Processed Date', visible: true },
-        { label: 'Actions', visible: true }
-    ];
-
     return (
         <ListRecordCustomTableStateProvider value={{ state, setState }}>
             <div className={`bg-background dark:bg-background-dark flex min-w-[770px] flex-1 flex-col overflow-y-auto`}>
@@ -85,7 +71,7 @@ export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
                 <div className="h-full overflow-y-auto rounded-lg border">
                     <TableLineLoader />
                     <table className="min-w-full table-fixed">
-                        <TableHeader columns={columns} />
+                        <TableHeader />
                         <TableBody />
                     </table>
                 </div>

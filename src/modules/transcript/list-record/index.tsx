@@ -62,7 +62,7 @@ const ListRecordPage: React.FC = () => {
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const [submit, setSubmit] = useState(false);
-    const { createTranscript } = useTranscriptStore();
+    const { createTranscript, loading } = useTranscriptStore();
 
     const onSubmit = async (values: any) => {
         setSubmit(false);
@@ -91,6 +91,7 @@ const ListRecordPage: React.FC = () => {
                         name="Transcription"
                         closeDialog={() => setSubmit(false)}
                         onSubmit={(values: any) => onSubmit(values)}
+                        loadingPrimaryButton={loading}
                     />
                 )}
             </PageContainer>

@@ -38,6 +38,7 @@ export const BasicDetailsComponent = () => {
                 isOpen={state.updateNameDialog}
                 closeDialog={() => setState(prev => ({ ...prev, updateNameDialog: false }))}
                 onSubmit={onSubmit}
+                loadingPrimaryButton={state.loadingUser}
             />
         </>
     );

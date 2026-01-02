@@ -10,7 +10,7 @@ const templateList = JSON.parse(sessionStorage.getItem('templates') || '[]');
 const selectedTenant = sessionStorage.getItem('selectedTenant');
 const options: { label: string; value: string }[] = [];
 templateList.map((template: any) => {
-    if (selectedTenant === template.tenantId) {
+    if (selectedTenant === template.tenantId || !selectedTenant) {
         options.push({
             label: template.name,
             value: template._id
