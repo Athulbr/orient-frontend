@@ -1,16 +1,24 @@
 import { Edit, Trash2 } from 'lucide-react';
 import Tooltip from '../../../../../../components/Tooltip';
 import { useAlertStore } from '../../../../../../components/alert/AlertStore';
+import { useListRecordCustomTableApi } from '../hooks/useListRecordCustomTableApi';
 import { usePermissionStore } from '../../../../../../zustand-store/PermissionStore';
 
 export const ActionButtons: React.FC<{ row: any }> = ({ row }) => {
     const { checkPermission } = usePermissionStore();
     const alert = useAlertStore();
+    const { deleteRecordApi, updateRecordApi, getRecordsApi } = useListRecordCustomTableApi();
 
-    const handleEdit = (e: React.MouseEvent) => {
+    const handleEdit = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implement edit logic
-        console.log('Edit clicked for row:', row);
+        const newName = window.prompt('Edit record name', row?.name || '');
+        if (newName === null) return; // user cancelled
+        try {
+            await updateRecordApi({ name: newName }, row._id);
+            await getRecordsApi();
+        } catch (err) {
+            console.error('Failed to update record', err);
+        }
     };
     const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -18,10 +26,15 @@ export const ActionButtons: React.FC<{ row: any }> = ({ row }) => {
         alert.showAlert({
             alertText: 'Are you sure you want to delete this?',
             primaryButtonText: 'Delete',
-            onPrimaryAction: () => {
-                // TODO: Implement delete logic
-                console.log('Delete clicked for row:', row);
-                alert.closeAlert();
+            onPrimaryAction: async () => {
+                try {
+                    await deleteRecordApi(row._id);
+                } catch (err) {
+                    // deleteRecordApi shows toast on failure; still catch to avoid unhandled rejection
+                    console.error('Delete failed', err);
+                } finally {
+                    alert.closeAlert();
+                }
             }
         });
     };
