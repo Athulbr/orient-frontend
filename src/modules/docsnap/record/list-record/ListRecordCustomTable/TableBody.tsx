@@ -46,6 +46,7 @@ export const TableBody: React.FC = () => {
                                 type="checkbox"
                                 checked={state.selectedRows.includes(row._id)}
                                 onChange={() => handleRowSelect(row)}
+                                onClick={(e) => e.stopPropagation()}
                                 className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
                             />
                         </td>
