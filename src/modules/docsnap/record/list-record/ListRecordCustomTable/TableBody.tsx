@@ -72,7 +72,7 @@ export const TableBody: React.FC = () => {
                         <td className="px-2 py-4 xl:px-5">
                             <div className={cn(rowStyle)}>{formatDate(row.updatedAt)}</div>
                         </td>
-                        <td className="px-2 py-4 xl:px-5">
+                        <td className="px-2 py-4 xl:px-5 flex items-center justify-center">
                             <ActionButtons row={row} />
                         </td>
                     </tr>

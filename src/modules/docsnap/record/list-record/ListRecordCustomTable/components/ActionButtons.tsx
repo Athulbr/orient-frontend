@@ -9,17 +9,17 @@ export const ActionButtons: React.FC<{ row: any }> = ({ row }) => {
     const alert = useAlertStore();
     const { deleteRecordApi, updateRecordApi, getRecordsApi } = useListRecordCustomTableApi();
 
-    const handleEdit = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const newName = window.prompt('Edit record name', row?.name || '');
-        if (newName === null) return; // user cancelled
-        try {
-            await updateRecordApi({ name: newName }, row._id);
-            await getRecordsApi();
-        } catch (err) {
-            console.error('Failed to update record', err);
-        }
-    };
+    // const handleEdit = async (e: React.MouseEvent) => {
+    //     e.stopPropagation();
+    //     const newName = window.prompt('Edit record name', row?.name || '');
+    //     if (newName === null) return; // user cancelled
+    //     try {
+    //         await updateRecordApi({ name: newName }, row._id);
+    //         await getRecordsApi();
+    //     } catch (err) {
+    //         console.error('Failed to update record', err);
+    //     }
+    // };
     const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation();
 
@@ -41,11 +41,11 @@ export const ActionButtons: React.FC<{ row: any }> = ({ row }) => {
 
     return (
         <div className={`flex gap-4`}>
-            {checkPermission('update:record') && (
+            {/* {checkPermission('update:record') && (
                 <Tooltip text="Edit" position="bottom">
                     <Edit onClick={handleEdit} className="cursor-pointer hover:text-blue-500" size={18} />
                 </Tooltip>
-            )}
+            )} */}
             {checkPermission('delete:record') && (
                 <Tooltip text="Delete" position="bottom">
                     <Trash2 onClick={handleDelete} className="cursor-pointer hover:text-red-500" size={18} />
