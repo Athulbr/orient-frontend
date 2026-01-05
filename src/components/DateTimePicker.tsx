@@ -3,13 +3,13 @@ import { Button } from './Button';
 import { DialogComponent } from './DialogComponent';
 
 // Define the shape of the data sent back to the parent
-export interface DateRange {
+export interface DateRangeIF {
     startDate: string;
     endDate: string;
 }
 
 interface DateTimePickerProps {
-    onChange: (range: DateRange) => void;
+    onChange: (range: DateRangeIF) => void;
     initialStartDate?: string;
     initialEndDate?: string;
     minDate?: string;
@@ -136,7 +136,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
             }
         }
 
-        const payload: DateRange = {
+        const payload: DateRangeIF = {
             startDate: toLocalISOStringWithOffset(startValue),
             endDate: toLocalISOStringWithOffset(endValue)
         };
@@ -160,12 +160,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
             <Button outlined onClick={() => setShowDialog(true)}>
                 Select Date Range
             </Button>
-            <DialogComponent name="Select Date Range" isOpen={showDialog} className="w-150" closeDialog={() => setShowDialog(false)}>
-                <div className="w-full p-6 bg-white border border-gray-200 rounded-xl shadow-lg transition-shadow duration-200">
-                    <div className="space-y-5" onKeyPress={handleKeyPress}>
+            <DialogComponent name="Select Date Range" isOpen={showDialog} className="w-120" closeDialog={() => setShowDialog(false)}>
+                <div className="w-full p-4 bg-white transition-shadow duration-200">
+                    <div className="space-y-5" onKeyDown={handleKeyPress} tabIndex={0}>
                         {/* Start Date Input */}
                         <div className="group">
-                            <label htmlFor="start-date" className="block text-sm font-semibold text-gray-700 mb-1">
+                            <label htmlFor="start-date" className="block text-sm text-gray-700 mb-1 pl-2">
                                 Start Date & Time
                             </label>
                             <input
@@ -178,13 +178,13 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                                 disabled={disabled}
                                 aria-describedby={error ? 'date-error' : undefined}
                                 aria-invalid={error ? 'true' : 'false'}
-                                className="w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 shadow-sm transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500  transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </div>
 
                         {/* End Date Input */}
                         <div className="group">
-                            <label htmlFor="end-date" className="block text-sm font-semibold text-gray-700 mb-1">
+                            <label htmlFor="end-date" className="block text-sm text-gray-700 mb-1 pl-2">
                                 End Date & Time
                             </label>
                             <input
@@ -197,7 +197,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                                 disabled={disabled}
                                 aria-describedby={error ? 'date-error' : undefined}
                                 aria-invalid={error ? 'true' : 'false'}
-                                className="w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 shadow-sm transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500  transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </div>
 

@@ -329,3 +329,159 @@ const GraphComponent: React.FC<GraphComponentProps> = ({ labels, datasets }) => 
 };
 
 export default GraphComponent;
+
+const sampleRecord = {
+    _id: '6954b9af236f206129a77bea',
+    name: 'PO_Private_45049798224.pdf',
+    templateId: {
+        name: 'Purchase Order - Private',
+        docType: 'purchase_order',
+        primaryModel: 'openai',
+        documentDateKey: '',
+        documentNumberKey: ''
+    },
+    extractedData: {
+        basic_details: {
+            po_number: {
+                value: '4504979822',
+                bbox: {
+                    x_min: 0.4188235294,
+                    y_min: 0.1184848485,
+                    x_max: 0.6415686275,
+                    y_max: 0.1272727273
+                },
+                page: 1,
+                confidence: 0.9791,
+                index: 19,
+                wordIndexes: [19, 20, 21]
+            },
+            total_amount: {
+                value: 421.02,
+                bbox: {
+                    x_min: 0.9235294118,
+                    y_min: 0.5893939394,
+                    x_max: 0.9670588235,
+                    y_max: 0.5972727273
+                },
+                page: 1,
+                confidence: 0.9895,
+                index: 348,
+                wordIndexes: [348]
+            }
+        },
+        line_items: [
+            {
+                sku_number: {
+                    value: 'FEI-10-5676',
+                    bbox: {
+                        x_min: 0.2690196078,
+                        y_min: 0.4412121212,
+                        x_max: 0.3321568627,
+                        y_max: 0.4506060606
+                    },
+                    page: 1,
+                    confidence: 0.9423,
+                    index: 262,
+                    wordIndexes: [262, 263, 264]
+                },
+                quantity: {
+                    value: 2,
+                    bbox: {
+                        x_min: 0.5933333333,
+                        y_min: 0.4287878788,
+                        x_max: 0.6019607843,
+                        y_max: 0.4363636364
+                    },
+                    page: 1,
+                    confidence: 0.9814,
+                    index: 253,
+                    wordIndexes: [253]
+                },
+                unit_price: {
+                    value: 64.44,
+                    bbox: {
+                        x_min: 0.8062745098,
+                        y_min: 0.4287878788,
+                        x_max: 0.8380392157,
+                        y_max: 0.4354545455
+                    },
+                    page: 1,
+                    confidence: 0.969,
+                    index: 256,
+                    wordIndexes: [256]
+                },
+                total_price: {
+                    value: 128.88,
+                    bbox: {
+                        x_min: 0.9298039216,
+                        y_min: 0.4278787879,
+                        x_max: 0.9674509804,
+                        y_max: 0.4354545455
+                    },
+                    page: 1,
+                    confidence: 0.9871,
+                    index: 257,
+                    wordIndexes: [257]
+                }
+            },
+            {
+                sku_number: {
+                    value: 'FEI-10-5677',
+                    bbox: {
+                        x_min: 0.2694117647,
+                        y_min: 0.4939393939,
+                        x_max: 0.3317647059,
+                        y_max: 0.5033333333
+                    },
+                    page: 1,
+                    confidence: 0.964,
+                    index: 295,
+                    wordIndexes: [295, 296, 297]
+                },
+                quantity: {
+                    value: 2,
+                    bbox: {
+                        x_min: 0.5933333333,
+                        y_min: 0.4818181818,
+                        x_max: 0.6019607843,
+                        y_max: 0.4890909091
+                    },
+                    page: 1,
+                    confidence: 0.9829,
+                    index: 286,
+                    wordIndexes: [286]
+                },
+                unit_price: {
+                    value: 69.98,
+                    bbox: {
+                        x_min: 0.8058823529,
+                        y_min: 0.4815151515,
+                        x_max: 0.8380392157,
+                        y_max: 0.4884848485
+                    },
+                    page: 1,
+                    confidence: 0.9848,
+                    index: 289,
+                    wordIndexes: [289]
+                },
+                total_price: {
+                    value: 139.96,
+                    bbox: {
+                        x_min: 0.9294117647,
+                        y_min: 0.4812121212,
+                        x_max: 0.9682352941,
+                        y_max: 0.4884848485
+                    },
+                    page: 1,
+                    confidence: 0.9915,
+                    index: 290,
+                    wordIndexes: [290]
+                }
+            }
+        ]
+    },
+    status: 'extracted',
+    extractedBy: 'vinayak admin  ',
+    createdAt: '2025-12-31T05:50:39.126Z',
+    updatedAt: '2025-12-31T05:50:39.126Z'
+};

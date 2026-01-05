@@ -25,6 +25,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     const { showAlert } = useAlertStore();
     const { checkPermission } = usePermissionStore();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
+    const [creatingRecord, setCreatingRecord] = useState(false);
 
     const module = sessionStorage.getItem('module');
 
@@ -96,6 +97,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     }
 
     const handleCreateRecord = async (data: any) => {
+        setCreatingRecord(true);
         const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
         const values: any = {};
         res.data?.fields?.forEach((field: any) => {
@@ -116,6 +118,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
         await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
         toast.success('Record created successfully');
         setShowCreateDialog(false);
+        setCreatingRecord(false);
         navigate('/docsnap/record/list');
     };
 
@@ -174,7 +177,14 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                     {module === 'documentCreation' ? 'Create' : 'Upload'}
                 </Button>
             </div>
-            {showCreateDialog && <UseFormbuilder name="Create Record Form" closeDialog={() => setShowCreateDialog(false)} onSubmit={handleCreateRecord} />}
+            {showCreateDialog && (
+                <UseFormbuilder
+                    name="Create Record Form"
+                    closeDialog={() => setShowCreateDialog(false)}
+                    onSubmit={handleCreateRecord}
+                    loadingPrimaryButton={creatingRecord}
+                />
+            )}
         </div>
     );
 };

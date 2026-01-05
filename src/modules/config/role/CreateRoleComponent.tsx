@@ -18,6 +18,7 @@ const CreteRoleComponent: React.FC<CreteRoleComponentIF> = () => {
             existingData={state.role || {}}
             onSubmit={e => (state.role ? updateRoleApi(e) : createRoleApi(e))}
             closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', role: null }))}
+            loadingPrimaryButton={state.loading}
         />
     );
 };

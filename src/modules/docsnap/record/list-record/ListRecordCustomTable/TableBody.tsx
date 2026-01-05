@@ -1,59 +1,79 @@
-import { useListRecordPageState } from '../hooks/listRecordPageContext';
+import { formatDate } from '../../../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
+import { cn } from '../../../../../global-utils/twMerge';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { RecordStatusCustomUI } from '../components/RecordStatusCustomUI';
+import { Polink } from '../ListRecordComponent';
+import { ActionButtons } from './components/ActionButtons';
+import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
+import { useNavigate } from 'react-router-dom';
 
-interface TableBodyIF {
-    columns: { label: string; key: string }[];
-}
+export const TableBody: React.FC = () => {
+    const navigate = useNavigate();
+    const { state, setState } = useListRecordCustomTableState();
+    const { checkPermission, user } = usePermissionStore();
 
-export const TableBody: React.FC<TableBodyIF> = ({ columns }) => {
-    const { state } = useListRecordPageState();
-    const data = [
-        {
-            name: 'John Doe',
-            email: 'john.doe@example.com',
-            phone: '123-456-7890',
-            address: '123 Main St',
-            actions: 'Edit'
-        },
-        {
-            name: 'John Doe',
-            email: 'john.doe@example.com',
-            phone: '123-456-7890',
-            address: '123 Main St',
-            actions: 'Edit'
-        },
-        {
-            name: 'John Doe',
-            email: 'john.doe@example.com',
-            phone: '123-456-7890',
-            address: '123 Main St',
-            actions: 'Edit'
+    const rowStyle = 'w-fit max-w-[300px] min-w-[80px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm';
+
+    const showPolink = String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart';
+
+    const handleRowSelect = (row: any) => {
+        const updatedSelectedRows = state.selectedRows.includes(row._id)
+            ? state.selectedRows.filter((id: string) => id !== row._id)
+            : [...state.selectedRows, row._id];
+        setState(prev => ({ ...prev, selectedRows: updatedSelectedRows }));
+    };
+    const rowClickHandler = (row: any, data: any) => {
+        const url = window.location.href;
+        const module = sessionStorage.getItem('module');
+        if (module === 'documentCreation') {
+            navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+            return;
         }
-    ];
+        if (module === 'contentCreation') {
+            navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
+            return;
+        }
+        navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
+        window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
+    };
     return (
         <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
             {state.records?.map((row: any, index: number) => {
                 return (
-                    <tr
-                        // onClick={e => rowClickHandler(e, row)}
-                        key={index}
-                        // className={selectedIds.includes(row._id) && rowSelection.enableRowHighlight ? 'bg-blue-50' : ''}
-                    >
-                        <td onClick={e => e.stopPropagation()} className="px-5 py-4 whitespace-nowrap">
+                    <tr key={index} onClick={() => rowClickHandler(row, state.records)}>
+                        <td className="px-5 py-4 whitespace-nowrap">
                             <input
                                 type="checkbox"
+                                checked={state.selectedRows.includes(row._id)}
+                                onChange={() => handleRowSelect(row)}
                                 className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
-                                // checked={selectedIds.includes(row._id)}
-                                // onChange={e => rowCheckHandler(e, row._id)} // handleSelectRow(row._id, e.target.checked); todo
                             />
                         </td>
 
-                        <td key={index + 5} className="px-2 py-4 xl:px-5">
-                            <div className={`w-fit max-w-[300px] min-w-[80px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm `}>{row.name}</div>
+                        <td className="px-2 py-4 xl:px-5">
+                            <div className={cn(rowStyle)}>{row.name}</div>
                         </td>
-                        <td key={index + 5} className="px-2 py-4 xl:px-5">
-                            <div className={`w-fit max-w-[300px] min-w-[80px] truncate text-xs whitespace-nowrap text-gray-800 lg:text-sm `}>
-                                {row.extractedBy}
+                        <td className="px-2 py-4 xl:px-5">
+                            <div className={cn(rowStyle)}>{row.documentNumber || 'N/A'}</div>
+                        </td>
+                        <td className="px-2 py-4 xl:px-5">
+                            <div className={cn(rowStyle)}>
+                                <RecordStatusCustomUI data={row} />
                             </div>
+                        </td>
+                        {showPolink && (
+                            <td className="px-2 py-4 xl:px-5">
+                                <Polink />
+                            </td>
+                        )}
+                        <td className="px-2 py-4 xl:px-5">
+                            <div className={cn(rowStyle)}>{row.extractedBy || 'N/A'}</div>
+                        </td>
+                        <td className="px-2 py-4 xl:px-5">
+                            <div className={cn(rowStyle)}>{formatDate(row.updatedAt)}</div>
+                        </td>
+                        <td className="px-2 py-4 xl:px-5">
+                            <ActionButtons row={row} />
                         </td>
                     </tr>
                 );
