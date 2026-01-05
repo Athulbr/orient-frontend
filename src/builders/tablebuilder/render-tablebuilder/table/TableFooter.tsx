@@ -85,7 +85,9 @@ const PaginationComponent = () => {
             <Tooltip text="Prev Page" position="top">
                 <PaginationButton onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} icon={<ChevronLeft className="h-4 w-4" />} />
             </Tooltip>
-
+           {/* <span className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
+                Page {page} of {totalPages}
+            </span> */}
             <PageInput page={page} totalPages={totalPages} setPage={setPage} />
             <Tooltip text="Next Page" position="top">
                 <PaginationButton
