@@ -1,5 +1,6 @@
 import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
+import PageInput from '../../../../../builders/tablebuilder/render-tablebuilder/components/PageInput';
 import { useState } from 'react';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 
@@ -30,10 +31,15 @@ const TableFooter: React.FC<TableFooterIF> = () => {
                     />
                 </Tooltip>
 
-                <span onClick={() => setShowPageInput(true)} className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
+                {/* <span onClick={() => setShowPageInput(true)} className="cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm hover:bg-gray-50">
                     Page {showPageInput ? <input type="number" min="1" max="5" defaultValue="1" className="w-10 text-center border rounded" /> : state.page} of{' '}
                     {Math.ceil(state.totalRecords / state.pageSize)}
-                </span>
+                </span> */}
+                <PageInput
+                    page={state.page}
+                    totalPages={Math.ceil(state.totalRecords / state.pageSize)}
+                    setPage={pageNumber => setState(prev => ({ ...prev, page: pageNumber }))}
+                />
                 <Tooltip text="Next Page" position="top">
                     <PaginationButton
                         onClick={() => setState(prev => ({ ...prev, page: prev.page + 1 }))}
