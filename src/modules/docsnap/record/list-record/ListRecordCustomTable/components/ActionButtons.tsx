@@ -7,7 +7,7 @@ import { usePermissionStore } from '../../../../../../zustand-store/PermissionSt
 export const ActionButtons: React.FC<{ row: any }> = ({ row }) => {
     const { checkPermission } = usePermissionStore();
     const alert = useAlertStore();
-    const { deleteRecordApi, updateRecordApi, getRecordsApi } = useListRecordCustomTableApi();
+    const { deleteRecordApi } = useListRecordCustomTableApi();
 
     // const handleEdit = async (e: React.MouseEvent) => {
     //     e.stopPropagation();
