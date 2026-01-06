@@ -53,6 +53,7 @@ export const useListRecordCustomTableApi = () => {
     const deleteRecordApi = async (id: string) => {
         try {
             const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/history/delete/${id}`);
+            await getRecordsApi();
             updateRefreshRecord();
             toast.success('Record deleted successfully');
         } catch (error) {
