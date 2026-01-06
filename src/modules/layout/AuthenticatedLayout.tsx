@@ -1,8 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import HeaderComponent from './Header';
-import httpRequest from '../../global-utils/httpRequest';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
-import { useSettingsStore } from '../../zustand-store/SettingsStore';
 import { SidebarComponent } from './Sidebar';
 interface AuthenticatedLayoutIF {
     children: ReactNode;
@@ -11,7 +9,6 @@ interface AuthenticatedLayoutIF {
 const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     const [showSidebar, setShowSidebar] = useState(false);
     const { setPermissions } = usePermissionStore();
-    const { getUserSettings } = useSettingsStore();
 
     const updateRolePermission = async () => {
         const permissions: any = sessionStorage.getItem('permissions');
@@ -20,9 +17,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         });
         setPermissions(features);
     };
-    const updateUserSettingsHandler = async () => {
-        await getUserSettings();
-    };
+    const updateUserSettingsHandler = async () => {};
 
     useEffect(() => {
         updateRolePermission();

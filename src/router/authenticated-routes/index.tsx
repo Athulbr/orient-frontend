@@ -26,53 +26,53 @@ const AuthenticatedRoutes = () => {
     const module = docsnapModule
         ? 'docsnap'
         : dataEntryModule
-          ? 'dataentry'
+          ? 'data-entry'
           : transcriptModule
-            ? 'transcript'
+            ? 'transcription'
             : sldModule
               ? 'sld'
               : documentCreationModule
-                ? 'documentCreation'
+                ? 'document-creation'
                 : ppeDetectionModule
-                  ? 'ppeDetection'
+                  ? 'ppe-detection'
                   : invoiceTracking
-                    ? 'invoiceTracking'
+                    ? 'invoice-tracking'
                     : contentCreation
-                      ? 'contentCreation'
+                      ? 'content-creation'
                       : 'docsnap';
     sessionStorage.setItem('module', module);
     const paths = {
         docsnap: '/docsnap',
-        dataentry: '/dataentry',
-        transcript: '/transcript',
+        'data-entry': '/data-entry',
+        transcription: '/transcription',
         sld: '/sld',
-        documentCreation: '/document-creation',
-        ppeDetection: '/ppe-detection',
-        invoiceTracking: '/invoice-tracking',
-        contentCreation: 'content-creation'
+        'document-creation': '/document-creation',
+        'ppe-detection': '/ppe-detection',
+        'invoice-tracking': '/invoice-tracking',
+        'content-creation': 'content-creation'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
-                <Route path="dataentry/*" element={<DocSnapRoutes />} />
+                <Route path="data-entry/*" element={<DocSnapRoutes />} />
                 <Route path="sld/*" element={<DocSnapRoutes />} />
                 <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="content-creation/*" element={<DocSnapRoutes />} />
                 <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
-                <Route path="/transcript/record/*" element={<MedicalCodeRoutes />} />
-                <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
-                <Route path="/invoice-tracking" element={<DashboardPage module="invoiceTracking" />} />
-                <Route path="/transcript" element={<DashboardPage module="transcript" />} />
-                <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
-                <Route path="/sld" element={<DashboardPage module="sld" />} />
-                <Route path="/document-creation" element={<DashboardPage module="documentCreation" />} />
+                <Route path="/transcription/record/*" element={<MedicalCodeRoutes />} />
+                <Route path="/docsnap" element={<DashboardPage />} />
+                <Route path="/invoice-tracking" element={<DashboardPage />} />
+                <Route path="/transcription" element={<DashboardPage />} />
+                <Route path="/data-entry" element={<DashboardPage />} />
+                <Route path="/sld" element={<DashboardPage />} />
+                <Route path="/document-creation" element={<DashboardPage />} />
                 <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
-                <Route path="/ppe-detection" element={<DashboardPage module="ppeDetection" />} />
+                <Route path="/ppe-detection" element={<DashboardPage />} />
                 <Route path="/content-creation/view-content/:id" element={<ContentCreationEditor />} />
-                <Route path="/content-creation" element={<DashboardPage module="contentCreation" />} />
+                <Route path="/content-creation" element={<DashboardPage />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

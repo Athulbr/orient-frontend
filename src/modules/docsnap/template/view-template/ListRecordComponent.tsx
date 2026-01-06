@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useViewTemplateState } from './hooks/viewTemplateContext';
 import { useViewTemplateApi } from './hooks/useViewTemplateApi';
-import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
 import { UseTablebuilder } from '../../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
 import { RecordStatusCustomUI } from '../../record/list-record/components/RecordStatusCustomUI';
 import { useParams } from 'react-router-dom';
+import { useExtractionStore } from '../../../../zustand-store/extractionStore';
 
 export const ListRecordComponent: React.FC = () => {
     const { state, setState } = useViewTemplateState();
@@ -13,7 +13,7 @@ export const ListRecordComponent: React.FC = () => {
     const navigate = useNavigate();
     const { deleteTemplateApi } = useViewTemplateApi();
 
-    const { refreshRecord } = useDocsnapStore();
+    const { refreshRecord } = useExtractionStore();
 
     useEffect(() => {
         if (refreshRecord === 10) return;

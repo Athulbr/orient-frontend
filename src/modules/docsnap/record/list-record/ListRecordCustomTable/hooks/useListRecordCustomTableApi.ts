@@ -2,12 +2,12 @@ import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../../global-utils/httpRequest';
 import { useListRecordCustomTableState } from './listRecordCustomTableStateContext';
 import { config } from '../../../../../../config/default';
-import { useDocsnapStore } from '../../../../../../zustand-store/DocsnapStore';
+import { useExtractionStore } from '../../../../../../zustand-store/extractionStore';
 
 export const useListRecordCustomTableApi = () => {
     const toast = useToastStore();
     const { state, setState } = useListRecordCustomTableState();
-    const { updateRefreshRecord } = useDocsnapStore();
+    const { updateRefreshRecord } = useExtractionStore();
 
     // ============================= CREATE ==================================
     const getRecordsApi = async () => {

@@ -36,10 +36,6 @@ const ListTablebuilderPage = lazy(() => import('../../../modules/config/tablebui
 const ListTenantPage = lazy(() => import('../../../modules/config/tenant'));
 const ListCommentPage = lazy(() => import('../../../modules/docsnap/comment/ListCommentPage'));
 const ListUserPage = lazy(() => import('../../../modules/config/user/list-user'));
-const UserPreferencePage = lazy(() => import('../../../modules/config/workspace-settings/UserPreferencePage'));
-const TenantSettingsPage = lazy(() => import('../../../modules/config/tenant/tenant-settings'));
-const DocsnapSettingsPage = lazy(() => import('../../../modules/docsnap/docsnap-settings'));
-// const TranscriptionPage = lazy(() => import('../../../modules/transcript/create'));
 
 const ConfigRoutes = () => {
     const navigate = useNavigate();
@@ -55,7 +51,6 @@ const ConfigRoutes = () => {
                         <Route path="subscription-model/list" element={<ListSubscriptionModelPage />} />
                         <Route path="feature/list" element={<ListFeaturePage />} />
                         <Route path="tenant/list" element={<ListTenantPage />} />
-                        <Route path="tenant-settings" element={<TenantSettingsPage />} />
                         <Route path="module/list" element={<ListModulePage />} />
                         <Route path="formbuilder/*" element={<FormbuilderRoutes />} />
                         <Route path="tablebuilder/list" element={<ListTablebuilderPage />} />
@@ -64,9 +59,7 @@ const ConfigRoutes = () => {
                         <Route path="project/list" element={<ListProjectPage />} />
                         <Route path="prompt-tuning" element={<UpdatedFieldsListPage />} />
                         <Route path="user/list" element={<ListUserPage />} />
-                        <Route path="user-preference" element={<UserPreferencePage />} />
                         <Route path="comment/*" element={<ListCommentPage />} />
-                        <Route path="docsnap-settings" element={<DocsnapSettingsPage />} />
                         {/* <Route path="transcript" element={<TranscriptionPage />} /> */}
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>
