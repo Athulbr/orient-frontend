@@ -39,7 +39,9 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             const loadedFilters = (state.exportbuilder.filters || []).map((f: any) => ({
                 id: f.id || generateId(),
                 key: f.key || '',
-                jsonPath: f.jsonPath
+                jsonPath: f.jsonPath,
+                options: f.options || [],
+                rawOptions: f.options ? (Array.isArray(f.options) ? f.options.join(',') : String(f.options)) : ''
             }));
             setFilters(loadedFilters);
         }
@@ -66,7 +68,8 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             description: data?.description || '',
             sheets: sheets,
             filters: filters.map(f => ({ 
-                jsonPath: f.jsonPath
+                jsonPath: f.jsonPath,
+                ...(f.options && f.options.length ? { options: f.options } : {})
             }))
         };
 

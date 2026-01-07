@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Plus,
     Filter as FilterIcon,
@@ -18,6 +18,8 @@ export interface FilterItemIF {
     id: string;
     key: string;
     jsonPath?: string;
+    options?: string[];
+    rawOptions?: string;
 }
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -40,11 +42,13 @@ export const FiltersBuilder: React.FC<FiltersBuilderProps> = ({ filters, setFilt
             id: generateId(),
             key: '',
             jsonPath: ''
+            ,options: [],
+            rawOptions: ''
         };
         setFilters([...filters, newFilter]);
     };
 
-    const updateFilter = (filterId: string, field: keyof FilterItemIF, value: string) => {
+    const updateFilter = (filterId: string, field: keyof FilterItemIF, value: any) => {
         setFilters(prev =>
             prev.map(f => (f.id === filterId ? { ...f, [field]: value } : f))
         );
@@ -64,6 +68,44 @@ export const FiltersBuilder: React.FC<FiltersBuilderProps> = ({ filters, setFilt
 
     const moveFilterLeft = (index: number) => moveFilter(index, index - 1);
     const moveFilterRight = (index: number) => moveFilter(index, index + 1);
+
+    // Initialize options for all filters from inputData when component mounts
+    useEffect(() => {
+        if (!inputData) return;
+        // only run when there are filters
+        if (!filters || filters.length === 0) return;
+
+        const items = Array.isArray(inputData) ? inputData : [inputData];
+
+        const getValueByPath = (obj: any, path?: string) => {
+            if (!path) return undefined;
+            return path.split('.').reduce((acc: any, key: string) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+        };
+
+        let needUpdate = false;
+        const updated = filters.map(f => {
+            // don't override if user already provided rawOptions or options
+            if ((f.rawOptions && f.rawOptions.trim()) || (f.options && f.options.length > 0)) return f;
+            if (!f.jsonPath) return f;
+
+            const collected: any[] = [];
+            for (const it of items) {
+                const val = getValueByPath(it, f.jsonPath);
+                if (val === undefined || val === null) continue;
+                if (Array.isArray(val)) collected.push(...val);
+                else collected.push(val);
+            }
+
+            const normalized = Array.from(new Set(collected.map((v: any) => (typeof v === 'string' ? v.trim() : String(v))).filter(Boolean)));
+            if (normalized.length > 0) {
+                needUpdate = true;
+                return { ...f, options: normalized, rawOptions: normalized.join(',') };
+            }
+            return f;
+        });
+
+        if (needUpdate) setFilters(updated);
+    }, [inputData]);
 
     // --- Modal Handlers ---
 
@@ -130,9 +172,9 @@ export const FiltersBuilder: React.FC<FiltersBuilderProps> = ({ filters, setFilt
                                 ) : (
                                     filters.map((filter, idx) => (
                                         <div
-                                            key={filter.id}
-                                            className="flex flex-col flex-shrink-0 w-72 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                                        >
+                                                key={filter.id}
+                                                className="flex flex-col flex-shrink-0 w-72 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow h-full max-h-[320px]"
+                                            >
                                             <div className="p-3 border-b border-gray-100 flex justify-between items-start bg-gray-50/50 rounded-t-xl">
                                                 <div className="flex-1">
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase">Filter Key</label>
@@ -148,7 +190,7 @@ export const FiltersBuilder: React.FC<FiltersBuilderProps> = ({ filters, setFilt
                                                 </button>
                                             </div>
 
-                                            <div className="p-4 flex flex-col gap-4">
+                                            <div className="p-4 flex flex-col gap-4 overflow-y-auto">
                                                 <div className="flex flex-col gap-1">
                                                     <div className="flex justify-between items-center">
                                                         <label className="text-xs font-semibold text-gray-600 flex items-center gap-1">
@@ -175,6 +217,33 @@ export const FiltersBuilder: React.FC<FiltersBuilderProps> = ({ filters, setFilt
                                                         >
                                                             <MousePointerClick size={16} className="text-blue-500" />
                                                         </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-xs font-semibold text-gray-600 flex items-center gap-1">
+                                                            Options
+                                                        </label>
+                                                    </div>
+                                                    <div>
+                                                        <input
+                                                            value={filter.rawOptions ?? ''}
+                                                            onChange={e => {
+                                                                const raw = e.target.value;
+
+                                                                updateFilter(filter.id, 'rawOptions', raw);
+
+                                                                const opts = raw
+                                                                    .split(',')
+                                                                    .map((s: string) => s.trim())
+                                                                    .filter(Boolean);
+
+                                                                updateFilter(filter.id, 'options', opts);
+                                                            }}
+                                                            className="w-full text-xs bg-gray-50 border border-gray-200 rounded px-2 py-2 font-mono text-gray-700 focus:ring-1 focus:ring-blue-500 outline-none"
+                                                            placeholder="comma separated (e.g. active,pending)"
+                                                        />
                                                     </div>
                                                 </div>
 

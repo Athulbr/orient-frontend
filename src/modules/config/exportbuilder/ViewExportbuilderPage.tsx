@@ -197,22 +197,38 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                         // Extract key from jsonPath (last segment)
                         const key = filter.jsonPath ? filter.jsonPath.split('.').slice(-1)[0] : '';
 
-                        // Use saved initial options instead of deriving from current (filtered) records
-                        const dataOptions = initialFilterOptions[key] || [];
+                        // Derive dynamic options from current records immediately (so they appear when records arrive)
+                        const dynamicFromRecords = Array.isArray(state.records)
+                            ? Array.from(
+                                  new Set(
+                                      state.records
+                                          .map((record: any) => record[key])
+                                          .filter((val: any) => val !== undefined && val !== null)
+                                  )
+                              ).slice(0, 50).map(String)
+                            : [];
 
-                        // Build options list: custom JS option first (if exists), then data options
-                        const options = [
+                        // Prefer initial (cached) options if available, otherwise use dynamic values
+                        const dataOptions = initialFilterOptions[key] && initialFilterOptions[key].length > 0 ? initialFilterOptions[key] : dynamicFromRecords;
+
+                        // Prepare saved options (from config) first, then append dynamic options without duplication
+                        const savedOptionsRaw: any = (filter as any).options || [];
+                        const savedOptions = Array.isArray(savedOptionsRaw) ? savedOptionsRaw.map(String) : [];
+                        const dynamicOptionsStrings = dataOptions.map(String);
+                        const dynamicFiltered = dynamicOptionsStrings.filter(opt => !savedOptions.includes(opt));
+
+                        const mergedOptions = [
                             { label: `All ${key}`, value: '' },
                             ...(filter.javascript && filter.customLabel ? [{ label: filter.customLabel, value: '__custom_js__' }] : []),
-                            ...dataOptions.map(option => ({ label: String(option), value: String(option) }))
+                            ...savedOptions.map((opt: string) => ({ label: opt, value: opt })),
+                            ...dynamicFiltered.map((opt: string) => ({ label: opt, value: opt }))
                         ];
 
                         return (
-                            key &&
-                            (filter.javascript || dataOptions.length > 0) && (
+                            key && (filter.javascript || savedOptions.length > 0 || dataOptions.length > 0) && (
                                 <SingleSelect
                                     key={filter.jsonPath}
-                                    options={options}
+                                    options={mergedOptions}
                                     value={selectedFilterValues[key] || ''}
                                     placeholder={`Select ${key}`}
                                     className="min-w-60"
