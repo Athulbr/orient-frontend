@@ -23,6 +23,9 @@ export const useListRecordCustomTableApi = () => {
             };
             // @ts-ignore
             if (state.selectedStatuses.length > 0) payload.filters.status = { $in: state.selectedStatuses };
+            // include selected template id(s) at top-level when present
+            // @ts-ignore
+            if (state.selectedTemplates && state.selectedTemplates.length > 0) payload.templateId = state.selectedTemplates;
 
             setState(prev => ({ ...prev, loadingRecords: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, payload);
