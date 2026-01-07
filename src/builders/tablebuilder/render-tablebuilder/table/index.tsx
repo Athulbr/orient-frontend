@@ -5,7 +5,7 @@ import { TableFooter } from './TableFooter';
 import { TableHeader } from './TableHeader';
 import { TableToolbar } from './TableToolbar';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
-import useTablepersistance from '../hooks/useTablepersistance';
+import useTablepersistance from '../../../../hooks/useTablepersistance';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 
 interface TableIF {

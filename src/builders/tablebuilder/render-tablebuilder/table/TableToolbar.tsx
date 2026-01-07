@@ -11,7 +11,7 @@ import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
 import { Button } from '../../../../components/Button';
 import Spinner from '../../../../components/Spinner';
 import { config } from '../../../../config/default';
-import useTablepersistance from '../hooks/useTablepersistance';
+import useTablepersistance from '../../../../hooks/useTablepersistance';
 
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 
