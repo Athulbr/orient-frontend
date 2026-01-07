@@ -1,7 +1,7 @@
 import { TableBody } from './TableBody';
 import { TableHeader } from './TableHeader';
 import { useState, useEffect } from 'react';
-import useTablepersistance from '../../../../../hooks/useTablepersistance';
+import useTablepersistance, { buildInitialTableState } from '../../../../../hooks/useTablepersistance';
 import TableFooter from './TableFooter';
 import TableToolbar from './TableToolbar';
 import { ListRecordCustomTableStateProvider, useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
@@ -26,43 +26,24 @@ export interface ListRecordCustomTableStateIF {
     selectedRows: string[];
 }
 
-const getInitialState = (
-    getPageFromQuery: () => number,
-    getPageSizeFromQuery: () => number | null,
-    getSearchFromQuery: () => string,
-    getDateRangeFromQuery: () => { startDate: Date | null; endDate: Date | null },
-    getFiltersFromQuery: () => Record<string, any> | null
-) => {
-    const page = getPageFromQuery();
-    const pageSize = getPageSizeFromQuery() || 10;
-    const searchText = getSearchFromQuery() || '';
-    const { startDate, endDate } = getDateRangeFromQuery();
-    const filters = getFiltersFromQuery() || {};
-    return {
-        records: [],
-        loadingRecords: false,
-        pageSize,
-        page,
-        totalRecords: 0,
-        selectedStatuses: Array.isArray(filters.selectedStatuses) ? filters.selectedStatuses : [],
-        selectedTemplates: Array.isArray(filters.selectedTemplates) ? filters.selectedTemplates : [],
-        selectedValidator: typeof filters.selectedValidator === 'string' ? filters.selectedValidator : '',
-        searchText,
-        startDate: startDate ? startDate.toISOString() : '',
-        endDate: endDate ? endDate.toISOString() : '',
-        selectedRows: []
-    };
+const initialState = {
+    records: [],
+    loadingRecords: false,
+    pageSize: 10,
+    page: 1,
+    totalRecords: 0,
+    selectedStatuses: [],
+    selectedTemplates: [],
+    selectedValidator: '',
+    searchText: '',
+    startDate: '',
+    endDate: '',
+    selectedRows: []
 };
 
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
-    const { getPageFromQuery, getPageSizeFromQuery, getSearchFromQuery, getDateRangeFromQuery, getFiltersFromQuery } = useTablepersistance();
-    const [state, setState] = useState<ListRecordCustomTableStateIF>(() => getInitialState(
-        getPageFromQuery,
-        getPageSizeFromQuery,
-        getSearchFromQuery,
-        getDateRangeFromQuery,
-        getFiltersFromQuery
-    ));
+    const mergedInitialState = buildInitialTableState(initialState);
+    const [state, setState] = useState<ListRecordCustomTableStateIF>(mergedInitialState);
 
     return (
         <ListRecordCustomTableStateProvider value={{ state, setState }}>
