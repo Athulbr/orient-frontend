@@ -19,6 +19,8 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
     const [endDate, setEndDate] = useState<string | null>(null);
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
     const [selectedStatus, setSelectedStatus] = useState<string>('');
+    const [selectedFilterValues, setSelectedFilterValues] = useState<Record<string, string>>({});
+    const [initialFilterOptions, setInitialFilterOptions] = useState<Record<string, string[]>>({});
     const [exporting, setExporting] = useState(false);
     const toast = useToastStore();
     const tenant = useMemo(() => {
@@ -36,18 +38,55 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
         };
     }, []);
 
+    // Convert saved filters to API format
+    const getFiltersFromConfig = () => {
+        const baseFilters: any = { deleted: false };
+
+        // Apply user-selected filter values
+        Object.keys(selectedFilterValues).forEach(key => {
+            if (selectedFilterValues[key]) {
+                baseFilters[key] = selectedFilterValues[key];
+            }
+        });
+
+        return baseFilters;
+    };
+
     useEffect(() => {
-        const payload: any = {
-            pageSize: 100,
-            filters: { deleted: false },
-            startDate: startDate,
-            endDate: endDate,
-            tenantId: tenant.tenantId || ''
+        const fetchRecords = async () => {
+            const payload: any = {
+                pageSize: 100,
+                filters: getFiltersFromConfig(),
+                startDate: startDate,
+                endDate: endDate,
+                tenantId: tenant.tenantId || ''
+            };
+            if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
+            if (selectedStatus) payload.filters.status = selectedStatus;
+
+            await getRecordsApi(payload);
+
+            // Extract filter options from records (only on initial load when no filters are selected)
+            if (Object.keys(selectedFilterValues).length === 0 && Object.keys(initialFilterOptions).length === 0 && state.exportbuilder?.filters) {
+                const filterOptionsMap: Record<string, string[]> = {};
+
+                state.exportbuilder.filters.forEach((filter: { jsonPath: string }) => {
+                    const key = filter.jsonPath ? filter.jsonPath.split('.').slice(-1)[0] : '';
+                    if (key && Array.isArray(state.records)) {
+                        const uniqueValues = Array.from(
+                            new Set(state.records.map((record: any) => record[key]).filter(val => val !== undefined && val !== null))
+                        ).slice(0, 50);
+                        filterOptionsMap[key] = uniqueValues.map(String);
+                    }
+                });
+
+                setInitialFilterOptions(filterOptionsMap);
+            }
         };
-        if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
-        if (selectedStatus) payload.filters.status = selectedStatus;
-        getRecordsApi(payload);
-    }, [startDate, endDate, selectedTemplateId, selectedStatus]);
+
+        fetchRecords();
+    }, [startDate, endDate, selectedTemplateId, selectedStatus, selectedFilterValues]);
+
     useEffect(() => {
         if (state.id) {
             getExportbuilderByIdApi(state.id);
@@ -57,7 +96,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
     const buildHistoryPayload = () => {
         const payload: any = {
             pageSize: 1000,
-            filters: { deleted: false },
+            filters: getFiltersFromConfig(),
             startDate: startDate,
             endDate: endDate,
             tenantId: tenant.tenantId || ''
@@ -150,6 +189,54 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     className="min-w-60"
                     onValueChange={(value: string) => setSelectedStatus(value)}
                 />
+
+                {/* Render filter selects from exportbuilder configuration */}
+                {state.exportbuilder?.filters &&
+                    Array.isArray(state.exportbuilder.filters) &&
+                    state.exportbuilder.filters.map((filter: { jsonPath: string; javascript?: string; customLabel?: string }) => {
+                        // Extract key from jsonPath (last segment)
+                        const key = filter.jsonPath ? filter.jsonPath.split('.').slice(-1)[0] : '';
+
+                        // Derive dynamic options from current records immediately (so they appear when records arrive)
+                        const dynamicFromRecords = Array.isArray(state.records)
+                            ? Array.from(
+                                  new Set(
+                                      state.records
+                                          .map((record: any) => record[key])
+                                          .filter((val: any) => val !== undefined && val !== null)
+                                  )
+                              ).slice(0, 50).map(String)
+                            : [];
+
+                        // Prefer initial (cached) options if available, otherwise use dynamic values
+                        const dataOptions = initialFilterOptions[key] && initialFilterOptions[key].length > 0 ? initialFilterOptions[key] : dynamicFromRecords;
+
+                        // Prepare saved options (from config) first, then append dynamic options without duplication
+                        const savedOptionsRaw: any = (filter as any).options || [];
+                        const savedOptions = Array.isArray(savedOptionsRaw) ? savedOptionsRaw.map(String) : [];
+                        const dynamicOptionsStrings = dataOptions.map(String);
+                        const dynamicFiltered = dynamicOptionsStrings.filter(opt => !savedOptions.includes(opt));
+
+                        const mergedOptions = [
+                            { label: `All ${key}`, value: '' },
+                            ...(filter.javascript && filter.customLabel ? [{ label: filter.customLabel, value: '__custom_js__' }] : []),
+                            ...savedOptions.map((opt: string) => ({ label: opt, value: opt })),
+                            ...dynamicFiltered.map((opt: string) => ({ label: opt, value: opt }))
+                        ];
+
+                        return (
+                            key && (filter.javascript || savedOptions.length > 0 || dataOptions.length > 0) && (
+                                <SingleSelect
+                                    key={filter.jsonPath}
+                                    options={mergedOptions}
+                                    value={selectedFilterValues[key] || ''}
+                                    placeholder={`Select ${key}`}
+                                    className="min-w-60"
+                                    onValueChange={(value: string) => setSelectedFilterValues(prev => ({ ...prev, [key]: value }))}
+                                />
+                            )
+                        );
+                    })}
                 <DateTimePicker
                     onChange={(range: DateRangeIF) => {
                         setStartDate(range.startDate);
