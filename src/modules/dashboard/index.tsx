@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
@@ -26,7 +26,7 @@ export interface DashboardStateIF {
     module: string;
 }
 
-const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
+const DashboardPage: React.FC = () => {
     const initialState = {
         totalTemplates: 0,
         isDashboard: true,
@@ -43,14 +43,9 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
         statusCounts: null,
         loadingStatusCounts: false,
         test: [],
-        module
+        module: sessionStorage.getItem('module') || 'docsnap'
     };
     const [state, setState] = useState<DashboardStateIF>(initialState);
-
-    useEffect(() => {
-        if (module === state.module) return;
-        setState({ ...state, module });
-    }, [module]);
 
     return (
         <DashboardStateProvider value={{ state, setState }}>

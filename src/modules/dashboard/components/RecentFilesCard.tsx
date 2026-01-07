@@ -1,5 +1,4 @@
 import { ChevronRight } from 'lucide-react';
-import { StatusBadge } from './StatusBadge';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useDashboardApi } from '../hooks/useDashboardApi';
@@ -9,13 +8,12 @@ import SkeletonLoader from './SkeletonLoader';
 import { RecordStatusCustomUI } from '../../docsnap/record/list-record/components/RecordStatusCustomUI';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import { Polink } from '../../docsnap/record/list-record/ListRecordComponent';
-import { useDocsnapStore } from '../../../zustand-store/DocsnapStore';
-import { cn } from '../../../global-utils/twMerge';
+import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
 const RecentFilesCardComponent: React.FC = () => {
     const { state, setState } = useDashboardState();
     const { checkPermission, user } = usePermissionStore();
-    const { refreshRecord } = useDocsnapStore();
+    const { refreshRecord } = useExtractionStore();
 
     const navigate = useNavigate();
     const { getRecordsApi } = useDashboardApi();

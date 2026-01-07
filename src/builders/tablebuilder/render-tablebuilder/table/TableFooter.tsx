@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-r
 import { useTablebuilderSettings } from '../../create-tablebuilder/hooks/useTablebuilderSettingsContext';
 import { useTablebuilderState } from '../hooks/useTablebuilderStateContext';
 import { useFetchDataFromApi } from '../hooks/useFetchDataFromApi';
-import useTablepersistance from '../hooks/useTablepersistance';
+import useTablepersistance from '../../../../hooks/useTablepersistance';
 import { useEffect, useState } from 'react';
 import { Button } from '../../../../components/Button';
 import Tooltip from '../../../../components/Tooltip';

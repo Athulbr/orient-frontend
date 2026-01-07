@@ -8,7 +8,6 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import httpRequest from '../../global-utils/httpRequest';
 import { SingleSelect } from '../../components/SingleSelect';
 import { useEffect, useState } from 'react';
-import { useSettingsStore } from '../../zustand-store/SettingsStore';
 import { cn } from '../../global-utils/twMerge';
 import { config } from '../../config/default';
 
@@ -23,7 +22,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const { instance } = useMsal();
     const isAuthenticated = useIsAuthenticated();
     const [tenantList, setTenantList] = useState([]);
-    const { setSelectedTenant } = useSettingsStore();
     const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
@@ -72,17 +70,12 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             </div>
             <div className="flex flex-1 items-center justify-end">
                 <div className="hidden items-center gap-6 px-6 md:flex">
-                    {/* <LogIn tabIndex={0} onClick={refreshAuth} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
-                    {/* <CircleHelp tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" />
-          <Bell tabIndex={0} size={20} className="cursor-pointer text-gray-300 hover:text-white" /> */}
                     {user?.role?.name === 'superadmin' && (
                         <SingleSelect
                             className="min-w-40"
                             value={selectedTenantFromSessionStorage}
                             onValueChange={e => {
-                                const allOptions = [{ label: 'All Tenants', value: 'all' }, ...tenantList];
-                                const selectedOption = allOptions.find((tenant: { label: string; value: string }) => tenant.value === e);
-                                setSelectedTenant(e, selectedOption?.label);
+                                sessionStorage.setItem('selectedTenant', e);
                                 window.location.reload();
                             }}
                             options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}

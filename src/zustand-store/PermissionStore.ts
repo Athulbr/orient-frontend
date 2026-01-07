@@ -62,13 +62,6 @@ const allSettings: SettingsIF[] = [
                 path: '/config/user/list',
                 key: 'user',
                 permission: 'read:user'
-            },
-            {
-                name: 'User Preference',
-                iconName: 'Users',
-                path: '/config/user-preference',
-                key: 'user-preference',
-                permission: 'read:userPreference'
             }
         ]
     },
@@ -111,13 +104,6 @@ const allSettings: SettingsIF[] = [
                 permission: 'read:tenant'
             },
             {
-                name: 'Tenant Settings',
-                iconName: 'CalendarCheck',
-                path: '/config/tenant-settings',
-                key: 'tenant-settings',
-                permission: 'read:tenantSettings'
-            },
-            {
                 name: 'Subscription Models',
                 iconName: 'CalendarCheck',
                 path: '/config/subscription-model/list',
@@ -158,13 +144,6 @@ const allSettings: SettingsIF[] = [
         iconName: 'Book',
         items: [
             {
-                name: 'Docsnap Settings',
-                iconName: 'MessageSquareText',
-                path: '/config/docsnap-settings',
-                key: 'docsnap-settings',
-                permission: 'read:docsnapSettings'
-            },
-            {
                 name: 'Comments',
                 iconName: 'MessageSquareText',
                 path: '/config/comment',
@@ -180,17 +159,4 @@ const allSettings: SettingsIF[] = [
             }
         ]
     }
-    // {
-    //     name: 'Medical Code',
-    //     iconName: 'Book',
-    //     items: [
-    //         {
-    //             name: 'Medical Code',
-    //             iconName: 'MessageSquareText',
-    //             path: '/config/transcript',
-    //             key: 'medical',
-    //             permission: 'read:medical'
-    //         }
-    //     ]
-    // }
 ];

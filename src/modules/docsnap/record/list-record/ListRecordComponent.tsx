@@ -7,16 +7,13 @@ import { useEffect, useState } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
-// import { useExtractionStore } from '../../../../zustand-store/extractionStore';
 import { downloadXlsxFile } from './utils/downloadXlsxFile';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../../global-utils/httpRequest';
-import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
-import { config } from '../../../../config/default';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useExtractionStore } from '../../../../zustand-store/extractionStore';
-import { ListRecordCustomTable } from './ListRecordCustomTable';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+import { config } from '../../../../config/default';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;

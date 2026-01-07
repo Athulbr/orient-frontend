@@ -2,12 +2,12 @@ import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import httpRequest from '../../../../../../global-utils/httpRequest';
 import { useListRecordCustomTableState } from './listRecordCustomTableStateContext';
 import { config } from '../../../../../../config/default';
-import { useDocsnapStore } from '../../../../../../zustand-store/DocsnapStore';
+import { useExtractionStore } from '../../../../../../zustand-store/extractionStore';
 
 export const useListRecordCustomTableApi = () => {
     const toast = useToastStore();
     const { state, setState } = useListRecordCustomTableState();
-    const { updateRefreshRecord } = useDocsnapStore();
+    const { updateRefreshRecord } = useExtractionStore();
 
     // ============================= CREATE ==================================
     const getRecordsApi = async () => {
@@ -23,6 +23,9 @@ export const useListRecordCustomTableApi = () => {
             };
             // @ts-ignore
             if (state.selectedStatuses.length > 0) payload.filters.status = { $in: state.selectedStatuses };
+            // include selected template id(s) at top-level when present
+            // @ts-ignore
+            if (state.selectedTemplates && state.selectedTemplates.length > 0) payload.templateId = state.selectedTemplates;
 
             setState(prev => ({ ...prev, loadingRecords: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, payload);
@@ -53,6 +56,7 @@ export const useListRecordCustomTableApi = () => {
     const deleteRecordApi = async (id: string) => {
         try {
             const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/history/delete/${id}`);
+            await getRecordsApi();
             updateRefreshRecord();
             toast.success('Record deleted successfully');
         } catch (error) {

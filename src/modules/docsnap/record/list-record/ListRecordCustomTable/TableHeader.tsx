@@ -1,5 +1,4 @@
 import { FC } from 'react';
-import { useDocsnapStore } from '../../../../../zustand-store/DocsnapStore';
 import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi';
 import { useEffect } from 'react';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';

@@ -46,6 +46,7 @@ export const TableBody: React.FC = () => {
                                 type="checkbox"
                                 checked={state.selectedRows.includes(row._id)}
                                 onChange={() => handleRowSelect(row)}
+                                onClick={(e) => e.stopPropagation()}
                                 className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
                             />
                         </td>
@@ -72,7 +73,7 @@ export const TableBody: React.FC = () => {
                         <td className="px-2 py-4 xl:px-5">
                             <div className={cn(rowStyle)}>{formatDate(row.updatedAt)}</div>
                         </td>
-                        <td className="px-2 py-4 xl:px-5">
+                        <td className="px-2 py-4 xl:px-5 flex items-center justify-center">
                             <ActionButtons row={row} />
                         </td>
                     </tr>

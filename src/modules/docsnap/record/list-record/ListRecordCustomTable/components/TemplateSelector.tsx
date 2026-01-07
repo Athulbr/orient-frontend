@@ -1,5 +1,6 @@
 import { MultiSelect } from '../../../../../../components/MultiSelect';
 import { useListRecordCustomTableState } from '../hooks/listRecordCustomTableStateContext';
+import useTablepersistance from '../../../../../../hooks/useTablepersistance';
 interface TemplateSelectorIF {
     test?: string;
 }
@@ -19,15 +20,22 @@ templateList.map((template: any) => {
 
 const TemplateSelector: React.FC<TemplateSelectorIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
+    const { setFiltersParam, getFiltersFromQuery } = useTablepersistance();
+
+    const handleChange = (values: string[]) => {
+        setState(prev => ({ ...prev, selectedTemplates: values, page: 1 }));
+        const filters = getFiltersFromQuery() || {};
+        filters.selectedTemplates = values;
+        setFiltersParam(filters);
+    };
+
     return (
         <MultiSelect
             className=" w-80"
             placeholder="All Templates"
             options={options}
             values={state.selectedTemplates}
-            onValuesChange={(values: string[]) => {
-                setState(prev => ({ ...prev, selectedTemplates: values }));
-            }}
+            onValuesChange={handleChange}
         />
     );
 };

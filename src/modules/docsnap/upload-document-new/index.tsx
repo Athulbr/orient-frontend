@@ -44,7 +44,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
+        if (template?.settings?.module === 'data-entry') {
             if (!files[0].name.endsWith('.xlsx')) {
                 toast.error('Only .xlsx file type is supported');
                 return;
@@ -64,7 +64,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
-    if (sessionStorage.getItem('module') === 'dataentry') {
+    if (sessionStorage.getItem('module') === 'data-entry') {
         supportedFileTypes = ['.xlsx'];
     }
 

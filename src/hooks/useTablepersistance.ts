@@ -105,3 +105,45 @@ export default function useTablepersistance() {
         getFiltersFromQuery
     };
 }
+
+// Build initial table state by reading query params and merging with a provided default
+export function buildInitialTableState(initialState: Record<string, any>) {
+    const params = new URLSearchParams(window.location.search);
+
+    const page = Number(params.get('page')) || initialState.page || 1;
+    const pageSize = params.get('pageSize') ? Number(params.get('pageSize')) : (initialState.pageSize || 10);
+    const searchText = params.get('search') ?? (initialState.searchText || '');
+    const s = params.get('startDate');
+    const e = params.get('endDate');
+    const startDate = s ? new Date(s).toISOString() : (initialState.startDate || '');
+    const endDate = e ? new Date(e).toISOString() : (initialState.endDate || '');
+
+    const rawFilters = params.get('filters');
+    let filters: Record<string, any> = {};
+    if (rawFilters) {
+        try {
+            filters = JSON.parse(rawFilters);
+        } catch (err) {
+            console.warn('Invalid filters query param, ignoring', err);
+            filters = {};
+        }
+    } else if (initialState) {
+        filters = initialState.filters || {};
+    }
+
+    return {
+        ...initialState,
+        page,
+        pageSize,
+        searchText,
+        startDate,
+        endDate,
+        selectedStatuses: Array.isArray(filters.selectedStatuses) ? filters.selectedStatuses : (initialState.selectedStatuses || []),
+        selectedTemplates: Array.isArray(filters.selectedTemplates) ? filters.selectedTemplates : (initialState.selectedTemplates || []),
+        selectedValidator: typeof filters.selectedValidator === 'string' ? filters.selectedValidator : (initialState.selectedValidator || ''),
+        records: initialState.records || [],
+        loadingRecords: initialState.loadingRecords || false,
+        totalRecords: initialState.totalRecords || 0,
+        selectedRows: initialState.selectedRows || []
+    };
+}

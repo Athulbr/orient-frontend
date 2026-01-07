@@ -101,7 +101,6 @@ export const useViewRecordApi = () => {
                 setState(prev => ({
                     ...prev,
                     loadingS3File: false,
-                    module: 'dataentry',
                     images: images.map((image: any) => URL.createObjectURL(new Blob([new Uint8Array(image.Body.data)], { type: 'image/jpeg' })))
                 }));
             } else {

@@ -21,8 +21,8 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
         {
             name: 'Data Entry',
             icon: <FilePenLine size={26} strokeWidth={2} className="text-white" />,
-            path: '/dataentry',
-            key: 'dataentry',
+            path: '/data-entry',
+            key: 'data-entry',
             permission: 'dataentry:module'
         },
         {
