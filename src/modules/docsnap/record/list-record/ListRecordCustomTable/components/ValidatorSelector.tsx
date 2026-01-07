@@ -1,12 +1,21 @@
 import { SingleSelect } from '../../../../../../components/SingleSelect';
 import { useListRecordCustomTableState } from '../hooks/listRecordCustomTableStateContext';
+import useTablepersistance from '../../../../../../hooks/useTablepersistance';
 interface ValidatorSelectorIF {
     test?: string;
 }
 
 const ValidatorSelector: React.FC<ValidatorSelectorIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
-    // if (true) return null;
+    const { setFiltersParam, getFiltersFromQuery } = useTablepersistance();
+
+    const handleChange = (value: string) => {
+        setState(prev => ({ ...prev, selectedValidator: value, page: 1 }));
+        const filters = getFiltersFromQuery() || {};
+        filters.selectedValidator = value;
+        setFiltersParam(filters);
+    };
+
     return (
         <SingleSelect
             value={state.selectedValidator}
@@ -15,7 +24,7 @@ const ValidatorSelector: React.FC<ValidatorSelectorIF> = () => {
                 { label: 'Validator 1', value: 'validator1' },
                 { label: 'Validator 2', value: 'validator2' }
             ]}
-            onValueChange={value => setState(prev => ({ ...prev, selectedValidator: value }))}
+            onValueChange={handleChange}
             placeholder="Validator"
             className="w-36"
         />

@@ -1,6 +1,7 @@
 import { TableBody } from './TableBody';
 import { TableHeader } from './TableHeader';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import useTablepersistance, { buildInitialTableState } from '../../../../../hooks/useTablepersistance';
 import TableFooter from './TableFooter';
 import TableToolbar from './TableToolbar';
 import { ListRecordCustomTableStateProvider, useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
@@ -41,7 +42,8 @@ const initialState = {
 };
 
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
-    const [state, setState] = useState<ListRecordCustomTableStateIF>(initialState);
+    const mergedInitialState = buildInitialTableState(initialState);
+    const [state, setState] = useState<ListRecordCustomTableStateIF>(mergedInitialState);
 
     return (
         <ListRecordCustomTableStateProvider value={{ state, setState }}>
