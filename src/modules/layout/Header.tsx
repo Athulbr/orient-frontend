@@ -10,6 +10,7 @@ import { SingleSelect } from '../../components/SingleSelect';
 import { useEffect, useState } from 'react';
 import { cn } from '../../global-utils/twMerge';
 import { config } from '../../config/default';
+import { usePermissionStore } from '../../zustand-store/PermissionStore';
 
 interface HeaderComponentIF {
     showSidebar?: boolean;
@@ -22,7 +23,8 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const { instance } = useMsal();
     const isAuthenticated = useIsAuthenticated();
     const [tenantList, setTenantList] = useState([]);
-    const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
+    const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || 'all';
+    const { updateRefreshSidebar } = usePermissionStore();
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
     useEffect(() => {
@@ -52,13 +54,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         if (e === 'Account') navigate(`/user/account/${user._id}`);
     };
 
-    const callExtractionApi = async () => {
-        await httpRequest('POST', 'http://localhost:4000/idp/document-extractor/v1', {});
-    };
-
     return (
-        // <div className="flex min-h-16 justify-between bg-black">
-        // <div className="flex min-h-16 justify-between bg-[#042443]">
         <div className="flex min-h-16 justify-between bg-[#012D56]">
             {!showSidebar && (
                 <div tabIndex={0} className="flex h-17 w-16 items-center justify-center md:hidden">
@@ -71,15 +67,30 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             <div className="flex flex-1 items-center justify-end">
                 <div className="hidden items-center gap-6 px-6 md:flex">
                     {user?.role?.name === 'superadmin' && (
-                        <SingleSelect
-                            className="min-w-40"
-                            value={selectedTenantFromSessionStorage}
-                            onValueChange={e => {
-                                sessionStorage.setItem('selectedTenant', e);
-                                window.location.reload();
-                            }}
-                            options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
-                        />
+                        <>
+                            <SingleSelect
+                                className="min-w-40"
+                                value={selectedTenantFromSessionStorage}
+                                onValueChange={e => {
+                                    sessionStorage.setItem('selectedTenant', e);
+                                    window.location.reload();
+                                }}
+                                options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
+                            />
+                            <SingleSelect
+                                className="min-w-40"
+                                value={selectedTenantFromSessionStorage}
+                                onValueChange={e => {
+                                    sessionStorage.setItem('selectedTenant', e);
+                                    updateRefreshSidebar();
+                                }}
+                                options={[
+                                    { label: 'All Roles', value: 'all' },
+                                    { label: 'Admin', value: 'admin' },
+                                    { label: 'User', value: 'user' }
+                                ]}
+                            />
+                        </>
                     )}
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">

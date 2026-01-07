@@ -214,7 +214,7 @@ export const useDocumentExtractor = () => {
             }
         };
 
-        if (template?.settings?.templateType === 'data-entry') {
+        if (template?.settings?.module === 'data-entry') {
             // First, remove any existing entry for this file
             refreshExtractionQueue(rowData.SKU);
             // Then add the new entry

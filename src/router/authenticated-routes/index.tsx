@@ -39,8 +39,8 @@ const AuthenticatedRoutes = () => {
                     ? 'invoice-tracking'
                     : contentCreation
                       ? 'content-creation'
-                      : 'docsnap';
-    sessionStorage.setItem('module', module);
+                      : 'none';
+    module !== 'none' && sessionStorage.setItem('module', module);
     const paths = {
         docsnap: '/docsnap',
         'data-entry': '/data-entry',
@@ -49,7 +49,8 @@ const AuthenticatedRoutes = () => {
         'document-creation': '/document-creation',
         'ppe-detection': '/ppe-detection',
         'invoice-tracking': '/invoice-tracking',
-        'content-creation': 'content-creation'
+        'content-creation': '/content-creation',
+        none: '/docsnap'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
@@ -63,16 +64,16 @@ const AuthenticatedRoutes = () => {
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/transcription/record/*" element={<MedicalCodeRoutes />} />
-                <Route path="/docsnap" element={<DashboardPage />} />
-                <Route path="/invoice-tracking" element={<DashboardPage />} />
-                <Route path="/transcription" element={<DashboardPage />} />
-                <Route path="/data-entry" element={<DashboardPage />} />
-                <Route path="/sld" element={<DashboardPage />} />
-                <Route path="/document-creation" element={<DashboardPage />} />
+                <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
+                <Route path="/invoice-tracking" element={<DashboardPage module="invoice-tracking" />} />
+                <Route path="/transcription" element={<DashboardPage module="transcription" />} />
+                <Route path="/data-entry" element={<DashboardPage module="data-entry" />} />
+                <Route path="/sld" element={<DashboardPage module="sld" />} />
+                <Route path="/document-creation" element={<DashboardPage module="document-creation" />} />
+                <Route path="/ppe-detection" element={<DashboardPage module="ppe-detection" />} />
+                <Route path="/content-creation" element={<DashboardPage module="content-creation" />} />
                 <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
-                <Route path="/ppe-detection" element={<DashboardPage />} />
                 <Route path="/content-creation/view-content/:id" element={<ContentCreationEditor />} />
-                <Route path="/content-creation" element={<DashboardPage />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

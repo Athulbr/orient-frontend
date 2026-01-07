@@ -27,9 +27,9 @@ export const ChatWindow: React.FC<ChatWindowIF> = ({ setRecords }) => {
 
         const response = await httpRequest('POST', `${config.mlServiceNodejs}/chatbot/generate-response`, { prompt });
 
-        console.log('response.data:===========', response.data);
+        const module = sessionStorage.getItem('module');
 
-        const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, response.data?.llmResponse);
+        const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { ...response.data?.llmResponse, module });
         setRecords(res.data);
     };
     const handleSendDummy = () => {

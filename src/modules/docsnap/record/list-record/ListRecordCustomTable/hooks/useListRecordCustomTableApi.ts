@@ -26,9 +26,9 @@ export const useListRecordCustomTableApi = () => {
             // include selected template id(s) at top-level when present
             // @ts-ignore
             if (state.selectedTemplates && state.selectedTemplates.length > 0) payload.templateId = state.selectedTemplates;
-
+            const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, loadingRecords: true }));
-            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, payload);
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { ...payload, module });
             setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;

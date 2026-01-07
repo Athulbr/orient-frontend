@@ -10,7 +10,7 @@ import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import { Polink } from '../../docsnap/record/list-record/ListRecordComponent';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
-const RecentFilesCardComponent: React.FC = () => {
+const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const { state, setState } = useDashboardState();
     const { checkPermission, user } = usePermissionStore();
     const { refreshRecord } = useExtractionStore();
@@ -18,14 +18,15 @@ const RecentFilesCardComponent: React.FC = () => {
     const navigate = useNavigate();
     const { getRecordsApi } = useDashboardApi();
 
+    console.log('module:===========', module);
+
     useEffect(() => {
         getRecordsApi();
-    }, [refreshRecord]);
+    }, [refreshRecord, module]);
 
     const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
 
     const rowClickHandler = (row: any) => {
-        const module = sessionStorage.getItem('module');
         if (module === 'documentCreation') {
             navigate(`/document-creation/create/${row._id}`);
         } else if (module === 'transcript') {
@@ -38,12 +39,12 @@ const RecentFilesCardComponent: React.FC = () => {
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
-                <div className="text-gray-800">Recent {state.module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
+                <div className="text-gray-800">Recent {module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
                         onClick={() =>
                             navigate(
-                                `/${state.module === 'invoiceTracking' ? 'invoice-tracking' : state.module === 'contentCreation' ? 'content-creation' : state.module}/record/list`
+                                `/${module === 'invoiceTracking' ? 'invoice-tracking' : module === 'contentCreation' ? 'content-creation' : module}/record/list`
                             )
                         }
                         className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"

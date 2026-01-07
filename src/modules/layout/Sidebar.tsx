@@ -10,7 +10,9 @@ interface SidebarComponentIF {
 }
 
 export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = false, setShowSidebar }) => {
-    const [sidebarMenuItems, setSidebarMenuItems] = useState([
+    const { refreshSidebar } = usePermissionStore();
+
+    const sidebarMenuItems = [
         {
             name: 'DocSnap',
             icon: <FileCheck size={26} strokeWidth={2} className="text-white" />,
@@ -26,10 +28,24 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             permission: 'dataentry:module'
         },
         {
-            name: 'Transcript',
+            name: 'Invoice Tracking',
+            icon: <LocateFixed size={26} strokeWidth={2} className="text-white" />,
+            path: '/invoice-tracking',
+            key: 'invoice-tracking',
+            permission: 'invoiceTracking:module'
+        },
+        // {
+        //     name: 'PPE Detection',
+        //     icon: <UserSearch size={26} strokeWidth={2} className="text-white" />,
+        //     path: '/ppe-detection',
+        //     key: 'ppe-detection',
+        //     permission: 'ppeDetection:module'
+        // },
+        {
+            name: 'Transcription',
             icon: <AudioLines size={26} strokeWidth={2} className="text-white" />,
-            path: '/transcript/record/list',
-            key: 'transcript',
+            path: '/transcription/record/list',
+            key: 'transcription',
             permission: 'transcript:module'
         },
         {
@@ -45,29 +61,16 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             path: '/document-creation',
             key: 'document-creation',
             permission: 'documentCreation:module'
-        },
-        {
-            name: 'PPE Detection',
-            icon: <UserSearch size={26} strokeWidth={2} className="text-white" />,
-            path: '/ppe-detection',
-            key: 'ppe-detection',
-            permission: 'ppeDetection:module'
-        },
-        {
-            name: 'Invoice Tracking',
-            icon: <LocateFixed size={26} strokeWidth={2} className="text-white" />,
-            path: '/invoice-tracking',
-            key: 'invoice-tracking',
-            permission: 'invoiceTracking:module'
-        },
-        {
-            name: 'Content Creation',
-            icon: <FileText size={26} strokeWidth={2} className="text-white" />,
-            path: '/content-creation',
-            key: 'content-creation',
-            permission: 'contentCreation:module'
         }
-    ]);
+
+        // {
+        //     name: 'Content Creation',
+        //     icon: <FileText size={26} strokeWidth={2} className="text-white" />,
+        //     path: '/content-creation',
+        //     key: 'content-creation',
+        //     permission: 'contentCreation:module'
+        // }
+    ];
 
     return (
         <>
@@ -89,13 +92,15 @@ interface MobileSidebarIF {
 
 const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
     const { settings, checkPermission } = usePermissionStore();
+    const module = sessionStorage.getItem('module');
 
     const navigate = useNavigate();
     return (
         <div className={`hidden h-full min-w-16 max-w-16 pt-2 flex-col gap-2 bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
             {sidebarMenuItems.map(item => {
                 if (!checkPermission(item.permission)) return null;
-                const isActive = location.pathname.includes(item.key) || (item.key === 'docsnap' && location.pathname === '/');
+                const isActive = item.key === module;
+                // const isActive = location.pathname.includes(item.key) || item.key === module || (item.key === 'docsnap' && location.pathname === '/');
                 return (
                     <div
                         onClick={() => {

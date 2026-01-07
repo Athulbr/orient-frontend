@@ -61,7 +61,8 @@ export const useExportbuilderApi = () => {
     // ============================= get Records ==================================
     const getRecordsApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, payload);
+            const module = sessionStorage.getItem('module');
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { ...payload, module });
             setState(prev => ({ ...prev, records: res.data, totalRecords: res.total }));
         } catch (error) {
             console.error('error:===========', error);

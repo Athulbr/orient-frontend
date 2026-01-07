@@ -1,11 +1,13 @@
 import { StatusCustomUI } from '../../../builders/tablebuilder/render-tablebuilder/components/CustomUI';
 import { UseTablebuilder } from '../../../builders/tablebuilder/render-tablebuilder/components/UseTablebuilder';
+import { useToastStore } from '../../../components/toast/ToastStore';
 import { useModuleState } from './hooks/moduleContext';
 import { useModulesApi } from './hooks/useModuleApi';
 
 export const ListModuleComponent: React.FC = () => {
     const { setState, state } = useModuleState();
-    const { getModuleByIdApi, deleteModuleApi } = useModulesApi();
+    const { getModuleByIdApi } = useModulesApi();
+    const toast = useToastStore();
 
     const actionButtons = [
         {
@@ -25,7 +27,8 @@ export const ListModuleComponent: React.FC = () => {
             setState(prev => ({ ...prev, showCreateDialog: true, module: row, id: row._id }));
         },
         deleteClickHandler: (row: any) => {
-            deleteModuleApi(row._id);
+            toast.info('Module should be deleted from the database');
+            // deleteModuleApi(row._id);
         }
     };
 

@@ -13,9 +13,9 @@ export const useDashboardApi = () => {
 
     const getRecordsApi = async () => {
         try {
-            // if (!checkPermission('read:record')) return;
+            const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, loadingRecords: true }));
-            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { pageSize: 10, filters: { deleted: false } });
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { pageSize: 10, filters: { deleted: false }, module });
             setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;

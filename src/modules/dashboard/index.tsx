@@ -26,7 +26,7 @@ export interface DashboardStateIF {
     module: string;
 }
 
-const DashboardPage: React.FC = () => {
+const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
     const initialState = {
         totalTemplates: 0,
         isDashboard: true,
@@ -43,7 +43,7 @@ const DashboardPage: React.FC = () => {
         statusCounts: null,
         loadingStatusCounts: false,
         test: [],
-        module: sessionStorage.getItem('module') || 'docsnap'
+        module: module
     };
     const [state, setState] = useState<DashboardStateIF>(initialState);
 
@@ -54,7 +54,7 @@ const DashboardPage: React.FC = () => {
                 <div className="h-full flex-1 overflow-y-auto p-1">
                     <div className="mb-4 flex h-full max-h-250 min-h-400 flex-1 flex-col gap-6 overflow-y-auto lg:min-h-192 2xl:mb-0">
                         <div className="flex w-full flex-1 flex-col gap-6 overflow-hidden lg:flex-row">
-                            <RecentFilesCardComponent />
+                            <RecentFilesCardComponent module={module} />
                             <StatusCardComponent />
                         </div>
                         <TemplateCardListComponent />

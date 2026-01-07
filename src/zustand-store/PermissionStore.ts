@@ -16,14 +16,17 @@ interface PermissionStoreIF {
     permissions: string[];
     user: any;
     settings: SettingsIF[];
+    refreshSidebar: number;
     checkPermission: (permission?: string) => boolean;
     setPermissions: (permissions: string[]) => void;
+    updateRefreshSidebar: () => void;
 }
 
 export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
     permissions: [],
     user: {},
     settings: [],
+    refreshSidebar: 0,
     checkPermission: (permission?: string) => {
         const { user } = get();
         if (user?.role?.name === 'superadmin') return true;
@@ -48,6 +51,9 @@ export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
             .filter((setting): setting is SettingsIF => setting !== null); // Type-safe filter to remove null values
 
         set({ permissions, settings: allowedSettings });
+    },
+    updateRefreshSidebar: () => {
+        set({ refreshSidebar: get().refreshSidebar + 1 });
     }
 }));
 
