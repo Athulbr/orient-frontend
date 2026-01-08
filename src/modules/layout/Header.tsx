@@ -132,7 +132,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                         />
                     )}
 
-                    {user?.role?.name === 'superadmin' && (
+                    {/* {user?.role?.name === 'superadmin' && (
                         <SingleSelect
                             className="min-w-40"
                             value={selectedRoleFromSessionStorage?._id}
@@ -145,7 +145,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                             placeholder="Select Role"
                             options={[{ label: 'All Roles', value: 'all' }, ...roleList]}
                         />
-                    )}
+                    )} */}
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">
                             <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />

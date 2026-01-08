@@ -70,7 +70,8 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             filters: filters.map(f => ({ 
                 jsonPath: f.jsonPath,
                 ...(f.options && f.options.length ? { options: f.options } : {})
-            }))
+            })),
+            ...(state.selectedTemplateId && state.selectedTemplateId.length ? { templateId: state.selectedTemplateId } : {})
         };
 
         try {

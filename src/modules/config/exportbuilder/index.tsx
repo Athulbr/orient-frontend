@@ -15,6 +15,7 @@ export interface ExportbuilderStateIF {
     records: any[];
     loading: boolean;
     totalRecords: number;
+    selectedTemplateId?: string[];
 }
 const exportbuilderInitialState: ExportbuilderStateIF = {
     refresh: 1,
@@ -25,6 +26,7 @@ const exportbuilderInitialState: ExportbuilderStateIF = {
     records: [],
     loading: false,
     totalRecords: 0
+    ,selectedTemplateId: []
 };
 
 const ListExportbuilderPage: React.FC = () => {
