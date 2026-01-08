@@ -15,9 +15,11 @@ interface SettingsIF {
 interface PermissionStoreIF {
     permissions: string[];
     user: any;
+    role: any;
     settings: SettingsIF[];
     refreshSidebar: number;
     checkPermission: (permission?: string) => boolean;
+    checkRolePermission: (permission?: string) => boolean;
     setPermissions: (permissions: string[]) => void;
     updateRefreshSidebar: () => void;
 }
@@ -25,6 +27,7 @@ interface PermissionStoreIF {
 export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
     permissions: [],
     user: {},
+    role: {},
     settings: [],
     refreshSidebar: 0,
     checkPermission: (permission?: string) => {
@@ -33,13 +36,20 @@ export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
         if (!permission) return false;
         return get().permissions.includes(permission);
     },
+    checkRolePermission: (permission?: string) => {
+        const { role } = get();
+        if (role?.name === 'superadmin') return true;
+        if (!permission) return false;
+        return get().permissions.includes(permission);
+    },
     setPermissions: (permissions: string[]) => {
         const user = JSON.parse(window.sessionStorage.getItem('user') || '{}');
-        set({ user });
+        const role = JSON.parse(window.sessionStorage.getItem('role') || '{}');
+        set({ user, role });
         const allowedSettings = allSettings
             .map((setting: SettingsIF) => {
                 const items = setting.items.filter((item: { permission: string }) => {
-                    if (user?.role?.name === 'superadmin') return true;
+                    if (role?.name === 'superadmin') return true;
                     return permissions.includes(item.permission);
                 });
                 if (items.length === 0) return null;
@@ -166,3 +176,4 @@ const allSettings: SettingsIF[] = [
         ]
     }
 ];
+

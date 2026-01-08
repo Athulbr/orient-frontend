@@ -91,14 +91,14 @@ interface MobileSidebarIF {
 }
 
 const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
-    const { settings, checkPermission } = usePermissionStore();
+    const { settings, checkPermission, checkRolePermission } = usePermissionStore();
     const module = sessionStorage.getItem('module');
 
     const navigate = useNavigate();
     return (
         <div className={`hidden h-full min-w-16 max-w-16 pt-2 flex-col gap-2 bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
             {sidebarMenuItems.map(item => {
-                if (!checkPermission(item.permission)) return null;
+                if (!checkRolePermission(item.permission)) return null;
                 const isActive = item.key === module;
                 // const isActive = location.pathname.includes(item.key) || item.key === module || (item.key === 'docsnap' && location.pathname === '/');
                 return (

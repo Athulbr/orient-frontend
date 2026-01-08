@@ -23,18 +23,71 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const { instance } = useMsal();
     const isAuthenticated = useIsAuthenticated();
     const [tenantList, setTenantList] = useState([]);
-    const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || 'all';
+    const { setPermissions } = usePermissionStore();
+    const [roleList, setRoleList] = useState([]);
     const { updateRefreshSidebar } = usePermissionStore();
+    const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
+    const selectedRoleFromSessionStorage = JSON.parse(window?.sessionStorage?.getItem('role') || '{}');
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
+
     useEffect(() => {
         if (user?.role?.name !== 'superadmin') return;
-        const getTenantList = async () => {
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/tenant/option-list`, {});
-            setTenantList(res.data);
+
+        const fetchData = async () => {
+            try {
+                const [tenantList, roleList] = await Promise.all([
+                    httpRequest('POST', `${config.nodeApiUrl}/tenant/option-list`, {}),
+                    httpRequest('POST', `${config.nodeApiUrl}/role/option-list`, {})
+                ]);
+
+                setTenantList(tenantList?.data);
+                setRoleList(roleList?.data);
+            } catch (error) {
+                console.error('Failed to load tenant/role list', error);
+            }
         };
-        getTenantList();
+
+        fetchData();
     }, []);
+
+    // const getRolePermission = async (id: string) => {
+    //     try {
+    //         if (!id || id === 'all') {
+    //             window?.sessionStorage?.setItem('permissions', JSON.stringify([]));
+    //             return;
+    //         }
+    //         const res = await httpRequest('GET', `${config.nodeApiUrl}/role/${id}`);
+    //         window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.features));
+    //         if (res?.data?.features?.length > 0) {
+    //             window.location.reload();
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to load role permission list', error);
+    //     }
+    // };
+
+    const getRolePermission = async (id: string) => {
+        try {
+            if (!id || id === 'all') {
+                window?.sessionStorage?.setItem('permissions', JSON.stringify([]));
+                window?.sessionStorage?.setItem('role', JSON.stringify({ name: user?.role?.name, _id: user?.role?._id }));
+                setPermissions([]); // reflect immediately
+                return;
+            }
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/role/${id}`);
+            const features = res?.data?.features || [];
+            window?.sessionStorage?.setItem('permissions', JSON.stringify(features));
+            const featureKeys = features.map((f: any) => f.key);
+            setPermissions(featureKeys); // this triggers Sidebar to re-render
+            if (features?.length > 0) {
+                updateRefreshSidebar();
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Failed to load role permission list', error);
+        }
+    };
 
     const logOut = async () => {
         setTimeout(() => {
@@ -67,30 +120,31 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             <div className="flex flex-1 items-center justify-end">
                 <div className="hidden items-center gap-6 px-6 md:flex">
                     {user?.role?.name === 'superadmin' && (
-                        <>
-                            <SingleSelect
-                                className="min-w-40"
-                                value={selectedTenantFromSessionStorage}
-                                onValueChange={e => {
-                                    sessionStorage.setItem('selectedTenant', e);
-                                    window.location.reload();
-                                }}
-                                options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
-                            />
-                            <SingleSelect
-                                className="min-w-40"
-                                value={selectedTenantFromSessionStorage}
-                                onValueChange={e => {
-                                    sessionStorage.setItem('selectedTenant', e);
-                                    updateRefreshSidebar();
-                                }}
-                                options={[
-                                    { label: 'All Roles', value: 'all' },
-                                    { label: 'Admin', value: 'admin' },
-                                    { label: 'User', value: 'user' }
-                                ]}
-                            />
-                        </>
+                        <SingleSelect
+                            className="min-w-40"
+                            value={selectedTenantFromSessionStorage}
+                            onValueChange={e => {
+                                sessionStorage.setItem('selectedTenant', e);
+                                window.location.reload();
+                            }}
+                            placeholder="Select Tenant"
+                            options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
+                        />
+                    )}
+
+                    {user?.role?.name === 'superadmin' && (
+                        <SingleSelect
+                            className="min-w-40"
+                            value={selectedRoleFromSessionStorage?._id}
+                            onValueChange={e => {
+                                const allOptions = [{ label: 'All Roles', value: 'all' }, ...roleList];
+                                const selectedOption = allOptions.find((role: { label: string; value: string }) => role.value === e);
+                                sessionStorage.setItem('role', JSON.stringify({ name: selectedOption?.label || '', _id: e }));
+                                getRolePermission(e);
+                            }}
+                            placeholder="Select Role"
+                            options={[{ label: 'All Roles', value: 'all' }, ...roleList]}
+                        />
                     )}
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">

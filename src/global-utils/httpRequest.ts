@@ -4,13 +4,17 @@ import clientLogger from './clientLog';
 const httpRequest = async <T = any>(method: string, url: string, data: Record<string, any> = {}, token?: string): Promise<T> => {
     const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
     const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+    const selectedModule = window?.sessionStorage?.getItem('module') || '';
+    const selectedRole = window?.sessionStorage?.getItem('selectedRole') || '';
     const user: any = window?.sessionStorage?.getItem('user') || '';
     const normalizedMethod = method.toUpperCase();
 
     const headers: HeadersInit = {
         Accept: 'application/json',
         'Content-Type': 'application/json;charset=UTF-8',
-        tenantid: selectedTenant ? selectedTenant : user?.tenant?.name
+        tenantid: selectedTenant ? selectedTenant : user?.tenant?._id,
+        roleid: selectedRole ? selectedRole : user?.role?._id,
+        module: selectedModule
     };
 
     if (sessionStorageAccessToken) {
