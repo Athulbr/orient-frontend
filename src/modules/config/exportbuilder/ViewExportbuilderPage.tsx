@@ -54,14 +54,15 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
 
     useEffect(() => {
         const fetchRecords = async () => {
-            const payload: any = {
-                pageSize: 100,
-                filters: getFiltersFromConfig(),
-                startDate: startDate,
-                endDate: endDate,
-                tenantId: tenant.tenantId || ''
-            };
-            if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
+                const payload: any = {
+                    pageSize: 100,
+                    filters: getFiltersFromConfig(),
+                    startDate: startDate,
+                    endDate: endDate,
+                    tenantId: tenant.tenantId || '',
+                    ...(state.selectedTemplateId && state.selectedTemplateId.length ? { templateId: state.selectedTemplateId } : {})
+                };
+                if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
             if (selectedStatus) payload.filters.status = selectedStatus;
 
             await getRecordsApi(payload);
@@ -99,7 +100,8 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
             filters: getFiltersFromConfig(),
             startDate: startDate,
             endDate: endDate,
-            tenantId: tenant.tenantId || ''
+            tenantId: tenant.tenantId || '',
+            ...(state.selectedTemplateId && state.selectedTemplateId.length ? { templateId: state.selectedTemplateId } : {})
         };
         if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
         if (selectedStatus) payload.filters.status = selectedStatus;

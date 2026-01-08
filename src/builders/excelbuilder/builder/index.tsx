@@ -12,6 +12,7 @@ import ColumnCard from './ColumnCard';
 import AutoColumnSelectorDialog from './AutoColumnSelectorDialog';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import { DialogComponent } from '../../../components/DialogComponent';
+import { useExportbuilderState } from '../../../modules/config/exportbuilder/hooks/exportbuilderContext';
 
 export interface ExcelColumnIF {
     id: string;
@@ -49,7 +50,7 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
     const [tempJsCode, setTempJsCode] = useState('');
     const [autoDialogOpen, setAutoDialogOpen] = useState(false);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+    const { state: exportState, setState: setExportState } = useExportbuilderState();
 
     const detectedColumns = useAutoColumns({ inputData, sheets, setSheets, activeSheetIndex });
 
@@ -282,12 +283,13 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
                                 <button
                                     key={t.id}
                                     onClick={() => {
-                                        setSelectedTemplateId(t.id);
+                                        const newState = { ...exportState, selectedTemplateId: [t.id] };
+                                        setExportState(newState);
                                         setShowTemplateSelector(false);
                                     }}
                                     className={cn(
                                         'w-full cursor-pointer text-left px-4 py-3 rounded border hover:bg-gray-50 transition-colors',
-                                        selectedTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                        exportState?.selectedTemplateId?.includes(t.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                                     )}
                                 >
                                     <div className="font-medium text-gray-800">{t.name}</div>
