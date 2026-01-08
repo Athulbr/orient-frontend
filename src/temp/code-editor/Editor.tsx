@@ -20,7 +20,7 @@ export const MonacoEditor = ({ content, file }: { content: string; file: string 
                 value={content}
                 theme="vs-dark"
                 options={{
-                    readOnly: true,
+                    readOnly: false,
                     fontSize: 16,
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,

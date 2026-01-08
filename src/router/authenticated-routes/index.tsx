@@ -5,7 +5,6 @@ import FullScreenLoader from '../../components/FullScreenLoader';
 import DocumentCreationEditor from '../../modules/documentCreation/create-document';
 import ContentCreationEditor from '../../modules/content-creation';
 
-const PromateRoutes = lazy(() => import('./PromateRoutes'));
 const ConfigRoutes = lazy(() => import('./config-routes'));
 const DashboardPage = lazy(() => import('../../modules/dashboard'));
 const DocSnapRoutes = lazy(() => import('./DocSnapRoutes'));
@@ -60,7 +59,6 @@ const AuthenticatedRoutes = () => {
                 <Route path="sld/*" element={<DocSnapRoutes />} />
                 <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="content-creation/*" element={<DocSnapRoutes />} />
-                <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/transcription/record/*" element={<MedicalCodeRoutes />} />
