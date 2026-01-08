@@ -4,6 +4,7 @@ import { ExcelExportDialogNew } from '../../../builders/excelbuilder/preview';
 import { useExportbuilderApi } from './hooks/useExportbuilderApi';
 import { useEffect, useMemo, useState } from 'react';
 import { useToastStore } from '../../../components/toast/ToastStore';
+import Spinner from '../../../components/Spinner';
 import DateTimePicker, { DateRangeIF } from '../../../components/DateTimePicker';
 import { SingleSelect } from '../../../components/SingleSelect';
 import { Button } from '../../../components/Button';
@@ -54,18 +55,25 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
 
     useEffect(() => {
         const fetchRecords = async () => {
-                const payload: any = {
-                    pageSize: 100,
-                    filters: getFiltersFromConfig(),
-                    startDate: startDate,
-                    endDate: endDate,
-                    tenantId: tenant.tenantId || '',
-                    ...(state.selectedTemplateId && state.selectedTemplateId.length ? { templateId: state.selectedTemplateId } : {})
-                };
-                if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
+            const payload: any = {
+                pageSize: 100,
+                filters: getFiltersFromConfig(),
+                startDate: startDate,
+                endDate: endDate,
+                tenantId: tenant.tenantId || '',
+                ...(state.selectedTemplateId && state.selectedTemplateId.length ? { templateId: state.selectedTemplateId } : {})
+            };
+            if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
             if (selectedStatus) payload.filters.status = selectedStatus;
 
-            await getRecordsApi(payload);
+            try {
+                setState(prev => ({ ...prev, loading: true }));
+                await getRecordsApi(payload);
+            } catch (err) {
+                console.error('fetchRecords error:', err);
+            } finally {
+                setState(prev => ({ ...prev, loading: false }));
+            }
 
             // Extract filter options from records (only on initial load when no filters are selected)
             if (Object.keys(selectedFilterValues).length === 0 && Object.keys(initialFilterOptions).length === 0 && state.exportbuilder?.filters) {
@@ -155,8 +163,13 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     <BackButton onClick={() => setState(prev => ({ ...prev, id: '', exportbuilder: null, viewDialog: false, loading: false }))} />
                     <div className=" w-full text-xl font-semibold text-gray-800">{state.exportbuilder?.name}</div>
                 </div>
-                <div className="flex gap-2 items-center">
-                    {state.totalRecords && <p className="text-green-600 text-sm pr-4">Total Records: {state.totalRecords}</p>}
+                <div className="flex items-center">
+                    <p className="text-green-600 text-sm pr-1">Total Records:</p>
+                    {state.loading ? (
+                        <Spinner size={16} className="text-green-600 ml-1" />
+                    ) : (
+                        <p className="text-green-600 text-sm pr-4 ml-1">{(state.totalRecords ?? 0).toLocaleString()}</p>
+                    )}
                     {/* <Button outlined disabled={state.loading} startIcon={state.loading ? <Spinner className="h-4 w-4 animate-spin" /> : <Upload size={14} />}>
                         Export JSON
                     </Button>
@@ -165,13 +178,13 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     </Button> */}
                 </div>
             </header>
-            <div className="w-full  p-4 flex gap-4">
+            <div className="w-full p-4 flex gap-4 overflow-x-auto flex-nowrap items-center">
                 <SingleSelect
                     // label="Templates"
                     options={[{ label: 'All Templates', value: '' }, ...tenant.templates]}
                     value={selectedTemplateId}
                     placeholder="Select Template"
-                    className="min-w-60"
+                    className="min-w-60 flex-shrink-0"
                     onValueChange={(value: string) => setSelectedTemplateId(value)}
                 />
 
@@ -188,7 +201,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     ]}
                     value={selectedStatus}
                     placeholder="Select Status"
-                    className="min-w-60"
+                    className="min-w-60 flex-shrink-0"
                     onValueChange={(value: string) => setSelectedStatus(value)}
                 />
 
@@ -233,24 +246,27 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                                     options={mergedOptions}
                                     value={selectedFilterValues[key] || ''}
                                     placeholder={`Select ${key}`}
-                                    className="min-w-60"
+                                    className="min-w-60 flex-shrink-0"
                                     onValueChange={(value: string) => setSelectedFilterValues(prev => ({ ...prev, [key]: value }))}
                                 />
                             )
                         );
                     })}
-                <DateTimePicker
-                    onChange={(range: DateRangeIF) => {
-                        setStartDate(range.startDate);
-                        setEndDate(range.endDate);
-                    }}
-                />
+                <div className="flex-shrink-0">
+                    <DateTimePicker
+                        onChange={(range: DateRangeIF) => {
+                            setStartDate(range.startDate);
+                            setEndDate(range.endDate);
+                        }}
+                    />
+                </div>
             </div>
             <ExcelExportDialogNew
                 totalRecords={state.totalRecords}
                 template={state.exportbuilder?.sheets || []}
                 inputData={state.records}
                 serverExportLoading={exporting}
+                recordsLoading={state.loading}
                 onServerJsonExport={(activeSheetIndex: number) => handleServerExport('json', activeSheetIndex)}
                 onServerXlsxExport={() => handleServerExport('xlsx')}
             />
