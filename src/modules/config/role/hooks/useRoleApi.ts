@@ -55,17 +55,17 @@ export const useRolesApi = () => {
         }
     };
 
-    // const getRoleByIdApi = async (id: string) => {
-    //   try {
-    //     setState(prev => ({ ...prev, loading: true }));
-    //     const res = await httpRequest('GET', `${config.nodeApiUrl}/role/${id}`);
-    //     toast.success('Role fetched successfully');
-    //     setState(prev => ({ ...prev, loading: false, role: res.data, fields: res.data.fields }));
-    //   } catch (error) {
-    //     console.error('error:===========', error);
-    //     toast.error('Failed to Create Role');
-    //   }
-    // };
+    const getRoleByIdApi = async (id: string) => {
+        try {
+            setState(prev => ({ ...prev, loading: true }));
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/role/${id}`);
+            toast.success('Role fetched successfully');
+            setState(prev => ({ ...prev, loading: false, role: res.data, fields: res.data.fields }));
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to Create Role');
+        }
+    };
 
     const deleteRoleApi = async (id: string) => {
         try {
@@ -105,5 +105,5 @@ export const useRolesApi = () => {
         }
     };
 
-    return { createRoleApi, updateRoleApi, deleteRoleApi, getSubscriptionModelByIdApi, getAllModulesApi, getAllFeaturesApi };
+    return { createRoleApi, updateRoleApi, deleteRoleApi, getSubscriptionModelByIdApi, getAllModulesApi, getAllFeaturesApi, getRoleByIdApi };
 };
