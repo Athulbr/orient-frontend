@@ -28,7 +28,6 @@ import {
 const UpdatedFieldsListPage = lazy(() => import('../../../modules/docsnap/prompt-tuning'));
 const FormbuilderRoutes = lazy(() => import('./FormbuilderRoutes'));
 const ListRolePage = lazy(() => import('../../../modules/config/role'));
-const ListProjectPage = lazy(() => import('../../../modules/docsnap/project'));
 const ListModulePage = lazy(() => import('../../../modules/config/module'));
 const ListFeaturePage = lazy(() => import('../../../modules/config/feature'));
 const ListSubscriptionModelPage = lazy(() => import('../../../modules/config/subscriptionModel'));
@@ -56,7 +55,6 @@ const ConfigRoutes = () => {
                         <Route path="tablebuilder/list" element={<ListTablebuilderPage />} />
                         <Route path="exportbuilder/list" element={<ListExportbuilderPage />} />
                         <Route path="exportbuilder/quick-report" element={<ExportQuickReportPage />} />
-                        <Route path="project/list" element={<ListProjectPage />} />
                         <Route path="prompt-tuning" element={<UpdatedFieldsListPage />} />
                         <Route path="user/list" element={<ListUserPage />} />
                         <Route path="comment/*" element={<ListCommentPage />} />

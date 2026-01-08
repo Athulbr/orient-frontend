@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { useDashboardApi } from '../hooks/useDashboardApi';
 import { TemplateCardComponent } from '../../docsnap/template/list-template/components/TemplateCard';
-import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 
 interface TemplateCardsComponentIF {
     test?: string;
@@ -14,7 +13,6 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
     const { state, setState } = useDashboardState();
     const [cardsPerRow, setCardsPerRow] = useState(4);
     const { getTemplatesApi, getPredefinedTemplatesApi } = useDashboardApi();
-    const { checkPermission } = usePermissionStore();
 
     // Calculate how many cards can fit based on screen width
     const calculateCardsPerRow = useCallback(() => {

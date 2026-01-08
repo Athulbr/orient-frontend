@@ -3,7 +3,6 @@ import PageNameComponent from '../../../../components/PageName';
 import { useState } from 'react';
 import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
-import { PromptFieldIF } from '../../document';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { Button } from '../../../../components/Button';
@@ -12,6 +11,7 @@ import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import ExcelExportDialogNew from './components/ExcelExportDialogNew';
 import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBuilder';
 import { ListRecordCustomTable } from './ListRecordCustomTable';
+import { PromptFieldIF } from '../../prompt-tuning/interface';
 interface Project {
     _id: string;
     name: string;

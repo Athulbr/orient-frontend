@@ -50,6 +50,14 @@ export const useDashboardApi = () => {
             selectedTenantFromSessionStorage === 'all' ? true : template.tenantId === selectedTenantFromSessionStorage
         );
     };
+    const filterTemplatesByModule = (templates: any) => {
+        const module = window?.sessionStorage?.getItem('module') || '';
+        return templates.filter((template: any) => {
+            console.log('module:===========', module);
+            console.log('template.settings?.module:===========', template.settings?.module);
+            return template.settings?.module === module;
+        });
+    };
     const sortTemplatesByRecentlyUsed = (templates: any) => {
         const arrayOfRecentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
         const templatesCopy = [...templates];
@@ -68,7 +76,8 @@ export const useDashboardApi = () => {
             setState(prev => ({ ...prev, loadingTemplates: true }));
             const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
             const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
-            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByTenant);
+            const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant);
+            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByModule);
 
             setState(prev => ({
                 ...prev,

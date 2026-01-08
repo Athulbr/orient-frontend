@@ -49,7 +49,7 @@ interface SubFieldsIF {
     instruction: string;
 }
 
-interface PromptFieldIF {
+export interface PromptFieldIF {
     name: string;
     dataType: string;
     jsonKey: string;

@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
-interface UseViewRecordGlobalStoreIF {
+interface UseGlobalVariableStoreIF {
     refresh: number;
     updateRefresh: () => void;
 }
 
-export const useViewRecordGlobalStore = create<UseViewRecordGlobalStoreIF>(set => ({
+export const useGlobalVariableStore = create<UseGlobalVariableStoreIF>(set => ({
     refresh: 1,
     updateRefresh: () => {
         set(state => ({

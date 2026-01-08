@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { PromptFieldIF } from '../../docsnap/document';
 import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import { Button } from '../../../components/Button';
 import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import useTranscriptStore from '../../../zustand-store/transcriptStore';
+import { PromptFieldIF } from '../../docsnap/prompt-tuning/interface';
 interface Project {
     _id: string;
     name: string;

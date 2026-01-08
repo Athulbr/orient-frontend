@@ -3,7 +3,6 @@ import { TabNavComponent } from '../../components/TabNav/TabNav';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { useParams } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
-import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 
 interface DataPreviewComponentIF {
     tabContents: {
@@ -15,12 +14,11 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ tabContents
     const { state, setState } = useViewRecordState();
     const { id } = useParams();
     const { getRecordApiById } = useViewRecordApi();
-    const { refresh } = useViewRecordGlobalStore();
 
     useEffect(() => {
         if (!id) return;
         getRecordApiById(id);
-    }, [id, refresh]);
+    }, [id]);
 
     // console.log('state.templateSettings:===========', state.templateSettings);
 

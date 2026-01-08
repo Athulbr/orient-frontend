@@ -1,4 +1,4 @@
-import { PromptFieldIF } from "../../../docsnap/document";
+import { PromptFieldIF } from '../../../docsnap/prompt-tuning/interface';
 
 type ReferenceField = {
     name: string;
