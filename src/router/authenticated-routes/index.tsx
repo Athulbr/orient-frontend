@@ -40,6 +40,8 @@ const AuthenticatedRoutes = () => {
                       ? 'content-creation'
                       : 'none';
     module !== 'none' && sessionStorage.setItem('module', module);
+    const role = JSON.parse(sessionStorage.getItem('role') || '{}');
+    if (role.name === 'superadmin') sessionStorage.setItem('module', 'docsnap');
     const paths = {
         docsnap: '/docsnap',
         'data-entry': '/data-entry',

@@ -67,8 +67,6 @@ export const SingleSelect: React.FC<SelectProps> = ({
                                 className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${option.value === value ? 'bg-gray-200 font-medium' : ''}`}
                                 onClick={() => {
                                     onValueChange(option.value);
-                                    // Store tenant id in localStorage
-                                    localStorage.setItem('selectedTenant', option.value);
                                     setIsOpen(false);
                                 }}
                                 role="option"

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Editor from '@monaco-editor/react';
 
 export type FileNode = {
     name: string;
@@ -9,16 +10,56 @@ export type FileNode = {
 
 const API = 'http://localhost:4000';
 
-export function CodeEditor() {
+export default function CodeEditor() {
     const [tree, setTree] = useState<FileNode[]>([]);
     const [content, setContent] = useState('');
     const [activeFile, setActiveFile] = useState('');
+    const [explorerWidth, setExplorerWidth] = useState(400);
+    const [selectionWidth, setSelectionWidth] = useState(300);
+    const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
 
     useEffect(() => {
         fetch(`${API}/tree`)
             .then(res => res.json())
             .then(setTree);
     }, []);
+
+    const handleExplorerResize = (e: React.MouseEvent) => {
+        e.preventDefault();
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const newWidth = Math.max(200, Math.min(e.clientX, 800));
+            setExplorerWidth(newWidth);
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleSelectionResize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startWidth = selectionWidth;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const delta = e.clientX - startX; // Changed from startX - e.clientX
+            const newWidth = Math.max(200, Math.min(startWidth + delta, 800));
+            setSelectionWidth(newWidth);
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
 
     const openFile = async (path: string) => {
         setActiveFile(path);
@@ -27,71 +68,281 @@ export function CodeEditor() {
         setContent(data.content);
     };
 
+    const getAllFilePaths = (node: FileNode): string[] => {
+        if (node.type === 'file') return [node.path];
+        return node.children?.flatMap(getAllFilePaths) || [];
+    };
+
+    const toggleFileSelection = (path: string) => {
+        setSelectedFilePaths(prev => (prev.includes(path) ? prev.filter(p => p !== path) : [...prev, path]));
+    };
+
+    const toggleFolderSelection = (node: FileNode) => {
+        const allPaths = getAllFilePaths(node);
+        const allSelected = allPaths.every(p => selectedFilePaths.includes(p));
+
+        if (allSelected) {
+            setSelectedFilePaths(prev => prev.filter(p => !allPaths.includes(p)));
+        } else {
+            setSelectedFilePaths(prev => [...new Set([...prev, ...allPaths])]);
+        }
+    };
+
     return (
         <div className="h-screen flex bg-[#1e1e1e] text-[#cccccc] font-mono">
-            <Explorer tree={tree} onFileClick={openFile} activeFile={activeFile} />
+            <Explorer
+                tree={tree}
+                onFileClick={openFile}
+                activeFile={activeFile}
+                width={explorerWidth}
+                selectedFilePaths={selectedFilePaths}
+                onToggleFile={toggleFileSelection}
+                onToggleFolder={toggleFolderSelection}
+            />
+            <div className="w-1 bg-[#333] hover:bg-[#007acc] cursor-col-resize transition-colors" onMouseDown={handleExplorerResize} />
+
+            <SelectionPanel
+                onFileClick={openFile}
+                selectedFilePaths={selectedFilePaths}
+                onRemove={toggleFileSelection}
+                onClearAll={() => setSelectedFilePaths([])}
+                width={selectionWidth}
+            />
+            <div className="w-1 bg-[#333] hover:bg-[#007acc] cursor-col-resize transition-colors" onMouseDown={handleSelectionResize} />
+
             <MonacoEditor content={content} file={activeFile} />
         </div>
     );
 }
 
-export const Explorer = ({ tree, onFileClick, activeFile }: { tree: FileNode[]; onFileClick: (path: string) => void; activeFile: string }) => (
-    <div className="w-64 bg-[#252526] border-r border-[#333] overflow-auto">
+const Explorer = ({
+    tree,
+    onFileClick,
+    activeFile,
+    width,
+    selectedFilePaths,
+    onToggleFile,
+    onToggleFolder
+}: {
+    tree: FileNode[];
+    onFileClick: (path: string) => void;
+    activeFile: string;
+    width: number;
+    selectedFilePaths: string[];
+    onToggleFile: (path: string) => void;
+    onToggleFolder: (node: FileNode) => void;
+}) => (
+    <div className="bg-[#252526] border-r border-[#333] overflow-auto" style={{ width: `${width}px` }}>
         <div className="px-3 py-2 text-xs text-[#bbbbbb] font-semibold">EXPLORER</div>
-
-        <FileTree nodes={tree} onFileClick={onFileClick} activeFile={activeFile} />
+        <FileTree
+            nodes={tree}
+            onFileClick={onFileClick}
+            activeFile={activeFile}
+            selectedFilePaths={selectedFilePaths}
+            onToggleFile={onToggleFile}
+            onToggleFolder={onToggleFolder}
+        />
     </div>
 );
+
+const SelectionPanel = ({
+    selectedFilePaths,
+    onFileClick,
+    onRemove,
+    onClearAll,
+    width
+}: {
+    selectedFilePaths: string[];
+    onFileClick: (path: string) => void;
+    onRemove: (path: string) => void;
+    onClearAll: () => void;
+    width: number;
+}) => {
+    const getPathFromSrc = (fullPath: string) => {
+        const index = fullPath.indexOf('/src/');
+        return index !== -1 ? fullPath.slice(index + 1) : fullPath;
+    };
+    return (
+        <div className="bg-[#252526] border-r border-[#333] overflow-auto flex flex-col" style={{ width: `${width}px` }}>
+            <div className="px-3 py-2 text-xs text-[#bbbbbb] font-semibold flex justify-between items-center border-b border-[#333]">
+                <span>SELECTED FILES ({selectedFilePaths.length})</span>
+                {selectedFilePaths.length > 0 && (
+                    <button onClick={onClearAll} className="text-xs text-[#007acc] hover:text-[#0098ff] font-normal">
+                        Clear All
+                    </button>
+                )}
+            </div>
+            <div className="flex-1 overflow-auto">
+                {selectedFilePaths.length === 0 ? (
+                    <div className="px-3 py-4 text-xs text-[#888]">No files selected</div>
+                ) : (
+                    <div className="p-2">
+                        {selectedFilePaths.map(path => (
+                            <div key={path} className="text-xs py-1 px-2 hover:bg-[#2a2d2e] rounded flex justify-between items-center group mb-1">
+                                <span className="truncate flex-1 cursor-pointer" onClick={() => onFileClick(path)}>
+                                    {getPathFromSrc(path)}
+                                </span>
+                                <button
+                                    onClick={() => onRemove(path)}
+                                    className="ml-2 text-[#888] hover:text-[#f44] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const FileTree = ({
     nodes,
     level = 0,
     onFileClick,
-    activeFile
+    activeFile,
+    selectedFilePaths,
+    onToggleFile,
+    onToggleFolder
 }: {
     nodes: FileNode[];
     level?: number;
     onFileClick: (path: string) => void;
     activeFile: string;
+    selectedFilePaths: string[];
+    onToggleFile: (path: string) => void;
+    onToggleFolder: (node: FileNode) => void;
 }) => (
     <div className="p-4">
         {nodes.map(node =>
             node.type === 'folder' ? (
-                <FolderNode key={node.path} node={node} level={level} onFileClick={onFileClick} activeFile={activeFile} />
+                <FolderNode
+                    key={node.path}
+                    node={node}
+                    level={level}
+                    onFileClick={onFileClick}
+                    activeFile={activeFile}
+                    selectedFilePaths={selectedFilePaths}
+                    onToggleFile={onToggleFile}
+                    onToggleFolder={onToggleFolder}
+                />
             ) : (
-                <FileNodeItem key={node.path} node={node} level={level} onFileClick={onFileClick} activeFile={activeFile} />
+                <FileNodeItem
+                    key={node.path}
+                    node={node}
+                    level={level}
+                    onFileClick={onFileClick}
+                    activeFile={activeFile}
+                    selectedFilePaths={selectedFilePaths}
+                    onToggleFile={onToggleFile}
+                />
             )
         )}
     </div>
 );
 
-const FolderNode = ({ node, level, onFileClick, activeFile }: { node: FileNode; level: number; onFileClick: (path: string) => void; activeFile: string }) => {
+const FolderNode = ({
+    node,
+    level,
+    onFileClick,
+    activeFile,
+    selectedFilePaths,
+    onToggleFile,
+    onToggleFolder
+}: {
+    node: FileNode;
+    level: number;
+    onFileClick: (path: string) => void;
+    activeFile: string;
+    selectedFilePaths: string[];
+    onToggleFile: (path: string) => void;
+    onToggleFolder: (node: FileNode) => void;
+}) => {
     const [open, setOpen] = useState(false);
+
+    const getAllFilePaths = (n: FileNode): string[] => {
+        if (n.type === 'file') return [n.path];
+        return n.children?.flatMap(getAllFilePaths) || [];
+    };
+
+    const allPaths = getAllFilePaths(node);
+    const isChecked = allPaths.length > 0 && allPaths.every(p => selectedFilePaths.includes(p));
+    const isIndeterminate = !isChecked && allPaths.some(p => selectedFilePaths.includes(p));
 
     return (
         <div>
-            <div onClick={() => setOpen(!open)} className="flex items-center cursor-pointer select-none hover:bg-[#2a2d2e]" style={{ paddingLeft: level * 14 }}>
-                <span className="w-4 text-xs">{open ? '▼' : '▶'}</span>
-                <span className="text-[#c5c5c5] py-0.5">{node.name}</span>
+            <div className="flex items-center cursor-pointer select-none hover:bg-[#2a2d2e]" style={{ paddingLeft: level * 14 }}>
+                <input
+                    type="checkbox"
+                    checked={isChecked}
+                    // @ts-ignore
+                    ref={el => el && (el.indeterminate = isIndeterminate)}
+                    onChange={e => {
+                        e.stopPropagation();
+                        onToggleFolder(node);
+                    }}
+                    onClick={e => e.stopPropagation()}
+                    className="mr-2 cursor-pointer"
+                />
+                <div onClick={() => setOpen(!open)} className="flex items-center flex-1">
+                    <span className="w-4 text-xs">{open ? '▼' : '▶'}</span>
+                    <span className="text-[#c5c5c5] py-0.5">{node.name}</span>
+                </div>
             </div>
 
-            {open && node.children && <FileTree nodes={node.children} level={level + 1} onFileClick={onFileClick} activeFile={activeFile} />}
+            {open && node.children && (
+                <FileTree
+                    nodes={node.children}
+                    level={level + 1}
+                    onFileClick={onFileClick}
+                    activeFile={activeFile}
+                    selectedFilePaths={selectedFilePaths}
+                    onToggleFile={onToggleFile}
+                    onToggleFolder={onToggleFolder}
+                />
+            )}
         </div>
     );
 };
 
-const FileNodeItem = ({ node, level, onFileClick, activeFile }: { node: FileNode; level: number; onFileClick: (path: string) => void; activeFile: string }) => (
-    <div
-        onClick={() => onFileClick(node.path)}
-        className={`cursor-pointer py-0.5 px-1 rounded
-      ${activeFile === node.path ? 'bg-[#373737]' : 'hover:bg-[#2a2d2e]'}`}
-        style={{ paddingLeft: level * 14 + 16 }}
-    >
-        {node.name}
-    </div>
-);
+const FileNodeItem = ({
+    node,
+    level,
+    onFileClick,
+    activeFile,
+    selectedFilePaths,
+    onToggleFile
+}: {
+    node: FileNode;
+    level: number;
+    onFileClick: (path: string) => void;
+    activeFile: string;
+    selectedFilePaths: string[];
+    onToggleFile: (path: string) => void;
+}) => {
+    const isChecked = selectedFilePaths.includes(node.path);
 
-import Editor from '@monaco-editor/react';
+    return (
+        <div
+            className={`cursor-pointer py-0.5 px-1 rounded flex items-center
+          ${activeFile === node.path ? 'bg-[#373737]' : 'hover:bg-[#2a2d2e]'}`}
+            style={{ paddingLeft: level * 14 + 16 }}
+        >
+            <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={e => {
+                    e.stopPropagation();
+                    onToggleFile(node.path);
+                }}
+                onClick={e => e.stopPropagation()}
+                className="mr-2 cursor-pointer"
+            />
+            <span onClick={() => onFileClick(node.path)}>{node.name}</span>
+        </div>
+    );
+};
 
 const getLanguage = (file: string) => {
     if (file.endsWith('.ts') || file.endsWith('.tsx')) return 'typescript';
@@ -102,9 +353,9 @@ const getLanguage = (file: string) => {
     return 'plaintext';
 };
 
-export const MonacoEditor = ({ content, file }: { content: string; file: string }) => {
+const MonacoEditor = ({ content, file }: { content: string; file: string }) => {
     return (
-        <div className="flex-1 flex flex-col bg-[#1e1e1e]">
+        <div className="flex flex-col bg-[#1e1e1e]" style={{ flex: 1, minWidth: 0 }}>
             <div className="h-9 bg-[#2d2d2d] border-b border-[#333] px-4 flex items-center text-sm text-[#cccccc]">{file || 'No file selected'}</div>
 
             <Editor

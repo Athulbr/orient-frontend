@@ -38,6 +38,10 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
             templates
         };
     }, []);
+    const getValueByPath = (obj: any, path?: string) => {
+        if (!obj || !path) return undefined;
+        return path.split('.').reduce((acc: any, seg: string) => (acc && acc[seg] !== undefined ? acc[seg] : undefined), obj);
+    };
 
     // Convert saved filters to API format
     const getFiltersFromConfig = () => {
@@ -217,7 +221,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                             ? Array.from(
                                   new Set(
                                       state.records
-                                          .map((record: any) => record[key])
+                                        .map((record: any) => getValueByPath(record, filter.jsonPath))
                                           .filter((val: any) => val !== undefined && val !== null)
                                   )
                               ).slice(0, 50).map(String)

@@ -51,23 +51,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         fetchData();
     }, []);
 
-    // const getRolePermission = async (id: string) => {
-    //     try {
-    //         if (!id || id === 'all') {
-    //             window?.sessionStorage?.setItem('permissions', JSON.stringify([]));
-    //             return;
-    //         }
-    //         const res = await httpRequest('GET', `${config.nodeApiUrl}/role/${id}`);
-    //         window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.features));
-    //         if (res?.data?.features?.length > 0) {
-    //             window.location.reload();
-    //         }
-    //     } catch (error) {
-    //         console.error('Failed to load role permission list', error);
-    //     }
-    // };
-
-    const getRolePermission = async (id: string) => {
+    const updateRolePermission = async (id: string) => {
         try {
             if (!id || id === 'all') {
                 window?.sessionStorage?.setItem('permissions', JSON.stringify([]));
@@ -81,7 +65,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             const featureKeys = features.map((f: any) => f.key);
             setPermissions(featureKeys); // this triggers Sidebar to re-render
             if (features?.length > 0) {
-                updateRefreshSidebar();
                 window.location.reload();
             }
         } catch (error) {
@@ -120,32 +103,32 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             <div className="flex flex-1 items-center justify-end">
                 <div className="hidden items-center gap-6 px-6 md:flex">
                     {user?.role?.name === 'superadmin' && (
-                        <SingleSelect
-                            className="min-w-40"
-                            value={selectedTenantFromSessionStorage}
-                            onValueChange={e => {
-                                sessionStorage.setItem('selectedTenant', e);
-                                window.location.reload();
-                            }}
-                            placeholder="Select Tenant"
-                            options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
-                        />
-                    )}
+                        <>
+                            <SingleSelect
+                                className="min-w-40"
+                                value={selectedTenantFromSessionStorage}
+                                onValueChange={e => {
+                                    sessionStorage.setItem('selectedTenant', e);
+                                    window.location.reload();
+                                }}
+                                placeholder="Select Tenant"
+                                options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
+                            />
 
-                    {/* {user?.role?.name === 'superadmin' && (
-                        <SingleSelect
-                            className="min-w-40"
-                            value={selectedRoleFromSessionStorage?._id}
-                            onValueChange={e => {
-                                const allOptions = [{ label: 'All Roles', value: 'all' }, ...roleList];
-                                const selectedOption = allOptions.find((role: { label: string; value: string }) => role.value === e);
-                                sessionStorage.setItem('role', JSON.stringify({ name: selectedOption?.label || '', _id: e }));
-                                getRolePermission(e);
-                            }}
-                            placeholder="Select Role"
-                            options={[{ label: 'All Roles', value: 'all' }, ...roleList]}
-                        />
-                    )} */}
+                            <SingleSelect
+                                className="min-w-40"
+                                value={selectedRoleFromSessionStorage?._id}
+                                onValueChange={e => {
+                                    const allOptions = [{ label: 'All Roles', value: 'all' }, ...roleList];
+                                    const selectedOption = allOptions.find((role: { label: string; value: string }) => role.value === e);
+                                    sessionStorage.setItem('role', JSON.stringify({ name: selectedOption?.label || '', _id: e }));
+                                    updateRolePermission(e);
+                                }}
+                                placeholder="Select Role"
+                                options={[{ label: 'All Roles', value: 'all' }, ...roleList]}
+                            />
+                        </>
+                    )}
                     <Dropdown onChange={onChangeDropDown} options={['Account', 'Logout']}>
                         <span className="flex items-center gap-2 text-sm text-gray-300 capitalize">
                             <CircleUser size={20} className="cursor-pointer text-gray-300 hover:text-white" />
