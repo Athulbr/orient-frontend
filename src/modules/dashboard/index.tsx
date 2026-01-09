@@ -57,7 +57,7 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
                             <RecentFilesCardComponent module={module} />
                             <StatusCardComponent />
                         </div>
-                        <TemplateCardListComponent />
+                        <TemplateCardListComponent module={module} />
                     </div>
                 </div>
             </div>

@@ -50,12 +50,9 @@ export const useDashboardApi = () => {
             selectedTenantFromSessionStorage === 'all' ? true : template.tenantId === selectedTenantFromSessionStorage
         );
     };
-    const filterTemplatesByModule = (templates: any) => {
-        const module = window?.sessionStorage?.getItem('module') || '';
+    const filterTemplatesByModule = (templates: any, module?: string) => {
         return templates.filter((template: any) => {
-            console.log('module:===========', module);
-            console.log('template.settings?.module:===========', template.settings?.module);
-            return template.settings?.module === module;
+            return template.settings?.module === module || !module;
         });
     };
     const sortTemplatesByRecentlyUsed = (templates: any) => {
@@ -71,12 +68,12 @@ export const useDashboardApi = () => {
         const remainingTemplates = templatesCopy.filter((template: any) => !arrayOfRecentlyUsedTemplates.includes(template._id));
         return [...finalTemplates, ...remainingTemplates];
     };
-    const getTemplatesApi = async () => {
+    const getTemplatesApi = async (module?: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
             const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
             const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
-            const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant);
+            const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant, module);
             const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByModule);
 
             setState(prev => ({

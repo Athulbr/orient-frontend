@@ -6,10 +6,10 @@ import { useDashboardApi } from '../hooks/useDashboardApi';
 import { TemplateCardComponent } from '../../docsnap/template/list-template/components/TemplateCard';
 
 interface TemplateCardsComponentIF {
-    test?: string;
+    module: string;
 }
 
-export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () => {
+export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ module }) => {
     const { state, setState } = useDashboardState();
     const [cardsPerRow, setCardsPerRow] = useState(4);
     const { getTemplatesApi, getPredefinedTemplatesApi } = useDashboardApi();
@@ -45,9 +45,9 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
     }, [calculateCardsPerRow]);
 
     useEffect(() => {
-        getTemplatesApi();
+        getTemplatesApi(module);
         getPredefinedTemplatesApi();
-    }, []);
+    }, [module]);
 
     // Calculate how many template cards to show (reserve 1 slot for "View All")
     const templatesToShow = Math.max(0, cardsPerRow - 1);

@@ -6,10 +6,10 @@ interface UseGlobalVariableStoreIF {
 }
 
 export const useGlobalVariableStore = create<UseGlobalVariableStoreIF>(set => ({
-    refresh: 1,
+    refresh: 1, // Not used anywhere
     updateRefresh: () => {
         set(state => ({
             refresh: state.refresh + 1
         }));
-    }
+    } // Not used anywhere
 }));
