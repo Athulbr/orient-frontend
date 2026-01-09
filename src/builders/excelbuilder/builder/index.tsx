@@ -68,8 +68,14 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, 
         try {
             const templateList = JSON.parse(sessionStorage.getItem('templates') || '[]');
             const selectedTenant = sessionStorage.getItem('selectedTenant');
+            const moduleFilter = sessionStorage.getItem('module');
             return (templateList || [])
-                .filter((t: any) => !selectedTenant || selectedTenant === 'all' || t?.tenantId === selectedTenant)
+                .filter((t: any) => {
+                    const tenantOk = !selectedTenant || selectedTenant === 'all' || t?.tenantId === selectedTenant;
+                    const templateType = t?.settings?.templateType ?? t?.templateType;
+                    const moduleOk = !moduleFilter || moduleFilter === 'all' || templateType === moduleFilter;
+                    return tenantOk && moduleOk;
+                })
                 .map((t: any) => ({ id: t?._id, name: t?.name }));
         } catch (_e) {
             return [] as { id: string; name: string }[];

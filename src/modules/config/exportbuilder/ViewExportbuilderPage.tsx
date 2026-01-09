@@ -183,14 +183,14 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                 </div>
             </header>
             <div className="w-full p-4 flex gap-4 flex-wrap items-center">
-                <SingleSelect
+                {/* <SingleSelect
                     // label="Templates"
                     options={[{ label: 'All Templates', value: '' }, ...tenant.templates]}
                     value={selectedTemplateId}
                     placeholder="Select Template"
                     className="min-w-60"
                     onValueChange={(value: string) => setSelectedTemplateId(value)}
-                />
+                /> */}
 
                 <SingleSelect
                     // label="Status"
