@@ -3,7 +3,7 @@ import { Suspense, lazy } from 'react';
 import FullScreenLoader from '../../components/FullScreenLoader';
 import GraphComponent from '../../temp/GraphComponent';
 import WorkflowEditor from '../../modules/config/workflow';
-import { CodeEditor } from '../../temp/code-editor';
+import CodeEditor from '../../temp/code-editor';
 
 // Lazy load the whole auth module
 const AuthRoutes = lazy(() => import('./AuthRoutes'));
