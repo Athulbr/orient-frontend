@@ -1,5 +1,4 @@
-import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, Tractor, UserSearch, X, LocateFixed, FileCheck } from 'lucide-react';
-import { useState } from 'react';
+import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFixed, FileCheck } from 'lucide-react';
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
@@ -10,8 +9,6 @@ interface SidebarComponentIF {
 }
 
 export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = false, setShowSidebar }) => {
-    const { refreshSidebar } = usePermissionStore();
-
     const sidebarMenuItems = [
         {
             name: 'DocSnap',
@@ -141,7 +138,7 @@ const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
 };
 
 const MobileSidebar = ({ showSidebar, setShowSidebar, sidebarMenuItems }: MobileSidebarIF) => {
-    const { settings, checkPermission } = usePermissionStore();
+    const { checkPermission } = usePermissionStore();
     const navigate = useNavigate();
 
     if (!showSidebar) return null;

@@ -51,7 +51,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         fetchData();
     }, []);
 
-    const getRolePermission = async (id: string) => {
+    const updateRolePermission = async (id: string) => {
         try {
             if (!id || id === 'all') {
                 window?.sessionStorage?.setItem('permissions', JSON.stringify([]));
@@ -65,8 +65,6 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
             const featureKeys = features.map((f: any) => f.key);
             setPermissions(featureKeys); // this triggers Sidebar to re-render
             if (features?.length > 0) {
-                updateRefreshSidebar();
-
                 window.location.reload();
             }
         } catch (error) {
@@ -124,7 +122,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                                     const allOptions = [{ label: 'All Roles', value: 'all' }, ...roleList];
                                     const selectedOption = allOptions.find((role: { label: string; value: string }) => role.value === e);
                                     sessionStorage.setItem('role', JSON.stringify({ name: selectedOption?.label || '', _id: e }));
-                                    getRolePermission(e);
+                                    updateRolePermission(e);
                                 }}
                                 placeholder="Select Role"
                                 options={[{ label: 'All Roles', value: 'all' }, ...roleList]}
