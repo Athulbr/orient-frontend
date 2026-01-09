@@ -22,9 +22,24 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
     const [showFiltersView, setShowFiltersView] = useState(false);
     const [showCreateDialog, setShowCreateDialog] = useState(false); // controls meta form dialog
 
+    // Re-fetch records whenever the selected template changes
     useEffect(() => {
-        getRecordsApi({ pageSize: 20, filters: { deleted: false }, startDate: null, endDate: null });
-    }, []);
+        const tenantId = sessionStorage.getItem('selectedTenant') ?? JSON.parse(sessionStorage.getItem('user') || '{}').tenant?._id;
+        const moduleFilter = sessionStorage.getItem('module');
+
+        const payload: any = {
+            pageSize: 20,
+            filters: { deleted: false },
+            startDate: null,
+            endDate: null,
+            tenantId: tenantId || ''
+        };
+
+        if (moduleFilter) payload.module = moduleFilter;
+        if (state.selectedTemplateId && state.selectedTemplateId.length) payload.templateId = state.selectedTemplateId;
+
+        getRecordsApi(payload);
+    }, [state.selectedTemplateId]);
 
     useEffect(() => {
         if (state.id) {
@@ -67,7 +82,7 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             name: data?.name || 'Untitled Export',
             description: data?.description || '',
             sheets: sheets,
-            filters: filters.map(f => ({ 
+            filters: filters.map(f => ({
                 jsonPath: f.jsonPath,
                 ...(f.options && f.options.length ? { options: f.options } : {})
             })),
