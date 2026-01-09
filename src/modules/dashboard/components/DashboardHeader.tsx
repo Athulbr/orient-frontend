@@ -11,7 +11,7 @@ export const DashboardHeaderComponent: FC = () => {
     return (
         <section className="flex w-full items-center justify-between gap-y-4 px-2">
             <div className="flex-1 text-xl lg:text-2xl">
-                Welcome to Makez.Ai, <span className="capitalize">{user?.firstName}</span>
+                Welcome to makez.ai, <span className="capitalize">{user?.firstName}</span>
             </div>
             <Button
                 permission="create:template"
