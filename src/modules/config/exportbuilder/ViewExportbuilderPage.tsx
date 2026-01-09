@@ -182,13 +182,13 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     </Button> */}
                 </div>
             </header>
-            <div className="w-full p-4 flex gap-4 overflow-x-auto flex-nowrap items-center">
+            <div className="w-full p-4 flex gap-4 flex-wrap items-center">
                 <SingleSelect
                     // label="Templates"
                     options={[{ label: 'All Templates', value: '' }, ...tenant.templates]}
                     value={selectedTemplateId}
                     placeholder="Select Template"
-                    className="min-w-60 flex-shrink-0"
+                    className="min-w-60"
                     onValueChange={(value: string) => setSelectedTemplateId(value)}
                 />
 
@@ -205,7 +205,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                     ]}
                     value={selectedStatus}
                     placeholder="Select Status"
-                    className="min-w-60 flex-shrink-0"
+                    className="min-w-60"
                     onValueChange={(value: string) => setSelectedStatus(value)}
                 />
 
@@ -250,13 +250,13 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                                     options={mergedOptions}
                                     value={selectedFilterValues[key] || ''}
                                     placeholder={`Select ${key}`}
-                                    className="min-w-60 flex-shrink-0"
+                                    className="min-w-60"
                                     onValueChange={(value: string) => setSelectedFilterValues(prev => ({ ...prev, [key]: value }))}
                                 />
                             )
                         );
                     })}
-                <div className="flex-shrink-0">
+                <div>
                     <DateTimePicker
                         onChange={(range: DateRangeIF) => {
                             setStartDate(range.startDate);
