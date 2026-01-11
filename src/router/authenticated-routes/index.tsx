@@ -31,7 +31,7 @@ const AuthenticatedRoutes = () => {
             : sldModule
               ? 'sld'
               : documentCreationModule
-                ? 'document-creation'
+                ? 'document-generation'
                 : ppeDetectionModule
                   ? 'ppe-detection'
                   : invoiceTracking
@@ -47,7 +47,7 @@ const AuthenticatedRoutes = () => {
         'data-entry': '/data-entry',
         transcription: '/transcription',
         sld: '/sld',
-        'document-creation': '/document-creation',
+        'document-generation': '/document-creation',
         'ppe-detection': '/ppe-detection',
         'invoice-tracking': '/invoice-tracking',
         'content-creation': '/content-creation',

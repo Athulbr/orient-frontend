@@ -18,7 +18,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
 
     useEffect(() => {
         const module = sessionStorage.getItem('module');
-        if (module === 'documentCreation') {
+        if (module === 'document-generation') {
             setShowFileUploadUI(true);
             setSelectedTemplateName('');
         }

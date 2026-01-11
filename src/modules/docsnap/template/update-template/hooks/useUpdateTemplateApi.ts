@@ -95,7 +95,7 @@ export const useUpdateTemplatePageApi = () => {
         try {
             const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, generatingTemplateFieldsWithAI: true }));
-            if (module === 'documentCreation') {
+            if (module === 'document-generation') {
                 const res = await httpRequest('POST', `${config.mlServiceNodejs}/document-creation/generate-document-fields`, requestBody);
                 setState(prev => ({
                     ...prev,

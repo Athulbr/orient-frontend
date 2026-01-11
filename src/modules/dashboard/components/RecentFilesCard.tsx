@@ -18,8 +18,6 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const navigate = useNavigate();
     const { getRecordsApi } = useDashboardApi();
 
-    console.log('module:===========', module);
-
     useEffect(() => {
         getRecordsApi();
     }, [refreshRecord, module]);
@@ -27,7 +25,7 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
 
     const rowClickHandler = (row: any) => {
-        if (module === 'documentCreation') {
+        if (module === 'document-generation') {
             navigate(`/document-creation/create/${row._id}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);

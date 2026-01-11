@@ -1,13 +1,11 @@
 import { useToastStore } from '../../../components/toast/ToastStore';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useDashboardState } from './dashboardContext';
-import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 import { config } from '../../../config/default';
 
 export const useDashboardApi = () => {
     const { setState } = useDashboardState();
     const toast = useToastStore();
-    const { checkPermission } = usePermissionStore();
 
     // ============================= CREATE DASHBOARD ==================================
 

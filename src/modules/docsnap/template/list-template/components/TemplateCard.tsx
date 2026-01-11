@@ -170,11 +170,11 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                 </Button>
                 <Button
                     permission="extract:document"
-                    startIcon={module === 'documentCreation' ? <Plus size={14} /> : <Upload size={14} />}
-                    onClick={module === 'documentCreation' ? () => setShowCreateDialog(true) : onClickUpload}
+                    startIcon={module === 'document-generation' ? <Plus size={14} /> : <Upload size={14} />}
+                    onClick={module === 'document-generation' ? () => setShowCreateDialog(true) : onClickUpload}
                     small
                 >
-                    {module === 'documentCreation' ? 'Create' : 'Upload'}
+                    {module === 'document-generation' ? 'Create' : 'Upload'}
                 </Button>
             </div>
             {showCreateDialog && (

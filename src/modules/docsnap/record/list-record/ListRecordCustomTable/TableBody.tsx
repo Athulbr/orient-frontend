@@ -25,7 +25,7 @@ export const TableBody: React.FC = () => {
     const rowClickHandler = (row: any, data: any) => {
         const url = window.location.href;
         const module = sessionStorage.getItem('module');
-        if (module === 'documentCreation') {
+        if (module === 'document-generation') {
             navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
             return;
         }
@@ -46,7 +46,7 @@ export const TableBody: React.FC = () => {
                                 type="checkbox"
                                 checked={state.selectedRows.includes(row._id)}
                                 onChange={() => handleRowSelect(row)}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={e => e.stopPropagation()}
                                 className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
                             />
                         </td>

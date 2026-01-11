@@ -56,7 +56,7 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             name: 'Document Creation',
             icon: <FileText size={26} strokeWidth={2} className="text-white" />,
             path: '/document-creation',
-            key: 'document-creation',
+            key: 'document-generation',
             permission: 'documentCreation:module'
         }
 
