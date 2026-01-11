@@ -53,11 +53,11 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             permission: 'sld:module'
         },
         {
-            name: 'Document Creation',
+            name: 'Document Generation',
             icon: <FileText size={26} strokeWidth={2} className="text-white" />,
-            path: '/document-creation',
+            path: '/document-generation',
             key: 'document-generation',
-            permission: 'documentCreation:module'
+            permission: 'documentGeneration:module'
         }
 
         // {

@@ -17,7 +17,7 @@ const AuthenticatedRoutes = () => {
     const dataEntryModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'dataentry:module');
     const transcriptModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'transcript:module');
     const sldModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'sld:module');
-    const documentCreationModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'documentCreation:module');
+    const documentCreationModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'documentGeneration:module');
     const ppeDetectionModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'ppeDetection:module');
     const invoiceTracking = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'invoiceTracking:module');
     const contentCreation = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'contentCreation:module');
@@ -47,7 +47,7 @@ const AuthenticatedRoutes = () => {
         'data-entry': '/data-entry',
         transcription: '/transcription',
         sld: '/sld',
-        'document-generation': '/document-creation',
+        'document-generation': '/document-generation',
         'ppe-detection': '/ppe-detection',
         'invoice-tracking': '/invoice-tracking',
         'content-creation': '/content-creation',
@@ -69,10 +69,10 @@ const AuthenticatedRoutes = () => {
                 <Route path="/transcription" element={<DashboardPage module="transcription" />} />
                 <Route path="/data-entry" element={<DashboardPage module="data-entry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
-                <Route path="/document-creation" element={<DashboardPage module="document-creation" />} />
+                <Route path="/document-generation" element={<DashboardPage module="document-generation" />} />
                 <Route path="/ppe-detection" element={<DashboardPage module="ppe-detection" />} />
                 <Route path="/content-creation" element={<DashboardPage module="content-creation" />} />
-                <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
+                <Route path="/document-generation/create/:id" element={<DocumentCreationEditor />} />
                 <Route path="/content-creation/view-content/:id" element={<ContentCreationEditor />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />

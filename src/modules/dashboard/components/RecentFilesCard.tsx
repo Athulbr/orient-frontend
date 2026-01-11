@@ -26,7 +26,7 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
 
     const rowClickHandler = (row: any) => {
         if (module === 'document-generation') {
-            navigate(`/document-creation/create/${row._id}`);
+            navigate(`/document-generation/create/${row._id}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);
         } else {
@@ -99,19 +99,6 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
                                             <Polink data={row} />
                                         </td>
                                     )}
-                                    {!showPoLink && (
-                                        // <td
-                                        //     className={cn(
-                                        //         'max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900',
-                                        //         formatDate(row.documentDate, true) === '-' ? 'pl-15' : ''
-                                        //     )}
-                                        // >
-                                        //     {/* {formatDate(row.updatedAt)} */}
-                                        //     {formatDate(row.documentDate, true)}
-                                        // </td>
-                                        <></>
-                                    )}
-
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
                                     </td>

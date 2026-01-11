@@ -112,7 +112,8 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
             pdfFileName: '',
             name: data.name,
             templateId: template._id,
-            description: data.description
+            description: data.description,
+            module: 'document-generation'
         };
 
         await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);

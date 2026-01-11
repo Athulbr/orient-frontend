@@ -56,7 +56,7 @@ export const ListRecordComponent: React.FC = () => {
             const url = window.location.href;
             const module = sessionStorage.getItem('module');
             if (module === 'document-generation') {
-                navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+                navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
                 return;
             }
             if (module === 'contentCreation') {
