@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { ExcelSheetConfig } from '../builder';
 import { useToastStore } from '../../../components/toast/ToastStore';
+import Spinner from '../../../components/Spinner';
 
 // --- Interfaces ---
 
@@ -17,6 +18,7 @@ interface ExcelExportDialogNewIF {
     inputData: any[];
     totalRecords?: number;
     serverExportLoading?: boolean;
+    recordsLoading?: boolean;
     onServerJsonExport?: (activeSheetIndex: number) => Promise<void>;
     onServerXlsxExport?: () => Promise<void>;
 }
@@ -168,6 +170,7 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({
     inputData,
     totalRecords,
     serverExportLoading = false,
+    recordsLoading = false,
     onServerJsonExport,
     onServerXlsxExport
 }) => {
@@ -375,7 +378,12 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({
                 )}
 
                 {/* Main Excel Container */}
-                <div className="w-full bg-white shadow-2xl border border-gray-400 flex flex-col overflow-y-auto max-h-screen">
+                <div className="w-full bg-white shadow-2xl border border-gray-400 flex flex-col overflow-y-auto max-h-screen relative">
+                    {recordsLoading && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60">
+                            <Spinner size={36} className="text-green-700" />
+                        </div>
+                    )}
                     {/* 1. Header Toolbar */}
                     <div className="bg-[#107c41] h-10 text-white px-4 py-1 text-sm font-semibold flex justify-between items-center shrink-0">
                         <div className="flex items-center gap-2">
