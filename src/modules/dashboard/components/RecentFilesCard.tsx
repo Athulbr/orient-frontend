@@ -27,6 +27,9 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const rowClickHandler = (row: any) => {
         if (module === 'document-generation') {
             navigate(`/document-generation/create/${row._id}`);
+        }
+        if (module === 'content-creation') {
+            navigate(`/content-creation/view/${'696489eba6797347f140da6a'}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);
         } else {
@@ -34,10 +37,15 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
         }
     };
 
+    useEffect(() => {
+        const selectedModule = sessionStorage.getItem('module');
+        navigate(`/${selectedModule}`);
+    }, [module]);
+
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
-                <div className="text-gray-800">Recent {module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
+                <div className="text-gray-800">Recent {module === 'data-entry' ? 'Data Entries' : module === 'content-creation' ? 'Contents' : 'Files'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
                         onClick={() =>

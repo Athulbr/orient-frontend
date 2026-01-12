@@ -27,12 +27,14 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
     const [content, setContent] = useState('');
 
     useEffect(() => {
+        if (!id) return;
         const getRecord = async () => {
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/${id}`);
+            const res = await httpRequest('POST', `https://devapi.makez.ai/api/idp/history/696489eba6797347f140da6a`);
+            console.log('res.data:===========', res.data);
             setContent(res.data?.content);
         };
         getRecord();
-    }, []);
+    }, [id]);
 
     return (
         <ContentCreationEditorStateProvider value={{ state, setState }}>
