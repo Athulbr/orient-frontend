@@ -29,9 +29,8 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
     useEffect(() => {
         if (!id) return;
         const getRecord = async () => {
-            const res = await httpRequest('POST', `https://devapi.makez.ai/api/idp/history/696489eba6797347f140da6a`);
-            console.log('res.data:===========', res.data);
-            setContent(res.data?.content);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
+            setContent(res.data?.extractedData?.htmlContent);
         };
         getRecord();
     }, [id]);
@@ -41,8 +40,8 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
             <div className="flex flex-1 overflow-y-auto absolute left-0 top-0 h-full w-full bg-white">
                 <ResizableContainer
                     className="flex flex-1 overflow-y-auto"
-                    left={<PreviewContainer />}
-                    right={<RightContainer />}
+                    left={<PreviewContainer content={content} setContent={setContent} />}
+                    right={<RightContainer htmlContent={content} setContent={setContent} />}
                     initialLeftWidthPercent={60}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={75}

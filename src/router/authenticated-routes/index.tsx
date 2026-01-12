@@ -69,11 +69,11 @@ const AuthenticatedRoutes = () => {
                 <Route path="/transcription" element={<DashboardPage module="transcription" />} />
                 <Route path="/data-entry" element={<DashboardPage module="data-entry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
+                <Route path="/document-generation/view/:id" element={<DocumentCreationEditor />} />
                 <Route path="/document-generation" element={<DashboardPage module="document-generation" />} />
                 <Route path="/ppe-detection" element={<DashboardPage module="ppe-detection" />} />
                 <Route path="/content-creation/view/:id" element={<ContentCreationEditor />} />
                 <Route path="/content-creation" element={<DashboardPage module="content-creation" />} />
-                <Route path="/document-generation/create/:id" element={<DocumentCreationEditor />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

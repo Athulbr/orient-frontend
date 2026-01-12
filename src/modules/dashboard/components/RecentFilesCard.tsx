@@ -26,10 +26,9 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
 
     const rowClickHandler = (row: any) => {
         if (module === 'document-generation') {
-            navigate(`/document-generation/create/${row._id}`);
-        }
-        if (module === 'content-creation') {
-            navigate(`/content-creation/view/${'696489eba6797347f140da6a'}`);
+            navigate(`/document-generation/view/${row._id}`);
+        } else if (module === 'content-creation') {
+            navigate(`/content-creation/view/${row._id}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);
         } else {
