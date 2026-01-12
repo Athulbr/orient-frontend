@@ -22,3 +22,4 @@ jobs:
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       NPM_READ_TOKEN: ${{ secrets.NPM_READ_TOKEN }}
+      AZURE_API_KEY: ${{ secrets.AZURE_API_KEY }}
