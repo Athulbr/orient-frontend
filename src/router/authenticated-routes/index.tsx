@@ -5,7 +5,6 @@ import FullScreenLoader from '../../components/FullScreenLoader';
 import DocumentCreationEditor from '../../modules/documentCreation/create-document';
 import ContentCreationEditor from '../../modules/content-creation';
 
-const PromateRoutes = lazy(() => import('./PromateRoutes'));
 const ConfigRoutes = lazy(() => import('./config-routes'));
 const DashboardPage = lazy(() => import('../../modules/dashboard'));
 const DocSnapRoutes = lazy(() => import('./DocSnapRoutes'));
@@ -26,52 +25,55 @@ const AuthenticatedRoutes = () => {
     const module = docsnapModule
         ? 'docsnap'
         : dataEntryModule
-          ? 'dataentry'
+          ? 'data-entry'
           : transcriptModule
-            ? 'transcript'
+            ? 'transcription'
             : sldModule
               ? 'sld'
               : documentCreationModule
-                ? 'documentCreation'
+                ? 'document-creation'
                 : ppeDetectionModule
-                  ? 'ppeDetection'
+                  ? 'ppe-detection'
                   : invoiceTracking
-                    ? 'invoiceTracking'
+                    ? 'invoice-tracking'
                     : contentCreation
-                      ? 'contentCreation'
-                      : 'docsnap';
-    sessionStorage.setItem('module', module);
+                      ? 'content-creation'
+                      : 'none';
+    module !== 'none' && sessionStorage.setItem('module', module);
+    const role = JSON.parse(sessionStorage.getItem('role') || '{}');
+    if (role.name === 'superadmin') sessionStorage.setItem('module', 'docsnap');
     const paths = {
         docsnap: '/docsnap',
-        dataentry: '/dataentry',
-        transcript: '/transcript',
+        'data-entry': '/data-entry',
+        transcription: '/transcription',
         sld: '/sld',
-        documentCreation: '/document-creation',
-        ppeDetection: '/ppe-detection',
-        invoiceTracking: '/invoice-tracking',
-        contentCreation: 'content-creation'
+        'document-creation': '/document-creation',
+        'ppe-detection': '/ppe-detection',
+        'invoice-tracking': '/invoice-tracking',
+        'content-creation': '/content-creation',
+        none: '/docsnap'
     };
     return (
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
-                <Route path="dataentry/*" element={<DocSnapRoutes />} />
+                <Route path="data-entry/*" element={<DocSnapRoutes />} />
+                <Route path="sld/*" element={<DocSnapRoutes />} />
                 <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="content-creation/*" element={<DocSnapRoutes />} />
-                <Route path="promate/*" element={<PromateRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
-                <Route path="/transcript/record/*" element={<MedicalCodeRoutes />} />
+                <Route path="/transcription/record/*" element={<MedicalCodeRoutes />} />
                 <Route path="/docsnap" element={<DashboardPage module="docsnap" />} />
-                <Route path="/invoice-tracking" element={<DashboardPage module="invoiceTracking" />} />
-                <Route path="/transcript" element={<DashboardPage module="transcript" />} />
-                <Route path="/dataentry" element={<DashboardPage module="dataentry" />} />
+                <Route path="/invoice-tracking" element={<DashboardPage module="invoice-tracking" />} />
+                <Route path="/transcription" element={<DashboardPage module="transcription" />} />
+                <Route path="/data-entry" element={<DashboardPage module="data-entry" />} />
                 <Route path="/sld" element={<DashboardPage module="sld" />} />
-                <Route path="/document-creation" element={<DashboardPage module="documentCreation" />} />
+                <Route path="/document-creation" element={<DashboardPage module="document-creation" />} />
+                <Route path="/ppe-detection" element={<DashboardPage module="ppe-detection" />} />
+                <Route path="/content-creation" element={<DashboardPage module="content-creation" />} />
                 <Route path="/document-creation/create/:id" element={<DocumentCreationEditor />} />
-                <Route path="/ppe-detection" element={<DashboardPage module="ppeDetection" />} />
                 <Route path="/content-creation/view-content/:id" element={<ContentCreationEditor />} />
-                <Route path="/content-creation" element={<DashboardPage module="contentCreation" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>

@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { ExcelSheetConfig } from '../builder';
 import { useToastStore } from '../../../components/toast/ToastStore';
+import Spinner from '../../../components/Spinner';
 
 // --- Interfaces ---
 
@@ -16,6 +17,10 @@ interface ExcelExportDialogNewIF {
     template: ExcelSheetConfig[];
     inputData: any[];
     totalRecords?: number;
+    serverExportLoading?: boolean;
+    recordsLoading?: boolean;
+    onServerJsonExport?: (activeSheetIndex: number) => Promise<void>;
+    onServerXlsxExport?: () => Promise<void>;
 }
 
 /**
@@ -160,7 +165,15 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     }
 }
 
-export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ template, inputData, totalRecords }) => {
+export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({
+    template,
+    inputData,
+    totalRecords,
+    serverExportLoading = false,
+    recordsLoading = false,
+    onServerJsonExport,
+    onServerXlsxExport
+}) => {
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
     const [downloadError, setDownloadError] = useState<string | null>(null);
     const toast = useToastStore();
@@ -210,9 +223,13 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
         }
     }, [inputData, activeSheet]);
 
-    const handleDownloadJson = () => {
+    const handleDownloadJson = async () => {
         if (Number(totalRecords) > 100) {
-            toast.error('Total records are more than 100. Please download in chunks');
+            if (onServerJsonExport) {
+                await onServerJsonExport(activeSheetIndex);
+            } else {
+                toast.error('Total records are more than 100. Please download in chunks');
+            }
             return;
         }
         try {
@@ -269,9 +286,13 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
     };
 
     // --- Logic: Handle Download ---
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (Number(totalRecords) > 100) {
-            toast.error('Total records are more than 100. Please download in chunks');
+            if (onServerXlsxExport) {
+                await onServerXlsxExport();
+            } else {
+                toast.error('Total records are more than 100. Please download in chunks');
+            }
             return;
         }
         try {
@@ -357,7 +378,12 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
                 )}
 
                 {/* Main Excel Container */}
-                <div className="w-full bg-white shadow-2xl border border-gray-400 flex flex-col overflow-y-auto max-h-screen">
+                <div className="w-full bg-white shadow-2xl border border-gray-400 flex flex-col overflow-y-auto max-h-screen relative">
+                    {recordsLoading && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60">
+                            <Spinner size={36} className="text-green-700" />
+                        </div>
+                    )}
                     {/* 1. Header Toolbar */}
                     <div className="bg-[#107c41] h-10 text-white px-4 py-1 text-sm font-semibold flex justify-between items-center shrink-0">
                         <div className="flex items-center gap-2">
@@ -369,15 +395,17 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
                         <div className="flex gap-2">
                             <button
                                 onClick={handleDownloadJson}
-                                className="bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm"
+                                disabled={serverExportLoading}
+                                className={`bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm ${serverExportLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
                             >
-                                Download JSON
+                                {serverExportLoading ? 'Please wait...' : 'Download JSON'}
                             </button>
                             <button
                                 onClick={handleDownload}
-                                className="bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm"
+                                disabled={serverExportLoading}
+                                className={`bg-[#185c37] hover:bg-[#0c4425] cursor-pointer px-4 py-1.5 rounded text-xs border border-green-500 transition-colors shadow-sm ${serverExportLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
                             >
-                                Download .XLSX
+                                {serverExportLoading ? 'Please wait...' : 'Download .XLSX'}
                             </button>
                         </div>
                     </div>
@@ -461,7 +489,7 @@ export const ExcelExportDialogNew: React.FC<ExcelExportDialogNewIF> = ({ templat
                                     </tr>
                                 ))}
                                 {/* Empty rows filler for visual aesthetics */}
-                                {Array.from({ length: 20 }).map((_, i) => (
+                                {Array.from({ length: 25 }).map((_, i) => (
                                     <tr key={`filler-${i}`} className="h-8">
                                         <td className="bg-gray-100 border-r border-b border-gray-300 sticky left-0 text-center text-xs text-gray-400">
                                             {renderedRows.length + i + 2}

@@ -13,9 +13,9 @@ export const useDashboardApi = () => {
 
     const getRecordsApi = async () => {
         try {
-            // if (!checkPermission('read:record')) return;
+            const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, loadingRecords: true }));
-            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { pageSize: 10, filters: { deleted: false } });
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { pageSize: 10, filters: { deleted: false }, module });
             setState(prev => ({ ...prev, loadingRecords: false, records: res.data }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;
@@ -50,6 +50,11 @@ export const useDashboardApi = () => {
             selectedTenantFromSessionStorage === 'all' ? true : template.tenantId === selectedTenantFromSessionStorage
         );
     };
+    const filterTemplatesByModule = (templates: any, module?: string) => {
+        return templates.filter((template: any) => {
+            return template.settings?.module === module || !module;
+        });
+    };
     const sortTemplatesByRecentlyUsed = (templates: any) => {
         const arrayOfRecentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');
         const templatesCopy = [...templates];
@@ -63,12 +68,13 @@ export const useDashboardApi = () => {
         const remainingTemplates = templatesCopy.filter((template: any) => !arrayOfRecentlyUsedTemplates.includes(template._id));
         return [...finalTemplates, ...remainingTemplates];
     };
-    const getTemplatesApi = async () => {
+    const getTemplatesApi = async (module?: string) => {
         try {
             setState(prev => ({ ...prev, loadingTemplates: true }));
             const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
             const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
-            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByTenant);
+            const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant, module);
+            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByModule);
 
             setState(prev => ({
                 ...prev,

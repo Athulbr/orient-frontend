@@ -1,7 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useViewRecordGlobalStore } from '../../../../../zustand-store/useViewRecordGlobalStore';
 import { TabNavComponent } from '../../../record/components/TabNav/TabNav';
 import { useViewTemplateState } from '../hooks/viewTemplateContext';
 import { useViewTemplateApi } from '../hooks/useViewTemplateApi';
@@ -13,12 +12,11 @@ export const TabViewContainer: React.FC<DataPreviewComponentIF> = ({ children })
     const { state, setState } = useViewTemplateState();
 
     const { id } = useParams();
-    const { refresh } = useViewRecordGlobalStore();
     const { getTemplateByIdApi } = useViewTemplateApi();
     useEffect(() => {
         if (!id) return;
         getTemplateByIdApi(id);
-    }, [id, refresh]);
+    }, [id]);
     const tabs = [
         { id: 'recordList', title: 'Record List' },
         { id: 'templateFields', title: 'Template Fields' },

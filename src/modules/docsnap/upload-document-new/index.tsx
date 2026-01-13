@@ -44,7 +44,12 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         getTemplate();
     }, []);
     const onFileDrop = async (files: File[]) => {
-        if (template?.settings?.templateType === 'dataentry' || template?.settings?.templateType === 'content-creation') {
+        if (template?.settings?.module === 'data-entry') {
+            if (!files[0].name.endsWith('.xlsx')) {
+                toast.error('Only .xlsx file type is supported');
+                return;
+            }
+
             const csvData = await excelFileToArrayOfObjects(files[0]);
             const groupedVariations = groupVariationsByPageCount(csvData);
             const products = createProductWithVariationGroups(groupedVariations);
@@ -58,6 +63,11 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         }
     };
 
+    let supportedFileTypes = ['application/pdf', 'image/*'];
+    if (sessionStorage.getItem('module') === 'data-entry') {
+        supportedFileTypes = ['.xlsx'];
+    }
+
     return (
         <DialogComponent
             className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col overflow-y-auto"
@@ -66,7 +76,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
-                <DragAndDropFileInput accept="application/pdf,image/*,.csv,.xlsx,.xls" onFilesChange={onFileDrop} />
+                <DragAndDropFileInput accept={supportedFileTypes.join(', ')} onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
     );

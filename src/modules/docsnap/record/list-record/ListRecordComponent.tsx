@@ -7,16 +7,13 @@ import { useEffect, useState } from 'react';
 import DealerListComponent from './components/DealerSelectionComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { OnlyDateCustomUI } from './components/OnlyDateCustomUI';
-// import { useExtractionStore } from '../../../../zustand-store/extractionStore';
 import { downloadXlsxFile } from './utils/downloadXlsxFile';
 import { UseFormbuilder } from '../../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../../global-utils/httpRequest';
-import { useDocsnapStore } from '../../../../zustand-store/DocsnapStore';
-import { config } from '../../../../config/default';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useExtractionStore } from '../../../../zustand-store/extractionStore';
-import { ListRecordCustomTable } from './ListRecordCustomTable';
 const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+import { config } from '../../../../config/default';
 
 export const Polink = (row: any) => {
     const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
@@ -195,16 +192,24 @@ export const ListRecordComponent: React.FC = () => {
                     name="Select Validator"
                     closeDialog={() => setState(prev => ({ ...prev, assignDialog: false }))}
                     onSubmit={async (fields: any) => {
-                        setState(prev => ({ ...prev, assignDialog: false }));
-                        const requestBody = {
-                            ids: state.selectedIds,
-                            assignedTo: fields?.selectedValidator
-                        };
-                        await httpRequest('POST', `${config.nodeApiUrl}/idp/history/bulk/update`, requestBody);
-                        setState(prev => ({ ...prev, refresh: refreshRecord }));
-                        updateRefreshRecord();
-                        toast.success('Record Assigned Successfully');
+                        try {
+                            setState(prev => ({ ...prev, assigningRecords: true }));
+                            const requestBody = {
+                                ids: state.selectedIds,
+                                assignedTo: fields?.selectedValidator
+                            };
+                            await httpRequest('POST', `${config.nodeApiUrl}/idp/history/bulk/update`, requestBody);
+                            setState(prev => ({ ...prev, assignDialog: false, refresh: refreshRecord }));
+                            updateRefreshRecord();
+                            toast.success('Record Assigned Successfully');
+                        } catch (error) {
+                            console.error('Error assigning records:', error);
+                            toast.error('Failed to assign records');
+                        } finally {
+                            setState(prev => ({ ...prev, assigningRecords: false }));
+                        }
                     }}
+                    loadingPrimaryButton={state.assigningRecords}
                 />
             )}
         </>

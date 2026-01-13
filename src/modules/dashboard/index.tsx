@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardHeaderComponent } from './components/DashboardHeader';
 import { DashboardStateProvider } from './hooks/dashboardContext';
 import RecentFilesCardComponent from './components/RecentFilesCard';
@@ -43,14 +43,9 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
         statusCounts: null,
         loadingStatusCounts: false,
         test: [],
-        module
+        module: module
     };
     const [state, setState] = useState<DashboardStateIF>(initialState);
-
-    useEffect(() => {
-        if (module === state.module) return;
-        setState({ ...state, module });
-    }, [module]);
 
     return (
         <DashboardStateProvider value={{ state, setState }}>
@@ -59,10 +54,10 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
                 <div className="h-full flex-1 overflow-y-auto p-1">
                     <div className="mb-4 flex h-full max-h-250 min-h-400 flex-1 flex-col gap-6 overflow-y-auto lg:min-h-192 2xl:mb-0">
                         <div className="flex w-full flex-1 flex-col gap-6 overflow-hidden lg:flex-row">
-                            <RecentFilesCardComponent />
+                            <RecentFilesCardComponent module={module} />
                             <StatusCardComponent />
                         </div>
-                        <TemplateCardListComponent />
+                        <TemplateCardListComponent module={module} />
                     </div>
                 </div>
             </div>

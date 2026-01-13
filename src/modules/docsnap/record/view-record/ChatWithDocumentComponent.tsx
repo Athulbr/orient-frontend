@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
 import { Button } from '../../../../components/Button';
-import { useSettingsStore } from '../../../../zustand-store/SettingsStore';
 import { ChatContainer } from './components/ChatContainer';
 import { ChatInput } from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';

@@ -15,28 +15,41 @@ interface SettingsIF {
 interface PermissionStoreIF {
     permissions: string[];
     user: any;
+    role: any;
     settings: SettingsIF[];
+    refreshSidebar: number;
     checkPermission: (permission?: string) => boolean;
+    checkRolePermission: (permission?: string) => boolean;
     setPermissions: (permissions: string[]) => void;
+    updateRefreshSidebar: () => void;
 }
 
 export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
     permissions: [],
     user: {},
+    role: {},
     settings: [],
+    refreshSidebar: 0,
     checkPermission: (permission?: string) => {
         const { user } = get();
         if (user?.role?.name === 'superadmin') return true;
         if (!permission) return false;
         return get().permissions.includes(permission);
     },
+    checkRolePermission: (permission?: string) => {
+        const { role } = get();
+        if (role?.name === 'superadmin') return true;
+        if (!permission) return false;
+        return get().permissions.includes(permission);
+    },
     setPermissions: (permissions: string[]) => {
         const user = JSON.parse(window.sessionStorage.getItem('user') || '{}');
-        set({ user });
+        const role = JSON.parse(window.sessionStorage.getItem('role') || '{}');
+        set({ user, role });
         const allowedSettings = allSettings
             .map((setting: SettingsIF) => {
                 const items = setting.items.filter((item: { permission: string }) => {
-                    if (user?.role?.name === 'superadmin') return true;
+                    if (role?.name === 'superadmin') return true;
                     return permissions.includes(item.permission);
                 });
                 if (items.length === 0) return null;
@@ -48,6 +61,9 @@ export const usePermissionStore = create<PermissionStoreIF>((set, get) => ({
             .filter((setting): setting is SettingsIF => setting !== null); // Type-safe filter to remove null values
 
         set({ permissions, settings: allowedSettings });
+    },
+    updateRefreshSidebar: () => {
+        set({ refreshSidebar: get().refreshSidebar + 1 });
     }
 }));
 
@@ -62,13 +78,6 @@ const allSettings: SettingsIF[] = [
                 path: '/config/user/list',
                 key: 'user',
                 permission: 'read:user'
-            },
-            {
-                name: 'User Preference',
-                iconName: 'Users',
-                path: '/config/user-preference',
-                key: 'user-preference',
-                permission: 'read:userPreference'
             }
         ]
     },
@@ -111,13 +120,6 @@ const allSettings: SettingsIF[] = [
                 permission: 'read:tenant'
             },
             {
-                name: 'Tenant Settings',
-                iconName: 'CalendarCheck',
-                path: '/config/tenant-settings',
-                key: 'tenant-settings',
-                permission: 'read:tenantSettings'
-            },
-            {
                 name: 'Subscription Models',
                 iconName: 'CalendarCheck',
                 path: '/config/subscription-model/list',
@@ -158,13 +160,6 @@ const allSettings: SettingsIF[] = [
         iconName: 'Book',
         items: [
             {
-                name: 'Docsnap Settings',
-                iconName: 'MessageSquareText',
-                path: '/config/docsnap-settings',
-                key: 'docsnap-settings',
-                permission: 'read:docsnapSettings'
-            },
-            {
                 name: 'Comments',
                 iconName: 'MessageSquareText',
                 path: '/config/comment',
@@ -180,17 +175,5 @@ const allSettings: SettingsIF[] = [
             }
         ]
     }
-    // {
-    //     name: 'Medical Code',
-    //     iconName: 'Book',
-    //     items: [
-    //         {
-    //             name: 'Medical Code',
-    //             iconName: 'MessageSquareText',
-    //             path: '/config/transcript',
-    //             key: 'medical',
-    //             permission: 'read:medical'
-    //         }
-    //     ]
-    // }
 ];
+

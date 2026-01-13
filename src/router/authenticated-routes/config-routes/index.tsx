@@ -28,7 +28,6 @@ import {
 const UpdatedFieldsListPage = lazy(() => import('../../../modules/docsnap/prompt-tuning'));
 const FormbuilderRoutes = lazy(() => import('./FormbuilderRoutes'));
 const ListRolePage = lazy(() => import('../../../modules/config/role'));
-const ListProjectPage = lazy(() => import('../../../modules/docsnap/project'));
 const ListModulePage = lazy(() => import('../../../modules/config/module'));
 const ListFeaturePage = lazy(() => import('../../../modules/config/feature'));
 const ListSubscriptionModelPage = lazy(() => import('../../../modules/config/subscriptionModel'));
@@ -36,10 +35,6 @@ const ListTablebuilderPage = lazy(() => import('../../../modules/config/tablebui
 const ListTenantPage = lazy(() => import('../../../modules/config/tenant'));
 const ListCommentPage = lazy(() => import('../../../modules/docsnap/comment/ListCommentPage'));
 const ListUserPage = lazy(() => import('../../../modules/config/user/list-user'));
-const UserPreferencePage = lazy(() => import('../../../modules/config/workspace-settings/UserPreferencePage'));
-const TenantSettingsPage = lazy(() => import('../../../modules/config/tenant/tenant-settings'));
-const DocsnapSettingsPage = lazy(() => import('../../../modules/docsnap/docsnap-settings'));
-// const TranscriptionPage = lazy(() => import('../../../modules/transcript/create'));
 
 const ConfigRoutes = () => {
     const navigate = useNavigate();
@@ -55,17 +50,14 @@ const ConfigRoutes = () => {
                         <Route path="subscription-model/list" element={<ListSubscriptionModelPage />} />
                         <Route path="feature/list" element={<ListFeaturePage />} />
                         <Route path="tenant/list" element={<ListTenantPage />} />
-                        <Route path="tenant-settings" element={<TenantSettingsPage />} />
                         <Route path="module/list" element={<ListModulePage />} />
                         <Route path="formbuilder/*" element={<FormbuilderRoutes />} />
                         <Route path="tablebuilder/list" element={<ListTablebuilderPage />} />
                         <Route path="exportbuilder/list" element={<ListExportbuilderPage />} />
-                        <Route path="project/list" element={<ListProjectPage />} />
+                        <Route path="exportbuilder/quick-report" element={<ExportQuickReportPage />} />
                         <Route path="prompt-tuning" element={<UpdatedFieldsListPage />} />
                         <Route path="user/list" element={<ListUserPage />} />
-                        <Route path="user-preference" element={<UserPreferencePage />} />
                         <Route path="comment/*" element={<ListCommentPage />} />
-                        <Route path="docsnap-settings" element={<DocsnapSettingsPage />} />
                         {/* <Route path="transcript" element={<TranscriptionPage />} /> */}
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>
@@ -81,6 +73,7 @@ import { FC, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import ListExportbuilderPage from '../../../modules/config/exportbuilder';
+import ExportQuickReportPage from '../../../modules/config/exportbuilder/quick-report';
 
 const NavigationComponent: FC = () => {
     const navigate = useNavigate();

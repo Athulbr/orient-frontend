@@ -295,6 +295,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     const [editSectionDialog, setEditSectionDialog] = useState(false);
     const [editFieldDialog, setEditFieldDialog] = useState(-1);
     const [extractedData, setExtractedData] = useState<any>(null);
+    const [updatingSection, setUpdatingSection] = useState(false);
 
     const moveUpSection = (e: any) => {
         e.stopPropagation();
@@ -332,12 +333,14 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
     };
 
     const handleUpdateSection = (data: any) => {
-        // const sampleData={name: 'test', jsonKey: 'test', description: 'aa', instruction: 'aa', excludeExtraction: false, …}
+        setUpdatingSection(true);
+        // const sampleData={name: 'test', jsonKey: 'test', description: 'aa', instruction: 'aa', excludeExtraction: false, …}
         const templateData = [...state.sectionList];
         // Merge incoming section data with existing to avoid losing properties like subFields
         templateData[mainIndex] = { ...templateData[mainIndex], ...data };
         setState(prev => ({ ...prev, sectionList: templateData }));
         setEditSectionDialog(false);
+        setUpdatingSection(false);
     };
 
     const handleExtractSectionFields = async () => {
@@ -435,6 +438,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                     required: section?.required
                 }}
                 onSubmit={handleUpdateSection}
+                loadingPrimaryButton={updatingSection}
             />
         </div>
     );
@@ -454,6 +458,7 @@ const FieldComponent = ({
     setEditFieldDialog: (index: number) => void;
 }) => {
     const { state, setState } = useUpdateTemplateState();
+    const [updatingField, setUpdatingField] = useState(false);
     // const [showConfigForm, setShowConfigForm] = useState(false);
     const { regenerateInstructionWithAI } = useUpdateTemplatePageApi();
 
@@ -504,12 +509,14 @@ const FieldComponent = ({
         setState(prev => ({ ...prev, sectionList: templateData }));
     };
     const handleUpdateField = (data: any) => {
+        setUpdatingField(true);
         const templateData = [...state.sectionList];
         const subFields = [...templateData[mainIndex].subFields];
         subFields[index] = { ...subFields[index], ...data };
         templateData[mainIndex].subFields = subFields;
         setState(prev => ({ ...prev, sectionList: templateData }));
         setEditFieldDialog(-1);
+        setUpdatingField(false);
     };
 
     const updateInstructionApi = async (fields: FieldIF[]) => {
@@ -570,6 +577,7 @@ const FieldComponent = ({
                 onSubmit={handleUpdateField}
                 actionButtonText="Regenerate Instruction"
                 actionButtonClickHandler={(fields: FieldIF[]) => updateInstructionApi(fields)}
+                loadingPrimaryButton={updatingField}
             />
         </div>
     );

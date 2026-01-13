@@ -4,17 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { useDashboardApi } from '../hooks/useDashboardApi';
 import { TemplateCardComponent } from '../../docsnap/template/list-template/components/TemplateCard';
-import { usePermissionStore } from '../../../zustand-store/PermissionStore';
 
 interface TemplateCardsComponentIF {
-    test?: string;
+    module: string;
 }
 
-export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () => {
+export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ module }) => {
     const { state, setState } = useDashboardState();
     const [cardsPerRow, setCardsPerRow] = useState(4);
     const { getTemplatesApi, getPredefinedTemplatesApi } = useDashboardApi();
-    const { checkPermission } = usePermissionStore();
 
     // Calculate how many cards can fit based on screen width
     const calculateCardsPerRow = useCallback(() => {
@@ -47,9 +45,9 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = () 
     }, [calculateCardsPerRow]);
 
     useEffect(() => {
-        getTemplatesApi();
+        getTemplatesApi(module);
         getPredefinedTemplatesApi();
-    }, []);
+    }, [module]);
 
     // Calculate how many template cards to show (reserve 1 slot for "View All")
     const templatesToShow = Math.max(0, cardsPerRow - 1);

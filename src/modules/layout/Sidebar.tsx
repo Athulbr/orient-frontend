@@ -1,5 +1,4 @@
-import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, Tractor, UserSearch, X, LocateFixed } from 'lucide-react';
-import { useState } from 'react';
+import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFixed, FileCheck } from 'lucide-react';
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
@@ -10,64 +9,65 @@ interface SidebarComponentIF {
 }
 
 export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = false, setShowSidebar }) => {
-    const [sidebarMenuItems, setSidebarMenuItems] = useState([
+    const sidebarMenuItems = [
         {
             name: 'DocSnap',
-            icon: <div className="text-[40px] font-bold text-white">D</div>,
+            icon: <FileCheck size={26} strokeWidth={2} className="text-white" />,
             path: '/docsnap',
             key: 'docsnap',
             permission: 'docsnap:module'
         },
         {
             name: 'Data Entry',
-            icon: <FilePenLine size={32} strokeWidth={2.5} className="text-white" />,
-            path: '/dataentry',
-            key: 'dataentry',
+            icon: <FilePenLine size={26} strokeWidth={2} className="text-white" />,
+            path: '/data-entry',
+            key: 'data-entry',
             permission: 'dataentry:module'
         },
         {
-            name: 'Transcript',
-            icon: <AudioLines size={32} strokeWidth={2.5} className="text-white" />,
-            path: '/transcript/record/list',
-            key: 'transcript',
+            name: 'Invoice Tracking',
+            icon: <LocateFixed size={26} strokeWidth={2} className="text-white" />,
+            path: '/invoice-tracking',
+            key: 'invoice-tracking',
+            permission: 'invoiceTracking:module'
+        },
+        // {
+        //     name: 'PPE Detection',
+        //     icon: <UserSearch size={26} strokeWidth={2} className="text-white" />,
+        //     path: '/ppe-detection',
+        //     key: 'ppe-detection',
+        //     permission: 'ppeDetection:module'
+        // },
+        {
+            name: 'Transcription',
+            icon: <AudioLines size={26} strokeWidth={2} className="text-white" />,
+            path: '/transcription/record/list',
+            key: 'transcription',
             permission: 'transcript:module'
         },
         {
             name: 'SLD',
-            icon: <CircuitBoard size={32} strokeWidth={2.5} className="text-white" />,
+            icon: <CircuitBoard size={26} strokeWidth={2} className="text-white" />,
             path: '/sld',
             key: 'sld',
             permission: 'sld:module'
         },
         {
             name: 'Document Creation',
-            icon: <FileText size={32} strokeWidth={2.5} className="text-white" />,
+            icon: <FileText size={26} strokeWidth={2} className="text-white" />,
             path: '/document-creation',
             key: 'document-creation',
             permission: 'documentCreation:module'
-        },
-        {
-            name: 'PPE Detection',
-            icon: <UserSearch size={32} strokeWidth={2.5} className="text-white" />,
-            path: '/ppe-detection',
-            key: 'ppe-detection',
-            permission: 'ppeDetection:module'
-        },
-        {
-            name: 'Invoice Tracking',
-            icon: <LocateFixed size={32} strokeWidth={2.5} className="text-white" />,
-            path: '/invoice-tracking',
-            key: 'invoice-tracking',
-            permission: 'invoiceTracking:module'
-        },
-        {
-            name: 'Content Creation',
-            icon: <FileText size={32} strokeWidth={2.5} className="text-white" />,
-            path: '/content-creation',
-            key: 'content-creation',
-            permission: 'contentCreation:module'
         }
-    ]);
+
+        // {
+        //     name: 'Content Creation',
+        //     icon: <FileText size={26} strokeWidth={2} className="text-white" />,
+        //     path: '/content-creation',
+        //     key: 'content-creation',
+        //     permission: 'contentCreation:module'
+        // }
+    ];
 
     return (
         <>
@@ -88,20 +88,25 @@ interface MobileSidebarIF {
 }
 
 const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
-    const { settings, checkPermission } = usePermissionStore();
+    const { settings, checkPermission, checkRolePermission } = usePermissionStore();
+    const module = sessionStorage.getItem('module');
 
     const navigate = useNavigate();
     return (
         <div className={`hidden h-full min-w-16 max-w-16 pt-2 flex-col gap-2 bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
             {sidebarMenuItems.map(item => {
-                if (!checkPermission(item.permission)) return null;
-                const isActive = location.pathname.includes(item.key) || (item.key === 'docsnap' && location.pathname === '/');
+                if (!checkRolePermission(item.permission)) return null;
+                const isActive = item.key === module;
+                // const isActive = location.pathname.includes(item.key) || item.key === module || (item.key === 'docsnap' && location.pathname === '/');
                 return (
                     <div
-                        onClick={() => navigate(item.path)}
+                        onClick={() => {
+                            sessionStorage.setItem('module', item.key);
+                            navigate(item.path);
+                        }}
                         key={item.key}
                         className={cn(
-                            'group flex h-16 cursor-pointer flex-col items-center justify-center rounded-md transition-all duration-200 relative',
+                            'group flex h-16 cursor-pointer hover:bg-blue-900 flex-col items-center justify-center rounded-md transition-all duration-200 relative',
                             isActive && 'bg-blue-900'
                         )}
                     >
@@ -119,7 +124,7 @@ const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
                         className={cn('group flex h-16 cursor-pointer flex-col items-center justify-center rounded-md transition-all duration-200 relative')}
                     >
                         <div className="min-h-8 ">
-                            <Settings size={32} strokeWidth={2} className="text-white" />
+                            <Settings size={26} strokeWidth={2} className="text-white" />
                         </div>
                         <div className="invisible z-10 group-hover:visible absolute bottom-4 left-[152%] bg-blue-950 py-2 px-3 rounded-md transition-all duration-300">
                             <div className="text-xs text-nowrap text-white font-semibold">Settings</div>
@@ -133,7 +138,7 @@ const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
 };
 
 const MobileSidebar = ({ showSidebar, setShowSidebar, sidebarMenuItems }: MobileSidebarIF) => {
-    const { settings, checkPermission } = usePermissionStore();
+    const { checkPermission } = usePermissionStore();
     const navigate = useNavigate();
 
     if (!showSidebar) return null;

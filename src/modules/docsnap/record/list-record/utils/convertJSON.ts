@@ -1,4 +1,4 @@
-import { PromptFieldIF } from '../../../document';
+import { PromptFieldIF } from '../../../prompt-tuning/interface';
 
 type ReferenceField = {
     name: string;

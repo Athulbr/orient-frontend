@@ -3,7 +3,6 @@ import PageNameComponent from '../../../../components/PageName';
 import { useState } from 'react';
 import { ListRecordPageStateProvider } from './hooks/listRecordPageContext';
 import { ListRecordComponent } from './ListRecordComponent';
-import { PromptFieldIF } from '../../document';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { Button } from '../../../../components/Button';
@@ -11,6 +10,8 @@ import { DialogComponent } from '../../../../components/DialogComponent';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import ExcelExportDialogNew from './components/ExcelExportDialogNew';
 import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBuilder';
+import { ListRecordCustomTable } from './ListRecordCustomTable';
+import { PromptFieldIF } from '../../prompt-tuning/interface';
 interface Project {
     _id: string;
     name: string;
@@ -45,6 +46,7 @@ export interface ListRecordPageStateIF {
     loadingRecords: boolean;
     records: any[];
     showExcelExportDialog: boolean;
+    assigningRecords: boolean;
 }
 
 const initialState = {
@@ -67,7 +69,8 @@ const initialState = {
     selectedIds: [],
     loadingRecords: false,
     records: [],
-    showExcelExportDialog: false
+    showExcelExportDialog: false,
+    assigningRecords: false
 };
 
 const ListRecordPage: React.FC = () => {
@@ -91,17 +94,19 @@ const ListRecordPage: React.FC = () => {
                     customGoBackFunction={() => navigate('/')}
                 >
                     <div className="flex gap-2">
-                        {actionButtons && (
-                            <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
-                                Export Records
-                            </Button>
-                        )}
+                        <Button outlined onClick={() => navigate('/config/exportbuilder/quick-report')}>
+                            Quick Report
+                        </Button>
+                        <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
+                            Export Records New
+                        </Button>
                         <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                             Manage Templates
                         </Button>
                     </div>
                 </PageNameComponent>
-                <ListRecordComponent />
+                {/* <ListRecordComponent /> */}
+                <ListRecordCustomTable />
                 <DialogComponent
                     fullScreen
                     isOpen={state.showExcelExportDialog}

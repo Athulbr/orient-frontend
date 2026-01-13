@@ -19,6 +19,7 @@ const CreateSubscriptionModelComponent: React.FC<CreateSubscriptionModelComponen
             existingData={state.subscriptionModel || {}}
             onSubmit={e => (state.subscriptionModel ? updateSubscriptionModelApi(e) : createSubscriptionModelApi(e))}
             closeDialog={() => setState(prev => ({ ...prev, showCreateDialog: false, id: '', subscriptionModel: null }))}
+            loadingPrimaryButton={state.loading}
         />
     );
 };

@@ -1,41 +1,81 @@
-import { useNavigate } from 'react-router-dom';
 import { TableBody } from './TableBody';
 import { TableHeader } from './TableHeader';
-import { useEffect } from 'react';
-import { useDocsnapStore } from '../../../../../zustand-store/DocsnapStore';
-import { useListRecordApi } from '../hooks/useListRecordApi';
+import { useState, useEffect } from 'react';
+import useTablepersistance, { buildInitialTableState } from '../../../../../hooks/useTablepersistance';
+import TableFooter from './TableFooter';
+import TableToolbar from './TableToolbar';
+import { ListRecordCustomTableStateProvider, useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 
 interface ListRecordCustomTableIF {
     test?: string;
 }
 
-const columns = [
-    { label: 'Name', key: 'name' },
-    { label: 'Extracted By', key: 'extractedBy' },
-    { label: 'Status', key: 'status' },
-    { label: 'Date', key: 'date' },
-    { label: 'Actions', key: 'actions' }
-];
+export interface ListRecordCustomTableStateIF {
+    records: Record<string, any>[];
+    loadingRecords: boolean;
+    pageSize: number;
+    page: number;
+    totalRecords: number;
+    selectedStatuses: string[];
+    selectedTemplates: string[];
+    selectedValidator: string;
+    searchText: string;
+    startDate: string;
+    endDate: string;
+    selectedRows: string[];
+}
+
+const initialState = {
+    records: [],
+    loadingRecords: false,
+    pageSize: 10,
+    page: 1,
+    totalRecords: 0,
+    selectedStatuses: [],
+    selectedTemplates: [],
+    selectedValidator: '',
+    searchText: '',
+    startDate: '',
+    endDate: '',
+    selectedRows: []
+};
 
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
-    const { refreshRecord } = useDocsnapStore();
-    const { getRecordsApi } = useListRecordApi();
+    const mergedInitialState = buildInitialTableState(initialState);
+    const [state, setState] = useState<ListRecordCustomTableStateIF>(mergedInitialState);
 
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        getRecordsApi();
-    }, [refreshRecord]);
     return (
-        <div className={`bg-background dark:bg-background-dark flex min-w-[770px] flex-1 flex-col `}>
-            {/* <TableToolbar /> */}
-            <div className="h-full overflow-y-auto rounded-lg border">
-                <table className="min-w-full table-fixed">
-                    <TableHeader columns={columns} />
-                    <TableBody columns={columns} />
-                </table>
+        <ListRecordCustomTableStateProvider value={{ state, setState }}>
+            <div className={`bg-background dark:bg-background-dark flex min-w-[770px] flex-1 flex-col overflow-y-auto`}>
+                <TableToolbar />
+                <div className="h-full overflow-y-auto rounded-lg border">
+                    <TableLineLoader />
+                    <table className="min-w-full table-fixed">
+                        <TableHeader />
+                        <TableBody />
+                    </table>
+                </div>
+                <TableFooter />
             </div>
-            {/* <TableFooter /> */}
+        </ListRecordCustomTableStateProvider>
+    );
+};
+
+interface TableLineLoaderIF {
+    test?: string;
+}
+
+const TableLineLoader: React.FC<TableLineLoaderIF> = () => {
+    const { state } = useListRecordCustomTableState();
+
+    if (!state.loadingRecords) return null;
+
+    return (
+        <div className="w-full overflow-hidden">
+            <div className="relative h-[1.5px] bg-gray-200">
+                <div className="absolute left-0 top-0 h-full w-1/2 bg-green-500 animate-table-line-loader" />
+            </div>
         </div>
     );
 };

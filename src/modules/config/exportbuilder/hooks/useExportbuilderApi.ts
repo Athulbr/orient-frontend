@@ -49,7 +49,7 @@ export const useExportbuilderApi = () => {
     // ============================= DELETE ==================================
     const deleteExportbuilderApi = async (id: string) => {
         try {
-            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/builder/recordbuilder/delete/${id}`);
+            const res = await httpRequest('DELETE', `${config.nodeApiUrl}/builder/recordbuilder/${id}`);
             setState(prev => ({ ...prev, id: '', refresh: (prev.refresh || 0) + 1 }));
             toast.success('Exportbuilder deleted successfully');
             return true;
@@ -61,7 +61,8 @@ export const useExportbuilderApi = () => {
     // ============================= get Records ==================================
     const getRecordsApi = async (payload: any) => {
         try {
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, payload);
+            const module = sessionStorage.getItem('module');
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { ...payload, module });
             setState(prev => ({ ...prev, records: res.data, totalRecords: res.total }));
         } catch (error) {
             console.error('error:===========', error);
@@ -69,5 +70,60 @@ export const useExportbuilderApi = () => {
         }
     };
 
-    return { createExportbuilderApi, getExportbuilderByIdApi, updateExportbuilderApi, deleteExportbuilderApi, getRecordsApi };
+    // ============================= EXPORT (server-side) ==============================
+    const exportBuilderApi = async (payload: any) => {
+        try {
+            setState(prev => ({ ...prev, loading: true }));
+
+            const accessToken = window?.sessionStorage?.getItem('accessToken') || '';
+            const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+            const user: any = window?.sessionStorage?.getItem('user') || '';
+
+            const headers: HeadersInit = {
+                Accept: 'application/json, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Type': 'application/json;charset=UTF-8',
+                tenantid: selectedTenant ? selectedTenant : user?.tenant?._id
+            };
+
+            if (accessToken) {
+                headers.authorization = `Bearer ${JSON.parse(accessToken)}`;
+            }
+
+            const response = await fetch(`${config.nodeApiUrl}/idp/history/exportbuilder`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Export failed');
+            }
+
+            const contentType = response.headers.get('content-type') || '';
+            const disposition = response.headers.get('content-disposition') || '';
+            let fileName = 'Record_Export.xlsx';
+            const match = disposition.match(/filename="?([^";]+)"?/i);
+            if (match && match[1]) {
+                fileName = match[1];
+            }
+
+            if (contentType.includes('application/json')) {
+                const jsonData = await response.json();
+                setState(prev => ({ ...prev, loading: false }));
+                return { fileName: fileName.replace(/\.xlsx$/i, '.json'), jsonData };
+            }
+
+            const blob = await response.blob();
+            setState(prev => ({ ...prev, loading: false }));
+            return { fileName, blob };
+        } catch (error) {
+            console.error('error:===========', error);
+            setState(prev => ({ ...prev, loading: false }));
+            toast.error('Failed to export records');
+            throw error;
+        }
+    };
+
+    return { createExportbuilderApi, getExportbuilderByIdApi, updateExportbuilderApi, deleteExportbuilderApi, getRecordsApi, exportBuilderApi };
 };
