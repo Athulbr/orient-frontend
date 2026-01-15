@@ -16,13 +16,15 @@ import ReactFlow, {
     Position
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Play, Mail, Clock, Terminal, CheckCircle2, AlertCircle, Wifi, WifiOff, Globe, Code, GitBranch, Plus, Trash2 } from 'lucide-react';
+import { Play, Mail, Clock, Terminal, CheckCircle2, AlertCircle, Wifi, WifiOff, Globe, Code, GitBranch, Plus, Trash2, Dice5 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { StatusBadge } from './components/StatusBadge';
 import { LogNode } from './nodes/LogNode';
 import { DelayNode } from './nodes/DelayNode';
 import { SidebarBtn } from './components/SidebarBtn';
 import './index.css';
+import { RandomNumberNode } from './nodes/RandomNumberNode';
+import { sampleEdges, sampleNodes } from './StaticData';
 
 // ---------------- CUSTOM NODE COMPONENTS ----------------
 
@@ -130,27 +132,11 @@ const nodeTypes: NodeTypes = {
     logNode: LogNode,
     httpNode: HttpNode,
     jsNode: JsNode,
-    ifNode: IfNode
+    ifNode: IfNode,
+    randomNumberNode: RandomNumberNode
 };
 
 // ---------------- SAMPLE DATA ----------------
-const sampleNodes: Node[] = [
-    { id: 'http-1', type: 'httpNode', position: { x: 100, y: 100 }, data: { method: 'GET', url: 'https://jsonplaceholder.typicode.com/users' } },
-    {
-        id: 'if-1',
-        type: 'ifNode',
-        position: { x: 400, y: 100 },
-        data: { conditions: [{ field: 'httpResponse[0].id', operation: 'equals', value: '1' }], combineOperation: 'AND' }
-    },
-    { id: 'log-success', type: 'logNode', position: { x: 700, y: 50 }, data: { message: 'First user ID is 1!' } },
-    { id: 'log-fail', type: 'logNode', position: { x: 700, y: 200 }, data: { message: 'First user ID is not 1' } }
-];
-
-const sampleEdges: Edge[] = [
-    { id: 'e1', source: 'http-1', target: 'if-1' },
-    { id: 'e2', source: 'if-1', target: 'log-success', sourceHandle: 'true' },
-    { id: 'e3', source: 'if-1', target: 'log-fail', sourceHandle: 'false' }
-];
 
 // ---------------- MAIN EDITOR ----------------
 
@@ -165,6 +151,7 @@ export default function WorkflowEditor() {
     const [isConnected, setIsConnected] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    console.log('nodes:===========', nodes);
     console.log('edges:===========', edges);
 
     const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
@@ -251,8 +238,10 @@ export default function WorkflowEditor() {
             emailNode: { recipient: 'user@example.com' },
             httpNode: { method: 'GET', url: 'https://jsonplaceholder.typicode.com/todos/1' },
             jsNode: { code: 'item.json.modified = true;' },
-            ifNode: { conditions: [{ field: 'httpResponse.data', operation: 'isNotEmpty', value: '' }], combineOperation: 'AND' }
+            ifNode: { conditions: [{ field: 'httpResponse.data', operation: 'isNotEmpty', value: '' }], combineOperation: 'AND' },
+            randomNumberNode: { min: 1, max: 100 }
         };
+
         const newNode: Node = {
             id: `${type}-${Date.now()}`,
             type,
@@ -349,6 +338,7 @@ export default function WorkflowEditor() {
                     <SidebarBtn icon={<Globe size={16} />} label="HTTP Request" onClick={() => addNewNode('httpNode')} />
                     <SidebarBtn icon={<Code size={16} />} label="JavaScript" onClick={() => addNewNode('jsNode')} />
                     <SidebarBtn icon={<GitBranch size={16} />} label="IF Condition" onClick={() => addNewNode('ifNode')} />
+                    <SidebarBtn icon={<Dice5 size={16} />} label="Random Number" onClick={() => addNewNode('randomNumberNode')} />
 
                     {selectedNode && selectedNode.type === 'ifNode' && (
                         <div className="mt-8 p-4 bg-cyan-50 rounded-xl border border-cyan-200">
