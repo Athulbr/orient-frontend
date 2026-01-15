@@ -10,7 +10,7 @@ const inputData = [
 ];
 
 function combineNameAndAge() {
-    return inputData.map(person => `${person.name}_${person.age}`);
+    // logic
 }
 
 combineNameAndAge();

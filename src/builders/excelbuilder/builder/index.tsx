@@ -93,7 +93,7 @@ export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({
 
     const filterByTenantId = (templateList: any[]) => {
         const selectedTenant = sessionStorage.getItem('selectedTenant') || JSON.parse(sessionStorage.getItem('user') || '{}').tenant?._id;
-        return templateList.filter((template: any) => template.tenantId === selectedTenant);
+        return templateList.filter((template: any) => template.tenantId === selectedTenant || selectedTenant === 'all');
     };
 
     const filterByModule = (templateList: any[]) => {
