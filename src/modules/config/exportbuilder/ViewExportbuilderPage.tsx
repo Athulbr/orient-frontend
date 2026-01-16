@@ -84,12 +84,14 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                 const filterOptionsMap: Record<string, string[]> = {};
 
                 state.exportbuilder.filters.forEach((filter: { jsonPath: string }) => {
-                    const key = filter.jsonPath ? filter.jsonPath.split('.').slice(-1)[0] : '';
-                    if (key && Array.isArray(state.records)) {
+                    const path = filter.jsonPath || '';
+                    const key = path ? path.split('.').slice(-1)[0] : '';
+                    if (path && Array.isArray(state.records)) {
                         const uniqueValues = Array.from(
-                            new Set(state.records.map((record: any) => record[key]).filter(val => val !== undefined && val !== null))
+                            new Set(state.records.map((record: any) => getValueByPath(record, path)).filter(val => val !== undefined && val !== null))
                         ).slice(0, 50);
-                        filterOptionsMap[key] = uniqueValues.map(String);
+                        // store options by full jsonPath so payload keys match API expectations
+                        filterOptionsMap[path] = uniqueValues.map(String);
                     }
                 });
 
@@ -213,22 +215,23 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                 {state.exportbuilder?.filters &&
                     Array.isArray(state.exportbuilder.filters) &&
                     state.exportbuilder.filters.map((filter: { jsonPath: string; javascript?: string; customLabel?: string }) => {
-                        // Extract key from jsonPath (last segment)
-                        const key = filter.jsonPath ? filter.jsonPath.split('.').slice(-1)[0] : '';
+                                                // Use full jsonPath as the option key, but keep last segment for labels
+                                                const path = filter.jsonPath || '';
+                                                const key = path ? path.split('.').slice(-1)[0] : '';
 
-                        // Derive dynamic options from current records immediately (so they appear when records arrive)
-                        const dynamicFromRecords = Array.isArray(state.records)
-                            ? Array.from(
-                                  new Set(
-                                      state.records
-                                        .map((record: any) => getValueByPath(record, filter.jsonPath))
-                                          .filter((val: any) => val !== undefined && val !== null)
-                                  )
-                              ).slice(0, 50).map(String)
-                            : [];
+                                                // Derive dynamic options from current records immediately (so they appear when records arrive)
+                                                const dynamicFromRecords = Array.isArray(state.records)
+                                                        ? Array.from(
+                                                                    new Set(
+                                                                            state.records
+                                                                                .map((record: any) => getValueByPath(record, path))
+                                                                                    .filter((val: any) => val !== undefined && val !== null)
+                                                                    )
+                                                            ).slice(0, 50).map(String)
+                                                        : [];
 
-                        // Prefer initial (cached) options if available, otherwise use dynamic values
-                        const dataOptions = initialFilterOptions[key] && initialFilterOptions[key].length > 0 ? initialFilterOptions[key] : dynamicFromRecords;
+                                                // Prefer initial (cached) options if available (stored by full jsonPath), otherwise use dynamic values
+                                                const dataOptions = initialFilterOptions[path] && initialFilterOptions[path].length > 0 ? initialFilterOptions[path] : dynamicFromRecords;
 
                         // Prepare saved options (from config) first, then append dynamic options without duplication
                         const savedOptionsRaw: any = (filter as any).options || [];
@@ -244,14 +247,15 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                         ];
 
                         return (
-                            key && (filter.javascript || savedOptions.length > 0 || dataOptions.length > 0) && (
+                                key && (filter.javascript || savedOptions.length > 0 || dataOptions.length > 0) && (
                                 <SingleSelect
                                     key={filter.jsonPath}
                                     options={mergedOptions}
-                                    value={selectedFilterValues[key] || ''}
+                                    // store selected filters using full jsonPath so API payloads use the full path
+                                    value={selectedFilterValues[path] || ''}
                                     placeholder={`Select ${key}`}
                                     className="min-w-60"
-                                    onValueChange={(value: string) => setSelectedFilterValues(prev => ({ ...prev, [key]: value }))}
+                                    onValueChange={(value: string) => setSelectedFilterValues(prev => ({ ...prev, [path]: value }))}
                                 />
                             )
                         );
