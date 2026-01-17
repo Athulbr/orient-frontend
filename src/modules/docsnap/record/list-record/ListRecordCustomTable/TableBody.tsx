@@ -29,8 +29,8 @@ export const TableBody: React.FC = () => {
             navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
             return;
         }
-        if (module === 'contentCreation') {
-            navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
+        if (module === 'content-creation') {
+            navigate(`/content-creation/view/${row._id}`, { state: { from: url } });
             return;
         }
         navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });

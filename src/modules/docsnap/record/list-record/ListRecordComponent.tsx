@@ -59,7 +59,7 @@ export const ListRecordComponent: React.FC = () => {
                 navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
                 return;
             }
-            if (module === 'contentCreation') {
+            if (module === 'content-creation') {
                 navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
                 return;
             }
