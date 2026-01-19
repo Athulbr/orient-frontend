@@ -71,9 +71,11 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
             if (selectedTemplateId) payload.filters.templateId = selectedTemplateId;
             if (selectedStatus) payload.filters.status = selectedStatus;
 
+            let recordsFromApi: any[] = [];
             try {
                 setState(prev => ({ ...prev, loading: true }));
-                await getRecordsApi(payload);
+                const res = await getRecordsApi(payload);
+                recordsFromApi = res?.data ?? [];
             } catch (err) {
                 console.error('fetchRecords error:', err);
             } finally {
@@ -82,13 +84,14 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
 
             // Build dynamic options map from current records (always update so options appear as records arrive)
             const dynamicMap: Record<string, string[]> = {};
-            if (state.exportbuilder?.filters && Array.isArray(state.exportbuilder.filters) && Array.isArray(state.records)) {
+            const recordsToUse = Array.isArray(recordsFromApi) && recordsFromApi.length > 0 ? recordsFromApi : (Array.isArray(state.records) ? state.records : []);
+            if (state.exportbuilder?.filters && Array.isArray(state.exportbuilder.filters) && recordsToUse.length > 0) {
                 state.exportbuilder.filters.forEach((filter: { jsonPath: string }) => {
                     const path = filter.jsonPath || '';
                     if (!path) return;
                     const uniqueValues = Array.from(
                         new Set(
-                            state.records
+                            recordsToUse
                                 .map((record: any) => getValueByPath(record, path))
                                 .filter((val: any) => val !== undefined && val !== null)
                         )
@@ -100,14 +103,15 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
             }
             setDynamicFilterOptions(dynamicMap);
 
-            // On initial load (no selected filters and no cached initial options) seed initialFilterOptions
-            if (Object.keys(selectedFilterValues).length === 0 && Object.keys(initialFilterOptions).length === 0) {
-                setInitialFilterOptions(dynamicMap);
+            // Seed initialFilterOptions only if there are no selected filters and we have dynamic options.
+            // Use functional updater to avoid closure race where `initialFilterOptions` might be updated concurrently.
+            if (Object.keys(dynamicMap).length > 0 && Object.keys(selectedFilterValues).length === 0) {
+                setInitialFilterOptions(prev => (Object.keys(prev || {}).length === 0 ? dynamicMap : prev));
             }
         };
 
         fetchRecords();
-    }, [startDate, endDate, selectedTemplateId, selectedStatus, selectedFilterValues]);
+    }, [startDate, endDate, selectedTemplateId, selectedStatus, selectedFilterValues, state.exportbuilder]);
 
     useEffect(() => {
         if (state.id) {
