@@ -3,14 +3,14 @@ name: Deploy Frontend to EC2
 
 on:
     push:
-        branches: # Trigger workflow on push to the main branch
+      ##  branches: # Trigger workflow on push to the main branch
            ## - dev
     workflow_dispatch: {} # Allow manual triggering of the workflow
 
 jobs:
     deploy:
         # Use the reusable workflow for deploying the application
-        uses: rehab-mart/cicd-actions/.github/workflows/reusable-dev2-deploy.yml@main
+      ##  uses: rehab-mart/cicd-actions/.github/workflows/reusable-dev2-deploy.yml@main
         with:
             app_name: 'frontend-v2' # Name of the application to be deployed
             app_port: '8080' # Port on which the application will run
