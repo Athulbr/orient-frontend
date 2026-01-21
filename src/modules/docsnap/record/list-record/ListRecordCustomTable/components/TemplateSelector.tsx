@@ -17,7 +17,7 @@ const TemplateSelector: React.FC<TemplateSelectorIF> = () => {
     templateList.map((template: any) => {
         if (selectedTenant === template.tenantId || selectedTenant === 'all') {
             if (module === template.settings?.module) {
-                console.log('template:===========', template);
+                // console.log('template:===========', template);
                 options.push({
                     label: template.name,
                     value: template._id
