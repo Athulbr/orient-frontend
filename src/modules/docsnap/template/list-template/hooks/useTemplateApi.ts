@@ -16,11 +16,11 @@ export const useListTemplatePageApi = () => {
 
     const filterTemplatesByModule = (templates: any) => {
         const selectedModuleFromSessionStorage = window?.sessionStorage?.getItem('module') || 'docsnap';
-        return templates.filter((template: any) => template.settings.module === selectedModuleFromSessionStorage);
+        return templates.filter((template: any) => template?.settings?.module === selectedModuleFromSessionStorage);
     };
 
     const filterTemplatesBySearchText = (templates: any) => {
-        return templates.filter((template: any) => template.name.toLowerCase().includes(state.searchText.toLowerCase()));
+        return templates.filter((template: any) => template?.name?.toLowerCase().includes(state.searchText.toLowerCase()));
     };
 
     const sortTemplatesByRecentlyUsed = (templates: any) => {
