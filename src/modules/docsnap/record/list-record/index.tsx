@@ -77,7 +77,8 @@ const ListRecordPage: React.FC = () => {
     const [state, setState] = useState<ListRecordPageStateIF>(initialState);
     const navigate = useNavigate();
     const [params] = useSearchParams();
-    const { checkPermission } = usePermissionStore();
+    const { checkPermission, role } = usePermissionStore();
+    const isAdminUser = !!role && ['admin', 'superadmin'].includes((role?.name || '').toLowerCase());
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     const generateId = () => Math.random().toString(36).substr(2, 9);
     const actionButtons = checkPermission('export:record:ardex');
@@ -97,9 +98,11 @@ const ListRecordPage: React.FC = () => {
                         <Button outlined onClick={() => navigate('/config/exportbuilder/quick-report')}>
                             Quick Report
                         </Button>
-                        <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
-                            Export Records New
-                        </Button>
+                        {isAdminUser && (
+                            <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
+                                Export Records New
+                            </Button>
+                        )}
                         <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                             Manage Templates
                         </Button>
