@@ -153,6 +153,9 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             const requestBody = {
                 fields: state.sectionList,
                 s3FileName: fileName,
+                settings: {
+                    module: sessionStorage.getItem('module') || 'docsnap'
+                },
                 ...data
             };
             createTemplateApi(requestBody);

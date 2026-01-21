@@ -16,7 +16,7 @@ export const useListTemplatePageApi = () => {
 
     const filterTemplatesByModule = (templates: any) => {
         const selectedModuleFromSessionStorage = window?.sessionStorage?.getItem('module') || 'docsnap';
-        return templates.filter((template: any) => template.settings.module === selectedModuleFromSessionStorage);
+        return templates.filter((template: any) => template.settings?.module === selectedModuleFromSessionStorage);
     };
 
     const filterTemplatesBySearchText = (templates: any) => {
@@ -42,9 +42,12 @@ export const useListTemplatePageApi = () => {
             setState(prev => ({ ...prev, loadingTemplates: true }));
             const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
             const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
-            const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant);
-            const filteredTemplatesBySearchText = sessionStorage.getItem('debug') === 'true' ? filterTemplatesBySearchText(filteredTemplatesByTenant) : filterTemplatesBySearchText(filteredTemplatesByModule);
-            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesBySearchText);
+            // const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant);
+            const filteredTemplatesBySearchText =
+                sessionStorage.getItem('debug') === 'true'
+                    ? filterTemplatesBySearchText(filteredTemplatesByTenant)
+                    : filterTemplatesBySearchText(filteredTemplatesByTenant);
+            const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesByTenant);
             setState(prev => ({ ...prev, loadingTemplates: false, templates: sortedTemplates }));
             return true;
         } catch (error) {
