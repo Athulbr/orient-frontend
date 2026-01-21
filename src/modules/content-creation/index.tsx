@@ -17,7 +17,14 @@ export interface Message {
     userMessage: boolean;
 }
 
-export interface ContentCreationEditorStateIF {}
+export interface Keyword {
+    keyword: string;
+    source: string;
+}
+
+export interface ContentCreationEditorStateIF {
+    keywords?: Keyword[];
+}
 
 const initialState: ContentCreationEditorStateIF = {};
 
@@ -31,6 +38,9 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
         const getRecord = async () => {
             const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
             setContent(res.data?.extractedData?.htmlContent);
+            if (res.data?.keywords) {
+                setState(prev => ({ ...prev, keywords: res.data.keywords }));
+            }
         };
         getRecord();
     }, [id]);

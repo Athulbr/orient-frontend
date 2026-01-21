@@ -65,8 +65,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             }
 
             const excelRows = await excelFileToArrayOfObjects(files[0]);
-            console.log('excelRows:===========', excelRows);
-            excelRows.forEach((row: any) => {
+            const selectedProducts = excelRows.slice(0, Number(template?.settings?.extractionLimit) || 10);
+            selectedProducts.forEach((row: any) => {
                 addToDocumentExtractor(latestTemplate, [], row);
             });
         } else {
