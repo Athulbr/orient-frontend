@@ -29,10 +29,11 @@ export const useListRecordCustomTableApi = () => {
             const module = sessionStorage.getItem('module');
             setState(prev => ({ ...prev, loadingRecords: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { ...payload, module });
-            setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total }));
+            setState(prev => ({ ...prev, loadingRecords: false, records: res.data, totalRecords: res.total, failedToFetch: false }));
             window?.sessionStorage?.setItem('recordIdList', JSON.stringify(res.data.map((item: any) => item._id)));
             return true;
         } catch (error) {
+            setState(prev => ({ ...prev, loadingRecords: false, failedToFetch: true }));
             toast.error('Failed to fetch record');
         }
     };
