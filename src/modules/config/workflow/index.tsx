@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, memo, useMemo } from 'react';
+import { useState, useCallback, useEffect, memo, useMemo } from 'react';
 import ReactFlow, {
     Background,
     Controls,
@@ -16,60 +16,15 @@ import ReactFlow, {
     Position
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Play, Mail, Clock, Terminal, Settings, CheckCircle2, AlertCircle, Wifi, WifiOff, Globe, Code } from 'lucide-react';
+import { Play, Mail, Clock, Terminal, CheckCircle2, AlertCircle, Wifi, WifiOff, Globe, Code, GitBranch, Plus, Trash2, Dice5 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
-
-// Sample data
-const sampleNodes: Node[] = [
-    {
-        id: 'log-1',
-        type: 'logNode',
-        position: { x: 250, y: 100 },
-        data: { message: 'Workflow started' }
-    },
-    {
-        id: 'delay-1',
-        type: 'delayNode',
-        position: { x: 500, y: 100 },
-        data: { delay: 2000 }
-    }
-];
-
-const sampleEdges: Edge[] = [
-    {
-        id: 'e1-2',
-        source: 'log-1',
-        target: 'delay-1',
-        animated: true
-    }
-];
-
-// ---------------- STATUS ICON COMPONENT ----------------
-
-const StatusBadge = ({ status }: { status?: string }) => {
-    if (status === 'running') {
-        return (
-            <div className="absolute -top-3 -right-3 bg-amber-500 text-white p-1 rounded-full shadow-lg z-50">
-                <Settings size={14} className="animate-spin" />
-            </div>
-        );
-    }
-    if (status === 'success') {
-        return (
-            <div className="absolute -top-3 -right-3 bg-emerald-500 text-white p-1 rounded-full shadow-lg z-50">
-                <CheckCircle2 size={14} />
-            </div>
-        );
-    }
-    if (status === 'error') {
-        return (
-            <div className="absolute -top-3 -right-3 bg-red-500 text-white p-1 rounded-full shadow-lg z-50">
-                <AlertCircle size={14} />
-            </div>
-        );
-    }
-    return null;
-};
+import { StatusBadge } from './components/StatusBadge';
+import { LogNode } from './nodes/LogNode';
+import { DelayNode } from './nodes/DelayNode';
+import { SidebarBtn } from './components/SidebarBtn';
+import './index.css';
+import { RandomNumberNode } from './nodes/RandomNumberNode';
+import { sampleEdges, sampleNodes } from './StaticData';
 
 // ---------------- CUSTOM NODE COMPONENTS ----------------
 
@@ -90,45 +45,11 @@ const EmailNode = memo(({ data, selected }: NodeProps) => (
     </div>
 ));
 
-const DelayNode = memo(({ data, selected }: NodeProps) => (
-    <div
-        className={`relative min-w-[180px] bg-white rounded-xl shadow-lg border-2 transition-all ${selected ? 'border-amber-500 ring-4 ring-amber-50' : 'border-slate-100'}`}
-    >
-        <StatusBadge status={data.status} />
-        <Handle type="target" position={Position.Left} />
-        <div className="flex items-center gap-2 p-3 border-b bg-amber-50/30 rounded-t-xl">
-            <Clock size={14} className="text-amber-500" />
-            <span className="text-[10px] font-bold text-slate-500 uppercase">Delay</span>
-        </div>
-        <div className="p-4">
-            <p className="text-sm font-semibold">{data.delay || 1000}ms</p>
-        </div>
-        <Handle type="source" position={Position.Right} />
-    </div>
-));
-
-const LogNode = memo(({ data, selected }: NodeProps) => (
-    <div
-        className={`relative min-w-[180px] bg-white rounded-xl shadow-lg border-2 transition-all ${selected ? 'border-emerald-500 ring-4 ring-emerald-50' : 'border-slate-100'}`}
-    >
-        <StatusBadge status={data.status} />
-        <Handle type="target" position={Position.Left} />
-        <div className="flex items-center gap-2 p-3 border-b bg-emerald-50/30 rounded-t-xl">
-            <Terminal size={14} className="text-emerald-500" />
-            <span className="text-[10px] font-bold text-slate-500 uppercase">Log</span>
-        </div>
-        <div className="p-4 bg-slate-900 m-2 rounded">
-            <p className="text-[10px] font-mono text-emerald-400 truncate">{`> ${data.message || '...'}`}</p>
-        </div>
-        <Handle type="source" position={Position.Right} />
-    </div>
-));
-
 const HttpNode = memo(({ data, selected }: NodeProps) => {
     const hasResponse = data.response !== undefined;
     return (
         <div
-            className={`relative min-w-[200px] bg-white rounded-xl shadow-lg border-2 transition-all ${selected ? 'border-purple-500 ring-4 ring-purple-50' : 'border-slate-100'}`}
+            className={`relative min-w-[100px] max-w-[200px] bg-white rounded-xl shadow-lg border-2 transition-all ${selected ? 'border-purple-500 ring-4 ring-purple-50' : 'border-slate-100'}`}
         >
             <StatusBadge status={data.status} />
             <Handle type="target" position={Position.Left} />
@@ -166,13 +87,56 @@ const JsNode = memo(({ data, selected }: NodeProps) => (
     </div>
 ));
 
+const IfNode = memo(({ data, selected }: NodeProps) => {
+    const condCount = data.conditions?.length || 0;
+
+    return (
+        <div
+            className={`relative min-w-[240px] bg-white rounded-xl shadow-lg border-2 transition-all 
+            ${selected ? 'border-cyan-500 ring-4 ring-cyan-50' : 'border-slate-100'}`}
+        >
+            <StatusBadge status={data.status} />
+
+            {/* INPUT */}
+            <Handle type="target" position={Position.Left} className="w-2 h-2 bg-slate-400" />
+
+            <div className="flex items-center gap-2 p-3 border-b bg-cyan-50/30 rounded-t-xl">
+                <GitBranch size={14} className="text-cyan-600" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase">IF Condition</span>
+            </div>
+
+            <div className="p-4">
+                <div className="text-xs text-slate-600 mb-2">
+                    {condCount} condition{condCount !== 1 ? 's' : ''} ({data.combineOperation || 'AND'})
+                </div>
+
+                {data.conditions?.slice(0, 2).map((cond: any, idx: number) => (
+                    <div key={idx} className="text-[10px] font-mono text-cyan-700 bg-cyan-50 px-2 py-1 rounded mb-1 truncate">
+                        {cond.field} {cond.operation} {cond.value}
+                    </div>
+                ))}
+
+                {condCount > 2 && <div className="text-[9px] text-slate-400">+{condCount - 2} more</div>}
+            </div>
+
+            {/* OUTPUTS */}
+            <Handle type="source" position={Position.Right} id="true" className="w-2 h-2 bg-emerald-500" style={{ top: '60%' }} />
+            <Handle type="source" position={Position.Right} id="false" className="w-2 h-2 bg-red-500" style={{ top: '75%' }} />
+        </div>
+    );
+});
+
 const nodeTypes: NodeTypes = {
     emailNode: EmailNode,
     delayNode: DelayNode,
     logNode: LogNode,
     httpNode: HttpNode,
-    jsNode: JsNode
+    jsNode: JsNode,
+    ifNode: IfNode,
+    randomNumberNode: RandomNumberNode
 };
+
+// ---------------- SAMPLE DATA ----------------
 
 // ---------------- MAIN EDITOR ----------------
 
@@ -186,6 +150,9 @@ export default function WorkflowEditor() {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    console.log('nodes:===========', nodes);
+    console.log('edges:===========', edges);
 
     const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId), [nodes, selectedNodeId]);
 
@@ -218,19 +185,11 @@ export default function WorkflowEditor() {
             setErrorMessage('Cannot connect to server. Make sure the backend is running on http://localhost:4000');
         });
 
-        newSocket.on('reconnect_failed', () => {
-            console.error('Reconnection failed');
-            setIsConnected(false);
-            setErrorMessage('Failed to reconnect to server');
-        });
-
         newSocket.on('node-status', ({ nodeId, status }: { nodeId: string; status: string }) => {
-            console.log('Node status update:', nodeId, status);
             setNodeStatus(prev => ({ ...prev, [nodeId]: status }));
         });
 
         newSocket.on('node-response', ({ nodeId, response }: { nodeId: string; response: any }) => {
-            console.log('Node response:', nodeId, response);
             setNodeResponses(prev => ({ ...prev, [nodeId]: response }));
         });
 
@@ -246,31 +205,13 @@ export default function WorkflowEditor() {
         });
 
         setSocket(newSocket);
-
-        // Check connection status periodically
-        const checkInterval = setInterval(() => {
-            if (newSocket.connected !== isConnected) {
-                setIsConnected(newSocket.connected);
-            }
-        }, 1000);
-
         return () => {
-            clearInterval(checkInterval);
             newSocket.close();
         };
     }, []);
 
-    // Merge status and responses into nodes for rendering
     const nodesWithStatus = useMemo(
-        () =>
-            nodes.map(node => ({
-                ...node,
-                data: {
-                    ...node.data,
-                    status: nodeStatus[node.id],
-                    response: nodeResponses[node.id]
-                }
-            })),
+        () => nodes.map(node => ({ ...node, data: { ...node.data, status: nodeStatus[node.id], response: nodeResponses[node.id] } })),
         [nodes, nodeStatus, nodeResponses]
     );
 
@@ -279,18 +220,14 @@ export default function WorkflowEditor() {
             setErrorMessage('Not connected to server. Please check if the backend is running.');
             return;
         }
-
         if (!nodes.length) {
             setErrorMessage('No nodes to execute');
             return;
         }
-
         setIsRunning(true);
         setNodeStatus({});
         setNodeResponses({});
         setErrorMessage(null);
-
-        console.log('Executing workflow with', nodes.length, 'nodes and', edges.length, 'edges');
         socket.emit('execute-workflow', { nodes, edges });
     };
 
@@ -299,9 +236,12 @@ export default function WorkflowEditor() {
             logNode: { message: 'Hello' },
             delayNode: { delay: 1000 },
             emailNode: { recipient: 'user@example.com' },
-            httpNode: { method: 'GET', url: 'https://api.example.com' },
-            jsNode: { code: 'console.log("Hello from JS!");' }
+            httpNode: { method: 'GET', url: 'https://jsonplaceholder.typicode.com/todos/1' },
+            jsNode: { code: 'item.json.modified = true;' },
+            ifNode: { conditions: [{ field: 'httpResponse.data', operation: 'isNotEmpty', value: '' }], combineOperation: 'AND' },
+            randomNumberNode: { min: 1, max: 100 }
         };
+
         const newNode: Node = {
             id: `${type}-${Date.now()}`,
             type,
@@ -315,17 +255,43 @@ export default function WorkflowEditor() {
         setNodes(nds => nds.map(n => (n.id === selectedNodeId ? { ...n, data: { ...n.data, [field]: value } } : n)));
     };
 
-    const onNodesChange: OnNodesChange = useCallback(changes => setNodes(nds => applyNodeChanges(changes, nds)), []);
+    const addCondition = () => {
+        if (!selectedNode || selectedNode.type !== 'ifNode') return;
+        const newCondition = { field: 'httpResponse.data', operation: 'equals', value: '' };
+        const conditions = [...(selectedNode.data.conditions || []), newCondition];
+        updateNodeData('conditions', conditions);
+    };
 
+    const updateCondition = (index: number, field: string, value: any) => {
+        if (!selectedNode || selectedNode.type !== 'ifNode') return;
+        const conditions = [...selectedNode.data.conditions];
+        conditions[index] = { ...conditions[index], [field]: value };
+        updateNodeData('conditions', conditions);
+    };
+
+    const removeCondition = (index: number) => {
+        if (!selectedNode || selectedNode.type !== 'ifNode') return;
+        const conditions = selectedNode.data.conditions.filter((_: any, i: number) => i !== index);
+        updateNodeData('conditions', conditions);
+    };
+
+    const onNodesChange: OnNodesChange = useCallback(changes => setNodes(nds => applyNodeChanges(changes, nds)), []);
     const onEdgesChange: OnEdgesChange = useCallback(changes => setEdges(eds => applyEdgeChanges(changes, eds)), []);
 
-    const onConnect: OnConnect = useCallback(params => setEdges(eds => addEdge({ ...params, animated: true }, eds)), []);
+    const onConnect: OnConnect = useCallback(params => {
+        const newEdge: any = { ...params, animated: true };
+        if (params.sourceHandle) {
+            newEdge.label = params.sourceHandle.toUpperCase();
+            newEdge.style = { stroke: params.sourceHandle === 'true' ? '#10b981' : '#ef4444' };
+            newEdge.labelBgStyle = { fill: params.sourceHandle === 'true' ? '#d1fae5' : '#fee2e2' };
+        }
+        setEdges(eds => addEdge(newEdge, eds));
+    }, []);
 
     return (
         <div className="flex h-screen w-full bg-slate-50">
-            {/* SIDEBAR */}
-            <aside className="w-80 bg-white border-r flex flex-col shadow-xl z-20">
-                <div className="p-6 border-b">
+            <aside className="w-80 bg-white border-r flex flex-col shadow-xl z-20 overflow-y-auto">
+                <div className="p-6 border-b sticky top-0 bg-white z-10">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-xl font-bold italic text-indigo-600">Workflow</h1>
                         <button
@@ -338,32 +304,25 @@ export default function WorkflowEditor() {
                                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
                             }`}
-                            title={!isConnected ? 'Server not connected' : 'Run workflow'}
                         >
                             <Play size={16} fill="currentColor" />
                         </button>
                     </div>
-
-                    {/* Connection Status */}
                     <div
-                        className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg ${
-                            isConnected ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-                        }`}
+                        className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg ${isConnected ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}
                     >
                         {isConnected ? (
                             <>
                                 <Wifi size={12} />
-                                <span>Connected to server</span>
+                                <span>Connected</span>
                             </>
                         ) : (
                             <>
                                 <WifiOff size={12} />
-                                <span>Server offline</span>
+                                <span>Offline</span>
                             </>
                         )}
                     </div>
-
-                    {/* Error Message */}
                     {errorMessage && (
                         <div className="mt-3 flex items-start gap-2 text-xs px-3 py-2 rounded-lg bg-red-50 text-red-700">
                             <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
@@ -372,19 +331,103 @@ export default function WorkflowEditor() {
                     )}
                 </div>
 
-                <div className="p-6 space-y-4 overflow-y-auto">
+                <div className="p-6 space-y-4">
                     <SidebarBtn icon={<Mail size={16} />} label="Email" onClick={() => addNewNode('emailNode')} />
                     <SidebarBtn icon={<Clock size={16} />} label="Delay" onClick={() => addNewNode('delayNode')} />
                     <SidebarBtn icon={<Terminal size={16} />} label="Log" onClick={() => addNewNode('logNode')} />
                     <SidebarBtn icon={<Globe size={16} />} label="HTTP Request" onClick={() => addNewNode('httpNode')} />
                     <SidebarBtn icon={<Code size={16} />} label="JavaScript" onClick={() => addNewNode('jsNode')} />
+                    <SidebarBtn icon={<GitBranch size={16} />} label="IF Condition" onClick={() => addNewNode('ifNode')} />
+                    <SidebarBtn icon={<Dice5 size={16} />} label="Random Number" onClick={() => addNewNode('randomNumberNode')} />
 
-                    {selectedNode && (
+                    {selectedNode && selectedNode.type === 'ifNode' && (
+                        <div className="mt-8 p-4 bg-cyan-50 rounded-xl border border-cyan-200">
+                            <h3 className="text-xs font-bold uppercase mb-4 text-cyan-700">IF Conditions</h3>
+
+                            <div className="mb-4">
+                                <label className="text-[10px] text-slate-500 font-bold uppercase block mb-2">Combine</label>
+                                <select
+                                    className="w-full p-2 border rounded text-sm"
+                                    value={selectedNode.data.combineOperation || 'AND'}
+                                    onChange={e => updateNodeData('combineOperation', e.target.value)}
+                                >
+                                    <option value="AND">AND (all must match)</option>
+                                    <option value="OR">OR (any can match)</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-3 mb-3">
+                                {(selectedNode.data.conditions || []).map((cond: any, idx: number) => (
+                                    <div key={idx} className="p-3 bg-white rounded-lg border border-cyan-200 space-y-2">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-[9px] font-bold text-slate-400">CONDITION {idx + 1}</span>
+                                            <button onClick={() => removeCondition(idx)} className="text-red-500 hover:text-red-700">
+                                                <Trash2 size={12} />
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] text-slate-500 font-bold uppercase block mb-1">Field Path</label>
+                                            <input
+                                                className="w-full p-2 border rounded text-xs font-mono"
+                                                placeholder="e.g. data[0].name or users[2].email"
+                                                value={cond.field}
+                                                onChange={e => updateCondition(idx, 'field', e.target.value)}
+                                            />
+                                            <p className="text-[8px] text-slate-400 mt-1">Use [0], [1] for arrays • Combine: data.users[0].name</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] text-slate-500 font-bold uppercase block mb-1">Operation</label>
+                                            <select
+                                                className="w-full p-2 border rounded text-xs"
+                                                value={cond.operation}
+                                                onChange={e => updateCondition(idx, 'operation', e.target.value)}
+                                            >
+                                                <option value="equals">Equals</option>
+                                                <option value="notEquals">Not Equals</option>
+                                                <option value="contains">Contains</option>
+                                                <option value="notContains">Not Contains</option>
+                                                <option value="greaterThan">Greater Than</option>
+                                                <option value="lessThan">Less Than</option>
+                                                <option value="greaterThanOrEqual">Greater or Equal</option>
+                                                <option value="lessThanOrEqual">Less or Equal</option>
+                                                <option value="isEmpty">Is Empty</option>
+                                                <option value="isNotEmpty">Is Not Empty</option>
+                                                <option value="isTrue">Is True</option>
+                                                <option value="isFalse">Is False</option>
+                                                <option value="isArray">Is Array</option>
+                                                <option value="arrayContains">Array Contains</option>
+                                                <option value="arrayLength">Array Length Equals</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] text-slate-500 font-bold uppercase block mb-1">Value</label>
+                                            <input
+                                                className="w-full p-2 border rounded text-xs"
+                                                placeholder="Comparison value"
+                                                value={cond.value}
+                                                onChange={e => updateCondition(idx, 'value', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <button
+                                onClick={addCondition}
+                                className="w-full flex items-center justify-center gap-2 p-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 text-xs font-medium"
+                            >
+                                <Plus size={14} />
+                                Add Condition
+                            </button>
+                        </div>
+                    )}
+
+                    {selectedNode && selectedNode.type !== 'ifNode' && (
                         <div className="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
                             <h3 className="text-xs font-bold uppercase mb-4 text-indigo-600">Edit {selectedNode.type}</h3>
                             {Object.keys(selectedNode.data).map(
                                 key =>
-                                    key !== 'status' && (
+                                    key !== 'status' &&
+                                    key !== 'response' && (
                                         <div key={key} className="mb-3">
                                             <label className="text-[10px] text-slate-400 font-bold uppercase">{key}</label>
                                             {key === 'code' ? (
@@ -420,9 +463,9 @@ export default function WorkflowEditor() {
                 </div>
             </aside>
 
-            {/* CANVAS */}
             <main className="flex-grow relative h-full">
                 <ReactFlow
+                    className="dark-flow"
                     nodes={nodesWithStatus}
                     edges={edges}
                     onNodesChange={onNodesChange}
@@ -431,7 +474,7 @@ export default function WorkflowEditor() {
                     onNodeClick={(_, n) => setSelectedNodeId(n.id)}
                     onPaneClick={() => setSelectedNodeId(null)}
                     nodeTypes={nodeTypes}
-                    fitView
+                    defaultViewport={{ x: 0, y: 0, zoom: 1 }}
                 >
                     <Background color="#cbd5e1" gap={16} size={1} />
                     <Controls />
@@ -440,13 +483,3 @@ export default function WorkflowEditor() {
         </div>
     );
 }
-
-const SidebarBtn = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) => (
-    <button
-        onClick={onClick}
-        className="w-full flex items-center gap-3 p-3 rounded-xl border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all group"
-    >
-        <div className="p-2 bg-slate-100 group-hover:bg-indigo-600 group-hover:text-white rounded-lg transition-colors">{icon}</div>
-        <span className="text-sm font-semibold text-slate-600">{label}</span>
-    </button>
-);

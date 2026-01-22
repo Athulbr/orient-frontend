@@ -1,11 +1,12 @@
 import { TableBody } from './TableBody';
 import { TableHeader } from './TableHeader';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import useTablepersistance, { buildInitialTableState } from '../../../../../hooks/useTablepersistance';
 import TableFooter from './TableFooter';
 import TableToolbar from './TableToolbar';
 import { ListRecordCustomTableStateProvider, useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { useSearchParams } from 'react-router-dom';
 
 interface ListRecordCustomTableIF {
     test?: string;
@@ -26,23 +27,28 @@ export interface ListRecordCustomTableStateIF {
     selectedRows: string[];
 }
 
-const initialState = {
-    records: [],
-    loadingRecords: false,
-    pageSize: 10,
-    page: 1,
-    totalRecords: 0,
-    selectedStatuses: [],
-    selectedTemplates: [],
-    selectedValidator: '',
-    searchText: '',
-    startDate: '',
-    endDate: '',
-    selectedRows: []
-};
-
 export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
-    const mergedInitialState = buildInitialTableState(initialState);
+    const [searchParams] = useSearchParams();
+
+    const initialState = useMemo(
+        () => ({
+            records: [],
+            loadingRecords: false,
+            pageSize: 10,
+            page: 1,
+            totalRecords: 0,
+            selectedStatuses: searchParams.get('status') || [],
+            selectedTemplates: [],
+            selectedValidator: '',
+            searchText: '',
+            startDate: '',
+            endDate: '',
+            selectedRows: []
+        }),
+        []
+    );
+
+    const mergedInitialState = useMemo(() => buildInitialTableState(initialState), [initialState]);
     const [state, setState] = useState<ListRecordCustomTableStateIF>(mergedInitialState);
 
     return (

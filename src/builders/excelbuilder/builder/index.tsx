@@ -39,48 +39,75 @@ interface ExcelExportBuilderProps {
     onToggleFiltersView?: () => void;
 }
 
-export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({ sheets, setSheets, inputData, filters: externalFilters, setFilters: externalSetFilters, showFiltersView, onToggleFiltersView }) => {
+export const ExcelExportBuilder: React.FC<ExcelExportBuilderProps> = ({
+    sheets,
+    setSheets,
+    inputData,
+    filters: externalFilters,
+    setFilters: externalSetFilters,
+    showFiltersView,
+    onToggleFiltersView
+}) => {
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
 
     const [pathPickerOpen, setPathPickerOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [jsEditorOpen, setJsEditorOpen] = useState(false);
     const [showColumns, setShowColumns] = useState(true);
     const [editingColId, setEditingColId] = useState<string | null>(null);
     const [tempJsCode, setTempJsCode] = useState('');
     const [autoDialogOpen, setAutoDialogOpen] = useState(false);
-    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+    const [showTemplateSelector, setShowTemplateSelector] = useState(true);
+    const [templateOptions, setTemplateOptions] = useState<{ id: string; name: string }[]>([]);
     const { state: exportState, setState: setExportState } = useExportbuilderState();
 
     const detectedColumns = useAutoColumns({ inputData, sheets, setSheets, activeSheetIndex });
 
-    useEffect(() => {
-        // Stop blocking UI regardless of detected columns; dialog will open via Populate button
-        setLoading(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputData, activeSheetIndex]);
+    // useEffect(() => {
+    //     // Stop blocking UI regardless of detected columns; dialog will open via Populate button
+    //     setLoading(false);
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [inputData, activeSheetIndex]);
+
+    // useEffect(() => {
+    //     setShowTemplateSelector(true);
+    // }, []);
+
+    // const templateOptions: { id: string; name: string }[] = (() => {
+    //     try {
+    //         const templateList = JSON.parse(sessionStorage.getItem('templates') || '[]');
+    //         const selectedTenant = sessionStorage.getItem('selectedTenant');
+    //         const moduleFilter = sessionStorage.getItem('module');
+    //         return (templateList || [])
+    //             .filter((t: any) => {
+    //                 const tenantOk = !selectedTenant || selectedTenant === 'all' || t?.tenantId === selectedTenant;
+    //                 const templateType = t?.settings?.templateType ?? t?.templateType;
+    //                 const moduleOk = !moduleFilter || moduleFilter === 'all' || templateType === moduleFilter;
+    //                 return tenantOk && moduleOk;
+    //             })
+    //             .map((t: any) => ({ id: t?._id, name: t?.name }));
+    //     } catch (_e) {
+    //         return [] as { id: string; name: string }[];
+    //     }
+    // })();
+
+    const filterByTenantId = (templateList: any[]) => {
+        const selectedTenant = sessionStorage.getItem('selectedTenant') || JSON.parse(sessionStorage.getItem('user') || '{}').tenant?._id;
+        if (!selectedTenant || selectedTenant === 'all') return templateList;
+        return templateList.filter((template: any) => template.tenantId === selectedTenant);
+    };
+
+    const filterByModule = (templateList: any[]) => {
+        const selectedModule = sessionStorage.getItem('module');
+        return templateList.filter((template: any) => template.settings?.module === selectedModule);
+    };
 
     useEffect(() => {
-        setShowTemplateSelector(true);
+        const templateList = JSON.parse(sessionStorage.getItem('templates') || '[]');
+        const filteredTemplates = filterByTenantId(templateList);
+        const finalTemplates = filterByModule(filteredTemplates);
+        setTemplateOptions(finalTemplates.map((template: any) => ({ id: template?._id, name: template?.name })));
     }, []);
-
-    const templateOptions: { id: string; name: string }[] = (() => {
-        try {
-            const templateList = JSON.parse(sessionStorage.getItem('templates') || '[]');
-            const selectedTenant = sessionStorage.getItem('selectedTenant');
-            const moduleFilter = sessionStorage.getItem('module');
-            return (templateList || [])
-                .filter((t: any) => {
-                    const tenantOk = !selectedTenant || selectedTenant === 'all' || t?.tenantId === selectedTenant;
-                    const templateType = t?.settings?.templateType ?? t?.templateType;
-                    const moduleOk = !moduleFilter || moduleFilter === 'all' || templateType === moduleFilter;
-                    return tenantOk && moduleOk;
-                })
-                .map((t: any) => ({ id: t?._id, name: t?.name }));
-        } catch (_e) {
-            return [] as { id: string; name: string }[];
-        }
-    })();
 
     const addSheet = () => {
         setSheets([...sheets, { id: generateId(), sheetName: `Sheet ${sheets.length + 1}`, columns: [] }]);

@@ -64,6 +64,7 @@ export const useExportbuilderApi = () => {
             const module = sessionStorage.getItem('module');
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history`, { ...payload, module });
             setState(prev => ({ ...prev, records: res.data, totalRecords: res.total }));
+            return res;
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to fetch records');

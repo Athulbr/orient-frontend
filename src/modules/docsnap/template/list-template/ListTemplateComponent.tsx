@@ -33,7 +33,8 @@ const ListTemplateComponent: React.FC = () => {
             templateType: template.templateType,
             s3FileName: template.s3FileName,
             description: template.description,
-            active: true
+            active: true,
+            module: template.module
         };
         console.log(data);
         navigator.clipboard.writeText(JSON.stringify(data, null, 2));

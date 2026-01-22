@@ -153,6 +153,9 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             const requestBody = {
                 fields: state.sectionList,
                 s3FileName: fileName,
+                settings: {
+                    module: sessionStorage.getItem('module') || 'docsnap'
+                },
                 ...data
             };
             createTemplateApi(requestBody);
@@ -469,14 +472,14 @@ const FieldComponent = ({
             const sectionList = [...prev.sectionList];
             sectionList[mainIndex].subFields[index].name = capitalizeFirstLetter(e.target.value as string);
             {
-                module !== 'documentCreation' &&
+                module !== 'document-generation' &&
                     (sectionList[mainIndex].subFields[index].jsonKey = (e.target.value as string).toLowerCase().replace(/\s/g, '_'));
             }
             return { ...prev, sectionList };
         });
     };
     const updateJsonKey = (e: any) => {
-        if (module === 'documentCreation') return;
+        if (module === 'document-generation') return;
         setState(prev => {
             const sectionList = [...prev.sectionList];
             sectionList[mainIndex].subFields[index].jsonKey = e.target.value;
@@ -544,7 +547,7 @@ const FieldComponent = ({
                 <InputField placeholder="Field Name" value={field?.name} onChange={updateName} />
             </Tooltip>
             <Tooltip text="Json Key" containerClassName="w-full">
-                <InputField disabled={module === 'documentCreation'} placeholder="Json Key" value={field?.jsonKey} onChange={updateJsonKey} />
+                <InputField disabled={module === 'document-generation'} placeholder="Json Key" value={field?.jsonKey} onChange={updateJsonKey} />
             </Tooltip>
             <Tooltip text="Data Type" containerClassName="w-fit">
                 <SingleSelect options={dataTypesOption} value={field?.dataType} onValueChange={updateDataType} />

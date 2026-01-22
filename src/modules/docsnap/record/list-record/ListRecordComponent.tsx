@@ -55,11 +55,11 @@ export const ListRecordComponent: React.FC = () => {
         rowClickHandler: (row: any, data: any) => {
             const url = window.location.href;
             const module = sessionStorage.getItem('module');
-            if (module === 'documentCreation') {
-                navigate(`/document-creation/create/${row._id}`, { state: { from: url } });
+            if (module === 'document-generation') {
+                navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
                 return;
             }
-            if (module === 'contentCreation') {
+            if (module === 'content-creation') {
                 navigate(`/content-creation/view-content/${row._id}`, { state: { from: url } });
                 return;
             }

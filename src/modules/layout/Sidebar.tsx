@@ -1,4 +1,4 @@
-import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFixed, FileCheck } from 'lucide-react';
+import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFixed, FileCheck, FileSpreadsheet } from 'lucide-react';
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
@@ -53,20 +53,20 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             permission: 'sld:module'
         },
         {
-            name: 'Document Creation',
+            name: 'Document Generation',
             icon: <FileText size={26} strokeWidth={2} className="text-white" />,
-            path: '/document-creation',
-            key: 'document-creation',
-            permission: 'documentCreation:module'
-        }
+            path: '/document-generation',
+            key: 'document-generation',
+            permission: 'documentGeneration:module'
+        },
 
-        // {
-        //     name: 'Content Creation',
-        //     icon: <FileText size={26} strokeWidth={2} className="text-white" />,
-        //     path: '/content-creation',
-        //     key: 'content-creation',
-        //     permission: 'contentCreation:module'
-        // }
+        {
+            name: 'Content Creation',
+            icon: <FileSpreadsheet size={26} strokeWidth={2} className="text-white" />,
+            path: '/content-creation',
+            key: 'content-creation',
+            permission: 'contentCreation:module'
+        }
     ];
 
     return (

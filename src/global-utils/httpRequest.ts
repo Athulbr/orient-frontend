@@ -6,7 +6,7 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
     const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
     const selectedModule = window?.sessionStorage?.getItem('module') || '';
     const selectedRole = window?.sessionStorage?.getItem('selectedRole') || '';
-    const user: any = window?.sessionStorage?.getItem('user') || '';
+    const user: any = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
     const normalizedMethod = method.toUpperCase();
 
     const headers: HeadersInit = {

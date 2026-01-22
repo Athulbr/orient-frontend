@@ -96,7 +96,7 @@ export const useViewRecordApi = () => {
                 additionalImages,
                 inputText
             }));
-            if (res.data?.imageFileNames?.length > 0) {
+            if (res.data?.imageFileNames?.length > 0 && sessionStorage.getItem('module') !== 'content-creation') {
                 const images = await Promise.all(res.data?.imageFileNames?.map((fileName: string) => getS3File(fileName)));
                 setState(prev => ({
                     ...prev,

@@ -213,6 +213,68 @@ export const useDocumentExtractor = () => {
                 updateExtractionQueue(rowData.SKU, { status: 'failed' });
             }
         };
+        const sendApiRequestToContentCreation = async (rowData: any, template: any) => {
+            let timer: NodeJS.Timeout | null = null;
+
+            try {
+                const abortController = new AbortController();
+                timer = startTimer(rowData.name);
+
+                updateExtractionQueue(rowData.name, {
+                    status: 'processing',
+                    time: 0,
+                    abortController,
+                    step: 'uploading',
+                    progress: 5
+                });
+
+                const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+
+                const requestBody = {
+                    templateId: template?._id,
+                    rowData: rowData
+                };
+
+                const apiEndPoint = `${config.mlServiceNodejs}/content-creation/create-blog`;
+
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
+
+                const response = await fetch(apiEndPoint, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(requestBody)
+                });
+
+                // Check response status
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                if (!response.body) {
+                    throw new Error('ReadableStream not supported');
+                }
+
+                const reader = response.body.getReader();
+                await processStream(reader, rowData.name, timer);
+            } catch (error) {
+                console.error('API request error:', error);
+
+                if (timer) {
+                    clearInterval(timer);
+                }
+
+                // Handle abort separately
+                if (error instanceof Error && error.name === 'AbortError') {
+                    console.error('Request was aborted');
+                }
+
+                updateExtractionQueue(rowData.name, { status: 'failed' });
+            }
+        };
 
         if (template?.settings?.module === 'data-entry') {
             // First, remove any existing entry for this file
@@ -222,6 +284,18 @@ export const useDocumentExtractor = () => {
 
             // Finally, send the request
             sendApiRequestToDataEntry(rowData, template);
+            navigate('/docsnap/record/list');
+            return;
+        }
+
+        if (template?.settings?.module === 'content-creation') {
+            // First, remove any existing entry for this file
+            refreshExtractionQueue(rowData.name);
+            // Then add the new entry
+            addToExtractionQueue(rowData.name);
+
+            // Finally, send the request
+            sendApiRequestToContentCreation(rowData, template);
             navigate('/docsnap/record/list');
             return;
         }

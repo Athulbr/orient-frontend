@@ -1,156 +1,183 @@
-export const sampleNodes = [
+import { Node, Edge } from 'reactflow';
+
+export const sampleNodes: Node[] = [
     {
-        id: 'delayNode-1767275635953',
-        type: 'delayNode',
+        id: 'random-1',
+        type: 'randomNumberNode',
         position: {
-            x: 62.64970599241451,
-            y: -86.70098982311697
+            x: 24,
+            y: 39
         },
         data: {
-            delay: '8000'
+            min: 1,
+            max: 10
         },
         width: 180,
-        height: 96,
-        selected: false,
-        positionAbsolute: {
-            x: 62.64970599241451,
-            y: -86.70098982311697
-        },
-        dragging: false
-    },
-    {
-        id: 'logNode-1767275642808',
-        type: 'logNode',
-        position: {
-            x: 278.23546410806375,
-            y: 102.58355970200469
-        },
-        data: {
-            message: 'Hello test 1'
-        },
-        width: 180,
-        height: 107,
-        selected: false,
+        height: 116,
+        selected: true,
         dragging: false,
         positionAbsolute: {
-            x: 278.23546410806375,
-            y: 102.58355970200469
+            x: 24,
+            y: 39
         }
     },
     {
-        id: 'logNode-1767275688536',
-        type: 'logNode',
+        id: 'if-1',
+        type: 'ifNode',
         position: {
-            x: -143.02875777579476,
-            y: -266.84609753601694
+            x: 548,
+            y: 254
         },
         data: {
-            message: 'Hello start'
+            conditions: [
+                {
+                    field: 'random',
+                    operation: 'greaterThan',
+                    value: '5'
+                }
+            ],
+            combineOperation: 'AND'
         },
-        width: 180,
-        height: 107,
+        width: 240,
+        height: 127,
         selected: false,
         positionAbsolute: {
-            x: -143.02875777579476,
-            y: -266.84609753601694
+            x: 548,
+            y: 254
         },
         dragging: false
     },
     {
-        id: 'delayNode-1767275943345',
-        type: 'delayNode',
+        id: 'log-true',
+        type: 'logNode',
         position: {
-            x: 491.9968779187019,
-            y: 323.465017266125
+            x: 1053,
+            y: 90
         },
         data: {
-            delay: 1000
+            message: 'TRUE ✅ Random number > 8'
+        },
+        width: 214,
+        height: 107,
+        selected: false,
+        positionAbsolute: {
+            x: 1053,
+            y: 90
+        },
+        dragging: false
+    },
+    {
+        id: 'log-false',
+        type: 'logNode',
+        position: {
+            x: 1136,
+            y: 583
+        },
+        data: {
+            message: 'FALSE ❌ Random number ≤ 5'
+        },
+        width: 220,
+        height: 107,
+        selected: false,
+        positionAbsolute: {
+            x: 1136,
+            y: 583
+        },
+        dragging: false
+    },
+    {
+        id: 'delayNode-1768487023076',
+        type: 'delayNode',
+        position: {
+            x: 309,
+            y: 138
+        },
+        data: {
+            delay: '2000'
         },
         width: 180,
         height: 96,
         selected: false,
         positionAbsolute: {
-            x: 491.9968779187019,
-            y: 323.465017266125
+            x: 309,
+            y: 138
         },
         dragging: false
     },
     {
-        id: 'logNode-1767275992091',
-        type: 'logNode',
+        id: 'delayNode-1768487098855',
+        type: 'delayNode',
         position: {
-            x: 724.859477989021,
-            y: 520.1655073630034
+            x: 926,
+            y: 378
         },
         data: {
-            message: 'Hello end'
+            delay: '2000'
         },
         width: 180,
-        height: 107,
-        selected: true,
+        height: 96,
+        selected: false,
         positionAbsolute: {
-            x: 724.859477989021,
-            y: 520.1655073630034
+            x: 926,
+            y: 378
         },
         dragging: false
     }
 ];
 
-export const sampleEdges = [
+export const sampleEdges: Edge[] = [
     {
-        source: 'logNode-1766468563099',
+        source: 'random-1',
         sourceHandle: null,
-        target: 'delayNode-1766468578718',
+        target: 'delayNode-1768487023076',
         targetHandle: null,
         animated: true,
+        id: 'reactflow__edge-random-1-delayNode-1768487023076'
+    },
+    {
+        source: 'delayNode-1768487023076',
+        sourceHandle: null,
+        target: 'if-1',
+        targetHandle: null,
+        animated: true,
+        id: 'reactflow__edge-delayNode-1768487023076-if-1'
+    },
+    {
+        source: 'if-1',
+        sourceHandle: 'false',
+        target: 'delayNode-1768487098855',
+        targetHandle: null,
+        animated: true,
+        label: 'FALSE',
         style: {
-            stroke: '#6366f1',
-            strokeWidth: 2
+            stroke: '#ef4444'
         },
-        id: 'reactflow__edge-logNode-1766468563099-delayNode-1766468578718'
+        labelBgStyle: {
+            fill: '#fee2e2'
+        },
+        id: 'reactflow__edge-if-1false-delayNode-1768487098855'
     },
     {
-        source: 'delayNode-1766468578718',
+        source: 'delayNode-1768487098855',
         sourceHandle: null,
-        target: 'logNode-1766468592864',
+        target: 'log-false',
         targetHandle: null,
         animated: true,
+        id: 'reactflow__edge-delayNode-1768487098855-log-false'
+    },
+    {
+        source: 'if-1',
+        sourceHandle: 'true',
+        target: 'log-true',
+        targetHandle: null,
+        animated: true,
+        label: 'TRUE',
         style: {
-            stroke: '#6366f1',
-            strokeWidth: 2
+            stroke: '#10b981'
         },
-        id: 'reactflow__edge-delayNode-1766468578718-logNode-1766468592864'
-    },
-    {
-        source: 'logNode-1767275688536',
-        sourceHandle: null,
-        target: 'delayNode-1767275635953',
-        targetHandle: null,
-        animated: true,
-        id: 'reactflow__edge-logNode-1767275688536-delayNode-1767275635953'
-    },
-    {
-        source: 'delayNode-1767275635953',
-        sourceHandle: null,
-        target: 'logNode-1767275642808',
-        targetHandle: null,
-        animated: true,
-        id: 'reactflow__edge-delayNode-1767275635953-logNode-1767275642808'
-    },
-    {
-        source: 'logNode-1767275642808',
-        sourceHandle: null,
-        target: 'delayNode-1767275943345',
-        targetHandle: null,
-        animated: true,
-        id: 'reactflow__edge-logNode-1767275642808-delayNode-1767275943345'
-    },
-    {
-        source: 'delayNode-1767275943345',
-        sourceHandle: null,
-        target: 'logNode-1767275992091',
-        targetHandle: null,
-        animated: true,
-        id: 'reactflow__edge-delayNode-1767275943345-logNode-1767275992091'
+        labelBgStyle: {
+            fill: '#d1fae5'
+        },
+        id: 'reactflow__edge-if-1true-log-true'
     }
 ];

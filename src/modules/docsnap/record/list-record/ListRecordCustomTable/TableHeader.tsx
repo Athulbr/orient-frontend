@@ -1,6 +1,5 @@
-import { FC } from 'react';
+import { FC, useMemo, useCallback, useEffect } from 'react';
 import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi';
-import { useEffect } from 'react';
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 import { useExtractionStore } from '../../../../../zustand-store/extractionStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
@@ -13,28 +12,37 @@ export const TableHeader: FC<TableHeaderIF> = () => {
     const { getRecordsApi } = useListRecordCustomTableApi();
     const { user, checkPermission } = usePermissionStore();
 
-    const columns = [
-        { label: 'Name', visible: true },
-        { label: 'Document Number', visible: true },
-        { label: 'Status', visible: true },
-        {
-            label: 'Polink',
-            visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
-        },
-        { label: 'Extracted By', visible: true },
-        { label: 'Processed Date', visible: true },
-        { label: 'Actions', visible: checkPermission('delete:record') || checkPermission('update:record') }
-    ];
+    const columns = useMemo(
+        () => [
+            { label: 'Name', visible: true },
+            { label: 'Document Number', visible: true },
+            { label: 'Status', visible: true },
+            {
+                label: 'Polink',
+                visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
+            },
+            { label: 'Extracted By', visible: true },
+            { label: 'Processed Date', visible: true },
+            { label: 'Actions', visible: checkPermission('delete:record') || checkPermission('update:record') }
+        ],
+        []
+    );
 
     const { selectedStatuses, selectedTemplates, selectedValidator, searchText, startDate, endDate, pageSize, page } = state;
 
+    const selectedStatusesStr = selectedStatuses.join(',');
+    const selectedTemplatesStr = selectedTemplates.join(',');
+
     useEffect(() => {
         getRecordsApi();
-    }, [refreshRecord, selectedStatuses.length, selectedTemplates.length, selectedValidator, searchText, startDate, endDate, pageSize, page]);
+    }, [refreshRecord, selectedStatusesStr, selectedTemplatesStr, selectedValidator, searchText, startDate, endDate, pageSize, page]);
 
-    const onSelectAllRows = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setState(prev => ({ ...prev, selectedRows: e.target.checked ? state.records.map((item: any) => item._id) : [] }));
-    };
+    const onSelectAllRows = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setState(prev => ({ ...prev, selectedRows: e.target.checked ? prev.records.map((item: any) => item._id) : [] }));
+        },
+        [setState]
+    );
     return (
         <thead>
             <tr>

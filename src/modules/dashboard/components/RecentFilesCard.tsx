@@ -18,8 +18,6 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const navigate = useNavigate();
     const { getRecordsApi } = useDashboardApi();
 
-    console.log('module:===========', module);
-
     useEffect(() => {
         getRecordsApi();
     }, [refreshRecord, module]);
@@ -27,8 +25,10 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
 
     const rowClickHandler = (row: any) => {
-        if (module === 'documentCreation') {
-            navigate(`/document-creation/create/${row._id}`);
+        if (module === 'document-generation') {
+            navigate(`/document-generation/view/${row._id}`);
+        } else if (module === 'content-creation') {
+            navigate(`/content-creation/view/${row._id}`);
         } else if (module === 'transcript') {
             navigate(`/transcript/record/view/${row._id}`);
         } else {
@@ -36,15 +36,20 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
         }
     };
 
+    useEffect(() => {
+        const selectedModule = sessionStorage.getItem('module');
+        navigate(`/${selectedModule}`);
+    }, [module]);
+
     return (
         <div className="flex h-auto flex-1 flex-col gap-y-3 overflow-y-hidden rounded-2xl border border-[#F9F0FF] bg-white px-3 lg:h-full lg:flex-1 lg:px-4">
             <div className="flex items-center justify-between px-4 pt-6">
-                <div className="text-gray-800">Recent {module === 'docsnap' ? 'Files' : 'Data Entries'}</div>
+                <div className="text-gray-800">Recent {module === 'data-entry' ? 'Data Entries' : module === 'content-creation' ? 'Contents' : 'Files'}</div>
                 {state.records.length > 0 && checkPermission('read:record') && (
                     <span
                         onClick={() =>
                             navigate(
-                                `/${module === 'invoiceTracking' ? 'invoice-tracking' : module === 'contentCreation' ? 'content-creation' : module}/record/list`
+                                `/${module === 'invoice-tracking' ? 'invoice-tracking' : module === 'content-creation' ? 'content-creation' : module}/record/list`
                             )
                         }
                         className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"
@@ -101,19 +106,6 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
                                             <Polink data={row} />
                                         </td>
                                     )}
-                                    {!showPoLink && (
-                                        // <td
-                                        //     className={cn(
-                                        //         'max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900',
-                                        //         formatDate(row.documentDate, true) === '-' ? 'pl-15' : ''
-                                        //     )}
-                                        // >
-                                        //     {/* {formatDate(row.updatedAt)} */}
-                                        //     {formatDate(row.documentDate, true)}
-                                        // </td>
-                                        <></>
-                                    )}
-
                                     <td className="max-w-50 min-w-25 px-7 py-4 text-sm font-light whitespace-nowrap text-gray-900">
                                         {formatDate(row.updatedAt)}
                                     </td>
