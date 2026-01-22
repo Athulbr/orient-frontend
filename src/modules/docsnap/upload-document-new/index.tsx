@@ -50,13 +50,24 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                 return;
             }
 
-            const csvData = await excelFileToArrayOfObjects(files[0]);
-            const groupedVariations = groupVariationsByPageCount(csvData);
+            const excelData = await excelFileToArrayOfObjects(files[0]);
+            const groupedVariations = groupVariationsByPageCount(excelData);
             const products = createProductWithVariationGroups(groupedVariations);
             const selectedProducts = products.slice(0, Number(template?.settings?.extractionLimit) || 10);
             setSelectedProducts(selectedProducts);
             selectedProducts.forEach(product => {
                 addToDocumentExtractor(latestTemplate, [], product);
+            });
+        } else if (template?.settings?.module === 'content-creation') {
+            if (!files[0].name.endsWith('.xlsx')) {
+                toast.error('Only .xlsx file type is supported');
+                return;
+            }
+
+            const excelRows = await excelFileToArrayOfObjects(files[0]);
+            const selectedProducts = excelRows.slice(0, Number(template?.settings?.extractionLimit) || 10);
+            selectedProducts.forEach((row: any) => {
+                addToDocumentExtractor(latestTemplate, [], row);
             });
         } else {
             addToDocumentExtractor(latestTemplate, files);
@@ -64,7 +75,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
-    if (sessionStorage.getItem('module') === 'data-entry') {
+    const module = sessionStorage.getItem('module');
+    if (module === 'data-entry' || module === 'content-creation') {
         supportedFileTypes = ['.xlsx'];
     }
 

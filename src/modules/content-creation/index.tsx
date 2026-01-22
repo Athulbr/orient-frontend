@@ -17,7 +17,14 @@ export interface Message {
     userMessage: boolean;
 }
 
-export interface ContentCreationEditorStateIF {}
+export interface Keyword {
+    keyword: string;
+    source: string;
+}
+
+export interface ContentCreationEditorStateIF {
+    keywords?: Keyword[];
+}
 
 const initialState: ContentCreationEditorStateIF = {};
 
@@ -27,20 +34,24 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
     const [content, setContent] = useState('');
 
     useEffect(() => {
+        if (!id) return;
         const getRecord = async () => {
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/${id}`);
-            setContent(res.data?.content);
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
+            setContent(res.data?.extractedData?.htmlContent);
+            if (res.data?.keywords) {
+                setState(prev => ({ ...prev, keywords: res.data.keywords }));
+            }
         };
         getRecord();
-    }, []);
+    }, [id]);
 
     return (
         <ContentCreationEditorStateProvider value={{ state, setState }}>
             <div className="flex flex-1 overflow-y-auto absolute left-0 top-0 h-full w-full bg-white">
                 <ResizableContainer
                     className="flex flex-1 overflow-y-auto"
-                    left={<PreviewContainer />}
-                    right={<RightContainer />}
+                    left={<PreviewContainer content={content} setContent={setContent} />}
+                    right={<RightContainer htmlContent={content} setContent={setContent} />}
                     initialLeftWidthPercent={60}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={75}

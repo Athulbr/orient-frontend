@@ -25,7 +25,7 @@ export const SelectedFileList = () => {
         const token = window?.sessionStorage?.getItem('accessToken') || '';
         const formData = new FormData();
         formData.append('file', file);
-        const response = await fetch(`${config.mlServiceNodejs}/document-creation/extract-document-text`, {
+        const response = await fetch(`${config.mlServiceNodejs}/document-generation/extract-document-text`, {
             method: 'POST',
             headers: { authorization: `Bearer ${JSON.parse(token)}` },
             body: formData

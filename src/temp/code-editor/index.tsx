@@ -8,6 +8,16 @@ export type FileNode = {
     children?: FileNode[];
 };
 
+export type SelectedFile = {
+    path: string;
+    content: string;
+};
+
+const getPathFromSrc = (fullPath: string) => {
+    const index = fullPath.indexOf('/src/');
+    return index !== -1 ? fullPath.slice(index + 1) : fullPath;
+};
+
 const API = 'http://localhost:4000';
 
 export default function CodeEditor() {
@@ -16,7 +26,14 @@ export default function CodeEditor() {
     const [activeFile, setActiveFile] = useState('');
     const [explorerWidth, setExplorerWidth] = useState(400);
     const [selectionWidth, setSelectionWidth] = useState(300);
-    const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+    const [totalContentLength, setTotalContentLength] = useState(300);
+
+    useEffect(() => {
+        setTotalContentLength(() => {
+            return selectedFiles.reduce((acc, file) => acc + file.content.length, 0);
+        });
+    }, [selectedFiles.length]);
 
     useEffect(() => {
         fetch(`${API}/tree`)
@@ -47,7 +64,7 @@ export default function CodeEditor() {
         const startWidth = selectionWidth;
 
         const handleMouseMove = (e: MouseEvent) => {
-            const delta = e.clientX - startX; // Changed from startX - e.clientX
+            const delta = e.clientX - startX;
             const newWidth = Math.max(200, Math.min(startWidth + delta, 800));
             setSelectionWidth(newWidth);
         };
@@ -63,7 +80,7 @@ export default function CodeEditor() {
 
     const openFile = async (path: string) => {
         setActiveFile(path);
-        const res = await fetch(`${API}/file?path=${encodeURIComponent(path)}`);
+        const res = await fetch(`${API}/get-file?path=${encodeURIComponent(path)}`);
         const data = await res.json();
         setContent(data.content);
     };
@@ -73,20 +90,81 @@ export default function CodeEditor() {
         return node.children?.flatMap(getAllFilePaths) || [];
     };
 
-    const toggleFileSelection = (path: string) => {
-        setSelectedFilePaths(prev => (prev.includes(path) ? prev.filter(p => p !== path) : [...prev, path]));
-    };
-
-    const toggleFolderSelection = (node: FileNode) => {
-        const allPaths = getAllFilePaths(node);
-        const allSelected = allPaths.every(p => selectedFilePaths.includes(p));
-
-        if (allSelected) {
-            setSelectedFilePaths(prev => prev.filter(p => !allPaths.includes(p)));
-        } else {
-            setSelectedFilePaths(prev => [...new Set([...prev, ...allPaths])]);
+    const fetchFileContent = async (path: string): Promise<SelectedFile> => {
+        try {
+            const res = await fetch(`${API}/get-file?path=${encodeURIComponent(path)}`);
+            const data = await res.json();
+            return {
+                path: path,
+                content: data.content
+            };
+        } catch (error) {
+            console.error(`Failed to fetch file: ${path}`, error);
+            return {
+                path: path,
+                content: ''
+            };
         }
     };
+
+    const toggleFileSelection = async (path: string) => {
+        const existingFile = selectedFiles.find(f => f.path === path);
+
+        if (existingFile) {
+            setSelectedFiles(prev => prev.filter(f => f.path !== path));
+        } else {
+            const fileData = await fetchFileContent(path);
+            setSelectedFiles(prev => [...prev, fileData]);
+        }
+    };
+
+    const toggleFolderSelection = async (node: FileNode) => {
+        const allPaths = getAllFilePaths(node);
+        const selectedPaths = selectedFiles.map(f => f.path);
+        const allSelected = allPaths.every(p => selectedPaths.includes(p));
+
+        if (allSelected) {
+            setSelectedFiles(prev => prev.filter(f => !allPaths.includes(f.path)));
+        } else {
+            const newPaths = allPaths.filter(p => !selectedPaths.includes(p));
+            const newFiles = await Promise.all(newPaths.map(fetchFileContent));
+            setSelectedFiles(prev => [...prev, ...newFiles]);
+        }
+    };
+
+    const exportSelectedFiles = async () => {
+        if (!selectedFiles.length) return;
+        try {
+            const output = selectedFiles
+                .filter(f => f.content)
+                .map(f => `// ===== FILE: ${getPathFromSrc(f.path)} =====\n${f.content}\n`)
+                .join('\n');
+
+            const selectedFilesWithPrompt =
+                output +
+                `
+\n\n
+// ===== LLM Prompt =====
+
+Must return only parsable and valid JSON.
+output must be in this format:
+[{
+    "path":"User/.../file_name",
+    "content":"file_content"
+},
+{
+    "path":"User/.../file_name",
+    "content":"file_content"
+}]`;
+
+            await navigator.clipboard.writeText(output);
+            console.log('Files copied to clipboard');
+        } catch (err) {
+            console.error('Failed to export files', err);
+        }
+    };
+
+    const selectedPaths = selectedFiles.map(f => f.path);
 
     return (
         <div className="h-screen flex bg-[#1e1e1e] text-[#cccccc] font-mono">
@@ -95,7 +173,7 @@ export default function CodeEditor() {
                 onFileClick={openFile}
                 activeFile={activeFile}
                 width={explorerWidth}
-                selectedFilePaths={selectedFilePaths}
+                selectedFilePaths={selectedPaths}
                 onToggleFile={toggleFileSelection}
                 onToggleFolder={toggleFolderSelection}
             />
@@ -103,10 +181,12 @@ export default function CodeEditor() {
 
             <SelectionPanel
                 onFileClick={openFile}
-                selectedFilePaths={selectedFilePaths}
+                selectedFiles={selectedFiles}
                 onRemove={toggleFileSelection}
-                onClearAll={() => setSelectedFilePaths([])}
+                onClearAll={() => setSelectedFiles([])}
                 width={selectionWidth}
+                exportSelectedFiles={exportSelectedFiles}
+                totalContentLength={totalContentLength}
             />
             <div className="w-1 bg-[#333] hover:bg-[#007acc] cursor-col-resize transition-colors" onMouseDown={handleSelectionResize} />
 
@@ -146,44 +226,51 @@ const Explorer = ({
 );
 
 const SelectionPanel = ({
-    selectedFilePaths,
+    selectedFiles,
     onFileClick,
     onRemove,
     onClearAll,
-    width
+    width,
+    exportSelectedFiles,
+    totalContentLength
 }: {
-    selectedFilePaths: string[];
+    selectedFiles: SelectedFile[];
     onFileClick: (path: string) => void;
     onRemove: (path: string) => void;
     onClearAll: () => void;
     width: number;
+    exportSelectedFiles: () => void;
+    totalContentLength: number;
 }) => {
-    const getPathFromSrc = (fullPath: string) => {
-        const index = fullPath.indexOf('/src/');
-        return index !== -1 ? fullPath.slice(index + 1) : fullPath;
-    };
     return (
         <div className="bg-[#252526] border-r border-[#333] overflow-auto flex flex-col" style={{ width: `${width}px` }}>
             <div className="px-3 py-2 text-xs text-[#bbbbbb] font-semibold flex justify-between items-center border-b border-[#333]">
-                <span>SELECTED FILES ({selectedFilePaths.length})</span>
-                {selectedFilePaths.length > 0 && (
-                    <button onClick={onClearAll} className="text-xs text-[#007acc] hover:text-[#0098ff] font-normal">
-                        Clear All
-                    </button>
+                <span>
+                    SELECTED FILES ({selectedFiles.length}) ({totalContentLength} characters)
+                </span>
+                {selectedFiles.length > 0 && (
+                    <div className="flex gap-4">
+                        <button onClick={onClearAll} className="text-xs cursor-pointer text-[#007acc] hover:text-[#0098ff] font-normal">
+                            Clear All
+                        </button>
+                        <button onClick={exportSelectedFiles} className="text-xs cursor-pointer text-[#007acc] hover:text-[#0098ff] font-normal">
+                            Export
+                        </button>
+                    </div>
                 )}
             </div>
             <div className="flex-1 overflow-auto">
-                {selectedFilePaths.length === 0 ? (
+                {selectedFiles.length === 0 ? (
                     <div className="px-3 py-4 text-xs text-[#888]">No files selected</div>
                 ) : (
                     <div className="p-2">
-                        {selectedFilePaths.map(path => (
-                            <div key={path} className="text-xs py-1 px-2 hover:bg-[#2a2d2e] rounded flex justify-between items-center group mb-1">
-                                <span className="truncate flex-1 cursor-pointer" onClick={() => onFileClick(path)}>
-                                    {getPathFromSrc(path)}
+                        {selectedFiles.map(file => (
+                            <div key={file.path} className="text-xs py-1 px-2 hover:bg-[#2a2d2e] rounded flex justify-between items-center group mb-1">
+                                <span className="truncate flex-1 cursor-pointer" onClick={() => onFileClick(file.path)}>
+                                    {getPathFromSrc(file.path)} ({file.content.length})
                                 </span>
                                 <button
-                                    onClick={() => onRemove(path)}
+                                    onClick={() => onRemove(file.path)}
                                     className="ml-2 text-[#888] hover:text-[#f44] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                                 >
                                     ✕

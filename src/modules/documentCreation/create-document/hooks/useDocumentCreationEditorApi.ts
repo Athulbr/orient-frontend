@@ -62,7 +62,7 @@ export const useDocumentCreationEditorApi = () => {
     const fillFormFieldsWithAI = async () => {
         try {
             const requestBody = { knowledgeBase: state.knowledgeBase, formFields: state.formFields };
-            const response: any = await httpRequest('POST', `${config.mlServiceNodejs}/document-creation/fill-form-fields`, requestBody);
+            const response: any = await httpRequest('POST', `${config.mlServiceNodejs}/document-generation/fill-form-fields`, requestBody);
             setState(prev => ({ ...prev, formData: { ...prev.formData, ...response.data } }));
         } catch (error) {
             console.error('error:===========', error);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRoleState } from './hooks/roleContext';
 import { useRolesApi } from './hooks/useRoleApi';
 import { Button } from '../../../components/Button';
+import Spinner from '../../../components/Spinner';
 import { Feature } from './components/FeatureCard';
 import { Module, ModuleAccordion } from './components/ModuleAccordion';
 import { SearchInputCustom } from './components/SearchInputCustom';
@@ -79,8 +80,10 @@ const LeftContainer: React.FC = () => {
                 <Button
                     onClick={handleUpdateRole}
                     className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:from-emerald-600 hover:to-teal-600"
+                    disabled={state.loading}
+                    startIcon={state.loading ? <Spinner size={16} /> : undefined}
                 >
-                    Update
+                    {state.loading ? 'Updating...' : 'Update'}
                 </Button>
             </div>
             <div className="p-6">

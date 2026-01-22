@@ -112,7 +112,8 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
             pdfFileName: '',
             name: data.name,
             templateId: template._id,
-            description: data.description
+            description: data.description,
+            module: 'document-generation'
         };
 
         await httpRequest('POST', `${config.nodeApiUrl}/idp/history/create`, createReqObject);
@@ -170,11 +171,11 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                 </Button>
                 <Button
                     permission="extract:document"
-                    startIcon={module === 'documentCreation' ? <Plus size={14} /> : <Upload size={14} />}
-                    onClick={module === 'documentCreation' ? () => setShowCreateDialog(true) : onClickUpload}
+                    startIcon={module === 'document-generation' ? <Plus size={14} /> : <Upload size={14} />}
+                    onClick={module === 'document-generation' ? () => setShowCreateDialog(true) : onClickUpload}
                     small
                 >
-                    {module === 'documentCreation' ? 'Create' : 'Upload'}
+                    {module === 'document-generation' ? 'Create' : 'Upload'}
                 </Button>
             </div>
             {showCreateDialog && (
