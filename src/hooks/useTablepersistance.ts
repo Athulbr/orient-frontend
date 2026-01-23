@@ -138,6 +138,7 @@ export function buildInitialTableState(initialState: Record<string, any>) {
         searchText,
         startDate,
         endDate,
+        failedToFetch: typeof initialState.failedToFetch === 'boolean' ? initialState.failedToFetch : false,
         selectedStatuses: Array.isArray(filters.selectedStatuses) ? filters.selectedStatuses : (initialState.selectedStatuses || []),
         selectedTemplates: Array.isArray(filters.selectedTemplates) ? filters.selectedTemplates : (initialState.selectedTemplates || []),
         selectedValidator: typeof filters.selectedValidator === 'string' ? filters.selectedValidator : (initialState.selectedValidator || ''),
