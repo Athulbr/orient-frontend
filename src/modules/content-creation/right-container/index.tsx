@@ -5,10 +5,9 @@ import httpRequest from '../../../global-utils/httpRequest';
 import { config } from '../../../config/default';
 import Spinner from '../../../components/Spinner';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
-import { Keyword } from '../index';
 import { Pencil, Trash2, Check, X } from 'lucide-react';
 
-export default function RightContainer({ htmlContent, setContent }: { htmlContent: string; setContent: (content: string) => void }) {
+export default function RightContainer({ htmlContent, setContent, name }: { htmlContent: string; setContent: (content: string) => void; name: string }) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const { state, setState } = useContentCreationEditorState();
@@ -16,6 +15,7 @@ export default function RightContainer({ htmlContent, setContent }: { htmlConten
     const [editedKeywordValue, setEditedKeywordValue] = useState('');
     const sendPrompt = async () => {
         setLoading(true);
+
         const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/edit-blog`, {
             userQuery: input,
             htmlContent: htmlContent
@@ -80,10 +80,14 @@ ${htmlContent}
             <div className="p-2">
                 <p className="text-xl font-semibold">Content Details</p>
             </div>
-            {/* Keywords Section */}
+            <div className="border-t pt-4">
+                <p className="text-lg font-semibold mb-3">Name</p>
+
+                {name}
+            </div>
             {state.keywords && state.keywords.length > 0 && (
                 <div className="mt-4 border-t pt-4">
-                    <p className="text-lg font-semibold mb-3">SEO friendly Keywords</p>
+                    <p className="text-lg font-semibold mb-3">SEO friendly Keywords ( DataForSEO )</p>
                     <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                         {state.keywords.map((keyword, index) => (
                             <div key={index} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50">
@@ -138,6 +142,7 @@ ${htmlContent}
                     </div>
                 </div>
             )}
+
             <TextAreaComponent rows={10} value={input} onChange={e => setInput(e.target.value)} />
             <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
                 {loading ? 'Updating...' : 'Send'}
