@@ -15,8 +15,9 @@ export const useListTemplatePageApi = () => {
     };
 
     const filterTemplatesByModule = (templates: any) => {
+        const debug = window?.sessionStorage?.getItem('debug');
         const selectedModuleFromSessionStorage = window?.sessionStorage?.getItem('module') || 'docsnap';
-        return templates.filter((template: any) => template?.settings?.module === selectedModuleFromSessionStorage);
+        return templates.filter((template: any) => template?.settings?.module === selectedModuleFromSessionStorage || debug === 'true');
     };
 
     const filterTemplatesBySearchText = (templates: any) => {

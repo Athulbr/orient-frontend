@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
 import DragAndDropFileInput from '../../../components/DragAndDropFileInput';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../../../components/Button';
+import { UseFormbuilder } from '../../../builders/formbuilder/use-formbuilder';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { config } from '../../../config/default';
@@ -20,6 +22,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
     const [selectedProducts, setSelectedProducts] = useState<any>([]);
+    const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
 
     useEffect(() => {
         if (!template._id) {
@@ -87,7 +90,26 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             isOpen={true}
             closeDialog={closeDialog}
         >
-            <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10">
+            <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10 pt-5">
+                {module === 'content-creation' && (
+                    <div className="mb-4 flex justify-end">
+                        <Button onClick={() => setShowCreateBlogForm(true)}>Add Manually</Button>
+                    </div>
+                )}
+                {showCreateBlogForm && (
+                    <UseFormbuilder
+                        isOpen={showCreateBlogForm}
+                        title="Create Blog Form"
+                        name="Create Blog Form"
+                        className="w-230"
+                        existingData={{}}
+                        onSubmit={e => {
+                            addToDocumentExtractor(latestTemplate, [], e);
+                            setShowCreateBlogForm(false);
+                        }}
+                        closeDialog={() => setShowCreateBlogForm(false)}
+                    />
+                )}
                 <DragAndDropFileInput accept={supportedFileTypes.join(', ')} onFilesChange={onFileDrop} />
             </div>
         </DialogComponent>
