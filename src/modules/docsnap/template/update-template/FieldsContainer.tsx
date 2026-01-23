@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Plus, ScanLine, Settings, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Play, Plus, Save, ScanLine, Settings, Trash2, X, Code } from 'lucide-react';
 import { DragAndDropContainer } from '../../../../components/DragAndDropContainer';
 import { LightIconButton } from './components/ImageViewer';
 import { ClassAttributes, InputHTMLAttributes, useEffect, useMemo, useState } from 'react';
@@ -26,6 +26,9 @@ import { DataRenderer } from './components/RenderTableOrKeyValuePairs';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
+    const [showPostScriptDialog, setShowPostScriptDialog] = useState(false);
+    const [postScriptCode, setPostScriptCode] = useState('  // Write your code here\n  const result = "Hello World";\n  console.log(result);');
+    const [postScriptOutput, setPostScriptOutput] = useState('');
 
     const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI } = useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
@@ -115,6 +118,12 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         getTemplateData();
     }, [id]);
 
+    useEffect(() => {
+        if (state.templateSettings?.postScript) {
+            setPostScriptCode(state.templateSettings.postScript);
+        }
+    }, [state.templateSettings?.postScript]);
+
     const addNewSection = () => {
         const sectionList = [...state.sectionList];
         sectionList.push({
@@ -184,11 +193,68 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         updateTemplateApi(id, requestBody, false);
     };
 
+    const runPostScript = () => {
+        setPostScriptOutput('');
+        const logs: string[] = [];
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+
+        console.log = (...args) => {
+            logs.push(args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' '));
+            originalConsoleLog.apply(console, args);
+        };
+        console.error = (...args) => {
+            logs.push('[Error] ' + args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' '));
+            originalConsoleError.apply(console, args);
+        };
+        console.warn = (...args) => {
+            logs.push('[Warn] ' + args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' '));
+            originalConsoleWarn.apply(console, args);
+        };
+
+        try {
+            const wrappedCode = `
+                function postProcess(extractedData) {
+${postScriptCode}
+                    return extractedData;
+                }
+                return postProcess({});
+            `;
+            const result = new Function(wrappedCode)();
+            if (result !== undefined) {
+                logs.push('Return: ' + (typeof result === 'object' ? JSON.stringify(result, null, 2) : String(result)));
+            }
+            setPostScriptOutput(logs.join('\n') || 'Script executed successfully (no output)');
+        } catch (error: any) {
+            setPostScriptOutput(logs.join('\n') + '\n[Error] ' + error.message);
+        } finally {
+            console.log = originalConsoleLog;
+            console.error = originalConsoleError;
+            console.warn = originalConsoleWarn;
+        }
+    };
+
+    const savePostScript = () => {
+        setState(prev => ({
+            ...prev,
+            templateSettings: {
+                ...prev.templateSettings,
+                postScript: postScriptCode
+            }
+        }));
+        toast.success('Post script saved successfully');
+        setShowPostScriptDialog(false);
+    };
+
     return (
         <div className="flex h-full flex-col overflow-hidden">
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
                 <div>Template Fields</div>
                 <div className="flex items-center gap-2">
+                    <Button startIcon={<Code className="text-gray-500" size={16} />} outlined onClick={() => setShowPostScriptDialog(true)}>
+                        Post Script
+                    </Button>
                     <Button
                         startIcon={<FileCog className="text-gray-500" size={16} />}
                         outlined
@@ -281,6 +347,51 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                 loadingPrimaryButton={state.updatingTemplate}
                 disableBlurCloseDialog
             />
+            {showPostScriptDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowPostScriptDialog(false)}>
+                    <div className="flex max-h-[80vh] w-[600px] flex-col rounded-lg bg-white shadow-xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between border-b px-4 py-3">
+                            <h3 className="text-lg font-medium">Post Script Editor</h3>
+                            <button onClick={() => setShowPostScriptDialog(false)} className="rounded p-1 hover:bg-gray-100">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="flex flex-1 flex-col gap-3 overflow-auto p-4">
+                            <div className="rounded border bg-gray-50 font-mono text-sm">
+                                <div className="select-none border-b bg-gray-100 px-3 py-2 text-gray-500">{'function postProcess(extractedData) {'}</div>
+                                <textarea
+                                    value={postScriptCode}
+                                    onChange={e => setPostScriptCode(e.target.value)}
+                                    className="h-[180px] w-full resize-none bg-transparent p-3 outline-none"
+                                    placeholder="  // Write your code here..."
+                                    spellCheck={false}
+                                />
+                                <div className="select-none border-t bg-gray-100 px-3 py-2 text-gray-500">
+                                    {'  return extractedData;'}
+                                    <br />
+                                    {'}'}
+                                </div>
+                            </div>
+                            <div className="flex justify-center gap-4">
+                                <Button startIcon={<Play size={16} />} onClick={runPostScript} outlined>
+                                    Run Script
+                                </Button>
+                                <Button startIcon={<Save size={16} />} onClick={savePostScript}>
+                                    Save
+                                </Button>
+                            </div>
+                            {postScriptOutput && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-sm font-medium text-gray-600">Output:</span>
+                                    <pre className="max-h-[150px] overflow-auto rounded border bg-gray-900 p-3 font-mono text-sm text-green-400">
+                                        {postScriptOutput}
+                                    </pre>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -471,9 +582,8 @@ const FieldComponent = ({
         setState(prev => {
             const sectionList = [...prev.sectionList];
             sectionList[mainIndex].subFields[index].name = capitalizeFirstLetter(e.target.value as string);
-            {
-                module !== 'document-generation' &&
-                    (sectionList[mainIndex].subFields[index].jsonKey = (e.target.value as string).toLowerCase().replace(/\s/g, '_'));
+            if (module !== 'document-generation') {
+                sectionList[mainIndex].subFields[index].jsonKey = (e.target.value as string).toLowerCase().replace(/\s/g, '_');
             }
             return { ...prev, sectionList };
         });
