@@ -161,6 +161,17 @@ export const useUpdateTemplatePageApi = () => {
         }
     };
 
+    const getTestExtractedData = async (templateId: string) => {
+        try {
+            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/latest/template/${templateId}`);
+            return res.data;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to fetch test data');
+            return null;
+        }
+    };
+
     return {
         createTemplateApi,
         updateTemplateApi,
@@ -170,7 +181,8 @@ export const useUpdateTemplatePageApi = () => {
         generateTemplateFieldsWithAI,
         updateTemplateFieldsWithAI,
         regenerateInstructionWithAI,
-        extractSectionFields
+        extractSectionFields,
+        getTestExtractedData
     };
 };
 
