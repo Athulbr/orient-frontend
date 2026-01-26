@@ -20,32 +20,36 @@ export const TableBody: React.FC = memo(() => {
         [user?.tenant?.name]
     );
 
-    const handleRowSelect = useCallback((row: any) => {
-        setState(prev => {
-            const isSelected = prev.selectedRows.includes(row._id);
-            return {
-                ...prev,
-                selectedRows: isSelected
-                    ? prev.selectedRows.filter((id: string) => id !== row._id)
-                    : [...prev.selectedRows, row._id]
-            };
-        });
-    }, [setState]);
+    const handleRowSelect = useCallback(
+        (row: any) => {
+            setState(prev => {
+                const isSelected = prev.selectedRows.includes(row._id);
+                return {
+                    ...prev,
+                    selectedRows: isSelected ? prev.selectedRows.filter((id: string) => id !== row._id) : [...prev.selectedRows, row._id]
+                };
+            });
+        },
+        [setState]
+    );
 
-    const rowClickHandler = useCallback((row: any, data: any) => {
-        const url = window.location.href;
-        const module = sessionStorage.getItem('module');
-        if (module === 'document-generation') {
-            navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
-            return;
-        }
-        if (module === 'content-creation') {
-            navigate(`/content-creation/view/${row._id}`, { state: { from: url } });
-            return;
-        }
-        navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
-        window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
-    }, [navigate]);
+    const rowClickHandler = useCallback(
+        (row: any, data: any) => {
+            const url = window.location.href;
+            const module = sessionStorage.getItem('module');
+            if (module === 'document-generation') {
+                navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
+                return;
+            }
+            if (module === 'content-creation') {
+                navigate(`/content-creation/view/${row._id}`, { state: { from: url } });
+                return;
+            }
+            navigate(`/docsnap/record/view/${row._id}`, { state: { from: url } });
+            window?.sessionStorage?.setItem('recordIdList', JSON.stringify(data.map((item: any) => item._id)));
+        },
+        [navigate]
+    );
     return (
         <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
             {state.records?.map((row: any) => {
@@ -74,7 +78,7 @@ export const TableBody: React.FC = memo(() => {
                         </td>
                         {showPolink && (
                             <td className="px-2 py-4 xl:px-5">
-                                <Polink />
+                                <Polink data={row} />
                             </td>
                         )}
                         <td className="px-2 py-4 xl:px-5">
