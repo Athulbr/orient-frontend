@@ -58,7 +58,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ 
         const finalTemplates = [template._id, ...filteredTemplates];
         localStorage.setItem('recentlyUsedTemplates', JSON.stringify(finalTemplates));
         setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
-        getTemplatesApi();
+        getTemplatesApi(module);
     };
     const visibleTemplates = state.templates.slice(0, templatesToShow);
 
