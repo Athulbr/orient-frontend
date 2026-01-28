@@ -18,7 +18,7 @@ export const TableNames: FC = () => {
                         setState(prev => ({ ...prev, selectedTableName: name }));
                     }}
                     onClick={() => {
-                        setState(prev => ({ ...prev, selectedTableName: name }));
+                        setState(prev => ({ ...prev, selectedTableName: name, hoveredFieldId: null, bbox: null }));
                     }}
                     className={`flex cursor-pointer items-center justify-between rounded-lg border py-3 pr-3 pl-6 font-semibold hover:border-blue-300 ${state.selectedTableName === name ? 'border-blue-300 bg-blue-50' : 'bg-white'}`}
                 >
