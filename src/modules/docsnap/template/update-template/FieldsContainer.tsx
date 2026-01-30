@@ -559,7 +559,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                             onClick={handleExtractSectionFields}
                             outlined
                         >
-                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}` : 'Extract Fields'}
+                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? 'Extracting...' : 'Extract Fields'}
                         </Button>
                     </span>
                 </div>
