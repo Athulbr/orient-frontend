@@ -197,13 +197,13 @@ export const useViewRecordApi = () => {
                 name: state?.record?.name
             };
 
-            if (state.module !== 'dataentry') {
+            if (selectedModule !== 'data-entry') {
                 const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
                 payload['fileBase64'] = fileData?.base64;
                 payload['fileMimeType'] = fileData?.mimeType;
             }
 
-            if (state.module === 'dataentry') {
+            if (selectedModule === 'data-entry') {
                 payload['arrayFields'] = state.tableNames;
                 payload['dataEntryImages'] = {
                     primaryImage: state.primaryImage,
@@ -213,7 +213,7 @@ export const useViewRecordApi = () => {
             setState(prev => ({ ...prev, loadingData: true }));
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
-            if (state.module === 'dataentry') return;
+            if (selectedModule === 'data-entry') return;
             navigate('/docsnap/record/list');
         } catch (error: any) {
             console.error('error:===========', error?.message);
