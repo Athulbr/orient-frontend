@@ -15,6 +15,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState('');
     const [showFileUploadUI, setShowFileUploadUI] = useState(false);
+    const selectedModule = sessionStorage.getItem('module');
 
     useEffect(() => {
         const module = sessionStorage.getItem('module');
@@ -34,7 +35,10 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
         }
         const requestBody = {
             name: selectedTemplateName,
-            templateId: selectedTemplate._id
+            templateId: selectedTemplate._id,
+            settings: {
+                module: selectedModule || 'docsnap'
+            }
         };
         setState({ ...state, loadingCreateTemplate: true });
         const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
