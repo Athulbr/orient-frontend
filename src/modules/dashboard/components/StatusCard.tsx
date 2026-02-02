@@ -4,16 +4,18 @@ import { useEffect } from 'react';
 import { useDashboardApi } from '../hooks/useDashboardApi';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
+import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
-export const StatusCardComponent = () => {
+export const StatusCardComponent: React.FC<{ module: string }> = ({ module }) => {
     const { state, setState } = useDashboardState();
     const { getStatusCountApi } = useDashboardApi();
     const navigate = useNavigate();
     const { checkPermission } = usePermissionStore();
+    const { refreshRecord } = useExtractionStore();
 
     useEffect(() => {
         getStatusCountApi();
-    }, []);
+    }, [module, refreshRecord]);
 
     const statusItems = [
         {

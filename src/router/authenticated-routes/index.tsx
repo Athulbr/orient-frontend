@@ -41,7 +41,8 @@ const AuthenticatedRoutes = () => {
                       : 'none';
     module !== 'none' && sessionStorage.setItem('module', module);
     const role = JSON.parse(sessionStorage.getItem('role') || '{}');
-    if (role.name === 'superadmin') sessionStorage.setItem('module', 'docsnap');
+    const selectedModule = sessionStorage.getItem('module') || 'docsnap';
+    if (role.name === 'superadmin') sessionStorage.setItem('module', selectedModule);
     const paths = {
         docsnap: '/docsnap',
         'data-entry': '/data-entry',

@@ -32,12 +32,14 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
     const [state, setState] = useState<ContentCreationEditorStateIF>(initialState);
     const { id } = useParams();
     const [content, setContent] = useState('');
+    const [record, setRecord] = useState<Record<string, any> | null>({});
 
     useEffect(() => {
         if (!id) return;
         const getRecord = async () => {
             const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
             setContent(res.data?.extractedData?.htmlContent);
+            setRecord(res.data);
             if (res.data?.keywords) {
                 setState(prev => ({ ...prev, keywords: res.data.keywords }));
             }
@@ -50,8 +52,8 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
             <div className="flex flex-1 overflow-y-auto absolute left-0 top-0 h-full w-full bg-white">
                 <ResizableContainer
                     className="flex flex-1 overflow-y-auto"
-                    left={<PreviewContainer content={content} setContent={setContent} />}
-                    right={<RightContainer htmlContent={content} setContent={setContent} />}
+                    left={<PreviewContainer content={content} setContent={setContent} name={record?.name} />}
+                    right={<RightContainer htmlContent={content} setContent={setContent} name={record?.name} />}
                     initialLeftWidthPercent={60}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={75}

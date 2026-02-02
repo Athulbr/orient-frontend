@@ -59,7 +59,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                 Extraction Status
                 <div className="flex gap-3 items-center">
                     <span className="text-sm text-green-500 font-light">
-                        ({extractionQueue.filter((i: any) => i.status === 'Complete').length}/{extractionQueue.length})
+                        ({extractionQueue.filter((i: any) => i.status === 'completed').length}/{extractionQueue.length})
                     </span>
                     {minimize ? (
                         <ChevronRight

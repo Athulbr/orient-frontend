@@ -55,7 +55,7 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
                     <div className="mb-4 flex h-full max-h-250 min-h-400 flex-1 flex-col gap-6 overflow-y-auto lg:min-h-192 2xl:mb-0">
                         <div className="flex w-full flex-1 flex-col gap-6 overflow-hidden lg:flex-row">
                             <RecentFilesCardComponent module={module} />
-                            <StatusCardComponent />
+                            <StatusCardComponent module={module} />
                         </div>
                         <TemplateCardListComponent module={module} />
                     </div>

@@ -126,6 +126,20 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     if (!template) return null;
     const { total, submitted, extracted } = template.count;
 
+    const onClickUploadHandler = () => {
+        const user = JSON.parse(sessionStorage.getItem('user') || '');
+        if (user?.role?.name === 'superadmin') {
+            const selectedTenant = sessionStorage.getItem('selectedTenant');
+            if (!selectedTenant) {
+                toast.error('Please select a tenant');
+                return;
+            }
+            onClickUpload && onClickUpload();
+        } else {
+            onClickUpload && onClickUpload();
+        }
+    };
+
     return (
         <div
             // onClick={() => navigate(`/docsnap/template/view/${template._id}`)} // Uncomment to enable navigation on click based on tenant settings
@@ -172,7 +186,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                 <Button
                     permission="extract:document"
                     startIcon={module === 'document-generation' ? <Plus size={14} /> : <Upload size={14} />}
-                    onClick={module === 'document-generation' ? () => setShowCreateDialog(true) : onClickUpload}
+                    onClick={module === 'document-generation' ? () => setShowCreateDialog(true) : onClickUploadHandler}
                     small
                 >
                     {module === 'document-generation' ? 'Create' : 'Upload'}

@@ -15,6 +15,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState('');
     const [showFileUploadUI, setShowFileUploadUI] = useState(false);
+    const selectedModule = sessionStorage.getItem('module');
 
     useEffect(() => {
         const module = sessionStorage.getItem('module');
@@ -34,7 +35,35 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
         }
         const requestBody = {
             name: selectedTemplateName,
-            templateId: selectedTemplate._id
+            templateId: selectedTemplate._id,
+            settings: {
+                module: selectedModule || 'docsnap',
+                primaryLLMProvider: 'azure',
+                secondaryLLMProvider: 'claude',
+                primaryLLMModel: 'gpt-4o-docsnap',
+                secondaryLLMModel: 'claude-sonnet-4-20250514',
+                extractionEngine: 'node',
+                ocrEngine: 'googleVisionApi',
+                confidenceScore: 'ocr',
+                confidenceThresholdInPercentage: 0,
+                documentNumberKey: '',
+                documentDateKey: '',
+                dynamicFileNameFirstKey: '',
+                dynamicFileNameLastKey: '',
+                prefixRecordName: '',
+                automationId: '',
+                extractionLimit: 0,
+                dynamicFileName: false,
+                extractSingleDocument: true,
+                includeImageForExtraction: false,
+                enableInvoiceGenerator: false,
+                enableChatWithDocument: true,
+                enableContentCreation: false,
+                enableOCR: true,
+                requestNewField: false,
+                reExtraction: false,
+                alignmentCorrection: false
+            }
         };
         setState({ ...state, loadingCreateTemplate: true });
         const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);

@@ -25,7 +25,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
             defaultActionOnPaste: 'insert_clear_html',
 
             // 👇 This is important!
-            usePlugins: ['lineHeight', 'font', 'fontsize', 'paragraph', 'justify'],
+            usePlugins: ['lineHeight', 'font', 'fontsize', 'paragraph', 'justify', 'image'],
+
+            // Image upload settings
+            uploader: {
+                insertImageAsBase64URI: true // Insert images as base64 (no server upload needed)
+            },
+            imageDefaultWidth: 300,
+            resizer: {
+                showSize: true
+            },
 
             buttons: [
                 'bold',
@@ -43,6 +52,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
                 '|',
                 'table',
                 'link',
+                'image',
                 '|',
                 'undo',
                 'redo',

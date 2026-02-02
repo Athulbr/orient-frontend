@@ -15,6 +15,7 @@ export const useListTemplatePageApi = () => {
     };
 
     const filterTemplatesByModule = (templates: any) => {
+        const debug = window?.sessionStorage?.getItem('debug');
         const selectedModuleFromSessionStorage = window?.sessionStorage?.getItem('module') || 'docsnap';
         return templates.filter((template: any) => template?.settings?.module === selectedModuleFromSessionStorage);
     };
@@ -99,17 +100,28 @@ export const useListTemplatePageApi = () => {
             toast.error('Failed to delete Template');
         }
     };
-
     const importTemplateApi = async (requestBody: any) => {
+        // Store current tenant to restore later
+        const currentTenant = window?.sessionStorage?.getItem('selectedTenant');
         try {
             setState(prev => ({ ...prev, importingTemplate: true }));
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
             setState(prev => ({ ...prev, showImportTemplateDialog: false, importingTemplate: false }));
+
+            // Bypass: Temporarily remove selectedTenant to fetch ALL templates
+            window?.sessionStorage?.removeItem('selectedTenant');
+
             const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                 pageSize: 1000,
                 custom: true,
                 filters: { deleted: false }
             });
+
+            // Restore selectedTenant after fetching
+            if (currentTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', currentTenant);
+            }
+
             window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
             toast.success('Template created successfully');
             window.location.reload();
@@ -117,6 +129,11 @@ export const useListTemplatePageApi = () => {
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to create template');
+
+            // Restore selectedTenant in case of error
+            if (currentTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', currentTenant);
+            }
         }
     };
 

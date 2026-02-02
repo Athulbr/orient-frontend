@@ -78,7 +78,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ 
                             template={template}
                             flexBasis={`${100 / cardsPerRow}%`}
                             onClickUpload={() => onClickUploadButton(template)}
-                            refreshPage={() => getTemplatesApi()}
+                            refreshPage={() => getTemplatesApi(module)}
                         />
                     ))}
                     {state.totalTemplates > templatesToShow && <ViewAllCard totalTemplates={state.totalTemplates} flexBasis={`${100 / cardsPerRow}%`} />}
