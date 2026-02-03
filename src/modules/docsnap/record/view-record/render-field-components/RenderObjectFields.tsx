@@ -82,7 +82,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                         validationUrl={validationUrl || label === "Manufacturer's URL" ? value?.value : ''}
                                         showTextarea={showTextarea}
                                         jsonKey={subKey}
-                                        value={`${value?.value}`}
+                                        value={`${value?.value || value}`}
                                         confidence={`${value?.confidence * 100}`}
                                         checked={value?.checked}
                                         disabled={state.loadingS3File || state.reExtracting}

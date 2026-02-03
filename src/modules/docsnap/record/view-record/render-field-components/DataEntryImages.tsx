@@ -27,6 +27,7 @@ export const DataEntryImages: FC = () => {
                     <input
                         onChange={e => setState(prev => ({ ...prev, primaryImage: { path: prev.primaryImage?.path || '', caption: e.target.value } }))}
                         type="text"
+                        value={state.primaryImage?.caption || ''}
                         className="border py-2.5 hover:border-[#2563eb] pr-3 pl-6 rounded-lg focus:outline-none"
                     />
                 </div>
@@ -65,6 +66,7 @@ export const DataEntryImages: FC = () => {
                                     }))
                                 }
                                 type="text"
+                                value={image?.caption || ''}
                                 className="border py-2.5 hover:border-[#2563eb] pr-3 pl-6 rounded-lg focus:outline-none"
                             />
                         </div>
