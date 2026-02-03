@@ -16,7 +16,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
-    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi } = useViewRecordApi();
+    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument } = useViewRecordApi();
 
     // Validate that all required object sub-fields have a value before save/submit
     const validateRequiredFields = (): boolean => {
@@ -49,11 +49,20 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     };
 
     const handleReExtract = async () => {
-        setState(prev => ({ ...prev, reExtracting: true }));
-        const convertedJson = convertJSON(state.record?.fields || []);
-
         setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
+        if (state.record?.templateId?.settings?.extractionEngine !== 'python') {
+            const formData = new FormData();
+            formData.append('templateId', state.record?.templateId?._id);
+            formData.append('recordId', state.record?._id);
+            if (state.record?.imageFileNames) {
+                console.log('state.record?.imageFileNames:===========', state.record?.imageFileNames);
+                formData.append('imageFileNames', JSON.stringify(state.record?.imageFileNames));
+            }
+            await reExtractDocument(formData);
+            return;
+        }
 
+        const convertedJson = convertJSON(state.record?.fields || []);
         const token = window?.sessionStorage?.getItem('accessToken') || '';
         const formData = new FormData();
         formData.append('s3_file_name', state.record?.pdfFileName);

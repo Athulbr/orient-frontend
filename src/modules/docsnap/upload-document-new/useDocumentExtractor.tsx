@@ -6,8 +6,8 @@ export const useDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
     const navigate = useNavigate();
 
-    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any) => {
-        const sendApiRequestToNodeJsExtractor = async (file: File, template: any) => {
+    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }) => {
+        const sendApiRequestToNodeJsExtractor = async (file: File, template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
             let timer: NodeJS.Timeout | null = null;
 
             try {
@@ -28,7 +28,15 @@ export const useDocumentExtractor = () => {
                 // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
                 formData.append('template', JSON.stringify(template)); // For only SLD module
-                formData.append('file', file);
+                if (file.size > 0) {
+                    formData.append('file', file);
+                }
+                if (s3ImageNames && s3ImageNames.length > 0) {
+                    formData.append('s3ImageNames', JSON.stringify(s3ImageNames));
+                }
+                if (documentNumber) {
+                    formData.append('documentNumber', documentNumber);
+                }
 
                 const templateType = template?.settings?.templateType;
 
@@ -72,7 +80,6 @@ export const useDocumentExtractor = () => {
                 updateExtractionQueue(file.name, { status: 'failed' });
             }
         };
-
         const sendApiRequestToPythonExtractor = async (file: File, template: any) => {
             let timer: NodeJS.Timeout | null = null;
 
@@ -150,7 +157,6 @@ export const useDocumentExtractor = () => {
                 updateExtractionQueue(file.name, { status: 'failed' });
             }
         };
-
         const sendApiRequestToDataEntry = async (rowData: any, template: any) => {
             let timer: NodeJS.Timeout | null = null;
 
@@ -276,46 +282,47 @@ export const useDocumentExtractor = () => {
             }
         };
 
-        if (template?.settings?.module === 'data-entry') {
-            // First, remove any existing entry for this file
-            refreshExtractionQueue(rowData.SKU);
-            // Then add the new entry
-            addToExtractionQueue(rowData.SKU);
+        const addNameToQueue = (name: string) => {
+            refreshExtractionQueue(name);
+            addToExtractionQueue(name);
+        };
 
-            // Finally, send the request
+        if (template?.settings?.module === 'data-entry') {
+            addNameToQueue(rowData.SKU);
             sendApiRequestToDataEntry(rowData, template);
             navigate('/docsnap/record/list');
             return;
         }
 
         if (template?.settings?.module === 'content-creation') {
-            // First, remove any existing entry for this file
-            refreshExtractionQueue(rowData.name);
-            // Then add the new entry
-            addToExtractionQueue(rowData.name);
-
-            // Finally, send the request
+            addNameToQueue(rowData.name);
             sendApiRequestToContentCreation(rowData, template);
             navigate('/docsnap/record/list');
             return;
         }
 
-        for (const file of Array.from(files)) {
-            try {
-                // First, remove any existing entry for this file
-                refreshExtractionQueue(file.name);
-                // Then add the new entry
-                addToExtractionQueue(file.name);
+        try {
+            if (template?.settings?.extractionEngine === 'node') {
+                if (template?.settings?.extractMultipleDocuments) {
+                    const fileName = segregatedDoc?.documentNumber || new Date().toISOString();
+                    addNameToQueue(fileName);
 
-                // Finally, send the request
-                if (template?.settings?.extractionEngine === 'node') {
+                    sendApiRequestToNodeJsExtractor({ name: fileName } as File, template, segregatedDoc?.s3ImageNames || [], fileName);
+                    navigate('/docsnap/record/list');
+                    return;
+                }
+                for (const file of Array.from(files)) {
+                    addNameToQueue(file.name);
                     sendApiRequestToNodeJsExtractor(file, template);
-                } else {
+                }
+            } else {
+                for (const file of Array.from(files)) {
+                    addNameToQueue(file.name);
                     sendApiRequestToPythonExtractor(file, template);
                 }
-            } catch (error) {
-                console.error('Error processing file:', error);
             }
+        } catch (error) {
+            console.error('Error processing files:', error);
         }
 
         navigate('/docsnap/record/list');

@@ -27,16 +27,26 @@ export const useLoginPageApi = () => {
 
     // ============================= login With Email And Password ==================================
     const loginWithEmailAndPassword = async () => {
-        setState(prev => ({ ...prev, isSubmitClicked: true }));
-        const emailError = validateEmail(state.email);
-        const passwordError = validatePassword(state.password);
-        if (emailError || passwordError) {
-            setState(prev => ({ ...prev, fieldError: { email: emailError, password: passwordError } }));
-            return;
+        //===== only for developers ======
+        const autoLoginCredential = window?.localStorage?.getItem('autologin') === 'true' ? { email: 'sam@demo.com', password: 'welcome' } : null;
+        //===== only for developers ======
+        if (!autoLoginCredential) {
+            setState(prev => ({ ...prev, isSubmitClicked: true }));
+            const emailError = validateEmail(state.email);
+            const passwordError = validatePassword(state.password);
+            if (emailError || passwordError) {
+                setState(prev => ({ ...prev, fieldError: { email: emailError, password: passwordError } }));
+                return;
+            }
         }
         setState(prev => ({ ...prev, loading: true }));
+
         try {
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/login`, { email: state.email, password: state.password });
+            const res = await httpRequest(
+                'POST',
+                `${config.nodeApiUrl}/auth/login`,
+                autoLoginCredential ? autoLoginCredential : { email: state.email, password: state.password }
+            );
             if (res?.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
