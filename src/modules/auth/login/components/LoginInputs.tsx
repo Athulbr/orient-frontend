@@ -23,6 +23,12 @@ export const LoginInputs: React.FC<LoginInputsIF> = () => {
         }
     };
 
+    useEffect(() => {
+        if (window?.localStorage?.getItem('autologin') === 'true') {
+            loginWithEmailAndPassword();
+        }
+    }, []);
+
     return (
         <div className="mt-4 flex flex-col gap-2">
             <MuiTextField

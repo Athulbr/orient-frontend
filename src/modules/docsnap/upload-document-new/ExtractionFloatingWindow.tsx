@@ -33,8 +33,8 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
             <div className="flex flex-col text-xs w-full">
                 <span className="text-amber-500">{step}</span>
                 <div className="flex items-center gap-3">
-                    <ProgressBar value={progress} />
-                    <span className="text-[10px] text-amber-500">{progress}%</span>
+                    <ProgressBar value={progress || 0} />
+                    <span className="text-[10px] text-amber-500">{progress || 0}%</span>
                 </div>
             </div>
         );
@@ -59,7 +59,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                 Extraction Status
                 <div className="flex gap-3 items-center">
                     <span className="text-sm text-green-500 font-light">
-                        ({extractionQueue.filter((i: any) => i.status === 'Complete').length}/{extractionQueue.length})
+                        ({extractionQueue.filter((i: any) => i.status === 'completed').length}/{extractionQueue.length})
                     </span>
                     {minimize ? (
                         <ChevronRight

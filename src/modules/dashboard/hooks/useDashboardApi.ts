@@ -49,9 +49,8 @@ export const useDashboardApi = () => {
         );
     };
     const filterTemplatesByModule = (templates: any, module?: string) => {
-        return templates.filter((template: any) => {
-            return template.settings?.module === module || !module;
-        });
+        const selectedModule = module || 'docsnap';
+        return templates.filter((template: any) => template.settings?.module === selectedModule);
     };
     const sortTemplatesByRecentlyUsed = (templates: any) => {
         const arrayOfRecentlyUsedTemplates = JSON.parse(localStorage.getItem('recentlyUsedTemplates') || '[]');

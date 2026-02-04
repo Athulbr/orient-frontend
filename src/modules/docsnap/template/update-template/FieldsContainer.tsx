@@ -1,4 +1,22 @@
-import { ChevronDown, ChevronUp, Cog, Edit, Eye, EyeOff, FileCog, GripVertical, Play, Plus, Save, ScanLine, Settings, Trash2, X, Code } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronUp,
+    Cog,
+    Edit,
+    Eye,
+    EyeOff,
+    FileCog,
+    GripVertical,
+    Play,
+    Plus,
+    RefreshCw,
+    Save,
+    ScanLine,
+    Settings,
+    Trash2,
+    X,
+    Code
+} from 'lucide-react';
 import { DragAndDropContainer } from '../../../../components/DragAndDropContainer';
 import { LightIconButton } from './components/ImageViewer';
 import { ClassAttributes, InputHTMLAttributes, useEffect, useMemo, useState } from 'react';
@@ -29,8 +47,11 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const [showPostScriptDialog, setShowPostScriptDialog] = useState(false);
     const [postScriptCode, setPostScriptCode] = useState('  // Write your code here\n  const result = "Hello World";\n  console.log(result);');
     const [postScriptOutput, setPostScriptOutput] = useState('');
+    const [testExtractedData, setTestExtractedData] = useState<any>(null);
+    const [loadingTestData, setLoadingTestData] = useState(false);
 
-    const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI } = useUpdateTemplatePageApi();
+    const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI, getTestExtractedData } =
+        useUpdateTemplatePageApi();
     const { id, fileName } = useParams();
     const toast = useToastStore();
 
@@ -120,7 +141,16 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
 
     useEffect(() => {
         if (state.templateSettings?.postScript) {
-            setPostScriptCode(state.templateSettings.postScript);
+            const script = state.templateSettings.postScript;
+            // Extract inner code from full function if it's wrapped
+            if (script.startsWith('function postProcess(extractedData)')) {
+                const lines = script.split('\n');
+                // Remove first line (function declaration) and last two lines (return + closing brace)
+                const innerCode = lines.slice(1, -2).join('\n');
+                setPostScriptCode(innerCode);
+            } else {
+                setPostScriptCode(script);
+            }
         }
     }, [state.templateSettings?.postScript]);
 
@@ -193,6 +223,17 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         updateTemplateApi(id, requestBody, false);
     };
 
+    const fetchTestData = async () => {
+        if (!id) {
+            toast.error('Save template first to fetch test data');
+            return;
+        }
+        setLoadingTestData(true);
+        const data = await getTestExtractedData(id);
+        setTestExtractedData(data?.extractedData);
+        setLoadingTestData(false);
+    };
+
     const runPostScript = () => {
         setPostScriptOutput('');
         const logs: string[] = [];
@@ -214,12 +255,13 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         };
 
         try {
+            const inputData = testExtractedData || {};
             const wrappedCode = `
                 function postProcess(extractedData) {
-${postScriptCode}
+                        ${postScriptCode}
                     return extractedData;
                 }
-                return postProcess({});
+                return postProcess(${JSON.stringify(inputData)});
             `;
             const result = new Function(wrappedCode)();
             if (result !== undefined) {
@@ -236,11 +278,15 @@ ${postScriptCode}
     };
 
     const savePostScript = () => {
+        const fullFunction = `function postProcess(extractedData) {
+                                    ${postScriptCode}
+                                return extractedData;
+                            }`;
         setState(prev => ({
             ...prev,
             templateSettings: {
                 ...prev.templateSettings,
-                postScript: postScriptCode
+                postScript: fullFunction
             }
         }));
         toast.success('Post script saved successfully');
@@ -357,6 +403,23 @@ ${postScriptCode}
                             </button>
                         </div>
                         <div className="flex flex-1 flex-col gap-3 overflow-auto p-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-600">Input Data (extractedData):</span>
+                                <Button
+                                    small
+                                    startIcon={loadingTestData ? <Spinner size={14} /> : <RefreshCw size={14} />}
+                                    onClick={fetchTestData}
+                                    outlined
+                                    disabled={loadingTestData}
+                                >
+                                    {loadingTestData ? 'Fetching...' : 'Fetch Test Data'}
+                                </Button>
+                            </div>
+                            {testExtractedData && (
+                                <pre className="max-h-[100px] overflow-auto rounded border bg-gray-100 p-2 font-mono text-xs text-gray-700">
+                                    {JSON.stringify(testExtractedData, null, 2)}
+                                </pre>
+                            )}
                             <div className="rounded border bg-gray-50 font-mono text-sm">
                                 <div className="select-none border-b bg-gray-100 px-3 py-2 text-gray-500">{'function postProcess(extractedData) {'}</div>
                                 <textarea
@@ -496,7 +559,7 @@ const SectionComponent = ({ section, mainIndex }: { section: any; mainIndex: num
                             onClick={handleExtractSectionFields}
                             outlined
                         >
-                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? `Extracting ${section?.name}` : 'Extract Fields'}
+                            {state.extractingSection !== -1 && mainIndex === state.extractingSection ? 'Extracting...' : 'Extract Fields'}
                         </Button>
                     </span>
                 </div>

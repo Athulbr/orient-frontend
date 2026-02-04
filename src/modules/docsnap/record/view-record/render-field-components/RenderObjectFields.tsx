@@ -27,6 +27,12 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                         <div className="flex flex-wrap gap-y-4">
                             {Object.entries(valueMain).map(([subKey, value]) => {
                                 const fieldId = `objectFields:${key}:${subKey}`;
+                                if (key === 'extracted_by' && typeof value === 'string') {
+                                    value = {
+                                        value: value
+                                    };
+                                }
+
                                 const onChange = (e: any) => {
                                     const newValue = e.target.value;
 

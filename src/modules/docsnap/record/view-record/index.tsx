@@ -139,7 +139,7 @@ const ViewRecordPage: React.FC = () => {
     useBackButtonOverride('/docsnap/record/list');
     const module = sessionStorage.getItem('module');
 
-    const initialLeftWidthPercent = module === 'dataentry' || module === 'ppeDetection' ? 60 : 70;
+    const initialLeftWidthPercent = module === 'data-entry' || module === 'ppeDetection' ? 60 : 70;
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
@@ -161,7 +161,7 @@ const ViewRecordPage: React.FC = () => {
                                         Retry Extraction
                                     </Button> */}
                                     <h1 className="text-2xl font-bold">Extraction Failed</h1>
-                                    <p className="mt-2 text-red-500 text-xs">{state.record?.error?.message}</p>
+                                    <p className="mt-2 text-red-500 text-xs max-h-[80vh] overflow-y-auto p-4">{state.record?.error?.message}</p>
                                 </div>
                             ) : (
                                 <TabViewContainer

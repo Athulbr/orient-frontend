@@ -11,6 +11,7 @@ import { useDocumentExtractor } from './useDocumentExtractor';
 import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
 import { groupVariationsByPageCount } from './functions/groupVariationsByPageCount';
 import { createProductWithVariationGroups } from './functions/createProductWithVariationGroups';
+import { SegregatedData, SegregatedDocuments } from './SegregatedDocuments';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -21,8 +22,11 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
-    const [selectedProducts, setSelectedProducts] = useState<any>([]);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
+    const [showSegregatedDocuments, setShowSegregatedDocuments] = useState(false);
+
+    // console.log('selectedFiles:===========', selectedFiles);
 
     useEffect(() => {
         if (!template._id) {
@@ -57,7 +61,6 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             const groupedVariations = groupVariationsByPageCount(excelData);
             const products = createProductWithVariationGroups(groupedVariations);
             const selectedProducts = products.slice(0, Number(template?.settings?.extractionLimit) || 10);
-            setSelectedProducts(selectedProducts);
             selectedProducts.forEach(product => {
                 addToDocumentExtractor(latestTemplate, [], product);
             });
@@ -72,6 +75,9 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             selectedProducts.forEach((row: any) => {
                 addToDocumentExtractor(latestTemplate, [], row);
             });
+        } else if (template?.settings?.extractMultipleDocuments) {
+            setSelectedFiles(files);
+            setShowSegregatedDocuments(true);
         } else {
             addToDocumentExtractor(latestTemplate, files);
         }
@@ -82,6 +88,15 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     if (module === 'data-entry' || module === 'content-creation') {
         supportedFileTypes = ['.xlsx'];
     }
+
+    const addSegregatedDocumentsToExtraction = (files: SegregatedData) => {
+        files.forEach(file => {
+            file.forEach(doc => {
+                const s3ImageNames = doc.pages.map(page => page.s3ImageName);
+                addToDocumentExtractor(latestTemplate, selectedFiles, undefined, { documentNumber: doc.documentNumber, s3ImageNames });
+            });
+        });
+    };
 
     return (
         <DialogComponent
@@ -108,6 +123,14 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                             setShowCreateBlogForm(false);
                         }}
                         closeDialog={() => setShowCreateBlogForm(false)}
+                    />
+                )}
+                {showSegregatedDocuments && (
+                    <SegregatedDocuments
+                        selectedFiles={selectedFiles}
+                        isOpen={showSegregatedDocuments}
+                        closeDialog={closeDialog}
+                        onSubmit={addSegregatedDocumentsToExtraction}
                     />
                 )}
                 <DragAndDropFileInput accept={supportedFileTypes.join(', ')} onFilesChange={onFileDrop} />
