@@ -70,7 +70,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
                     name: 'Insert Header',
                     icon: 'header',
                     exec: (editor: any) => {
-                        editor.selection.insertHTML('<h2 style="font-size:24px; font-weight:bold; text-align:center;">COMPANY NAME</h2>');
+                        editor.selection.insertHTML('<h2 style="font-size:24px; font-weight:bold; text-align:center;">REHABMART</h2>');
                     }
                 },
                 {
@@ -78,7 +78,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
                     icon: 'footer',
                     exec: (editor: any) => {
                         editor.selection.insertHTML(
-                            '<footer style="text-align:center; font-size:14px; color:#666; margin-top:20px;">© Company name 2025</footer>'
+                            '<footer style="text-align:center; font-size:14px; color:#666; margin-top:20px;">© Rehabmart 2026</footer>'
                         );
                     }
                 }

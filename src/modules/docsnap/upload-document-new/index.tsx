@@ -85,6 +85,9 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
     const module = sessionStorage.getItem('module');
+    if (module === 'invoice-tracking') {
+        supportedFileTypes.push('.xls');
+    }
     if (module === 'data-entry' || module === 'content-creation') {
         supportedFileTypes = ['.xlsx'];
     }
