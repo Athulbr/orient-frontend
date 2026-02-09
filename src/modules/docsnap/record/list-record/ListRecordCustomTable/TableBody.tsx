@@ -36,7 +36,7 @@ export const TableBody: React.FC = memo(() => {
         const url = window.location.href;
         const module = sessionStorage.getItem('module');
         if (module === 'document-generation') {
-            navigate(`/document-generation/create/${row._id}`, { state: { from: url } });
+            navigate(`/document-generation/view/${row._id}`, { state: { from: url } });
             return;
         }
         if (module === 'content-creation') {

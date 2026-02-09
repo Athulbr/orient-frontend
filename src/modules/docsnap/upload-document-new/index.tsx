@@ -15,18 +15,19 @@ import { SegregatedData, SegregatedDocuments } from './SegregatedDocuments';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
+    showManualInputForm?: boolean;
 }
 
-export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
+export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template, showManualInputForm = false }) => {
     const toast = useToastStore();
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
+    // const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
     const [showSegregatedDocuments, setShowSegregatedDocuments] = useState(false);
+    const module=sessionStorage.getItem('module');
 
-    // console.log('selectedFiles:===========', selectedFiles);
 
     useEffect(() => {
         if (!template._id) {
@@ -84,7 +85,6 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
-    const module = sessionStorage.getItem('module');
     if (module === 'invoice-tracking') {
         supportedFileTypes.push('.xls');
     }
@@ -101,6 +101,22 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         });
     };
 
+    if (showManualInputForm) {
+        return (
+            <UseFormbuilder
+                isOpen={true}
+                title="Create Blog Form"
+                name="Create Blog Form"
+                className="w-230"
+                existingData={{}}
+                onSubmit={e => {
+                    addToDocumentExtractor(latestTemplate, [], e);
+                }}
+                closeDialog={() => closeDialog()}
+            />
+        );
+    }
+
     return (
         <DialogComponent
             className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col overflow-y-auto"
@@ -109,25 +125,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10 pt-5">
-                {module === 'content-creation' && (
-                    <div className="mb-4 flex justify-end">
-                        <Button onClick={() => setShowCreateBlogForm(true)}>Add Manually</Button>
-                    </div>
-                )}
-                {showCreateBlogForm && (
-                    <UseFormbuilder
-                        isOpen={showCreateBlogForm}
-                        title="Create Blog Form"
-                        name="Create Blog Form"
-                        className="w-230"
-                        existingData={{}}
-                        onSubmit={e => {
-                            addToDocumentExtractor(latestTemplate, [], e);
-                            setShowCreateBlogForm(false);
-                        }}
-                        closeDialog={() => setShowCreateBlogForm(false)}
-                    />
-                )}
+               
+                   
                 {showSegregatedDocuments && (
                     <SegregatedDocuments
                         selectedFiles={selectedFiles}
