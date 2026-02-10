@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { WelComeText } from './components/WelComeText';
 import { LoginPageStateProvider } from './hooks/LoginPageStateProvider';
 import { AuthErrorComponent } from './components/AuthErrorComponent';

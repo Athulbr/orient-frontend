@@ -33,8 +33,8 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
             <div className="flex flex-col text-xs w-full">
                 <span className="text-amber-500">{step}</span>
                 <div className="flex items-center gap-3">
-                    <ProgressBar value={progress} />
-                    <span className="text-[10px] text-amber-500">{progress}%</span>
+                    <ProgressBar value={progress || 0} />
+                    <span className="text-[10px] text-amber-500">{progress || 0}%</span>
                 </div>
             </div>
         );

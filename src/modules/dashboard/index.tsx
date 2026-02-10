@@ -24,6 +24,7 @@ export interface DashboardStateIF {
     loadingStatusCounts: boolean;
     test: any[];
     module: string;
+    showManualInputForm: boolean;
 }
 
 const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
@@ -43,6 +44,7 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
         statusCounts: null,
         loadingStatusCounts: false,
         test: [],
+        showManualInputForm: false,
         module: module
     };
     const [state, setState] = useState<DashboardStateIF>(initialState);
@@ -63,7 +65,7 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
             </div>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+                <UploadDocumentComponentNew showManualInputForm={state.showManualInputForm}  template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
             )}
         </DashboardStateProvider>
     );

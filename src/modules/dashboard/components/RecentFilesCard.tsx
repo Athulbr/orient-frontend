@@ -49,7 +49,7 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
                     <span
                         onClick={() =>
                             navigate(
-                                `/${module === 'invoice-tracking' ? 'invoice-tracking' : module === 'content-creation' ? 'content-creation' : module}/record/list`
+                                `/${module}/record/list`
                             )
                         }
                         className="flex cursor-pointer items-center gap-2 text-sm font-light text-sky-600 hover:text-sky-600"

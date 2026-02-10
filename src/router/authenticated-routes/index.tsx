@@ -62,6 +62,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="sld/*" element={<DocSnapRoutes />} />
                 <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="content-creation/*" element={<DocSnapRoutes />} />
+                <Route path="document-generation/*" element={<DocSnapRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
                 <Route path="/transcription/record/*" element={<MedicalCodeRoutes />} />

@@ -1,4 +1,4 @@
-import { Edit, MoreVertical, Plus, Upload } from 'lucide-react';
+import { Edit, FileText, FormInput, MoreVertical, Plus, Upload } from 'lucide-react';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { Button } from '../../../../../components/Button';
 import httpRequest from '../../../../../global-utils/httpRequest';
@@ -17,9 +17,10 @@ interface PropsIF {
     refreshPage?: () => void;
     flexBasis?: string;
     exportTemplate?: (id: string) => void;
+    onClickManualButton?: () => void;
 }
 
-export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis, exportTemplate }) => {
+export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis, exportTemplate, onClickManualButton }) => {
     const toast = useToastStore();
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
@@ -139,11 +140,24 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
             onClickUpload && onClickUpload();
         }
     };
+    const onClickManualButtonHandler = () => {
+        const user = JSON.parse(sessionStorage.getItem('user') || '');
+        if (user?.role?.name === 'superadmin') {
+            const selectedTenant = sessionStorage.getItem('selectedTenant');
+            if (!selectedTenant) {
+                toast.error('Please select a tenant');
+                return;
+            }
+            onClickManualButton && onClickManualButton();
+        } else {
+            onClickManualButton && onClickManualButton();
+        }
+    };
 
     return (
         <div
             // onClick={() => navigate(`/docsnap/template/view/${template._id}`)} // Uncomment to enable navigation on click based on tenant settings
-            className="relative flex h-40 max-w-100 min-w-75 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
+            className="relative flex h-40 max-w-100 min-w-85 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
             style={cardStyle}
         >
             {/* Title and Menu Row */}
@@ -182,6 +196,16 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
                     small
                 >
                     Edit Fields
+                </Button>
+                <Button
+                    permission="update:template"
+                    outlined
+                    startIcon={<FileText size={14} className="text-gray-500" />}
+                    onClick={onClickManualButtonHandler}
+                    small
+                    hidden={module !== 'content-creation'}
+                >
+                    Manual Input
                 </Button>
                 <Button
                     permission="extract:document"

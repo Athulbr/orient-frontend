@@ -11,18 +11,23 @@ import { useDocumentExtractor } from './useDocumentExtractor';
 import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArrayOfObjects';
 import { groupVariationsByPageCount } from './functions/groupVariationsByPageCount';
 import { createProductWithVariationGroups } from './functions/createProductWithVariationGroups';
+import { SegregatedData, SegregatedDocuments } from './SegregatedDocuments';
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
+    showManualInputForm?: boolean;
 }
 
-export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template }) => {
+export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template, showManualInputForm = false }) => {
     const toast = useToastStore();
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
-    const [selectedProducts, setSelectedProducts] = useState<any>([]);
-    const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    // const [showCreateBlogForm, setShowCreateBlogForm] = useState(false);
+    const [showSegregatedDocuments, setShowSegregatedDocuments] = useState(false);
+    const module=sessionStorage.getItem('module');
+
 
     useEffect(() => {
         if (!template._id) {
@@ -57,7 +62,6 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             const groupedVariations = groupVariationsByPageCount(excelData);
             const products = createProductWithVariationGroups(groupedVariations);
             const selectedProducts = products.slice(0, Number(template?.settings?.extractionLimit) || 10);
-            setSelectedProducts(selectedProducts);
             selectedProducts.forEach(product => {
                 addToDocumentExtractor(latestTemplate, [], product);
             });
@@ -72,15 +76,45 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             selectedProducts.forEach((row: any) => {
                 addToDocumentExtractor(latestTemplate, [], row);
             });
+        } else if (template?.settings?.extractMultipleDocuments) {
+            setSelectedFiles(files);
+            setShowSegregatedDocuments(true);
         } else {
             addToDocumentExtractor(latestTemplate, files);
         }
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
-    const module = sessionStorage.getItem('module');
+    if (module === 'invoice-tracking') {
+        supportedFileTypes.push('.xls');
+    }
     if (module === 'data-entry' || module === 'content-creation') {
         supportedFileTypes = ['.xlsx'];
+    }
+
+    const addSegregatedDocumentsToExtraction = (files: SegregatedData) => {
+        files.forEach(file => {
+            file.forEach(doc => {
+                const s3ImageNames = doc.pages.map(page => page.s3ImageName);
+                addToDocumentExtractor(latestTemplate, selectedFiles, undefined, { documentNumber: doc.documentNumber, s3ImageNames });
+            });
+        });
+    };
+
+    if (showManualInputForm) {
+        return (
+            <UseFormbuilder
+                isOpen={true}
+                title="Create Blog Form"
+                name="Create Blog Form"
+                className="w-230"
+                existingData={{}}
+                onSubmit={e => {
+                    addToDocumentExtractor(latestTemplate, [], e);
+                }}
+                closeDialog={() => closeDialog()}
+            />
+        );
     }
 
     return (
@@ -91,23 +125,14 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10 pt-5">
-                {module === 'content-creation' && (
-                    <div className="mb-4 flex justify-end">
-                        <Button onClick={() => setShowCreateBlogForm(true)}>Add Manually</Button>
-                    </div>
-                )}
-                {showCreateBlogForm && (
-                    <UseFormbuilder
-                        isOpen={showCreateBlogForm}
-                        title="Create Blog Form"
-                        name="Create Blog Form"
-                        className="w-230"
-                        existingData={{}}
-                        onSubmit={e => {
-                            addToDocumentExtractor(latestTemplate, [], e);
-                            setShowCreateBlogForm(false);
-                        }}
-                        closeDialog={() => setShowCreateBlogForm(false)}
+               
+                   
+                {showSegregatedDocuments && (
+                    <SegregatedDocuments
+                        selectedFiles={selectedFiles}
+                        isOpen={showSegregatedDocuments}
+                        closeDialog={closeDialog}
+                        onSubmit={addSegregatedDocumentsToExtraction}
                     />
                 )}
                 <DragAndDropFileInput accept={supportedFileTypes.join(', ')} onFilesChange={onFileDrop} />

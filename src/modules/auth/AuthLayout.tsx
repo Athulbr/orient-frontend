@@ -7,7 +7,7 @@ const BANNER_CONTENT = {
         line2: 'AI Easy'
     },
     description: 'Work AI for Enterprises with Employee Co-Pilots, Enterprise Search, Document Automation, and Brand Connect AI Tools.​',
-    copyright: '@ 2025 makez.ai. All rights reserved'
+    copyright: '@ 2026 makez.ai. All rights reserved'
 } as const;
 
 interface AuthLayoutProps {
