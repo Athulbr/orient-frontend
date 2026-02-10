@@ -17,7 +17,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ 
     // Calculate how many cards can fit based on screen width
     const calculateCardsPerRow = useCallback(() => {
         const screenWidth = window.innerWidth;
-        const cardMinWidth = 300; // min-w-80 = 320px
+        const cardMinWidth = 340; // min-w-85 = 340px
         const containerPadding = 48; // accounting for container padding
         const gapBetweenCards = 24; // gap-6 = 24px
 
@@ -60,6 +60,10 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ 
         setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
         getTemplatesApi(module);
     };
+
+    const onClickManualButton = (template: any) => {
+        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, showManualInputForm: true });
+    };
     const visibleTemplates = state.templates.slice(0, templatesToShow);
 
     return (
@@ -79,6 +83,7 @@ export const TemplateCardListComponent: React.FC<TemplateCardsComponentIF> = ({ 
                             flexBasis={`${100 / cardsPerRow}%`}
                             onClickUpload={() => onClickUploadButton(template)}
                             refreshPage={() => getTemplatesApi(module)}
+                            onClickManualButton={() => onClickManualButton(template)}
                         />
                     ))}
                     {state.totalTemplates > templatesToShow && <ViewAllCard totalTemplates={state.totalTemplates} flexBasis={`${100 / cardsPerRow}%`} />}
