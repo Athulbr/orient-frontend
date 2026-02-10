@@ -6,10 +6,14 @@ import { config } from '../../../config/default';
 import Spinner from '../../../components/Spinner';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import { Pencil, Trash2, Check, X } from 'lucide-react';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import { useNavigate } from 'react-router-dom';
 
 export default function RightContainer({ htmlContent, setContent, name }: { htmlContent: string; setContent: (content: string) => void; name: string }) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const toast = useToastStore();
+    const navigate = useNavigate();
     const { state, setState } = useContentCreationEditorState();
     const [editingKeywordIndex, setEditingKeywordIndex] = useState<number | null>(null);
     const [editedKeywordValue, setEditedKeywordValue] = useState('');
@@ -75,6 +79,49 @@ ${htmlContent}
         setState({ ...state, keywords: updatedKeywords });
     };
 
+    const handleOnSubmit = async () => {
+        const fullHTML = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="description" content="Generated content">
+            <title>Document</title>
+        </head>
+        <body>
+        ${htmlContent}
+        </body>
+        </html>`;
+
+        const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
+        const selectedModule = window?.sessionStorage?.getItem('module') || '';
+
+        const content = {
+            title: name,
+            category: '',
+            summaryHTML: '',
+            summaryImagePath: '',
+            product_category: '',
+            html: fullHTML
+        };
+        const payload = {
+            tenant_name: selectedTenantName,
+            module: selectedModule,
+            blog: content
+        };
+        try {
+            setState(prev => ({ ...prev, loadingData: true }));
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
+            toast.success('Record submitted successfully');
+            if (selectedModule === 'content-creation') navigate('/content-creation/record/list');
+        } catch (error: any) {
+            console.error('Error submitting content:', error);
+            toast.error(error?.message || 'Failed to submit blog content');
+        } finally {
+            setState(prev => ({ ...prev, loadingData: false }));
+        }
+    };
+
     return (
         <div className=" flex flex-col overflow-y-auto flex-1 h-full p-4 pt-0 gap-2">
             <div className="p-2">
@@ -82,7 +129,6 @@ ${htmlContent}
             </div>
             <div className="border-t pt-4">
                 <p className="text-lg font-semibold mb-3">Name</p>
-
                 {name}
             </div>
             {state.keywords && state.keywords.length > 0 && (
@@ -144,12 +190,17 @@ ${htmlContent}
             )}
 
             <TextAreaComponent rows={10} value={input} onChange={e => setInput(e.target.value)} />
-            <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
-                {loading ? 'Updating...' : 'Send'}
-            </Button>
-            <Button disabled={!htmlContent} onClick={downloadHTML}>
-                Download HTML
-            </Button>
+            <div className="flex gap-2 justify-center">
+                <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
+                    {loading ? 'Updating...' : 'Send'}
+                </Button>
+                <Button disabled={!htmlContent} onClick={downloadHTML}>
+                    Download HTML
+                </Button>
+                <Button disabled={!htmlContent} onClick={handleOnSubmit}>
+                    Submit
+                </Button>
+            </div>
         </div>
     );
 }
