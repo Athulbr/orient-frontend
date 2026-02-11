@@ -110,9 +110,10 @@ ${htmlContent}
             title: record?.name,
             category: '',
             summaryHTML: '',
-            summaryImagePath: '',
+            summaryImagePath: record?.extractedData?.primaryImageUrl,
             product_category: '',
-            html: fullHTML
+            html: fullHTML,
+            author: record?.extractedData?.author || ''
         };
         const payload = {
             tenant_name: selectedTenantName,
