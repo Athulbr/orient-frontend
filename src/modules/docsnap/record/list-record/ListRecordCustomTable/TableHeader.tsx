@@ -12,6 +12,9 @@ export const TableHeader: FC<TableHeaderIF> = () => {
     const { getRecordsApi } = useListRecordCustomTableApi();
     const { user, checkPermission } = usePermissionStore();
 
+    const enablePolink = String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart';
+    const enableBlogLink = sessionStorage.getItem('module')?.toLowerCase() == 'content-creation';
+
     const columns = useMemo(
         () => [
             { label: 'Name', visible: true },
@@ -19,7 +22,11 @@ export const TableHeader: FC<TableHeaderIF> = () => {
             { label: 'Status', visible: true },
             {
                 label: 'Polink',
-                visible: String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart'
+                visible: enablePolink
+            },
+            {
+                label: 'Blog Link',
+                visible: enableBlogLink
             },
             { label: 'Extracted By', visible: true },
             { label: 'Processed Date', visible: true },
