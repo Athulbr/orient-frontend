@@ -16,8 +16,12 @@ const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
 import { config } from '../../../../config/default';
 
 export const Polink = (row: any) => {
-    const rmLink = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
+    let rmLink: any = row?.data?.rmResponse?.data?.url ? row?.data?.rmResponse?.data?.url : row?.data?.rmResponse?.url;
     const poId = row?.data?.rmResponse?.data?.id ? row?.data?.rmResponse?.data?.id : row?.data?.rmResponse?.id;
+
+    if (row?.data?.rmResponse?.blog_uid && !rmLink) {
+        rmLink = `https://dev.rehabmart.com/post/${row?.data?.rmResponse?.blog_file_name}`;
+    }
 
     const onClickPOLink = (e: any, row: any) => {
         e.stopPropagation();
@@ -30,7 +34,7 @@ export const Polink = (row: any) => {
 
     return (
         <div onClick={e => onClickPOLink(e, row)} className="text-blue-400 text-sm hover:underline cursor-pointer hover:text-blue-700">
-            {poId}
+            {poId || row?.data?.rmResponse?.blog_uid}
         </div>
     );
 };
