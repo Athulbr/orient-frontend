@@ -9,7 +9,15 @@ import { Pencil, Trash2, Check, X } from 'lucide-react';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function RightContainer({ htmlContent, setContent, name }: { htmlContent: string; setContent: (content: string) => void; name: string }) {
+export default function RightContainer({
+    htmlContent,
+    setContent,
+    record
+}: {
+    htmlContent: string;
+    setContent: (content: string) => void;
+    record: Record<string, any> | null;
+}) {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const toast = useToastStore();
@@ -124,6 +132,7 @@ ${htmlContent}
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
+    console.log('record:===========', record);
 
     return (
         <div className=" flex flex-col overflow-y-auto flex-1 h-full p-4 pt-0 gap-2">
@@ -131,8 +140,20 @@ ${htmlContent}
                 <p className="text-xl font-semibold">Content Details</p>
             </div>
             <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-3">Name</p>
-                {name}
+                <p className="text-lg font-semibold mb-2">Name</p>
+                {record?.name || 'N/A'}
+            </div>
+            <div className="border-t pt-4">
+                <p className="text-lg font-semibold mb-2">Author</p>
+                {record?.extractedData?.author || 'N/A'}
+            </div>
+            <div className="border-t pt-4">
+                <p className="text-lg font-semibold mb-2">Primary Image</p>
+                <img src={record?.extractedData?.primaryImageUrl || ''} alt="Primary Image" />
+            </div>
+            <div className="border-t pt-4">
+                <p className="text-lg font-semibold mb-2">Primary Image URL</p>
+                <textarea className="w-full border p-2 rounded-md mt-2" disabled value={record?.extractedData?.primaryImageUrl || 'N/A'} />
             </div>
             {state.keywords && state.keywords.length > 0 && (
                 <div className="mt-4 border-t pt-4">
@@ -170,13 +191,13 @@ ${htmlContent}
                                             <p className="text-sm">{keyword.keyword}</p>
                                             <p className="text-xs text-gray-500">Source: {keyword.source}</p>
                                         </div>
-                                        <button
+                                        {/* <button
                                             onClick={() => handleEditKeyword(index)}
                                             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
                                             title="Edit"
                                         >
                                             <Pencil size={16} />
-                                        </button>
+                                        </button> */}
                                         <button
                                             onClick={() => handleDeleteKeyword(index)}
                                             className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
@@ -192,17 +213,17 @@ ${htmlContent}
                 </div>
             )}
 
-            <TextAreaComponent rows={10} value={input} onChange={e => setInput(e.target.value)} />
-            <div className="flex gap-2 justify-center">
-                <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
+            {/* <TextAreaComponent rows={10} value={input} onChange={e => setInput(e.target.value)} />  */}
+            <div className="flex gap-2 justify-end">
+                {/* <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
                     {loading ? 'Updating...' : 'Send'}
-                </Button>
+                </Button> */}
                 <Button disabled={!htmlContent} onClick={downloadHTML}>
                     Download HTML
                 </Button>
-                <Button disabled={!htmlContent} onClick={handleOnSubmit}>
+                {/* <Button disabled={!htmlContent} onClick={handleOnSubmit}>
                     Submit
-                </Button>
+                </Button> */}
             </div>
         </div>
     );

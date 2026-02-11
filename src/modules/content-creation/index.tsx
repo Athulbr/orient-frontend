@@ -53,7 +53,7 @@ const ContentCreationEditor: React.FC<ContentCreationIF> = () => {
                 <ResizableContainer
                     className="flex flex-1 overflow-y-auto"
                     left={<PreviewContainer content={content} setContent={setContent} name={record?.name} />}
-                    right={<RightContainer htmlContent={content} setContent={setContent} name={record?.name} />}
+                    right={<RightContainer htmlContent={content} setContent={setContent} record={record} />}
                     initialLeftWidthPercent={60}
                     minLeftWidthPercent={30}
                     maxLeftWidthPercent={75}
