@@ -99,7 +99,7 @@ ${htmlContent}
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
 
         const content = {
-            title: name,
+            title: record?.name,
             category: '',
             summaryHTML: '',
             summaryImagePath: '',
