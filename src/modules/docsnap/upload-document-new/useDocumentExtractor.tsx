@@ -40,8 +40,6 @@ export const useDocumentExtractor = () => {
 
                 const module = template?.settings?.module;
 
-                console.log('module:===========', module);
-
                 const apiEndPoint = `${config.mlServiceNodejs}${module === 'invoice-tracking' ? '/invoice-tracking/extract-email' : module === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
 
                 const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
