@@ -107,7 +107,7 @@ ${htmlContent}
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
 
         const content = {
-            title: name,
+            title: record?.name,
             category: '',
             summaryHTML: '',
             summaryImagePath: '',
@@ -221,9 +221,9 @@ ${htmlContent}
                 <Button disabled={!htmlContent} onClick={downloadHTML}>
                     Download HTML
                 </Button>
-                {/* <Button disabled={!htmlContent} onClick={handleOnSubmit}>
+                <Button disabled={!htmlContent} onClick={handleOnSubmit}>
                     Submit
-                </Button> */}
+                </Button>
             </div>
         </div>
     );
