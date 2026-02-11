@@ -20,7 +20,15 @@ interface PropsIF {
     onClickManualButton?: () => void;
 }
 
-export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUpload, isLoading = false, refreshPage, flexBasis, exportTemplate, onClickManualButton }) => {
+export const TemplateCardComponent: React.FC<PropsIF> = ({
+    template,
+    onClickUpload,
+    isLoading = false,
+    refreshPage,
+    flexBasis,
+    exportTemplate,
+    onClickManualButton
+}) => {
     const toast = useToastStore();
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
@@ -65,7 +73,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     if (isLoading) {
         return (
             <div
-                className="relative flex h-40 max-w-100 min-w-75 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
+                className="relative flex h-45 max-w-100 min-w-75 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
                 style={cardStyle}
             >
                 {/* Title and Menu Row */}
@@ -157,7 +165,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({ template, onClickUplo
     return (
         <div
             // onClick={() => navigate(`/docsnap/template/view/${template._id}`)} // Uncomment to enable navigation on click based on tenant settings
-            className="relative flex h-40 max-w-100 min-w-85 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
+            className="relative flex h-45 max-w-100 min-w-85 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
             style={cardStyle}
         >
             {/* Title and Menu Row */}

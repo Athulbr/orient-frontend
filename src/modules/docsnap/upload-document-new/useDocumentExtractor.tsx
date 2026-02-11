@@ -41,9 +41,9 @@ export const useDocumentExtractor = () => {
                     formData.append('documentNumber', documentNumber);
                 }
 
-                const templateType = template?.settings?.templateType;
+                const module = template?.settings?.module;
 
-                const apiEndPoint = `${config.mlServiceNodejs}${templateType === 'invoice_tracking' ? '/invoice-tracking/extract-email' : templateType === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
+                const apiEndPoint = `${config.mlServiceNodejs}${module === 'invoice-tracking' ? '/invoice-tracking/extract-email' : module === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
 
                 const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
                 if (selectedTenant) {

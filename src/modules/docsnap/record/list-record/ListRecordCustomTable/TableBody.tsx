@@ -20,6 +20,8 @@ export const TableBody: React.FC = memo(() => {
         [user?.tenant?.name]
     );
 
+    const showBlogLink = useMemo(() => sessionStorage.getItem('module')?.toLowerCase() == 'content-creation', []);
+
     const handleRowSelect = useCallback(
         (row: any) => {
             setState(prev => {
@@ -76,7 +78,7 @@ export const TableBody: React.FC = memo(() => {
                                 <RecordStatusCustomUI data={row} />
                             </div>
                         </td>
-                        {showPolink && (
+                        {(showPolink || showBlogLink) && (
                             <td className="px-2 py-4 xl:px-5">
                                 <Polink data={row} />
                             </td>
