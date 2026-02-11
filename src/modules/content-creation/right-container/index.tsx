@@ -7,7 +7,7 @@ import Spinner from '../../../components/Spinner';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import { Pencil, Trash2, Check, X } from 'lucide-react';
 import { useToastStore } from '../../../components/toast/ToastStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function RightContainer({ htmlContent, setContent, name }: { htmlContent: string; setContent: (content: string) => void; name: string }) {
     const [input, setInput] = useState('');
@@ -17,6 +17,8 @@ export default function RightContainer({ htmlContent, setContent, name }: { html
     const { state, setState } = useContentCreationEditorState();
     const [editingKeywordIndex, setEditingKeywordIndex] = useState<number | null>(null);
     const [editedKeywordValue, setEditedKeywordValue] = useState('');
+    const { id } = useParams();
+
     const sendPrompt = async () => {
         setLoading(true);
 
@@ -107,7 +109,8 @@ ${htmlContent}
         const payload = {
             tenant_name: selectedTenantName,
             module: selectedModule,
-            blog: content
+            blog: content,
+            recordId: id
         };
         try {
             setState(prev => ({ ...prev, loadingData: true }));
