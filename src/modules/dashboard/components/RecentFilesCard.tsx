@@ -22,8 +22,10 @@ const RecentFilesCardComponent: React.FC<{ module: string }> = ({ module }) => {
         getRecordsApi();
     }, [refreshRecord, module]);
 
-    const showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
+    let showPoLink = String(user?.tenant?.name).toLowerCase() === 'rehabmart' ? true : false;
     const showBlogLink = module === 'content-creation' ? true : false;
+
+    showPoLink = showBlogLink ? false : showPoLink;
 
     const rowClickHandler = (row: any) => {
         if (module === 'document-generation') {
