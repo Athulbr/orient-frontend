@@ -33,7 +33,7 @@ const ProfileContent: React.FC<any> = ({ data }) => {
                             window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                             window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                             window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
-                            window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
+                            window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.user?.role));
                             window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
 
                             const resp = await Promise.all([

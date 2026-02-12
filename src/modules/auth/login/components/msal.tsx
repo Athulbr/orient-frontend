@@ -12,7 +12,7 @@ const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
     const loginWithMicrosoft = async () => {
         console.info('Login with Microsoft initiated');
         instance.loginRedirect(loginRequest).catch(e => {
-            console.error('Sign In issue---->', e);
+            console.error('MSAL Sign In issue---->', e);
         });
     };
 
