@@ -41,12 +41,21 @@ export const useUpdateTemplatePageApi = () => {
             setState(prev => ({ ...prev, updatingTemplate: true }));
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
             setState(prev => ({ ...prev, showCreateForm: false, id: '', updatingTemplate: false }));
+            
+            const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+            console.log('prevSelectedTenant:===========', prevSelectedTenant);
+            window?.sessionStorage?.removeItem('selectedTenant');
+
             const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                 pageSize: 1000,
                 custom: true,
                 filters: { deleted: false }
             });
             window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+
+            if (prevSelectedTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
+            }
             toast.success('Template created successfully');
             navigate('/docsnap/template/list');
             return true;
@@ -60,12 +69,20 @@ export const useUpdateTemplatePageApi = () => {
             setState(prev => ({ ...prev, updatingTemplate: true }));
             const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/template/update/${id}`, requestBody);
             setState(prev => ({ ...prev, id: '', showCreateForm: false, updatingTemplate: false }));
+
+            const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+            window?.sessionStorage?.removeItem('selectedTenant');
+
             const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                 pageSize: 1000,
                 custom: true,
                 filters: { deleted: false }
             });
             window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+
+            if (prevSelectedTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
+            }
             toast.success('Template updated successfully');
             if (reload) {
                 window.location.reload();

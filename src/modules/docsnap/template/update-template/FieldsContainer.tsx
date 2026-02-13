@@ -189,12 +189,53 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const handleCreateTemplate = (data: any) => {
         data.description = state.visionOcrText[0];
         if (create) {
+            const getFinalSettings = (formSettings?: any) => {
+                // Base defaults used for any missing fields
+                const defaultSettings = {
+                    primaryLLMProvider: 'azure',
+                    primaryLLMModel: 'gpt-4o-docsnap',
+                    secondaryLLMProvider: 'azure_openai',
+                    secondaryLLMModel: 'gpt-4o-docsnap',
+                    extractionEngine: 'node',
+                    ocrEngine: 'googleVisionApi',
+                    confidenceScore: 'ocr',
+                    confidenceThresholdInPercentage: '20',
+                    documentNumberKey: 'basic_details.po_number.value',
+                    documentDateKey: '',
+                    dynamicFileNameFirstKey: 'basic_details.po_number.value',
+                    dynamicFileNameLastKey: '',
+                    prefixRecordName: '',
+                    automationId: '1',
+                    extractionLimit: 0,
+                    module: sessionStorage.getItem('module') || 'docsnap',
+                    excludedPageNumbers: '',
+                    dynamicFileName: true,
+                    extractSingleDocument: true,
+                    includeImageForExtraction: true,
+                    enableInvoiceGenerator: false,
+                    enableChatWithDocument: true,
+                    enableOCR: true,
+                    requestNewField: true,
+                    reExtraction: true,
+                    alignmentCorrection: false,
+                    includeTextForExtraction: false,
+                    agenticExtraction: false,
+                    extractMultipleDocuments: false
+                };
+
+                const stateSettings = state.templateSettings && Object.keys(state.templateSettings || {}).length ? state.templateSettings : undefined;
+                const incoming = stateSettings ?? formSettings;
+                return incoming ? { ...defaultSettings, ...incoming } : defaultSettings;
+            };
+
+            // First prefer any settings the user has entered (from Template Settings Form);
+            // if none are provided, the defaults will be used for the API call.
+            const finalSettings = getFinalSettings(data?.settings);
+
             const requestBody = {
                 fields: state.sectionList,
                 s3FileName: fileName,
-                settings: {
-                    module: sessionStorage.getItem('module') || 'docsnap'
-                },
+                settings: finalSettings,
                 ...data
             };
             createTemplateApi(requestBody);

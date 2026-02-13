@@ -40,14 +40,23 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
 
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
-            try {
+                try {
                 const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
+
+                const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+                window?.sessionStorage?.removeItem('selectedTenant');
+
                 const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                     pageSize: 1000,
                     custom: true,
                     filters: { deleted: false }
                 });
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+
+                if (prevSelectedTenant) {
+                    window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
+                }
+
                 toast.success('Template deleted successfully');
                 window.location.reload();
                 return true;
