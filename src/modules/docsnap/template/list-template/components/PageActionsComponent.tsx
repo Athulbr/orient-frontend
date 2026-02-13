@@ -3,6 +3,7 @@ import { useTemplateState } from '../hooks/templateContext';
 import { Button } from '../../../../../components/Button';
 import { useListTemplatePageApi } from '../hooks/useTemplateApi';
 import { useEffect } from 'react';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 const PageActionsComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
@@ -13,9 +14,22 @@ const PageActionsComponent: React.FC = () => {
         // getTemplatesApi();
     }, [state.searchText]);
 
+    const toast = useToastStore();
+
     const handleCreateTemplate = () => {
-        setState({ ...state, showCreateTemplateDialog: true });
-        getPredefinedTemplatesApi();
+        const user = JSON.parse(sessionStorage.getItem('user') || '');
+        if (user?.role?.name === 'superadmin') {
+            const selectedTenant = sessionStorage.getItem('selectedTenant');
+            if (!selectedTenant) {
+                toast.error('Please select a tenant');
+                return;
+            }
+            setState({ ...state, showCreateTemplateDialog: true });
+            getPredefinedTemplatesApi();
+        } else {
+            setState({ ...state, showCreateTemplateDialog: true });
+            getPredefinedTemplatesApi();
+        }
     };
 
     const importTemplate = () => {
