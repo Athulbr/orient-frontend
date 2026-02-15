@@ -6,11 +6,15 @@ import EditableField from '../components/EditableField';
 import SummaryImageField from '../components/SummaryImageField';
 import KeywordsSection from '../components/KeywordsSection';
 import EditPromptDialog from '../components/EditPromptDialog';
+import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
+import Spinner from '../../../components/Spinner';
 
-export default function RightContainer({ htmlContent, record }: { htmlContent: string; record: Record<string, any> | null }) {
+export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
+    const { regenerateBlog } = useContentCreationApi(undefined);
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
+    const [isRegenerating, setIsRegenerating] = useState(false);
 
     const handleFieldSave = (field: string, value: string) => {
         setState(prev => ({ ...prev, [field]: value }));
@@ -40,7 +44,7 @@ export default function RightContainer({ htmlContent, record }: { htmlContent: s
     <title>Document</title>
 </head>
 <body>
-${htmlContent}
+${state.content}
 </body>
 </html>`;
 
@@ -55,9 +59,29 @@ ${htmlContent}
         URL.revokeObjectURL(url);
     };
 
+    const reGenerateContent = async () => {
+        if (!state.content) return;
+        setIsRegenerating(true);
+        try {
+            const res = await regenerateBlog({
+              keywords: state.keywords,
+                rowData: state.rowData,
+                extractionPrompt: state.extractionPrompt
+            });
+            if (res.data?.htmlContent) {
+                 setState(prev => ({ ...prev, content: res.data.htmlContent }));
+                 console.log('Regenerated content:', res.data.htmlContent);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsRegenerating(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col overflow-y-auto h-full min-h-0 px-4 gap-2">
-            <div className="p-2 sticky top-0 bg-white z-10 flex items-center justify-between border-b">
+        <div className="flex flex-col h-full min-h-0 gap-2 overflow-y-auto px-4">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-2">
                 <p className="text-xl font-semibold">Content Details</p>
                 <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
                     Edit Prompt
@@ -72,13 +96,22 @@ ${htmlContent}
                 <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} />
             )}
 
-            <div className="flex gap-2 justify-end sticky bottom-0 z-10 bg-white border-t py-4 px-2 mt-auto">
-                <Button disabled={!htmlContent} onClick={downloadHTML}>
+            <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
+                <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                    {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+                </Button>
+                <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
                 </Button>
             </div>
 
-            <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={record} />
+            <EditPromptDialog
+                isOpen={promptDialogOpen}
+                onClose={() => setPromptDialogOpen(false)}
+                record={state.record || null}
+            />
         </div>
     );
 }
+
+

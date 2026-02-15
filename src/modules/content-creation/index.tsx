@@ -19,14 +19,14 @@ const ContentCreationEditor: React.FC = () => {
 };
 
 function ContentCreationEditorInner({ id }: { id: string | undefined }) {
-    const { content, setContent, record } = useContentCreationApi(id);
+    useContentCreationApi(id);
 
     return (
         <div className="flex flex-1 overflow-y-auto absolute left-0 top-0 h-full w-full bg-white">
             <ResizableContainer
                 className="flex flex-1 overflow-y-auto"
-                left={<PreviewContainer content={content} setContent={setContent} name={record?.name} />}
-                right={<RightContainer htmlContent={content} record={record} />}
+                left={<PreviewContainer />}
+                right={<RightContainer />}
                 initialLeftWidthPercent={60}
                 minLeftWidthPercent={30}
                 maxLeftWidthPercent={75}

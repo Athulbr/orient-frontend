@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import Spinner from '../../../components/Spinner';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { usePromptApi } from '../../docsnap/template/update-template/hooks/usePromptApi';
-import httpRequest from '../../../global-utils/httpRequest';
-import { config } from '../../../config/default';
+import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 
 interface EditPromptDialogProps {
     isOpen: boolean;
@@ -17,30 +16,23 @@ interface EditPromptDialogProps {
 export default function EditPromptDialog({ isOpen, onClose, record }: EditPromptDialogProps) {
     const toast = useToastStore();
     const { generatePromptWithAI } = usePromptApi();
+    const { state, setState } = useContentCreationEditorState();
+    const extractionPrompt = state.extractionPrompt || '';
 
     const [promptText, setPromptText] = useState('');
-    const [loadingPrompt, setLoadingPrompt] = useState(false);
     const [copied, setCopied] = useState(false);
     const [aiInstruction, setAiInstruction] = useState('');
     const [generatingPrompt, setGeneratingPrompt] = useState(false);
 
-    const handleOpen = async () => {
-        const templateId = record?.templateId?._id;
-        if (!templateId) {
-            toast.error('No template associated with this record');
-            onClose();
-            return;
+    useEffect(() => {
+        if (isOpen) {
+            setPromptText(extractionPrompt);
         }
-        setLoadingPrompt(true);
-        try {
-            const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
-            setPromptText(res.data?.settings?.extractionPrompt || '');
-        } catch (error: any) {
-            toast.error(error?.message || 'Failed to fetch prompt');
-            onClose();
-        } finally {
-            setLoadingPrompt(false);
-        }
+    }, [isOpen]);
+
+    const handlePromptChange = (text: string) => {
+        setPromptText(text);
+        setState((prev) => ({ ...prev, extractionPrompt: text }));
     };
 
     const handleCopyPrompt = () => {
@@ -61,15 +53,10 @@ export default function EditPromptDialog({ isOpen, onClose, record }: EditPrompt
             fields: []
         });
         if (result) {
-            setPromptText(result);
+            handlePromptChange(result);
         }
         setGeneratingPrompt(false);
     };
-
-    // Fetch prompt when dialog opens
-    if (isOpen && !promptText && !loadingPrompt) {
-        handleOpen();
-    }
 
     return (
         <DialogComponent
@@ -85,19 +72,13 @@ export default function EditPromptDialog({ isOpen, onClose, record }: EditPrompt
         >
             <div className="flex h-full flex-1 gap-0 overflow-hidden p-4">
                 <div className="flex flex-1 flex-col">
-                    {loadingPrompt ? (
-                        <div className="flex flex-1 items-center justify-center">
-                            <Spinner size={24} />
-                        </div>
-                    ) : (
-                        <textarea
-                            value={promptText}
-                            onChange={e => setPromptText(e.target.value)}
-                            className="flex-1 resize-none p-5 font-mono text-sm leading-relaxed text-gray-800 outline-none placeholder:text-gray-400"
-                            placeholder="Write your extraction prompt here..."
-                            spellCheck={false}
-                        />
-                    )}
+                    <textarea
+                        value={promptText}
+                        onChange={e => handlePromptChange(e.target.value)}
+                        className="flex-1 resize-none p-5 font-mono text-sm leading-relaxed text-gray-800 outline-none placeholder:text-gray-400"
+                        placeholder="Write your extraction prompt here..."
+                        spellCheck={false}
+                    />
                 </div>
 
                 <div className="flex w-[30%] flex-col border-l bg-gray-50/50">
@@ -121,7 +102,7 @@ export default function EditPromptDialog({ isOpen, onClose, record }: EditPrompt
                                     }
                                 }}
                                 className="min-h-[160px] resize-none rounded-lg border border-gray-200 bg-white p-3.5 text-sm leading-relaxed text-gray-800 shadow-sm outline-none transition-all placeholder:text-gray-400 focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
-                                placeholder="e.g., Generate a prompt that extracts content with SEO optimization..."
+                                placeholder="User Query..."
                                 disabled={generatingPrompt}
                             />
                             <Button

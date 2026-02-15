@@ -5,25 +5,40 @@ import { useContentCreationEditorState } from './DocumentCreationEditorContext';
 
 export const useContentCreationApi = (id: string | undefined) => {
     const { setState } = useContentCreationEditorState();
-    const [content, setContent] = useState('');
-    const [record, setRecord] = useState<Record<string, any> | null>({});
 
     useEffect(() => {
         if (!id) return;
         const getRecord = async () => {
             const res = await httpRequest('GET', `${config.nodeApiUrl}/idp/history/${id}`);
-            setContent(res.data?.extractedData?.htmlContent);
-            setRecord(res.data);
+            const fetchedRecord = res.data;
+            const fetchedContent = fetchedRecord?.extractedData?.htmlContent || '';
+
+            let fetchedExtractionPrompt = '';
+            if (fetchedRecord?.templateId) {
+                const templateId = fetchedRecord.templateId._id;
+                const templateRes = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
+                fetchedExtractionPrompt = templateRes.data?.settings?.extractionPrompt || '';
+            }
+
             setState(prev => ({
                 ...prev,
-                name: res.data?.name || '',
-                author: res.data?.extractedData?.author || '',
-                primaryImageUrl: res.data?.extractedData?.primaryImageUrl || '',
-                ...(res.data?.keywords ? { keywords: res.data.keywords } : {})
+                name: fetchedRecord?.name || '',
+                author: fetchedRecord?.extractedData?.author || '',
+                rowData: fetchedRecord?.extractedData?.rowData || {},
+                primaryImageUrl: fetchedRecord?.extractedData?.primaryImageUrl || '',
+                ...(fetchedRecord?.keywords ? { keywords: fetchedRecord.keywords } : {}),
+                content: fetchedContent,
+                record: fetchedRecord,
+                extractionPrompt: fetchedExtractionPrompt
             }));
         };
         getRecord();
     }, [id]);
 
-    return { content, setContent, record };
+    const regenerateBlog = async (payload: { keywords?: any[]; rowData?: any; extractionPrompt?: string }) => {
+        const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/regenerate-blog`, payload);
+        return res;
+    };
+
+    return { regenerateBlog };
 };
