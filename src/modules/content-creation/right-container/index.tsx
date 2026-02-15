@@ -1,42 +1,33 @@
-import { Button } from '../../../components/Button';
-import { TextAreaComponent } from '../../../components/Textarea';
 import { useState } from 'react';
-import httpRequest from '../../../global-utils/httpRequest';
-import { config } from '../../../config/default';
-import Spinner from '../../../components/Spinner';
+import { Button } from '../../../components/Button';
+import { Pencil } from 'lucide-react';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
-import { Pencil, Trash2, Check, X } from 'lucide-react';
-import { useToastStore } from '../../../components/toast/ToastStore';
-import { useNavigate, useParams } from 'react-router-dom';
+import EditableField from '../components/EditableField';
+import SummaryImageField from '../components/SummaryImageField';
+import KeywordsSection from '../components/KeywordsSection';
+import EditPromptDialog from '../components/EditPromptDialog';
+import type { Keyword } from '../types';
 
-export default function RightContainer({
-    htmlContent,
-    setContent,
-    record
-}: {
-    htmlContent: string;
-    setContent: (content: string) => void;
-    record: Record<string, any> | null;
-}) {
-    const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(false);
-    const toast = useToastStore();
-    const navigate = useNavigate();
+export default function RightContainer({ htmlContent, record }: { htmlContent: string; record: Record<string, any> | null }) {
     const { state, setState } = useContentCreationEditorState();
-    const [editingKeywordIndex, setEditingKeywordIndex] = useState<number | null>(null);
-    const [editedKeywordValue, setEditedKeywordValue] = useState('');
-    const { id } = useParams();
+    const [promptDialogOpen, setPromptDialogOpen] = useState(false);
 
-    const sendPrompt = async () => {
-        setLoading(true);
+    const handleFieldSave = (field: string, value: string) => {
+        setState(prev => ({ ...prev, [field]: value }));
+    };
 
-        const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/edit-blog`, {
-            userQuery: input,
-            htmlContent: htmlContent
-        });
-        setContent(res.data?.htmlContent);
-        setInput('');
-        setLoading(false);
+    const handleToggleKeyword = (index: number) => {
+        if (!state.keywords) return;
+        const updatedKeywords = [...state.keywords];
+        updatedKeywords[index] = {
+            ...updatedKeywords[index],
+            selected: updatedKeywords[index].selected === false
+        };
+        setState(prev => ({ ...prev, keywords: updatedKeywords }));
+    };
+
+    const handleAddKeyword = (keyword: Keyword) => {
+        setState(prev => ({ ...prev, keywords: [...(prev.keywords || []), keyword] }));
     };
 
     const downloadHTML = () => {
@@ -64,167 +55,30 @@ ${htmlContent}
         URL.revokeObjectURL(url);
     };
 
-    const handleEditKeyword = (index: number) => {
-        setEditingKeywordIndex(index);
-        setEditedKeywordValue(state.keywords?.[index]?.keyword || '');
-    };
-
-    const handleSaveKeyword = (index: number) => {
-        if (!state.keywords) return;
-        const updatedKeywords = [...state.keywords];
-        updatedKeywords[index] = { ...updatedKeywords[index], keyword: editedKeywordValue };
-        setState({ ...state, keywords: updatedKeywords });
-        setEditingKeywordIndex(null);
-        setEditedKeywordValue('');
-    };
-
-    const handleCancelEdit = () => {
-        setEditingKeywordIndex(null);
-        setEditedKeywordValue('');
-    };
-
-    const handleDeleteKeyword = (index: number) => {
-        if (!state.keywords) return;
-        const updatedKeywords = state.keywords.filter((_, i) => i !== index);
-        setState({ ...state, keywords: updatedKeywords });
-    };
-
-    const handleOnSubmit = async () => {
-        const fullHTML = `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <meta name="description" content="Generated content">
-            <title>Document</title>
-        </head>
-        <body>
-        ${htmlContent}
-        </body>
-        </html>`;
-
-        const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
-        const selectedModule = window?.sessionStorage?.getItem('module') || '';
-
-        const content = {
-            title: name,
-            category: '',
-            summaryHTML: '',
-            summaryImagePath: '',
-            product_category: '',
-            html: fullHTML
-        };
-        const payload = {
-            tenant_name: selectedTenantName,
-            module: selectedModule,
-            blog: content,
-            recordId: id
-        };
-        try {
-            setState(prev => ({ ...prev, loadingData: true }));
-            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
-            toast.success('Record submitted successfully');
-            if (selectedModule === 'content-creation') navigate('/content-creation/record/list');
-        } catch (error: any) {
-            console.error('Error submitting content:', error);
-            toast.error(error?.message || 'Failed to submit blog content');
-        } finally {
-            setState(prev => ({ ...prev, loadingData: false }));
-        }
-    };
-    console.log('record:===========', record);
-
     return (
-        <div className=" flex flex-col overflow-y-auto flex-1 h-full p-4 pt-0 gap-2">
-            <div className="p-2">
+        <div className="flex flex-col overflow-y-auto h-full min-h-0 px-4 gap-2">
+            <div className="p-2 sticky top-0 bg-white z-10 flex items-center justify-between border-b">
                 <p className="text-xl font-semibold">Content Details</p>
+                <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
+                    Edit Prompt
+                </Button>
             </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Name</p>
-                {record?.name || 'N/A'}
-            </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Author</p>
-                {record?.extractedData?.author || 'N/A'}
-            </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Primary Image</p>
-                <img src={record?.extractedData?.primaryImageUrl || ''} alt="Primary Image" />
-            </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Primary Image URL</p>
-                <textarea className="w-full border p-2 rounded-md mt-2" disabled value={record?.extractedData?.primaryImageUrl || 'N/A'} />
-            </div>
+
+            <EditableField label="Name" value={state.name || ''} onSave={value => handleFieldSave('name', value)} />
+            <EditableField label="Author" value={state.author || ''} onSave={value => handleFieldSave('author', value)} />
+            <SummaryImageField imageUrl={state.primaryImageUrl || ''} onSave={url => handleFieldSave('primaryImageUrl', url)} />
+
             {state.keywords && state.keywords.length > 0 && (
-                <div className="mt-4 border-t pt-4">
-                    <p className="text-lg font-semibold mb-3">SEO friendly Keywords ( DataForSEO )</p>
-                    <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
-                        {state.keywords.map((keyword, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50">
-                                {editingKeywordIndex === index ? (
-                                    <>
-                                        <input
-                                            type="text"
-                                            value={editedKeywordValue}
-                                            onChange={e => setEditedKeywordValue(e.target.value)}
-                                            className="flex-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                                            autoFocus
-                                        />
-                                        <button
-                                            onClick={() => handleSaveKeyword(index)}
-                                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
-                                            title="Save"
-                                        >
-                                            <Check size={16} />
-                                        </button>
-                                        <button
-                                            onClick={handleCancelEdit}
-                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors cursor-pointer"
-                                            title="Cancel"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="flex-1">
-                                            <p className="text-sm">{keyword.keyword}</p>
-                                            <p className="text-xs text-gray-500">Source: {keyword.source}</p>
-                                        </div>
-                                        {/* <button
-                                            onClick={() => handleEditKeyword(index)}
-                                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
-                                            title="Edit"
-                                        >
-                                            <Pencil size={16} />
-                                        </button> */}
-                                        <button
-                                            onClick={() => handleDeleteKeyword(index)}
-                                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} />
             )}
 
-            {/* <TextAreaComponent rows={10} value={input} onChange={e => setInput(e.target.value)} />  */}
-            <div className="flex gap-2 justify-end">
-                {/* <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
-                    {loading ? 'Updating...' : 'Send'}
-                </Button> */}
+            <div className="flex gap-2 justify-end sticky bottom-0 z-10 bg-white border-t py-4 px-2 mt-auto">
                 <Button disabled={!htmlContent} onClick={downloadHTML}>
                     Download HTML
                 </Button>
-                {/* <Button disabled={!htmlContent} onClick={handleOnSubmit}>
-                    Submit
-                </Button> */}
             </div>
+
+            <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={record} />
         </div>
     );
 }

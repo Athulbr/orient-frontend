@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { ContentCreationEditorStateIF } from '..';
+import type { ContentCreationEditorStateIF } from '../types';
 
 const ContentCreationEditorContext = createContext<ContentCreationEditorContextIF | undefined>(undefined);
 export const ContentCreationEditorStateProvider = ContentCreationEditorContext.Provider;

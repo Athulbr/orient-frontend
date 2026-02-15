@@ -8,9 +8,7 @@ export default function PreviewContainer({ content, setContent, name }: { conten
                 <BackButton />
                 <p className="text-xl font-semibold">Content Preview: {name}</p>
             </div>
-            <RichTextEditor height="calc(100vh - 52px)" value={content} onChange={value => setContent(value)} />
+            <RichTextEditor height="calc(100vh - 56px)" value={content} onChange={value => setContent(value)} />
         </div>
     );
 }
-
-const aaaa = '';
