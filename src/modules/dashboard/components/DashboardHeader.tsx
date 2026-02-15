@@ -3,10 +3,25 @@ import { FC } from 'react';
 import { Button } from '../../../components/Button';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
+import { useToastStore } from '../../../components/toast/ToastStore';
 
 export const DashboardHeaderComponent: FC = () => {
     const { state, setState } = useDashboardState();
     const { user } = usePermissionStore();
+    const toast = useToastStore();
+
+    const handleCreateTemplateClick = () => {
+        if (user?.role?.name === 'superadmin') {
+            const selectedTenant = sessionStorage.getItem('selectedTenant');
+            if (!selectedTenant) {
+                toast.error('Please select a tenant');
+                return;
+            }
+            setState({ ...state, showCreateTemplateDialog: true });
+        } else {
+            setState({ ...state, showCreateTemplateDialog: true });
+        }
+    };
 
     return (
         <section className="flex w-full items-center justify-between gap-y-4 px-2">
@@ -16,7 +31,7 @@ export const DashboardHeaderComponent: FC = () => {
             <Button
                 permission="create:template"
                 startIcon={<Plus strokeWidth={1.5} size={18} />}
-                onClick={() => setState({ ...state, showCreateTemplateDialog: true })}
+                onClick={handleCreateTemplateClick}
             >
                 Create Template
             </Button>
