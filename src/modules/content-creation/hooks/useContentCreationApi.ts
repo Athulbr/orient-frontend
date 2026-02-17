@@ -40,5 +40,17 @@ export const useContentCreationApi = (id: string | undefined) => {
         return res;
     };
 
-    return { regenerateBlog };
+    const updateContentCreationPrompt = async (requestBody: {
+        userInstruction: string;
+        currentPrompt?: string;
+    }): Promise<string | null> => {
+        try {
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/update-prompt`, requestBody);
+            return res.data?.prompt;
+        } catch (error: any) {
+            return null;
+        }
+    };
+
+    return { regenerateBlog, updateContentCreationPrompt };
 };
