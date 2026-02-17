@@ -15,7 +15,8 @@ import {
     Settings,
     Trash2,
     X,
-    Code
+    Code,
+    FileText
 } from 'lucide-react';
 import { DragAndDropContainer } from '../../../../components/DragAndDropContainer';
 import { LightIconButton } from './components/ImageViewer';
@@ -41,10 +42,12 @@ import { convertTemplateFields } from './utils/convertTemplateFields';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
 import { TextField } from '../../../../components/TextField';
 import { DataRenderer } from './components/RenderTableOrKeyValuePairs';
+import { EditPromptDialog } from './components/EditPromptDialog';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
     const [showPostScriptDialog, setShowPostScriptDialog] = useState(false);
+    const [showEditPromptDialog, setShowEditPromptDialog] = useState(false);
     const [postScriptCode, setPostScriptCode] = useState('  // Write your code here\n  const result = "Hello World";\n  console.log(result);');
     const [postScriptOutput, setPostScriptOutput] = useState('');
     const [testExtractedData, setTestExtractedData] = useState<any>(null);
@@ -186,15 +189,57 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
         });
         setState(prev => ({ ...prev, sectionList }));
     };
+
+    const getFinalSettings = (formSettings?: any) => {
+        // Base defaults used for any missing fields
+        const defaultSettings = {
+            primaryLLMProvider: 'azure',
+            primaryLLMModel: 'gpt-4o-docsnap',
+            secondaryLLMProvider: 'azure_openai',
+            secondaryLLMModel: 'gpt-4o-docsnap',
+            extractionEngine: 'node',
+            ocrEngine: 'googleVisionApi',
+            confidenceScore: 'ocr',
+            confidenceThresholdInPercentage: '20',
+            documentNumberKey: 'basic_details.po_number.value',
+            documentDateKey: '',
+            dynamicFileNameFirstKey: 'basic_details.po_number.value',
+            dynamicFileNameLastKey: '',
+            prefixRecordName: '',
+            automationId: '1',
+            extractionLimit: 0,
+            module: sessionStorage.getItem('module') || 'docsnap',
+            excludedPageNumbers: '',
+            dynamicFileName: true,
+            extractSingleDocument: true,
+            includeImageForExtraction: true,
+            enableInvoiceGenerator: false,
+            enableChatWithDocument: true,
+            enableOCR: true,
+            requestNewField: true,
+            reExtraction: true,
+            alignmentCorrection: false,
+            includeTextForExtraction: false,
+            agenticExtraction: false,
+            extractMultipleDocuments: false
+        };
+
+        const stateSettings = state.templateSettings && Object.keys(state.templateSettings || {}).length ? state.templateSettings : undefined;
+        const incoming = stateSettings ?? formSettings;
+        return incoming ? { ...defaultSettings, ...incoming } : defaultSettings;
+    };
+
     const handleCreateTemplate = (data: any) => {
         data.description = state.visionOcrText[0];
         if (create) {
+            // First prefer any settings the user has entered (from Template Settings Form);
+            // if none are provided, the defaults will be used for the API call.
+            const finalSettings = getFinalSettings(data?.settings);
+
             const requestBody = {
                 fields: state.sectionList,
                 s3FileName: fileName,
-                settings: {
-                    module: sessionStorage.getItem('module') || 'docsnap'
-                },
+                settings: finalSettings,
                 ...data
             };
             createTemplateApi(requestBody);
@@ -298,6 +343,9 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
             <div className="flex h-[64px] w-full items-center justify-between border border-l-0 bg-gray-50 px-4 text-lg text-gray-800">
                 <div>Template Fields</div>
                 <div className="flex items-center gap-2">
+                    <Button startIcon={<FileText className="text-gray-500" size={16} />} outlined onClick={() => setShowEditPromptDialog(true)}>
+                        Prompt
+                    </Button>
                     <Button startIcon={<Code className="text-gray-500" size={16} />} outlined onClick={() => setShowPostScriptDialog(true)}>
                         Post Script
                     </Button>
@@ -309,7 +357,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                         Settings
                     </Button>
                     <Button outlined onClick={() => setState(prev => ({ ...prev, showCreateForm: true }))}>
-                        {create ? ' Create Template' : 'Update Template'} {state.updatingTemplate && <Spinner size={16} />}
+                        {create ? ' Create' : 'Update'} {state.updatingTemplate && <Spinner size={16} />}
                     </Button>
                 </div>
             </div>
@@ -455,6 +503,23 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                     </div>
                 </div>
             )}
+            <EditPromptDialog
+                isOpen={showEditPromptDialog}
+                closeDialog={() => setShowEditPromptDialog(false)}
+                onSave={promptText => {
+                    if (!id) return;
+                    const updatedSettings = { ...state.templateSettings, extractionPrompt: promptText };
+                    const requestBody = {
+                        fields: state.sectionList,
+                        settings: updatedSettings,
+                        s3FileName: fileName,
+                        name: state.templateData?.name,
+                        description: state.templateData?.description,
+                        active: state.templateData?.active
+                    };
+                    updateTemplateApi(id, requestBody, false);
+                }}
+            />
         </div>
     );
 };

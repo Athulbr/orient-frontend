@@ -1,42 +1,44 @@
-import { Button } from '../../../components/Button';
-import { TextAreaComponent } from '../../../components/Textarea';
 import { useState } from 'react';
-import httpRequest from '../../../global-utils/httpRequest';
-import { config } from '../../../config/default';
-import Spinner from '../../../components/Spinner';
+import { Button } from '../../../components/Button';
+import { Pencil } from 'lucide-react';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
-import { Pencil, Trash2, Check, X } from 'lucide-react';
-import { useToastStore } from '../../../components/toast/ToastStore';
+import EditableField from '../components/EditableField';
+import SummaryImageField from '../components/SummaryImageField';
+import KeywordsSection from '../components/KeywordsSection';
+import EditPromptDialog from '../components/EditPromptDialog';
+import { useContentCreationApi } from '../hooks/useContentCreationApi';
+import type { Keyword } from '../types';
+import Spinner from '../../../components/Spinner';
+import httpRequest from '../../../global-utils/httpRequest';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import { config } from '../../../config/default';
 
-export default function RightContainer({
-    htmlContent,
-    setContent,
-    record
-}: {
-    htmlContent: string;
-    setContent: (content: string) => void;
-    record: Record<string, any> | null;
-}) {
-    const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(false);
-    const toast = useToastStore();
-    const navigate = useNavigate();
+export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
-    const [editingKeywordIndex, setEditingKeywordIndex] = useState<number | null>(null);
-    const [editedKeywordValue, setEditedKeywordValue] = useState('');
+    const { regenerateBlog } = useContentCreationApi(undefined);
+    const [promptDialogOpen, setPromptDialogOpen] = useState(false);
+    const [isRegenerating, setIsRegenerating] = useState(false);
+    const toast = useToastStore();
     const { id } = useParams();
+    const navigate = useNavigate();
 
-    const sendPrompt = async () => {
-        setLoading(true);
+    const handleFieldSave = (field: string, value: string) => {
+        setState(prev => ({ ...prev, [field]: value }));
+    };
 
-        const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/edit-blog`, {
-            userQuery: input,
-            htmlContent: htmlContent
-        });
-        setContent(res.data?.htmlContent);
-        setInput('');
-        setLoading(false);
+    const handleToggleKeyword = (index: number) => {
+        if (!state.keywords) return;
+        const updatedKeywords = [...state.keywords];
+        updatedKeywords[index] = {
+            ...updatedKeywords[index],
+            selected: updatedKeywords[index].selected === false
+        };
+        setState(prev => ({ ...prev, keywords: updatedKeywords }));
+    };
+
+    const handleAddKeyword = (keyword: Keyword) => {
+        setState(prev => ({ ...prev, keywords: [...(prev.keywords || []), keyword] }));
     };
 
     const downloadHTML = () => {
@@ -49,7 +51,7 @@ export default function RightContainer({
     <title>Document</title>
 </head>
 <body>
-${htmlContent}
+${state.content}
 </body>
 </html>`;
 
@@ -64,31 +66,6 @@ ${htmlContent}
         URL.revokeObjectURL(url);
     };
 
-    const handleEditKeyword = (index: number) => {
-        setEditingKeywordIndex(index);
-        setEditedKeywordValue(state.keywords?.[index]?.keyword || '');
-    };
-
-    const handleSaveKeyword = (index: number) => {
-        if (!state.keywords) return;
-        const updatedKeywords = [...state.keywords];
-        updatedKeywords[index] = { ...updatedKeywords[index], keyword: editedKeywordValue };
-        setState({ ...state, keywords: updatedKeywords });
-        setEditingKeywordIndex(null);
-        setEditedKeywordValue('');
-    };
-
-    const handleCancelEdit = () => {
-        setEditingKeywordIndex(null);
-        setEditedKeywordValue('');
-    };
-
-    const handleDeleteKeyword = (index: number) => {
-        if (!state.keywords) return;
-        const updatedKeywords = state.keywords.filter((_, i) => i !== index);
-        setState({ ...state, keywords: updatedKeywords });
-    };
-
     const handleOnSubmit = async () => {
         const fullHTML = `<!DOCTYPE html>
         <html lang="en">
@@ -99,7 +76,7 @@ ${htmlContent}
             <title>Document</title>
         </head>
         <body>
-        ${htmlContent}
+        ${state.content}
         </body>
         </html>`;
 
@@ -107,13 +84,13 @@ ${htmlContent}
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
 
         const content = {
-            title: record?.name,
+            title: state.name,
             category: '',
             summaryHTML: '',
-            summaryImagePath: record?.extractedData?.primaryImageUrl,
+            summaryImagePath: state.primaryImageUrl,
             product_category: '',
             html: fullHTML,
-            author: record?.extractedData?.author || ''
+            author: state.author || ''
         };
         const payload = {
             tenant_name: selectedTenantName,
@@ -133,99 +110,57 @@ ${htmlContent}
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
-    console.log('record:===========', record);
+
+    const reGenerateContent = async () => {
+        if (!state.content) return;
+        setIsRegenerating(true);
+        try {
+            const res = await regenerateBlog({
+                keywords: state.keywords,
+                rowData: state.rowData,
+                extractionPrompt: state.extractionPrompt
+            });
+            if (res.data?.htmlContent) {
+                setState(prev => ({ ...prev, content: res.data.htmlContent }));
+                console.log('Regenerated content:', res.data.htmlContent);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsRegenerating(false);
+        }
+    };
 
     return (
-        <div className=" flex flex-col overflow-y-auto flex-1 h-full p-4 pt-0 gap-2">
-            <div className="p-2">
+        <div className="flex flex-col h-full min-h-0 gap-2 overflow-y-auto px-4">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-2">
                 <p className="text-xl font-semibold">Content Details</p>
+                <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
+                    Edit Prompt
+                </Button>
             </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Name</p>
-                {record?.name || 'N/A'}
-            </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Author</p>
-                {record?.extractedData?.author || 'N/A'}
-            </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Primary Image</p>
-                <img src={record?.extractedData?.primaryImageUrl || ''} alt="Primary Image" />
-            </div>
-            <div className="border-t pt-4">
-                <p className="text-lg font-semibold mb-2">Primary Image URL</p>
-                <textarea className="w-full border p-2 rounded-md mt-2" disabled value={record?.extractedData?.primaryImageUrl || 'N/A'} />
-            </div>
+
+            <EditableField label="Name" value={state.name || ''} onSave={value => handleFieldSave('name', value)} />
+            <EditableField label="Author" value={state.author || ''} onSave={value => handleFieldSave('author', value)} />
+            <SummaryImageField imageUrl={state.primaryImageUrl || ''} onSave={url => handleFieldSave('primaryImageUrl', url)} />
+
             {state.keywords && state.keywords.length > 0 && (
-                <div className="mt-4 border-t pt-4">
-                    <p className="text-lg font-semibold mb-3">SEO friendly Keywords ( DataForSEO )</p>
-                    <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
-                        {state.keywords.map((keyword, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50">
-                                {editingKeywordIndex === index ? (
-                                    <>
-                                        <input
-                                            type="text"
-                                            value={editedKeywordValue}
-                                            onChange={e => setEditedKeywordValue(e.target.value)}
-                                            className="flex-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                                            autoFocus
-                                        />
-                                        <button
-                                            onClick={() => handleSaveKeyword(index)}
-                                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
-                                            title="Save"
-                                        >
-                                            <Check size={16} />
-                                        </button>
-                                        <button
-                                            onClick={handleCancelEdit}
-                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors cursor-pointer"
-                                            title="Cancel"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="flex-1">
-                                            <p className="text-sm">{keyword.keyword}</p>
-                                            <p className="text-xs text-gray-500">Source: {keyword.source}</p>
-                                        </div>
-                                        {/* <button
-                                            onClick={() => handleEditKeyword(index)}
-                                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
-                                            title="Edit"
-                                        >
-                                            <Pencil size={16} />
-                                        </button> */}
-                                        <button
-                                            onClick={() => handleDeleteKeyword(index)}
-                                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} />
             )}
 
-            {/* <TextAreaComponent rows={10} value={input} onChange={e => setInput(e.target.value)} />  */}
-            <div className="flex gap-2 justify-end">
-                {/* <Button startIcon={loading ? <Spinner size={16} /> : null} disabled={input.trim() === '' || loading} onClick={sendPrompt}>
-                    {loading ? 'Updating...' : 'Send'}
-                </Button> */}
-                <Button disabled={!htmlContent} onClick={downloadHTML}>
+            <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
+                <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                    {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+                </Button>
+                <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
                 </Button>
-                <Button disabled={!htmlContent} onClick={handleOnSubmit}>
+                <Button disabled={!state.content} onClick={handleOnSubmit}>
                     Submit
                 </Button>
             </div>
+
+            <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={state.record || null} />
         </div>
     );
 }

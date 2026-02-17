@@ -40,6 +40,7 @@ export const useDocumentExtractor = () => {
                 if (documentNumber) {
                     formData.append('documentNumber', documentNumber);
                 }
+                formData.append('fromAddress', "frontend@makez.com");
 
                 const module = template?.settings?.module;
 
