@@ -1,7 +1,6 @@
 import {
     ChevronDown,
     ChevronUp,
-    Cog,
     Edit,
     Eye,
     EyeOff,
@@ -11,7 +10,6 @@ import {
     Plus,
     RefreshCw,
     Save,
-    ScanLine,
     Settings,
     Trash2,
     X,
@@ -33,14 +31,13 @@ import { useUpdateTemplatePageApi } from './hooks/useUpdateTemplateApi';
 import { capitalizeFirstLetter } from '../../../../builders/formbuilder/utils/functions/capitalizeFirstLetter';
 import { fileTypeFromBuffer } from 'file-type';
 import { useToastStore } from '../../../../components/toast/ToastStore';
-import { convertPdfToImages, formatFieldLabel } from '../../record/view-record/utils';
+import { convertPdfToImages } from '../../record/view-record/utils';
 import { binaryToFile } from '../../record/view-record/hooks/useViewRecordApi';
 import FullScreenLoader from '../../../../components/FullScreenLoader';
 import { useS3Storage } from '../../../../zustand-store/S3Storage';
 import Spinner from '../../../../components/Spinner';
 import { convertTemplateFields } from './utils/convertTemplateFields';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
-import { TextField } from '../../../../components/TextField';
 import { DataRenderer } from './components/RenderTableOrKeyValuePairs';
 import { EditPromptDialog } from './components/EditPromptDialog';
 
@@ -257,6 +254,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const submitSettingsHandler = (data: any) => {
         setState(prev => ({ ...prev, templateSettings: data, showTemplateSettingsForm: false }));
         if (!id) return;
+        data.extractionPrompt = state.templateSettings?.extractionPrompt;
         const requestBody = {
             fields: state.sectionList,
             settings: data,

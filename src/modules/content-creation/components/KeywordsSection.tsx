@@ -7,12 +7,15 @@ interface KeywordsSectionProps {
     keywords: Keyword[];
     onToggle: (index: number) => void;
     onAdd: (keyword: Keyword) => void;
+    onSelectAll: (selected: boolean) => void;
 }
 
-export default function KeywordsSection({ keywords, onToggle, onAdd }: KeywordsSectionProps) {
+export default function KeywordsSection({ keywords, onToggle, onAdd, onSelectAll }: KeywordsSectionProps) {
     const toast = useToastStore();
     const [showAddKeyword, setShowAddKeyword] = useState(false);
     const [newKeyword, setNewKeyword] = useState('');
+    
+    const allSelected = keywords.length > 0 && keywords.every(k => k.selected !== false);
 
     const handleAddKeyword = () => {
         const trimmed = newKeyword.trim();
@@ -81,6 +84,26 @@ export default function KeywordsSection({ keywords, onToggle, onAdd }: KeywordsS
                 </div>
             )}
             <div className="flex flex-col gap-1 max-h-96 overflow-y-auto">
+                {/* Select All Checkbox */}
+                <label className="flex items-center gap-3 p-2 w-40  rounded  cursor-pointer transition-colors ">
+                    <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={() => onSelectAll(!allSelected)}
+                        disabled={keywords.length === 0}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">
+                            {allSelected ? 'Deselect All' : 'Select All'}
+                        </p>
+                        {/* <p className="text-xs text-gray-500">
+                            {keywords.filter(k => k.selected !== false).length} of {keywords.length} keywords selected
+                        </p> */}
+                    </div>
+                </label>
+                
+                {/* Individual Keywords */}
                 {keywords.map((keyword, index) => (
                     <label key={index} className="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer transition-colors">
                         <input

@@ -13,36 +13,41 @@ interface EditPromptDialogIF {
 export const EditPromptDialog: React.FC<EditPromptDialogIF> = ({ isOpen, closeDialog, onSave }) => {
     const { state, setState } = useUpdateTemplateState();
 
-    const [prompt, setPrompt] = useState('');
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            setPrompt(state.templateSettings?.extractionPrompt || '');
+            setState(prev => ({
+                ...prev,
+                editingPrompt: state.templateSettings?.extractionPrompt || ''
+            }));
         }
     }, [isOpen]);
 
     const handleSave = () => {
         const updatedSettings = {
             ...state.templateSettings,
-            extractionPrompt: prompt
+            extractionPrompt: state.editingPrompt
         };
         setState(prev => ({
             ...prev,
             templateSettings: updatedSettings
         }));
-        onSave?.(prompt);
+        onSave?.(state.editingPrompt);
         closeDialog();
     };
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(prompt);
+        navigator.clipboard.writeText(state.editingPrompt);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleReset = () => {
-        setPrompt(state.templateSettings?.extractionPrompt || '');
+        setState(prev => ({
+            ...prev,
+            editingPrompt: state.templateSettings?.extractionPrompt || ''
+        }));
     };
 
     return (
@@ -60,7 +65,7 @@ export const EditPromptDialog: React.FC<EditPromptDialogIF> = ({ isOpen, closeDi
                                 outlined
                                 startIcon={copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                                 onClick={handleCopy}
-                                disabled={!prompt.trim()}
+                                disabled={!state.editingPrompt.trim()}
                             >
                                 {copied ? 'Copied' : 'Copy'}
                             </Button>
@@ -80,8 +85,8 @@ export const EditPromptDialog: React.FC<EditPromptDialogIF> = ({ isOpen, closeDi
                         </p>
                     </div>
                     <textarea
-                        value={prompt}
-                        onChange={e => setPrompt(e.target.value)}
+                        value={state.editingPrompt}
+                        onChange={e => setState(prev => ({ ...prev, editingPrompt: e.target.value }))}
                         className="flex-1 resize-none p-5 font-mono text-sm leading-relaxed text-gray-800 outline-none placeholder:text-gray-400"
                         placeholder={`Write your extraction prompt here...\n\nUse {{variableName}} to insert dynamic data. For example:\n\nExtract the following fields from the document:\n{{documentText}}\n\nUse this schema for extraction:\n{{schema}}\n\nEnsure all dates are in YYYY-MM-DD format.\nReturn null for missing fields.`}
                         spellCheck={false}
