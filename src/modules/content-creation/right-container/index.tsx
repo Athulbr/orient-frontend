@@ -9,12 +9,19 @@ import EditPromptDialog from '../components/EditPromptDialog';
 import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
 import Spinner from '../../../components/Spinner';
+import httpRequest from '../../../global-utils/httpRequest';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import { config } from '../../../config/default';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
     const { regenerateBlog } = useContentCreationApi(undefined);
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const toast = useToastStore();
+    const { id } = useParams();
+    const navigate = useNavigate();
 
     const handleFieldSave = (field: string, value: string) => {
         setState(prev => ({ ...prev, [field]: value }));
@@ -65,18 +72,63 @@ ${state.content}
         URL.revokeObjectURL(url);
     };
 
+    const handleOnSubmit = async () => {
+        const fullHTML = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="description" content="Generated content">
+            <title>Document</title>
+        </head>
+        <body>
+        ${state.content}
+        </body>
+        </html>`;
+
+        const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
+        const selectedModule = window?.sessionStorage?.getItem('module') || '';
+
+        const content = {
+            title: state.name,
+            category: '',
+            summaryHTML: '',
+            summaryImagePath: state.primaryImageUrl,
+            product_category: '',
+            html: fullHTML,
+            author: state.author || ''
+        };
+        const payload = {
+            tenant_name: selectedTenantName,
+            module: selectedModule,
+            blog: content,
+            recordId: id
+        };
+        try {
+            setState(prev => ({ ...prev, loadingData: true }));
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
+            toast.success('Record submitted successfully');
+            if (selectedModule === 'content-creation') navigate('/content-creation/record/list');
+        } catch (error: any) {
+            console.error('Error submitting content:', error);
+            toast.error(error?.message || 'Failed to submit blog content');
+        } finally {
+            setState(prev => ({ ...prev, loadingData: false }));
+        }
+    };
+
     const reGenerateContent = async () => {
         if (!state.content) return;
         setIsRegenerating(true);
         try {
             const res = await regenerateBlog({
-              keywords: state.keywords,
+                keywords: state.keywords,
                 rowData: state.rowData,
                 extractionPrompt: state.extractionPrompt
             });
             if (res.data?.htmlContent) {
-                 setState(prev => ({ ...prev, content: res.data.htmlContent }));
-                 console.log('Regenerated content:', res.data.htmlContent);
+                setState(prev => ({ ...prev, content: res.data.htmlContent }));
+                console.log('Regenerated content:', res.data.htmlContent);
             }
         } catch (e) {
             console.error(e);
@@ -109,15 +161,12 @@ ${state.content}
                 <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
                 </Button>
+                <Button disabled={!state.content} onClick={handleOnSubmit}>
+                    Submit
+                </Button>
             </div>
 
-            <EditPromptDialog
-                isOpen={promptDialogOpen}
-                onClose={() => setPromptDialogOpen(false)}
-                record={state.record || null}
-            />
+            <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={state.record || null} />
         </div>
     );
 }
-
-

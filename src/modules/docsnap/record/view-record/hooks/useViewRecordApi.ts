@@ -149,12 +149,12 @@ export const useViewRecordApi = () => {
         }
     };
 
-    const getFileAsBase64WithMime = async (fileKey: string): Promise<{ base64: string; mimeType: string } | null> => {
+    const getFileAsBase64 = async (fileKey: string): Promise<string | null> => {
         try {
             const s3Response: any = await getS3File(fileKey);
 
             if (!s3Response?.Body?.data) {
-                console.error('File not found or invalid response');
+                console.error("File not found or invalid response");
                 return null;
             }
 
@@ -163,24 +163,53 @@ export const useViewRecordApi = () => {
             const fileData = new Uint8Array(fileDataArray);
 
             // Encode to Base64
-            const base64String = btoa(fileData.reduce((data, byte) => data + String.fromCharCode(byte), ''));
+            const base64String = btoa(
+                fileData.reduce((data, byte) => data + String.fromCharCode(byte), "")
+            );
 
-            // Guess MIME type from file extension
-            const fileName = fileKey.split('/').pop()?.toLowerCase() || '';
-            let mimeType = 'application/octet-stream';
-
-            if (fileName.endsWith('.pdf')) mimeType = 'application/pdf';
-            else if (fileName.endsWith('.png')) mimeType = 'image/png';
-            else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) mimeType = 'image/jpeg';
-            else if (fileName.endsWith('.txt')) mimeType = 'text/plain';
-            else if (fileName.endsWith('.csv')) mimeType = 'text/csv';
-
-            return { base64: base64String, mimeType };
+            return base64String; // 👉 returns clean base64 string (no prefix)
         } catch (error) {
-            console.error('Error fetching/encoding file:', error);
+            console.error("Error fetching/encoding file:", error);
             return null;
         }
     };
+
+    const getFileAsBase64WithMime = async (fileKey: string): Promise<{ base64: string; mimeType: string } | null> => {
+        try {
+            const s3Response: any = await getS3File(fileKey);
+
+            if (!s3Response?.Body?.data) {
+                console.error("File not found or invalid response");
+                return null;
+            }
+
+            // Convert number array to Uint8Array
+            const fileDataArray = s3Response.Body.data;
+            const fileData = new Uint8Array(fileDataArray);
+
+            // Encode to Base64
+            const base64String = btoa(
+                fileData.reduce((data, byte) => data + String.fromCharCode(byte), "")
+            );
+
+            // Guess MIME type from file extension
+            const fileName = fileKey.split("/").pop()?.toLowerCase() || "";
+            let mimeType = "application/octet-stream";
+
+            if (fileName.endsWith(".pdf")) mimeType = "application/pdf";
+            else if (fileName.endsWith(".png")) mimeType = "image/png";
+            else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) mimeType = "image/jpeg";
+            else if (fileName.endsWith(".txt")) mimeType = "text/plain";
+            else if (fileName.endsWith(".csv")) mimeType = "text/csv";
+
+            return { base64: base64String, mimeType };
+        } catch (error) {
+            console.error("Error fetching/encoding file:", error);
+            return null;
+        }
+    };
+
+
 
     const submitRecordApi = async () => {
         try {

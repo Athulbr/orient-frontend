@@ -139,7 +139,7 @@ const ViewRecordPage: React.FC = () => {
     useBackButtonOverride('/docsnap/record/list');
     const module = sessionStorage.getItem('module');
 
-    const initialLeftWidthPercent = module === 'data-entry' || module === 'ppeDetection' ? 60 : 70;
+    const initialLeftWidthPercent = module === 'data-entry' || module === 'ppe-detection' ? 60 : 70;
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>

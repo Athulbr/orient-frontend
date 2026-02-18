@@ -17,11 +17,11 @@ export const useListTemplatePageApi = () => {
     const filterTemplatesByModule = (templates: any) => {
         const debug = window?.sessionStorage?.getItem('debug');
         const selectedModuleFromSessionStorage = window?.sessionStorage?.getItem('module') || 'docsnap';
-        return templates.filter((template: any) => template.settings?.module === selectedModuleFromSessionStorage || debug === 'true');
+        return templates.filter((template: any) => template?.settings?.module === selectedModuleFromSessionStorage);
     };
 
     const filterTemplatesBySearchText = (templates: any) => {
-        return templates.filter((template: any) => template.name.toLowerCase().includes(state.searchText.toLowerCase()));
+        return templates.filter((template: any) => template?.name?.toLowerCase().includes(state.searchText.toLowerCase()));
     };
 
     const sortTemplatesByRecentlyUsed = (templates: any) => {
@@ -44,7 +44,7 @@ export const useListTemplatePageApi = () => {
             const parsedTemplates = JSON.parse(sessionStorage.getItem('templates') || '[]');
             const filteredTemplatesByTenant = filterTemplatesByTenant(parsedTemplates);
             const filteredTemplatesByModule = filterTemplatesByModule(filteredTemplatesByTenant);
-            const filteredTemplatesBySearchText = filterTemplatesBySearchText(filteredTemplatesByModule);
+            const filteredTemplatesBySearchText = sessionStorage.getItem('debug') === 'true' ? filterTemplatesBySearchText(filteredTemplatesByTenant) : filterTemplatesBySearchText(filteredTemplatesByModule);
             const sortedTemplates = sortTemplatesByRecentlyUsed(filteredTemplatesBySearchText);
             setState(prev => ({ ...prev, loadingTemplates: false, templates: sortedTemplates }));
             return true;
@@ -107,21 +107,21 @@ export const useListTemplatePageApi = () => {
             setState(prev => ({ ...prev, importingTemplate: true }));
             const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
             setState(prev => ({ ...prev, showImportTemplateDialog: false, importingTemplate: false }));
-            
+
             // Bypass: Temporarily remove selectedTenant to fetch ALL templates
             window?.sessionStorage?.removeItem('selectedTenant');
-            
+
             const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
                 pageSize: 1000,
                 custom: true,
                 filters: { deleted: false }
             });
-            
+
             // Restore selectedTenant after fetching
             if (currentTenant) {
                 window?.sessionStorage?.setItem('selectedTenant', currentTenant);
             }
-            
+
             window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
             toast.success('Template created successfully');
             window.location.reload();
@@ -129,7 +129,7 @@ export const useListTemplatePageApi = () => {
         } catch (error) {
             console.error('error:===========', error);
             toast.error('Failed to create template');
-            
+
             // Restore selectedTenant in case of error
             if (currentTenant) {
                 window?.sessionStorage?.setItem('selectedTenant', currentTenant);
