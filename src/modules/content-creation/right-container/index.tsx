@@ -41,6 +41,12 @@ export default function RightContainer() {
         setState(prev => ({ ...prev, keywords: [...(prev.keywords || []), keyword] }));
     };
 
+    const handleSelectAll = (selected: boolean) => {
+        if (!state.keywords) return;
+        const updatedKeywords = state.keywords.map(k => ({ ...k, selected }));
+        setState(prev => ({ ...prev, keywords: updatedKeywords }));
+    };
+
     const downloadHTML = () => {
         const fullHTML = `<!DOCTYPE html>
 <html lang="en">
@@ -145,7 +151,7 @@ ${state.content}
             <SummaryImageField imageUrl={state.primaryImageUrl || ''} onSave={url => handleFieldSave('primaryImageUrl', url)} />
 
             {state.keywords && state.keywords.length > 0 && (
-                <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} />
+                <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} onSelectAll={handleSelectAll} />
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
