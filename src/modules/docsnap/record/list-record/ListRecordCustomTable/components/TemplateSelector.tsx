@@ -14,8 +14,8 @@ const TemplateSelector: React.FC<TemplateSelectorIF> = () => {
     const selectedTenant = sessionStorage.getItem('selectedTenant');
     const module = sessionStorage.getItem('module');
     const options: { label: string; value: string }[] = [];
-    templateList.map((template: any) => {
-        if (selectedTenant === template.tenantId || selectedTenant === 'all') {
+    templateList.forEach((template: any) => {
+        if (selectedTenant == null || selectedTenant === template.tenantId || selectedTenant === 'all') {
             if (module === template.settings?.module) {
                 // console.log('template:===========', template);
                 options.push({

@@ -16,9 +16,10 @@ interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
     showManualInputForm?: boolean;
+    setShowManualInputForm?: (value: boolean) => void;
 }
 
-export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template, showManualInputForm = false }) => {
+export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = ({ closeDialog, template, showManualInputForm = false, setShowManualInputForm }) => {
     const toast = useToastStore();
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
@@ -112,7 +113,10 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                 onSubmit={e => {
                     addToDocumentExtractor(latestTemplate, [], e);
                 }}
-                closeDialog={() => closeDialog()}
+                closeDialog={() => {
+                    closeDialog()
+                    setShowManualInputForm && setShowManualInputForm(false)
+                }}
             />
         );
     }

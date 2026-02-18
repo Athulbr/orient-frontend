@@ -53,7 +53,7 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             // Map filters to FilterItemIF structure
             const loadedFilters = (state.exportbuilder.filters || []).map((f: any) => ({
                 id: f.id || generateId(),
-                key: f.key || '',
+                key: f.name || f.key || '',
                 jsonPath: f.jsonPath,
                 options: f.options || [],
                 rawOptions: f.options ? (Array.isArray(f.options) ? f.options.join(',') : String(f.options)) : ''
@@ -83,6 +83,7 @@ export const CreateExportbuilderPage: React.FC<CreateExportbuilderIF> = () => {
             description: data?.description || '',
             sheets: sheets,
             filters: filters.map(f => ({
+                name : f.key,
                 jsonPath: f.jsonPath,
                 ...(f.options && f.options.length ? { options: f.options } : {})
             })),

@@ -177,7 +177,7 @@ export const FiltersBuilder: React.FC<FiltersBuilderProps> = ({ filters, setFilt
                                             >
                                             <div className="p-3 border-b border-gray-100 flex justify-between items-start bg-gray-50/50 rounded-t-xl">
                                                 <div className="flex-1">
-                                                    <label className="text-[10px] font-bold text-gray-400 uppercase">Filter Key</label>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase">Filter Name</label>
                                                     <input
                                                         value={filter.key}
                                                         onChange={e => updateFilter(filter.id, 'key', e.target.value)}
