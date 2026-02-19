@@ -5,7 +5,7 @@ import PageContainer from '../../../components/PageContainer';
 import PageNameComponent from '../../../components/PageName';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useToastStore } from '../../../components/toast/ToastStore';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { config } from '../../../config/default';
 
@@ -17,6 +17,9 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
     const navigate = useNavigate();
     const [refresh, setRefresh] = useState(1);
     const [refreshingCache, setRefreshingCache] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [importing, setImporting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const toast = useToastStore();
 
@@ -34,6 +37,45 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
         }
     };
 
+    const exportFormbuilder = async () => {
+        try {
+            setExporting(true);
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 });
+            const data = response?.data ?? response;
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `formbuilder-export-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to export formbuilder data');
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            setImporting(true);
+            const text = await file.text();
+            const data = JSON.parse(text);
+            await httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/bulk`, data);
+            toast.success('Formbuilder data imported successfully');
+            setRefresh(prev => prev + 1);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to import formbuilder data');
+        } finally {
+            setImporting(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     const actionButtons = [
         {
             label: 'Create Formbuilder',
@@ -45,6 +87,16 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
             label: refreshingCache ? 'Refreshing Cache...' : 'Refresh Cache',
             action: refreshCache,
             loading: refreshingCache
+        },
+        {
+            label: exporting ? 'Exporting...' : 'Export',
+            action: exportFormbuilder,
+            loading: exporting
+        },
+        {
+            label: importing ? 'Importing...' : 'Import',
+            action: () => fileInputRef.current?.click(),
+            loading: importing
         }
     ];
 
@@ -69,6 +121,7 @@ const ListFormbuilderPage: React.FC<ListFormbuilderPageIF> = () => {
     };
     return (
         <PageContainer className="gap-2">
+            <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileUpload} />
             <PageNameComponent name="Formbuilder List" />
             <UseTablebuilder
                 refresh={refresh}
