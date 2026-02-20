@@ -16,7 +16,7 @@ import { config } from '../../../config/default';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
-    const { regenerateBlog } = useContentCreationApi(undefined);
+    const { regenerateBlog, updateRecordApi } = useContentCreationApi();
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const toast = useToastStore();
@@ -71,6 +71,22 @@ ${state.content}
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
+
+    const handleOnSave=()=>{
+        const payload={
+            extractedData:{
+                name:state.name,
+                author:state.author,
+                rowData:state.rowData,
+                primaryImageUrl:state.primaryImageUrl,
+                keywords:state.keywords,
+                content:state.content,
+                record:state.record
+            }
+        }
+        updateRecordApi(payload)
+    
+    }
 
     const handleOnSubmit = async () => {
         const fullHTML = `<!DOCTYPE html>
@@ -160,6 +176,9 @@ ${state.content}
                 </Button>
                 <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
+                </Button>
+                <Button disabled={!state.content} onClick={handleOnSave}>
+                    Save
                 </Button>
                 <Button disabled={!state.content} onClick={handleOnSubmit}>
                     Submit
