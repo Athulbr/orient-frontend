@@ -129,6 +129,10 @@ ${state.content}
             tenant_name: selectedTenantName,
             module: selectedModule,
             blog: content,
+            extractedData: {
+                ...state.extractedData,
+                htmlContent: state.content
+            },
             recordId: id
         };
         try {
@@ -201,9 +205,9 @@ ${state.content}
                         placeholder="Enter Image URL"
                     />
                     {state.extractedData?.primaryImageUrl && (
-                        <img 
-                            src={state.extractedData.primaryImageUrl} 
-                            alt="Primary Image Preview" 
+                        <img
+                            src={state.extractedData.primaryImageUrl}
+                            alt="Primary Image Preview"
                             className="max-h-1w0 w-full object-contain rounded-md mt-2"
                         />
                     )}
