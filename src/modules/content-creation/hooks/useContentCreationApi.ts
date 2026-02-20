@@ -26,10 +26,13 @@ export const useContentCreationApi = () => {
 
             setState(prev => ({
                 ...prev,
-                name: fetchedRecord?.name || '',
-                author: fetchedRecord?.extractedData?.rowData?.author || '',
-                rowData: fetchedRecord?.extractedData?.rowData || {},
-                primaryImageUrl: fetchedRecord?.extractedData?.primaryImageUrl || '',
+                extractedData: {
+                    ...(fetchedRecord?.extractedData || {}),
+                    name: fetchedRecord?.name || '',
+                    author: fetchedRecord?.extractedData?.rowData?.author || '',
+                    primaryImageUrl: fetchedRecord?.extractedData?.primaryImageUrl || '',
+                    rowData: fetchedRecord?.extractedData?.rowData || {}
+                },
                 ...(fetchedRecord?.keywords ? { keywords: fetchedRecord.keywords } : {}),
                 content: fetchedContent,
                 record: fetchedRecord,
@@ -39,7 +42,7 @@ export const useContentCreationApi = () => {
         getRecord();
     }, [id]);
 
-    const regenerateBlog = async (payload: { keywords?: any[]; rowData?: any; extractionPrompt?: string }) => {
+    const regenerateBlog = async (payload: { keywords?: any[]; extractedData?: any; extractionPrompt?: string }) => {
         const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/regenerate-blog`, payload);
         return res;
     };

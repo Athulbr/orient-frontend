@@ -10,12 +10,17 @@ export interface Keyword {
     selected?: boolean;
 }
 
-export interface    ContentCreationEditorStateIF {
-    keywords?: Keyword[];
+export interface ExtractedDataIF {
     name?: string;
     author?: string;
     primaryImageUrl?: string;
     rowData?: Record<string, any>;
+    [key: string]: any;
+}
+
+export interface ContentCreationEditorStateIF {
+    keywords?: Keyword[];
+    extractedData?: ExtractedDataIF;
     content?: string;
     record?: Record<string, any> | null;
     extractionPrompt?: string; 
