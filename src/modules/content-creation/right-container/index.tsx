@@ -19,12 +19,23 @@ export default function RightContainer() {
     const { regenerateBlog, updateRecordApi } = useContentCreationApi();
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const toast = useToastStore();
     const { id } = useParams();
     const navigate = useNavigate();
 
     const handleFieldSave = (field: string, value: string) => {
-        setState(prev => ({ ...prev, [field]: value }));
+        setState(prev => {
+            const extractedData = { ...(prev.extractedData || {}) } as any;
+            extractedData[field] = value;
+            if (field === 'author') {
+                extractedData.rowData = { ...(extractedData.rowData || {}), author: value };
+            }
+            return {
+                ...prev,
+                extractedData
+            };
+        });
     };
 
     const handleToggleKeyword = (index: number) => {
@@ -72,21 +83,21 @@ ${state.content}
         URL.revokeObjectURL(url);
     };
 
-    const handleOnSave=()=>{
-        const payload={
-            extractedData:{
-                name:state.name,
-                author:state.author,
-                rowData:state.rowData,
-                primaryImageUrl:state.primaryImageUrl,
-                keywords:state.keywords,
-                content:state.content,
-                record:state.record
-            }
+    const handleOnSave = async () => {
+        setIsSaving(true);
+        try {
+            const payload = {
+                name: state.extractedData?.name,
+                extractedData: {
+                    ...state.extractedData,
+                    htmlContent: state.content
+                }
+            };
+            await updateRecordApi(payload);
+        } finally {
+            setIsSaving(false);
         }
-        updateRecordApi(payload)
-    
-    }
+    };
 
     const handleOnSubmit = async () => {
         const fullHTML = `<!DOCTYPE html>
@@ -106,13 +117,13 @@ ${state.content}
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
 
         const content = {
-            title: state.name,
+            title: state.extractedData?.name || '',
             category: '',
             summaryHTML: '',
-            summaryImagePath: state.primaryImageUrl,
+            summaryImagePath: state.extractedData?.primaryImageUrl || '',
             product_category: '',
             html: fullHTML,
-            author: state.author || ''
+            author: state.extractedData?.author || ''
         };
         const payload = {
             tenant_name: selectedTenantName,
@@ -139,7 +150,7 @@ ${state.content}
         try {
             const res = await regenerateBlog({
                 keywords: state.keywords,
-                rowData: state.rowData,
+                extractedData: state.extractedData,
                 extractionPrompt: state.extractionPrompt
             });
             if (res.data?.htmlContent) {
@@ -162,9 +173,42 @@ ${state.content}
                 </Button>
             </div>
 
-            <EditableField label="Name" value={state.name || ''} onSave={value => handleFieldSave('name', value)} />
-            <EditableField label="Author" value={state.author || ''} onSave={value => handleFieldSave('author', value)} />
-            <SummaryImageField imageUrl={state.primaryImageUrl || ''} onSave={url => handleFieldSave('primaryImageUrl', url)} />
+            <div className="flex flex-col gap-3 border-b pb-4 mb-2">
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">Name</label>
+                    <input
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        value={state.extractedData?.name || ''}
+                        onChange={e => handleFieldSave('name', e.target.value)}
+                        placeholder="Enter Name"
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">Author</label>
+                    <input
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        value={state.extractedData?.author || ''}
+                        onChange={e => handleFieldSave('author', e.target.value)}
+                        placeholder="Enter Author"
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">Primary Image URL</label>
+                    <input
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        value={state.extractedData?.primaryImageUrl || ''}
+                        onChange={e => handleFieldSave('primaryImageUrl', e.target.value)}
+                        placeholder="Enter Image URL"
+                    />
+                    {state.extractedData?.primaryImageUrl && (
+                        <img 
+                            src={state.extractedData.primaryImageUrl} 
+                            alt="Primary Image Preview" 
+                            className="max-h-1w0 w-full object-contain rounded-md mt-2"
+                        />
+                    )}
+                </div>
+            </div>
 
             {state.keywords && state.keywords.length > 0 && (
                 <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} onSelectAll={handleSelectAll} />
@@ -177,8 +221,8 @@ ${state.content}
                 <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
                 </Button>
-                <Button disabled={!state.content} onClick={handleOnSave}>
-                    Save
+                <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
+                    {isSaving ? 'Saving...' : 'Save'}
                 </Button>
                 <Button disabled={!state.content} onClick={handleOnSubmit}>
                     Submit
