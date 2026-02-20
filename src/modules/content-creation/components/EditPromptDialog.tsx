@@ -15,7 +15,7 @@ interface EditPromptDialogProps {
 
 export default function EditPromptDialog({ isOpen, onClose, record }: EditPromptDialogProps) {
     const toast = useToastStore();
-    const { updateContentCreationPrompt } = useContentCreationApi(record?._id);
+    const { updateContentCreationPrompt } = useContentCreationApi();
     const { state, setState } = useContentCreationEditorState();
     const extractionPrompt = state.extractionPrompt || '';
 
