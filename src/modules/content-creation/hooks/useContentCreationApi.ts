@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import httpRequest from '../../../global-utils/httpRequest';
 import { config } from '../../../config/default';
 import { useContentCreationEditorState } from './DocumentCreationEditorContext';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import { useParams } from 'react-router-dom';
 
-export const useContentCreationApi = (id: string | undefined) => {
+export const useContentCreationApi = () => {
     const { setState } = useContentCreationEditorState();
+    const toast=useToastStore()
+    const {id}=useParams()
 
     useEffect(() => {
         if (!id) return;
@@ -23,7 +27,7 @@ export const useContentCreationApi = (id: string | undefined) => {
             setState(prev => ({
                 ...prev,
                 name: fetchedRecord?.name || '',
-                author: fetchedRecord?.extractedData?.author || '',
+                author: fetchedRecord?.extractedData?.rowData?.author || '',
                 rowData: fetchedRecord?.extractedData?.rowData || {},
                 primaryImageUrl: fetchedRecord?.extractedData?.primaryImageUrl || '',
                 ...(fetchedRecord?.keywords ? { keywords: fetchedRecord.keywords } : {}),
@@ -52,5 +56,16 @@ export const useContentCreationApi = (id: string | undefined) => {
         }
     };
 
-    return { regenerateBlog, updateContentCreationPrompt };
+     const updateRecordApi = async (requestBody: any) => {
+        try {
+            const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/save/extraction/${id}`, requestBody);
+            toast.success('Record updated successfully');
+        } catch (error) {
+            toast.error('Failed to update record');
+        }
+    };
+
+    
+
+    return { regenerateBlog, updateContentCreationPrompt, updateRecordApi };
 };
