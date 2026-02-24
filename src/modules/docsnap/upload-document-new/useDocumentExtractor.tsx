@@ -287,7 +287,7 @@ export const useDocumentExtractor = () => {
 
         const addNameToQueue = (name: string) => {
             refreshExtractionQueue(name);
-            addToExtractionQueue(name);
+            addToExtractionQueue(name,{template,rowData});
         };
 
         if (template?.settings?.module === 'data-entry') {
