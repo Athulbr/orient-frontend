@@ -52,9 +52,16 @@ export const TableBody: React.FC = memo(() => {
         },
         [navigate]
     );
+
+    // Find the first extracted record index
+    const firstExtractedIndex = useMemo(() => {
+        return state.records?.findIndex((record: any) => record.status === 'extracted');
+    }, [state.records]);
+
     return (
         <tbody className="divide-y divide-gray-200 border-b-[1px] border-b-gray-200">
-            {state.records?.map((row: any) => {
+            {state.records?.map((row: any, idx: number) => {
+                const isFirstExtracted = idx === firstExtractedIndex && row.status === 'extracted';
                 return (
                     <tr key={row._id} onClick={() => rowClickHandler(row, state.records)}>
                         <td className="px-5 py-4 whitespace-nowrap">
@@ -75,7 +82,7 @@ export const TableBody: React.FC = memo(() => {
                         </td>
                         <td className="px-2 py-4 xl:px-5">
                             <div className={cn(rowStyle)}>
-                                <RecordStatusCustomUI data={row} />
+                                <RecordStatusCustomUI data={row} isFirstExtracted={isFirstExtracted} />
                             </div>
                         </td>
                         {(showPolink || showBlogLink) && (

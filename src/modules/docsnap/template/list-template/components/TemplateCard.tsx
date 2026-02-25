@@ -18,6 +18,7 @@ interface PropsIF {
     flexBasis?: string;
     exportTemplate?: (id: string) => void;
     onClickManualButton?: () => void;
+    isFirstCard?: boolean;
 }
 
 export const TemplateCardComponent: React.FC<PropsIF> = ({
@@ -27,7 +28,8 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     refreshPage,
     flexBasis,
     exportTemplate,
-    onClickManualButton
+    onClickManualButton,
+    isFirstCard = false
 }) => {
     const toast = useToastStore();
     const navigate = useNavigate();
@@ -176,6 +178,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             // onClick={() => navigate(`/docsnap/template/view/${template._id}`)} // Uncomment to enable navigation on click based on tenant settings
             className="relative flex h-45 max-w-100 min-w-85 flex-1 flex-col justify-between rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white px-3 py-4 transition"
             style={cardStyle}
+            data-tour-id={isFirstCard ? 'first-template-card' : undefined}
         >
             {/* Title and Menu Row */}
             <div className="mb-2.5 flex w-full items-start justify-between">
@@ -211,6 +214,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     startIcon={<Edit size={14} className="text-gray-500" />}
                     onClick={() => navigate(`/docsnap/template/update/${template._id}`)}
                     small
+                    data-tour-id="edit-fields-button"
                 >
                     Edit Fields
                 </Button>
@@ -229,6 +233,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     startIcon={module === 'document-generation' ? <Plus size={14} /> : <Upload size={14} />}
                     onClick={module === 'document-generation' ? () => setShowCreateDialog(true) : onClickUploadHandler}
                     small
+                    data-tour-id="upload-button"
                 >
                     {module === 'document-generation' ? 'Create' : 'Upload'}
                 </Button>

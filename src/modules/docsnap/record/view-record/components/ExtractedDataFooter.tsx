@@ -106,13 +106,13 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     return (
         <div className="flex items-center justify-end gap-2 border-t p-2">
             <Tooltip text="Skip to Next Document">
-                <Button disabled={reExtracting} small outlined onClick={skipToNextDocumentHandler}>
+                <Button data-tour-id="skip-next-document-button" disabled={reExtracting} small outlined onClick={skipToNextDocumentHandler}>
                     <SkipForward size={18} className="text-gray-500" />
                 </Button>
             </Tooltip>
             {state.templateSettings?.reExtraction && (
                 <Tooltip text="Re Extract">
-                    <Button disabled={reExtracting} onClick={handleReExtract} small outlined>
+                    <Button data-tour-id="re-extract-button" disabled={reExtracting} onClick={handleReExtract} small outlined>
                         <RefreshCw size={18} className={`text-gray-500 ${reExtracting ? 'animate-spin' : ''}`} />
                     </Button>
                 </Tooltip>
@@ -122,6 +122,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             </Button>
             <Tooltip text="Save Updated Data">
                 <Button
+                    data-tour-id="save-updated-data-button"
                     disabled={reExtracting}
                     onClick={async () => {
                         if (!validateRequiredFields()) return;
@@ -133,7 +134,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     Save
                 </Button>
             </Tooltip>
-            <Button disabled={reExtracting} onClick={handleSubmit} outlined small>
+            <Button data-tour-id="submit-button" disabled={reExtracting} onClick={handleSubmit} outlined small>
                 Submit
             </Button>
         </div>

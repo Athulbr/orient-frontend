@@ -82,6 +82,7 @@ export const ExportButton: FC<ExportButtonPropsIF> = ({ showExportButton = true 
         <Dropdown onChange={onChangeOption} options={['XLSX', 'JSON']}>
             {/* ISSUE:Button is preventing (e.preventDefault()) */}
             <button
+                data-tour-id="export-button"
                 disabled={state.reExtracting}
                 className={`${state.reExtracting ? 'text-gray-400' : 'text-gray-700'} rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-light hover:bg-gray-100`}
             >

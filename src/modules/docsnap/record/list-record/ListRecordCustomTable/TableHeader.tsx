@@ -3,6 +3,7 @@ import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 import { useExtractionStore } from '../../../../../zustand-store/extractionStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { useRecordViewTour } from '../../../../../inApp-Tour/useRecordViewTour';
 
 interface TableHeaderIF {}
 
@@ -11,6 +12,9 @@ export const TableHeader: FC<TableHeaderIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
     const { getRecordsApi } = useListRecordCustomTableApi();
     const { user, checkPermission } = usePermissionStore();
+    
+    // Get tour function
+    const startRecordViewTour = useRecordViewTour();
 
     const enablePolink = String(user?.tenant?.name).toLowerCase() == 'rehabmart' || sessionStorage.getItem('selectedTenantName')?.toLowerCase() == 'rehabmart';
     const enableBlogLink = sessionStorage.getItem('module')?.toLowerCase() == 'content-creation';
@@ -41,7 +45,10 @@ export const TableHeader: FC<TableHeaderIF> = () => {
     const selectedTemplatesStr = selectedTemplates.join(',');
 
     useEffect(() => {
-        getRecordsApi();
+        getRecordsApi().then(() => {
+            // console.log('✅ API call completed - Records fetched successfully');
+            startRecordViewTour();
+        });
     }, [refreshRecord, selectedStatusesStr, selectedTemplatesStr, selectedValidator, searchText, startDate, endDate, pageSize, page]);
 
     const onSelectAllRows = useCallback(
