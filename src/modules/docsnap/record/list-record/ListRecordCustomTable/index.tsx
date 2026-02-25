@@ -56,7 +56,7 @@ export const ListRecordCustomTable: React.FC<ListRecordCustomTableIF> = () => {
 
     return (
         <ListRecordCustomTableStateProvider value={{ state, setState }}>
-            <div className={`bg-background dark:bg-background-dark flex min-w-[770px] flex-1 flex-col overflow-y-auto`}>
+            <div className={`bg-background dark:bg-background-dark flex min-w-[770px] flex-1 flex-col overflow-y-auto`} data-tour-id="record-list-table">
                 <TableToolbar />
                 <div className="h-full overflow-y-auto rounded-lg border">
                     <TableLineLoader />

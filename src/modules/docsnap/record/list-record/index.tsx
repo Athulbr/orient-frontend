@@ -12,6 +12,7 @@ import ExcelExportDialogNew from './components/ExcelExportDialogNew';
 import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBuilder';
 import { ListRecordCustomTable } from './ListRecordCustomTable';
 import { PromptFieldIF } from '../../prompt-tuning/interface';
+import { useRecordListTour } from '../../../../inApp-Tour/useRecordListTour';
 interface Project {
     _id: string;
     name: string;
@@ -84,6 +85,9 @@ const ListRecordPage: React.FC = () => {
     const actionButtons = checkPermission('export:record:ardex');
 
     const [sheets, setSheets] = useState<ExcelSheetConfig[]>([{ id: generateId(), sheetName: 'Sheet 1', columns: [] }]);
+
+    // Initialize record list tour
+    useRecordListTour({ enabled: true });
 
     return (
         <ListRecordPageStateProvider value={{ state, setState }}>

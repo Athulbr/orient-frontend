@@ -51,6 +51,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                 top: position.y !== 0 ? `${position.y}px` : 'auto',
                 cursor: isDragging ? 'grabbing' : 'default'
             }}
+            data-tour-id="extraction-floating-window"
         >
             <div
                 className={cn('flex w-full items-center justify-between border-b p-4 text-lg font-semibold', 'cursor-grab active:cursor-grabbing select-none')}
@@ -102,6 +103,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                             e.preventDefault();
                             e.stopPropagation();
                         }}
+                        data-tour-id="extraction-close-button"
                     />
                 </div>
             </div>

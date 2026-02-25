@@ -18,6 +18,9 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
     // State to track field errors
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+    // Track if we've already rendered the first input field
+    let isFirstField = true;
+
     return (
         <>
             {Object.entries(state.objectFields).map(([key, valueMain]) => {
@@ -80,6 +83,12 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                     };
                                 }, [key, subKey]);
 
+                                // Check if this is the first field to render
+                                const currentIsFirstField = isFirstField;
+                                if (isFirstField) {
+                                    isFirstField = false;
+                                }
+
                                 return (
                                     <InputField
                                         key={fieldId}
@@ -93,6 +102,7 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                         checked={value?.checked}
                                         disabled={state.loadingS3File || state.reExtracting}
                                         errorMessage={fieldErrors[fieldId] || ''}
+                                        dataTourId={currentIsFirstField ? 'first-input-field' : undefined}
                                         checkClickHandler={(checked: boolean) => {
                                             setState(prev => ({
                                                 ...prev,

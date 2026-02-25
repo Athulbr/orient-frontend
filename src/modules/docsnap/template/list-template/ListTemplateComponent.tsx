@@ -2,10 +2,14 @@ import { useEffect } from 'react';
 import { useTemplateState } from './hooks/templateContext';
 import { useListTemplatePageApi } from './hooks/useTemplateApi';
 import { TemplateCardComponent } from './components/TemplateCard';
+import { useTemplateListTour } from '../../../../inApp-Tour/useTemplateListTour';
 
 const ListTemplateComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
     const { getTemplatesApi, getTemplateApi } = useListTemplatePageApi();
+
+    // Initialize template list tour
+    useTemplateListTour({ enabled: true });
 
     useEffect(() => {
         getTemplatesApi();
@@ -66,6 +70,7 @@ const ListTemplateComponent: React.FC = () => {
                     template={template}
                     refreshPage={() => setState({ ...state, refresh: state.refresh + 1 })}
                     exportTemplate={exportTemplate}
+                    isFirstCard={idx === 0}
                 />
             ))}
         </div>

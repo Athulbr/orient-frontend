@@ -2,6 +2,7 @@ import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFix
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
+import { useProductTour } from '../../../src/inApp-Tour/useProductTour';
 
 interface SidebarComponentIF {
     showSidebar?: boolean;
@@ -15,21 +16,24 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             icon: <FileCheck size={26} strokeWidth={2} className="text-white" />,
             path: '/docsnap',
             key: 'docsnap',
-            permission: 'docsnap:module'
+            permission: 'docsnap:module',
+            description: 'Capture and extract data from documents instantly. Upload documents and let AI process them for you.'
         },
         {
             name: 'Data Entry',
             icon: <FilePenLine size={26} strokeWidth={2} className="text-white" />,
             path: '/data-entry',
             key: 'data-entry',
-            permission: 'dataentry:module'
+            permission: 'dataentry:module',
+            description: 'Efficiently manage and input structured data with custom forms and validation.'
         },
         {
             name: 'Invoice Tracking',
             icon: <LocateFixed size={26} strokeWidth={2} className="text-white" />,
             path: '/invoice-tracking',
             key: 'invoice-tracking',
-            permission: 'invoiceTracking:module'
+            permission: 'invoiceTracking:module',
+            description: 'Track and monitor invoices, payment status, and manage your billing workflow.'
         },
         // {
         //     name: 'PPE Detection',
@@ -43,21 +47,24 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             icon: <AudioLines size={26} strokeWidth={2} className="text-white" />,
             path: '/transcription/record/list',
             key: 'transcription',
-            permission: 'transcript:module'
+            permission: 'transcript:module',
+            description: 'Convert audio and video recordings into accurate text transcriptions with AI.'
         },
         {
             name: 'SLD',
             icon: <CircuitBoard size={26} strokeWidth={2} className="text-white" />,
             path: '/sld',
             key: 'sld',
-            permission: 'sld:module'
+            permission: 'sld:module',
+            description: 'Create and manage Single Line Diagrams for electrical systems and circuits.'
         },
         {
             name: 'Document Generation',
             icon: <FileText size={26} strokeWidth={2} className="text-white" />,
             path: '/document-generation',
             key: 'document-generation',
-            permission: 'documentGeneration:module'
+            permission: 'documentGeneration:module',
+            description: 'Generate professional documents automatically from templates and data sources.'
         },
 
         {
@@ -65,7 +72,8 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             icon: <FileSpreadsheet size={26} strokeWidth={2} className="text-white" />,
             path: '/content-creation',
             key: 'content-creation',
-            permission: 'contentCreation:module'
+            permission: 'contentCreation:module',
+            description: 'Create and manage content with advanced tools for spreadsheets and data manipulation.'
         }
     ];
 
@@ -92,6 +100,16 @@ const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
     const module = sessionStorage.getItem('module');
 
     const navigate = useNavigate();
+
+    // Filter items based on permissions for the tour
+    const visibleItems = sidebarMenuItems.filter(item => checkRolePermission(item.permission));
+    
+    // Initialize product tour
+    useProductTour({
+        items: visibleItems,
+        enabled: true
+    });
+
     return (
         <div className={`hidden h-full min-w-16 max-w-16 pt-2 flex-col gap-2 bg-[#012D56] transition-all duration-300 ease-in-out md:flex`}>
             {sidebarMenuItems.map(item => {
@@ -105,6 +123,7 @@ const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
                             navigate(item.path);
                         }}
                         key={item.key}
+                        data-tour-id={item.key}
                         className={cn(
                             'group flex h-16 cursor-pointer hover:bg-blue-900 flex-col items-center justify-center rounded-md transition-all duration-200 relative',
                             isActive && 'bg-blue-900'
@@ -121,6 +140,7 @@ const DesktopSidebar: React.FC<DesktopSidebarIF> = ({ sidebarMenuItems }) => {
                 <div className={`flex flex-1 flex-col justify-end gap-4 pb-2 text-gray-400 items-center text-[10px]`}>
                     <div
                         onClick={() => navigate('/config/user/list')}
+                        data-tour-id="settings"
                         className={cn('group flex h-16 cursor-pointer flex-col items-center justify-center rounded-md transition-all duration-200 relative')}
                     >
                         <div className="min-h-8 ">

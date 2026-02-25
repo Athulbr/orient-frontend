@@ -22,6 +22,7 @@ interface InputFieldProps {
     showRegenButton?: boolean;
     validationUrl?: string;
     showTextarea?: boolean;
+    dataTourId?: string;
 }
 
 export const InputField = ({
@@ -40,6 +41,7 @@ export const InputField = ({
     showRegenButton,
     validationUrl,
     showTextarea,
+    dataTourId,
     ...props
 }: InputFieldProps) => {
     const [commentDialog, setCommentDialog] = useState(false);
@@ -68,7 +70,7 @@ export const InputField = ({
     };
 
     return (
-        <div className={`group relative w-full min-w-0 rounded-sm p-2 pt-1`} onClick={() => onMouseAction?.()}>
+        <div className={`group relative w-full min-w-0 rounded-sm p-2 pt-1`} data-tour-id={dataTourId} onClick={() => onMouseAction?.()}>
             {label && (
                 <label htmlFor={id} className="flex items-center justify-between pl-1 text-gray-900 group-hover:text-[#2563eb]">
                     {label}

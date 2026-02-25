@@ -21,6 +21,7 @@ export interface DialogPropsIF {
     loading?: boolean;
     additionalButtons?: { label: string; action: () => void }[];
     disableBlurCloseDialog?: boolean;
+    primaryButtonDataTourId?: string;
 }
 
 export const DialogComponent: React.FC<DialogPropsIF> = ({
@@ -37,7 +38,8 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
     fullScreen,
     loading,
     additionalButtons,
-    disableBlurCloseDialog = false
+    disableBlurCloseDialog = false,
+    primaryButtonDataTourId
 }) => {
     const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -144,7 +146,7 @@ export const DialogComponent: React.FC<DialogPropsIF> = ({
                             </Button>
                         ))}
                         {primaryButtonText && (
-                            <Button id="primary-button" onClick={handlePrimaryAction}>
+                            <Button id="primary-button" onClick={handlePrimaryAction} data-tour-id={primaryButtonDataTourId}>
                                 {primaryButtonText}
                             </Button>
                         )}

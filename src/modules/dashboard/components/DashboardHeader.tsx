@@ -32,6 +32,7 @@ export const DashboardHeaderComponent: FC = () => {
                 permission="create:template"
                 startIcon={<Plus strokeWidth={1.5} size={18} />}
                 onClick={handleCreateTemplateClick}
+                data-tour-id="create-template"
             >
                 Create Template
             </Button>
