@@ -28,7 +28,7 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             description: 'Efficiently manage and input structured data with custom forms and validation.'
         },
         {
-            name: 'Invoice Tracking',
+            name: 'Tracking ID',
             icon: <LocateFixed size={26} strokeWidth={2} className="text-white" />,
             path: '/invoice-tracking',
             key: 'invoice-tracking',

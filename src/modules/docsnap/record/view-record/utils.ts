@@ -22,7 +22,7 @@ export const convertPdfToImages = async (
         const pdf = await loadingTask.promise;
 
         const totalPages = pdf.numPages;
-        const maxPages = options?.maxPages || 15;
+        const maxPages = options?.maxPages || 5;
         const pagesToRender = Math.min(totalPages, maxPages);
 
         if (totalPages > maxPages) {

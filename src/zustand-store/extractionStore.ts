@@ -1,5 +1,11 @@
 import { create } from 'zustand';
 
+interface PayloadIF {
+    template?: any;
+    rowData?: any;
+    files?: File[];
+}
+
 interface ExtractionItem {
     fileName: string;
     status: 'completed' | 'failed' | 'processing';
@@ -7,6 +13,7 @@ interface ExtractionItem {
     abortController?: AbortController;
     step?: string;
     progress?: number;
+    payload?: PayloadIF;
 }
 
 interface ExtractionStoreIF {
@@ -14,7 +21,7 @@ interface ExtractionStoreIF {
     updateRefreshRecord: () => void;
 
     extractionQueue: ExtractionItem[];
-    addToExtractionQueue: (fileName: string) => void;
+    addToExtractionQueue: (fileName: string, payload?: PayloadIF) => void;
     updateExtractionQueue: (fileName: string, changes: Partial<ExtractionItem>) => void;
     clearExtractionQueue: () => void;
     refreshExtractionQueue: (fileName: string) => void;
@@ -42,14 +49,15 @@ export const useExtractionStore = create<ExtractionStoreIF>((set, get) => {
             }, 1000);
         },
 
-        addToExtractionQueue: (fileName: string) => {
+        addToExtractionQueue: (fileName: string, payload?: PayloadIF) => {
             set({
                 extractionQueue: [
                     ...get().extractionQueue,
                     {
                         fileName,
                         status: 'processing',
-                        time: 0
+                        time: 0,
+                        payload
                     }
                 ]
             });

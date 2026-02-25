@@ -65,7 +65,7 @@ const DashboardPage: React.FC<{ module: string }> = ({ module }) => {
             </div>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <UploadDocumentComponentNew showManualInputForm={state.showManualInputForm}  template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+                <UploadDocumentComponentNew setShowManualInputForm={(value) => setState({ ...state, showManualInputForm: false, showUploadDocumentDialog:false })} showManualInputForm={state.showManualInputForm}  template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
             )}
         </DashboardStateProvider>
     );

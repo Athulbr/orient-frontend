@@ -4,8 +4,8 @@ import { Button } from '../../../components/Button';
 import Spinner from '../../../components/Spinner';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { useToastStore } from '../../../components/toast/ToastStore';
-import { usePromptApi } from '../../docsnap/template/update-template/hooks/usePromptApi';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
+import { useContentCreationApi } from '../hooks/useContentCreationApi';
 
 interface EditPromptDialogProps {
     isOpen: boolean;
@@ -15,7 +15,7 @@ interface EditPromptDialogProps {
 
 export default function EditPromptDialog({ isOpen, onClose, record }: EditPromptDialogProps) {
     const toast = useToastStore();
-    const { generatePromptWithAI } = usePromptApi();
+    const { updateContentCreationPrompt } = useContentCreationApi();
     const { state, setState } = useContentCreationEditorState();
     const extractionPrompt = state.extractionPrompt || '';
 
@@ -47,15 +47,22 @@ export default function EditPromptDialog({ isOpen, onClose, record }: EditPrompt
             return;
         }
         setGeneratingPrompt(true);
-        const result = await generatePromptWithAI({
-            userInstruction: aiInstruction,
-            currentPrompt: promptText,
-            fields: []
-        });
-        if (result) {
-            handlePromptChange(result);
+        try {
+            const result = await updateContentCreationPrompt({
+                userInstruction: aiInstruction,
+                currentPrompt: promptText
+            });
+            if (result) {
+                handlePromptChange(result);
+                toast.success('Prompt generated successfully');
+            } else {
+                toast.error('Failed to generate prompt');
+            }
+        } catch (error) {
+            toast.error('Failed to generate prompt');
+        } finally {
+            setGeneratingPrompt(false);
         }
-        setGeneratingPrompt(false);
     };
 
     return (

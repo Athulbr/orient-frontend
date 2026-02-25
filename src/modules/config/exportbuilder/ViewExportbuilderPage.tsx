@@ -225,9 +225,10 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                 {/* Render filter selects from exportbuilder configuration */}
                 {state.exportbuilder?.filters &&
                     Array.isArray(state.exportbuilder.filters) &&
-                    state.exportbuilder.filters.map((filter: { jsonPath: string; javascript?: string; customLabel?: string }) => {
+                    state.exportbuilder.filters.map((filter: { jsonPath: string; javascript?: string; customLabel?: string; name?: string; key?: string }) => {
                                                 // Use full jsonPath as the option key, but keep last segment for labels
                                                 const path = filter.jsonPath || '';
+                                                const filterName = filter.name || filter.key || (path ? path.split('.').slice(-1)[0] : '');
                                                 const key = path ? path.split('.').slice(-1)[0] : '';
 
                                                 // Use stored dynamic options (updated on each fetch) and merge with initial cached options
@@ -244,7 +245,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                         const dynamicFiltered = dynamicOptionsStrings.filter(opt => !savedOptions.includes(opt));
 
                         const mergedOptions = [
-                            { label: `All ${key}`, value: '' },
+                            { label: `All ${filterName}`, value: '' },
                             ...(filter.javascript && filter.customLabel ? [{ label: filter.customLabel, value: '__custom_js__' }] : []),
                             ...savedOptions.map((opt: string) => ({ label: opt, value: opt })),
                             ...dynamicFiltered.map((opt: string) => ({ label: opt, value: opt }))
@@ -257,7 +258,7 @@ const ViewExportbuilderPage: React.FC<ViewExportbuilderPageIF> = () => {
                                     options={mergedOptions}
                                     // store selected filters using full jsonPath so API payloads use the full path
                                     value={selectedFilterValues[path] || ''}
-                                    placeholder={`Select ${key}`}
+                                    placeholder={`Select ${filterName}`}
                                     className="min-w-60"
                                     onValueChange={(value: string) => setSelectedFilterValues(prev => ({ ...prev, [path]: value }))}
                                 />

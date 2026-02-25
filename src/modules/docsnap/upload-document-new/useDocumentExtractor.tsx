@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
+import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
+import { useToastStore } from '../../../components/toast/ToastStore';
 
 export const useDocumentExtractor = () => {
     const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
     const navigate = useNavigate();
+    const toast = useToastStore();
 
     const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }) => {
         const sendApiRequestToNodeJsExtractor = async (file: File, template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
@@ -40,8 +43,6 @@ export const useDocumentExtractor = () => {
                 formData.append('fromAddress', "frontend@makez.com");
 
                 const module = template?.settings?.module;
-
-                console.log('module:===========', module);
 
                 const apiEndPoint = `${config.mlServiceNodejs}${module === 'invoice-tracking' ? '/invoice-tracking/extract-email' : module === 'sld' ? '/sld/extract' : '/docsnap/extract-document'}`;
 
@@ -116,7 +117,6 @@ export const useDocumentExtractor = () => {
                     body: formData,
                     signal: abortController.signal
                 });
-
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -287,7 +287,7 @@ export const useDocumentExtractor = () => {
 
         const addNameToQueue = (name: string) => {
             refreshExtractionQueue(name);
-            addToExtractionQueue(name);
+            addToExtractionQueue(name,{template,rowData});
         };
 
         if (template?.settings?.module === 'data-entry') {

@@ -26,7 +26,7 @@ export const TableHeader: FC<TableHeaderIF> = () => {
             { label: 'Status', visible: true },
             {
                 label: 'Polink',
-                visible: enablePolink
+                visible: enableBlogLink ? false : enablePolink
             },
             {
                 label: 'Blog Link',

@@ -9,15 +9,33 @@ import EditPromptDialog from '../components/EditPromptDialog';
 import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
 import Spinner from '../../../components/Spinner';
+import httpRequest from '../../../global-utils/httpRequest';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useToastStore } from '../../../components/toast/ToastStore';
+import { config } from '../../../config/default';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
-    const { regenerateBlog } = useContentCreationApi(undefined);
+    const { regenerateBlog, updateRecordApi } = useContentCreationApi();
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const toast = useToastStore();
+    const { id } = useParams();
+    const navigate = useNavigate();
 
     const handleFieldSave = (field: string, value: string) => {
-        setState(prev => ({ ...prev, [field]: value }));
+        setState(prev => {
+            const extractedData = { ...(prev.extractedData || {}) } as any;
+            extractedData[field] = value;
+            if (field === 'author') {
+                extractedData.rowData = { ...(extractedData.rowData || {}), author: value };
+            }
+            return {
+                ...prev,
+                extractedData
+            };
+        });
     };
 
     const handleToggleKeyword = (index: number) => {
@@ -32,6 +50,12 @@ export default function RightContainer() {
 
     const handleAddKeyword = (keyword: Keyword) => {
         setState(prev => ({ ...prev, keywords: [...(prev.keywords || []), keyword] }));
+    };
+
+    const handleSelectAll = (selected: boolean) => {
+        if (!state.keywords) return;
+        const updatedKeywords = state.keywords.map(k => ({ ...k, selected }));
+        setState(prev => ({ ...prev, keywords: updatedKeywords }));
     };
 
     const downloadHTML = () => {
@@ -59,18 +83,83 @@ ${state.content}
         URL.revokeObjectURL(url);
     };
 
+    const handleOnSave = async () => {
+        setIsSaving(true);
+        try {
+            const payload = {
+                name: state.extractedData?.name,
+                extractedData: {
+                    ...state.extractedData,
+                    htmlContent: state.content
+                }
+            };
+            await updateRecordApi(payload);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleOnSubmit = async () => {
+        const fullHTML = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="description" content="Generated content">
+            <title>Document</title>
+        </head>
+        <body>
+        ${state.content}
+        </body>
+        </html>`;
+
+        const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
+        const selectedModule = window?.sessionStorage?.getItem('module') || '';
+
+        const content = {
+            title: state.extractedData?.name || '',
+            category: '',
+            summaryHTML: '',
+            summaryImagePath: state.extractedData?.primaryImageUrl || '',
+            product_category: '',
+            html: fullHTML,
+            author: state.extractedData?.author || ''
+        };
+        const payload = {
+            tenant_name: selectedTenantName,
+            module: selectedModule,
+            blog: content,
+            extractedData: {
+                ...state.extractedData,
+                htmlContent: state.content
+            },
+            recordId: id
+        };
+        try {
+            setState(prev => ({ ...prev, loadingData: true }));
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
+            toast.success('Record submitted successfully');
+            if (selectedModule === 'content-creation') navigate('/content-creation/record/list');
+        } catch (error: any) {
+            console.error('Error submitting content:', error);
+            toast.error(error?.message || 'Failed to submit blog content');
+        } finally {
+            setState(prev => ({ ...prev, loadingData: false }));
+        }
+    };
+
     const reGenerateContent = async () => {
         if (!state.content) return;
         setIsRegenerating(true);
         try {
             const res = await regenerateBlog({
-              keywords: state.keywords,
-                rowData: state.rowData,
+                keywords: state.keywords,
+                extractedData: state.extractedData,
                 extractionPrompt: state.extractionPrompt
             });
             if (res.data?.htmlContent) {
-                 setState(prev => ({ ...prev, content: res.data.htmlContent }));
-                 console.log('Regenerated content:', res.data.htmlContent);
+                setState(prev => ({ ...prev, content: res.data.htmlContent }));
+                console.log('Regenerated content:', res.data.htmlContent);
             }
         } catch (e) {
             console.error(e);
@@ -88,12 +177,45 @@ ${state.content}
                 </Button>
             </div>
 
-            <EditableField label="Name" value={state.name || ''} onSave={value => handleFieldSave('name', value)} />
-            <EditableField label="Author" value={state.author || ''} onSave={value => handleFieldSave('author', value)} />
-            <SummaryImageField imageUrl={state.primaryImageUrl || ''} onSave={url => handleFieldSave('primaryImageUrl', url)} />
+            <div className="flex flex-col gap-3 border-b pb-4 mb-2">
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">Name</label>
+                    <input
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        value={state.extractedData?.name || ''}
+                        onChange={e => handleFieldSave('name', e.target.value)}
+                        placeholder="Enter Name"
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">Author</label>
+                    <input
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        value={state.extractedData?.author || ''}
+                        onChange={e => handleFieldSave('author', e.target.value)}
+                        placeholder="Enter Author"
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-700">Primary Image URL</label>
+                    <input
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        value={state.extractedData?.primaryImageUrl || ''}
+                        onChange={e => handleFieldSave('primaryImageUrl', e.target.value)}
+                        placeholder="Enter Image URL"
+                    />
+                    {state.extractedData?.primaryImageUrl && (
+                        <img
+                            src={state.extractedData.primaryImageUrl}
+                            alt="Primary Image Preview"
+                            className="max-h-1w0 w-full object-contain rounded-md mt-2"
+                        />
+                    )}
+                </div>
+            </div>
 
             {state.keywords && state.keywords.length > 0 && (
-                <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} />
+                <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} onSelectAll={handleSelectAll} />
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
@@ -103,15 +225,15 @@ ${state.content}
                 <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
                 </Button>
+                <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
+                    {isSaving ? 'Saving...' : 'Save'}
+                </Button>
+                <Button disabled={!state.content} onClick={handleOnSubmit}>
+                    Submit
+                </Button>
             </div>
 
-            <EditPromptDialog
-                isOpen={promptDialogOpen}
-                onClose={() => setPromptDialogOpen(false)}
-                record={state.record || null}
-            />
+            <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={state.record || null} />
         </div>
     );
 }
-
-

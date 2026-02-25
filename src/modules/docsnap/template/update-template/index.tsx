@@ -24,6 +24,7 @@ export interface UpdateTemplateStateIF {
     showTemplateSettingsForm: boolean;
     templateSettings: any;
     extractingSection: number;
+    editingPrompt: string;
 }
 const initialState: UpdateTemplateStateIF = {
     sectionList: [],
@@ -41,7 +42,8 @@ const initialState: UpdateTemplateStateIF = {
     showSettingsForm: false,
     showTemplateSettingsForm: false,
     templateSettings: null,
-    extractingSection: -1
+    extractingSection: -1,
+    editingPrompt: ''
 };
 
 const UpdateTemplatePage: React.FC<{ create?: boolean; settings?: boolean }> = ({ create, settings }) => {
