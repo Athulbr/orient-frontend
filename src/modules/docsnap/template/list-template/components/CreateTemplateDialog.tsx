@@ -107,6 +107,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             closeDialog={closeDialog}
             primaryButtonText={showFileUploadUI ? '' : state.loadingCreateTemplate ? 'Creating Template...' : 'Create Template'}
             onPrimaryAction={handleSubmit}
+            primaryButtonDataTourId="dialog-create-template-button"
         >
             <div className="h-full p-6">
                 {showFileUploadUI ? (
@@ -120,10 +121,11 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
                                 placeholder="Search templates..."
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
+                                data-tour-id="template-search"
                             />
                         </div>
 
-                        <div className="flex h-full w-full flex-wrap gap-4">
+                        <div className="flex h-full w-full flex-wrap gap-4" data-tour-id="template-list">
                             {state.predefinedTemplates
                                 .filter((template: any) => template.name.toLowerCase().includes(searchQuery.toLowerCase()))
                                 .map((template: any, idx: number) => (
@@ -134,6 +136,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
                                             setSelectedTemplate(template);
                                         }}
                                         className={`flex h-14 w-60 cursor-pointer items-center justify-between rounded-lg border p-3 text-sm ${selectedTemplateName === template.name ? 'border border-sky-500 bg-sky-50' : 'bg-white'}`}
+                                        data-tour-id={idx === 0 ? 'predefined-template-first' : undefined}
                                     >
                                         {template.name}
                                         <CircleChevronRight size={14} className="text-gray-500" />
@@ -145,6 +148,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
                                     setSelectedTemplateName('');
                                 }}
                                 className={`flex h-14 w-60 cursor-pointer items-center justify-between rounded-lg border p-3 text-sm ${selectedTemplateName === 'Custom' ? 'border border-sky-500 bg-sky-50' : 'bg-white'}`}
+                                data-tour-id="custom-template"
                             >
                                 Custom <CircleChevronRight size={14} className="text-gray-500" />
                             </div>
@@ -158,6 +162,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
                                 className={`min-h-10 flex-1 rounded-md border px-4 text-sm outline-none ${error ? 'border-red-500' : ''}`}
                                 value={selectedTemplateName}
                                 onChange={onChangeTemplateName}
+                                data-tour-id="template-name-input"
                             />
                             {error && <p className="pl-1 text-sm text-red-500">{error}</p>}
                         </div>

@@ -5,12 +5,15 @@ import { useExtractionStore } from '../../../zustand-store/extractionStore';
 import ProgressBar from '../../../components/ProgressBar';
 import { useDraggable } from './useDraggable';
 import Spinner from '../../../components/Spinner';
+import { Button } from '../../../components/Button';
+import { useDocumentExtractor } from './useDocumentExtractor';
 
 interface ExtractionFloatingWindowIF {
     test?: string;
 }
 
 const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => {
+        const { addToDocumentExtractor } = useDocumentExtractor();
     const { extractionQueue, clearExtractionQueue } = useExtractionStore();
     const [minimize, setMinimize] = useState(false);
 
@@ -18,7 +21,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
 
     if (!extractionQueue.length) return null;
 
-    const getStatusUI = (status: string) => {
+    const getStatusUI = (status: string) => { 
         switch (status) {
             case 'completed':
                 return <CheckCircle2 className="text-green-500" />;
@@ -40,6 +43,14 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
         );
     };
 
+    const handleRetry = (file: any) => {
+        // console.log(file);
+        if (file?.payload?.template?.settings?.module === 'data-entry') {
+             console.log(file);
+             addToDocumentExtractor(file?.payload?.template, [], file?.payload?.rowData);
+        }
+    };
+
     return (
         <div
             ref={ref}
@@ -51,6 +62,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                 top: position.y !== 0 ? `${position.y}px` : 'auto',
                 cursor: isDragging ? 'grabbing' : 'default'
             }}
+            data-tour-id="extraction-floating-window"
         >
             <div
                 className={cn('flex w-full items-center justify-between border-b p-4 text-lg font-semibold', 'cursor-grab active:cursor-grabbing select-none')}
@@ -102,6 +114,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                             e.preventDefault();
                             e.stopPropagation();
                         }}
+                        data-tour-id="extraction-close-button"
                     />
                 </div>
             </div>
@@ -123,6 +136,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                                     <span className="text-sm text-nowrap text-green-600">( {file.time}s )</span>
                                 </div>
                                 {getStatusUI(file.status)}
+                                {file.status === 'failed' && file?.payload?.template?.settings?.module === 'data-entry' && <Button small onClick={() => handleRetry(file)} >Retry</Button>}
                             </div>
                             {file.status === 'processing' && getProgressUI(file.step, file.progress)}
                         </div>

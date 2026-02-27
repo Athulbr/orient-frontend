@@ -13,6 +13,12 @@ export const ListTenantComponent: React.FC = () => {
             action: () => {
                 setState(prev => ({ ...prev, showCreateDialog: true }));
             }
+        },
+        {
+            label: 'Integrate API',
+            action: () => {
+                setState(prev => ({ ...prev, showIntegrateApiDialog: true }));
+            }
         }
     ];
 

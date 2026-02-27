@@ -6,10 +6,12 @@ import { ListTenantComponent } from './ListTenantComponent';
 import { DialogComponent } from '../../../components/DialogComponent';
 import CreateTenantComponent from './CreateTenantComponent';
 import { ViewTenantComponent } from './ViewTenantComponent';
+import { IntegrateApiDialog } from './IntegrateApiDialog';
 
 export interface TenantStateIF {
     showViewDialog: boolean;
     showCreateDialog: boolean;
+    showIntegrateApiDialog: boolean;
     loading: boolean;
     id: string;
     tenant: any | null;
@@ -19,6 +21,7 @@ export interface TenantStateIF {
 const initialState: TenantStateIF = {
     showViewDialog: false,
     showCreateDialog: false,
+    showIntegrateApiDialog: false,
     loading: false,
     id: '',
     tenant: null,
@@ -41,6 +44,7 @@ const ListTenantPage: React.FC = () => {
                 </PageContainer>
             )}
             <CreateTenantComponent />
+            <IntegrateApiDialog />
         </TenantStateProvider>
     );
 };
