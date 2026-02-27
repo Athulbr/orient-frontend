@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { driver, DriveStep, Config } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './useProductTour.css';
-import { getTourState, setTourState, resetTourState, isUserLoggedIn, setAllToursComplete } from './tourStorage';
+import { getTourState, setTourState, resetTourState, isUserLoggedIn, setAllToursComplete, isTourEnabled } from './tourStorage';
 
 interface UseRecordListTourProps {
     enabled?: boolean;
@@ -17,7 +17,7 @@ export const useRecordListTour = ({ enabled = true }: UseRecordListTourProps) =>
         const productTourShown = getTourState('productTourShown');
         const recordListTourShown = getTourState('recordListTourShown');
         
-        if (!enabled || recordListTourShown || hasShownTour.current || !productTourShown || !isUserLoggedIn()) {
+        if (!enabled || recordListTourShown || hasShownTour.current || !productTourShown || !isUserLoggedIn() || !isTourEnabled()) {
             return;
         }
 

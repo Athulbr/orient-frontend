@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { driver, DriveStep, Config } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './useProductTour.css';
-import { getTourState, setTourState, resetTourState, isUserLoggedIn, setAllToursComplete } from './tourStorage';
+import { getTourState, setTourState, resetTourState, isUserLoggedIn, setAllToursComplete, isTourEnabled } from './tourStorage';
 
 interface TourItem {
     name: string;
@@ -25,7 +25,7 @@ export const useProductTour = ({ items, enabled = true, onComplete, onSkip }: Us
         // Check if tour has been shown before (user-specific)
         const tourShown = getTourState('productTourShown');
         
-        if (!enabled || tourShown || hasShownTour.current || !isUserLoggedIn()) {
+        if (!enabled || tourShown || hasShownTour.current || !isUserLoggedIn() || !isTourEnabled()) {
             return;
         }
 
