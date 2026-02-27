@@ -269,7 +269,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
     const subSubKey = (state.hoveredFieldId?.split(':')[2] as string) || '';
     const label = (state.hoveredFieldId?.split(':')[3] as string) || '';
 
-    const demoChange = true;
+    const demoChange = false;
 
     return (
         <div className="flex h-full w-full flex-col">
