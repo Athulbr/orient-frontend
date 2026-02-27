@@ -2,11 +2,11 @@ import { useCallback } from 'react';
 import { driver, DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './useProductTour.css';
-import { getTourState, setTourState, isUserLoggedIn, setAllToursComplete } from './tourStorage';
+import { getTourState, setTourState, isUserLoggedIn, setAllToursComplete, isTourEnabled } from './tourStorage';
 
 export const useRecordViewTour = () => {
     const startTour = useCallback(() => {
-        if (!isUserLoggedIn()) {
+        if (!isUserLoggedIn() || !isTourEnabled()) {
             return;
         }
         
