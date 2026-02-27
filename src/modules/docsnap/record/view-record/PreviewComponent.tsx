@@ -269,6 +269,8 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
     const subSubKey = (state.hoveredFieldId?.split(':')[2] as string) || '';
     const label = (state.hoveredFieldId?.split(':')[3] as string) || '';
 
+    const demoChange = true;
+
     return (
         <div className="flex h-full w-full flex-col">
             <PreviewHeaderComponent
@@ -299,11 +301,11 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                             }}
                             key={index}
                         >
-                            {(state.reExtracting || !state.record?.extractedData || (state.generatingInvoice && state.tabIndex === 2)) && (
+                            {demoChange ? (state.reExtracting || !state.record?.extractedData || (state.generatingInvoice && state.tabIndex === 2)) && (
                                 <div className="absolute top-0 left-0 z-1000 flex h-full w-full items-center justify-center overflow-hidden border-3 border-sky-300 bg-[#1fa9f033]">
                                     <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
                                 </div>
-                            )}
+                            ) : ""}
                             <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
                             {/* ========================== Object Fields ========================== */}
                             {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
