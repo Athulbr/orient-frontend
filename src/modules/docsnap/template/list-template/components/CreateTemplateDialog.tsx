@@ -7,6 +7,7 @@ import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
 import { config } from '../../../../../config/default';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [selectedTemplateName, setSelectedTemplateName] = useState('');
@@ -16,6 +17,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [error, setError] = useState('');
     const [showFileUploadUI, setShowFileUploadUI] = useState(false);
     const selectedModule = sessionStorage.getItem('module');
+    const toast = useToastStore();
 
     useEffect(() => {
         const module = sessionStorage.getItem('module');
@@ -66,19 +68,25 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             }
         };
         setState({ ...state, loadingCreateTemplate: true });
-        const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
-        const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
-            pageSize: 1000,
-            custom: true,
-            filters: { deleted: false }
-        });
-        window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
-        if (state.isDashboard) {
+        try {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+            toast.success(res?.message || 'Template created successfully');
+            if (state.isDashboard) {
+                setState({ ...state, loadingCreateTemplate: false });
+                navigate('/docsnap/template/list');
+                return;
+            }
+            setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1, loadingCreateTemplate: false });
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to create template. Please try again.');
             setState({ ...state, loadingCreateTemplate: false });
-            navigate('/docsnap/template/list');
-            return;
         }
-        setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
     };
 
     const onChangeTemplateName = (e: any) => {
