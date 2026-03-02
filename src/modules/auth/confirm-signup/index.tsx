@@ -33,11 +33,14 @@ const ConfirmSignUpPage: React.FC = () => {
                 toast.success('Verification successful');
                 window?.location?.replace('/');
             } else {
-                toast.error('Verification failed. Please try again');
+                // show server-provided message when available
+                const message = res?.message || 'Verification failed. Please try again';
+                toast.error(message);
             }
         } catch (error) {
             console.error('error:===========', error);
-            toast.error('Verification failed. Please try again.');
+            const errMsg = (error as any)?.message || 'Verification failed. Please try again.';
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
