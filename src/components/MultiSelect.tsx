@@ -101,7 +101,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             {isOpen && (
-                <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg">
+                <div className="absolute z-50 mt-1 min-w-full w-max max-w-md overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg">
                     <ul className="max-h-60 overflow-auto py-1" role="listbox">
                         {options.map(option => {
                             const isSelected = values.includes(option.value);
