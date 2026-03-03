@@ -19,7 +19,7 @@ const StatusSelector: React.FC<StatusSelectorIF> = () => {
             .then((res: any) => {
                 if (Array.isArray(res?.data)) {
                     setStatusList(res.data.map((s: any) => ({
-                        label: s?.value || s?.key || (typeof s === 'string' ? s : ''),
+                        label: s?.label || s?.key || (typeof s === 'string' ? s : ''),
                         value: s?.key || s?.value || (typeof s === 'string' ? s : '')
                     })));
                 }
