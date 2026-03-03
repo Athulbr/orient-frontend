@@ -1,4 +1,5 @@
 import { Edit, FileText, FormInput, MoreVertical, Plus, Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { Button } from '../../../../../components/Button';
 import httpRequest from '../../../../../global-utils/httpRequest';
@@ -77,6 +78,36 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         if (option === 'Export') {
             exportTemplate && exportTemplate(template._id);
         }
+        if (option === 'Sample input') {
+            downloadSampleExcel();
+        }
+    };
+
+    const downloadSampleExcel = () => {
+        // --- File 1 ---
+        const headers1 = [
+            'name',
+            'description',
+            'primary_keyword',
+            'type_of_article',
+            'author',
+            'product_links',
+        ];
+
+        const sampleRow1 = [
+            '',
+            '',
+            '',
+            '',
+            '',
+            'links should be comma seperated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
+        ];
+
+        const worksheetData1 = [headers1, sampleRow1, Array(headers1.length).fill(''), Array(headers1.length).fill('')];
+        const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);
+        const workbook1 = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook1, worksheet1, 'Sample');
+        XLSX.writeFile(workbook1, 'sample_upload_template.xlsx');
     };
 
     const cardStyle = flexBasis ? { flexBasis, minWidth: 0 } : {};
@@ -184,7 +215,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             <div className="mb-2.5 flex w-full items-start justify-between">
                 <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
                 {checkPermission('delete:template') && (
-                    <Dropdown options={exportTemplate ? ['Delete', 'Export'] : ['Delete']} onChange={handleDropdownOptionChange}>
+                    <Dropdown options={[...(exportTemplate ? ['Export'] : []), 'Delete', ...(module === 'content-creation' ? ['Sample input'] : [])]} onChange={handleDropdownOptionChange}>
                         <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
                             <MoreVertical size={18} />
                         </button>
