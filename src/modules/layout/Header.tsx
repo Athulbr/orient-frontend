@@ -22,14 +22,29 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const navigate = useNavigate();
     const { instance } = useMsal();
     const isAuthenticated = useIsAuthenticated();
-    const [tenantList, setTenantList] = useState([]);
+    const [tenantList, setTenantList] = useState<any[]>([]);
     const { setPermissions } = usePermissionStore();
-    const [roleList, setRoleList] = useState([]);
+    const [roleList, setRoleList] = useState<any[]>([]);
     const { updateRefreshSidebar } = usePermissionStore();
     const selectedTenantFromSessionStorage = window?.sessionStorage?.getItem('selectedTenant') || '';
     const selectedRoleFromSessionStorage = JSON.parse(window?.sessionStorage?.getItem('role') || '{}');
 
     const user = JSON.parse(window?.sessionStorage.getItem(`${'user'}`) as string);
+    const recent: string[] = JSON.parse(localStorage.getItem('recentlyUsedTenant') || '[]');
+
+    // Return tenant dropdown options: 'All Tenants', recently used tenants, then others
+    const getTenantOptions = () => {
+        const baseOptions = [...tenantList];
+        try {
+            const recentOptions = recent
+                .map(id => baseOptions.find((o: any) => o.value === id))
+                .filter(Boolean) as any[];
+            const remaining = baseOptions.filter(o => !recent.includes(o.value));
+            return [{ label: 'All Tenants', value: 'all' }, ...recentOptions, ...remaining];
+        } catch (err) {
+            return [{ label: 'All Tenants', value: 'all' }, ...tenantList];
+        }
+    };
 
     useEffect(() => {
         if (user?.role?.name !== 'superadmin') return;
@@ -108,11 +123,18 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                                 className="min-w-40"
                                 value={selectedTenantFromSessionStorage}
                                 onValueChange={e => {
+                                    // Save selected tenant id to 'recentlyUsedTenant', newest first.so that it can be used to sort tenant options in the dropdown
+                                    if (e && e !== 'all') {
+                                        const cur: string[] = JSON.parse(localStorage.getItem('recentlyUsedTenant') || '[]');
+                                        const filtered = cur.filter(id => id !== e);
+                                        filtered.unshift(e);
+                                        localStorage.setItem('recentlyUsedTenant', JSON.stringify(filtered));
+                                    }
                                     sessionStorage.setItem('selectedTenant', e);
                                     window.location.reload();
                                 }}
                                 placeholder="Select Tenant"
-                                options={[{ label: 'All Tenants', value: 'all' }, ...tenantList]}
+                                options={getTenantOptions()}
                             />
 
                             <SingleSelect
