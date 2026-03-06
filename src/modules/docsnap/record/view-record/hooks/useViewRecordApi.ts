@@ -226,7 +226,7 @@ export const useViewRecordApi = () => {
                 name: state?.record?.name
             };
 
-            if (selectedModule !== 'data-entry') {
+            if (selectedModule !== 'data-entry' && selectedModule !== 'invoice-tracking') {
                 const fileData = await getFileAsBase64WithMime(state.record?.pdfFileName);
                 payload['fileBase64'] = fileData?.base64;
                 payload['fileMimeType'] = fileData?.mimeType;

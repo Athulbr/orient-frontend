@@ -64,7 +64,7 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
 
             if (response?.status === 404) {
                 clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
-                throw new Error(`Connection error, try again later`);
+                throw new Error(result.message);
             }
 
             if (response?.status === 504) {
