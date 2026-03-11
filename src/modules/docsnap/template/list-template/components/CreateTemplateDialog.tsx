@@ -30,14 +30,53 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const handleSubmit = async () => {
         if (showFileUploadUI) return;
 
-        const template = state.templates.find((template: any) => template.name === selectedTemplateName);
+        const templatesSearchList = state.templates || [];
+        const template = templatesSearchList.find((template: any) => template?.name?.toLowerCase() === selectedTemplateName.toLowerCase());
         if (template) {
             setError('Template name already exists, Please choose any other name');
             return;
         }
+        if (!selectedTemplateName.trim()) {
+            setError('Template name is required');
+            return;
+        }
+
+        const templateIdPayload = selectedModule === 'content-creation' ? {} : { templateId: selectedTemplate?._id };
+
+        const contentCreationFields = selectedModule === 'content-creation' ? {
+            fields: [
+                {
+                    name: 'Article Information',
+                    dataType: 'dict',
+                    jsonKey: 'article_information',
+                    excludeExtraction: false,
+                    description: 'article information',
+                    instruction: 'Extract bibliographic and publication metadata typically found in the article header or information panel. Look for structured publication details, author information, and article identifiers.',
+                    isHidden: false,
+                    subFields: [
+                        {
+                            name: 'Title',
+                            dataType: 'str',
+                            jsonKey: 'title',
+                            regenerateFieldValueWithAI: false,
+                            required: false,
+                            excludeExtraction: false,
+                            description: 'title',
+                            instruction: "Extract the main article title, usually displayed prominently at the top of the document. Look for the largest text element in the header section that describes the article's subject matter.",
+                            showTextarea: false,
+                            isHidden: false,
+                            _id: '696466e51b56e80591979ff7'
+                        }
+                    ],
+                    _id: '696466e51b56e80591979ff6'
+                }
+            ]
+        } : {};
+
         const requestBody = {
             name: selectedTemplateName,
-            templateId: selectedTemplate._id,
+            ...templateIdPayload,
+            ...contentCreationFields,
             settings: {
                 module: selectedModule || 'docsnap',
                 primaryLLMProvider: 'azure',
@@ -78,8 +117,10 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
             toast.success(res?.message || 'Template created successfully');
             if (state.isDashboard) {
-                setState({ ...state, loadingCreateTemplate: false });
-                navigate('/docsnap/template/list');
+                setState({ ...state, loadingCreateTemplate: false, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
+                if (selectedModule !== 'content-creation') {
+                    navigate('/docsnap/template/list');
+                }
                 return;
             }
             setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1, loadingCreateTemplate: false });
@@ -90,13 +131,21 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     };
 
     const onChangeTemplateName = (e: any) => {
-        const template = state.predefinedTemplates.find((template: any) => template.name === e.target.value);
-        if (template) {
+        const val = e.target.value;
+        let templateExists;
+        if (selectedModule === 'content-creation') {
+            const templatesSearchList = state.templates || [];
+            templateExists = templatesSearchList.find((template: any) => template?.name?.toLowerCase() === val.toLowerCase());
+        } else {
+            templateExists = state.predefinedTemplates?.find((template: any) => template.name === val);
+        }
+
+        if (templateExists) {
             setError('Template name already exists, Please choose any other name');
         } else {
             setError('');
         }
-        setSelectedTemplateName(e.target.value);
+        setSelectedTemplateName(val);
     };
 
     const closeDialog = () => {
@@ -109,17 +158,32 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     if (!state.showCreateTemplateDialog) return null;
     return (
         <DialogComponent
-            className="max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]"
+            className={selectedModule === 'content-creation' ? 'w-[450px]' : 'max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]'}
             name={showFileUploadUI ? 'Upload Document' : 'Create Template'}
             isOpen={state.showCreateTemplateDialog}
             closeDialog={closeDialog}
-            primaryButtonText={showFileUploadUI ? '' : state.loadingCreateTemplate ? 'Creating Template...' : 'Create Template'}
+            primaryButtonText={showFileUploadUI ? '' : state.loadingCreateTemplate ? 'Saving...' : 'Save'}
             onPrimaryAction={handleSubmit}
             primaryButtonDataTourId="dialog-create-template-button"
         >
-            <div className="h-full p-6">
+            <div className={selectedModule === 'content-creation' ? 'p-6 flex flex-col gap-1.5' : 'h-full p-6'}>
                 {showFileUploadUI ? (
                     <FileUploadUIComponent closeDialog={closeDialog} />
+                ) : selectedModule === 'content-creation' ? (
+                    <>
+                        <label className="pl-1 text-sm font-light text-gray-600" htmlFor="templateName">
+                            Template Name
+                        </label>
+                        <input
+                            name="templateName"
+                            className={`min-h-10 flex-1 rounded-md border border-gray-300 px-4 text-sm outline-none outline-0 focus:border-sky-500 ${error ? 'border-red-500 focus:border-red-500' : ''}`}
+                            value={selectedTemplateName}
+                            onChange={onChangeTemplateName}
+                            placeholder="Enter template name"
+                            autoFocus
+                        />
+                        {error && <p className="pl-1 text-sm text-red-500">{error}</p>}
+                    </>
                 ) : (
                     <div className="flex h-full flex-col gap-8">
                         <div className="flex w-full items-center rounded-md border pl-3">

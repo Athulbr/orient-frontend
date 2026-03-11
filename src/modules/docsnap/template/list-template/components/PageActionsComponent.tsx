@@ -4,9 +4,11 @@ import { Button } from '../../../../../components/Button';
 import { useListTemplatePageApi } from '../hooks/useTemplateApi';
 import { useEffect } from 'react';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 
 const PageActionsComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
+    const { checkPermission } = usePermissionStore();
     const { getPredefinedTemplatesApi, getTemplatesApi } = useListTemplatePageApi();
 
     useEffect(() => {
@@ -38,9 +40,10 @@ const PageActionsComponent: React.FC = () => {
 
     return (
         <div className="flex w-full justify-end gap-4">
-            <Button outlined onClick={importTemplate}>
+            {( checkPermission('export:template') && <Button outlined onClick={importTemplate}>
                 Import Template
             </Button>
+            )}
             <div className=" h-10 w-full max-w-100 flex-1 items-center rounded-md border px-3  hidden md:flex">
                 <Search className="text-gray-500" size={20} />
                 <input

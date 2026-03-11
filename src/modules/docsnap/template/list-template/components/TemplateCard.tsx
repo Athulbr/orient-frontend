@@ -11,6 +11,7 @@ import { usePermissionStore } from '../../../../../zustand-store/PermissionStore
 import { config } from '../../../../../config/default';
 import { useState } from 'react';
 import { UseFormbuilder } from '../../../../../builders/formbuilder/use-formbuilder';
+import { DialogComponent } from '../../../../../components/DialogComponent';
 interface PropsIF {
     template?: any;
     onClickUpload?: () => void;
@@ -38,6 +39,9 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     const { checkPermission } = usePermissionStore();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [creatingRecord, setCreatingRecord] = useState(false);
+    const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+    const [duplicateTemplateName, setDuplicateTemplateName] = useState('');
+    const [isDuplicating, setIsDuplicating] = useState(false);
 
     const module = sessionStorage.getItem('module');
 
@@ -60,8 +64,12 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
                 }
 
-                toast.success('Template deleted successfully');
-                window.location.reload();
+                toast.success(`Template deleted successfully`);
+                if (refreshPage) {
+                    refreshPage();
+                } else {
+                    window.location.reload();
+                }
                 return true;
             } catch (error) {
                 console.error('error:===========', error);
@@ -78,8 +86,79 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         if (option === 'Export') {
             exportTemplate && exportTemplate(template._id);
         }
+        if (option === 'Duplicate') {
+            setDuplicateTemplateName(`${template.name}-copy`);
+            setShowDuplicateDialog(true);
+        }
         if (option === 'Sample input') {
             downloadSampleExcel();
+        }
+    };
+
+    const duplicateTemplateApi = async () => {
+        if (!duplicateTemplateName.trim()) {
+            toast.error('Template name is required');
+            return;
+        }
+
+        const currentTenant = window?.sessionStorage?.getItem('selectedTenant');
+        try {
+            setIsDuplicating(true);
+            
+            // First fetch the full template details since the list item might not have fields
+            let fullTemplate = template;
+            try {
+                const fullTemplateRes: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
+                if (fullTemplateRes?.data) {
+                    fullTemplate = fullTemplateRes.data;
+                }
+            } catch (err) {
+                console.error('Failed to fetch full template details structure', err);
+            }
+            
+            const requestBody = {
+                name: duplicateTemplateName,
+                templateId: fullTemplate._id,
+                ...(fullTemplate.settings && { settings: fullTemplate.settings }),
+                ...(fullTemplate.fields && { fields: fullTemplate.fields }),
+                ...(fullTemplate.s3FileName && { s3FileName: fullTemplate.s3FileName })
+            };
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+
+            // Bypass: Temporarily remove selectedTenant to fetch ALL templates
+            window?.sessionStorage?.removeItem('selectedTenant');
+
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+
+            // Restore selectedTenant after fetching
+            if (currentTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', currentTenant);
+            }
+
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+            
+            toast.success('Template duplicated successfully');
+            setShowDuplicateDialog(false);
+            
+            if (refreshPage) {
+                refreshPage();
+            } else {
+                window.location.reload();
+            }
+        } catch (error: any) {
+            console.error('error:===========', error);
+            toast.error(error?.message || 'Failed to duplicate Template');
+
+            // Restore selectedTenant in case of error
+            if (currentTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', currentTenant);
+            }
+        } finally {
+            setIsDuplicating(false);
         }
     };
 
@@ -214,8 +293,16 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             {/* Title and Menu Row */}
             <div className="mb-2.5 flex w-full items-start justify-between">
                 <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
-                {checkPermission('delete:template') && (
-                    <Dropdown options={[...(exportTemplate ? ['Export'] : []), 'Delete', ...(module === 'content-creation' ? ['Sample input'] : [])]} onChange={handleDropdownOptionChange}>
+                {(checkPermission('delete:template') || checkPermission('export:template') || checkPermission('duplicate:template') || module === 'content-creation') && (
+                    <Dropdown
+                        options={[
+                            ...(exportTemplate && checkPermission('export:template') ? ['Export'] : []),
+                            ...(checkPermission('duplicate:template') ? ['Duplicate'] : []),
+                            ...(checkPermission('delete:template') ? ['Delete'] : []),
+                            ...(module === 'content-creation' ? ['Sample input'] : [])
+                        ]}
+                        onChange={handleDropdownOptionChange}
+                    >
                         <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
                             <MoreVertical size={18} />
                         </button>
@@ -257,7 +344,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     small
                     hidden={module !== 'content-creation'}
                 >
-                    Manual Input
+                    Create
                 </Button>
                 <Button
                     permission="extract:document"
@@ -277,6 +364,29 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     loadingPrimaryButton={creatingRecord}
                 />
             )}
+
+            <DialogComponent
+                isOpen={showDuplicateDialog}
+                closeDialog={() => setShowDuplicateDialog(false)}
+                name="Duplicate Template"
+                primaryButtonText={isDuplicating ? 'Duplicating...' : 'Duplicate'}
+                onPrimaryAction={duplicateTemplateApi}
+                className="w-[450px]"
+            >
+                <div className="flex flex-col gap-1.5 p-6">
+                    <label className="pl-1 text-sm font-light text-gray-600" htmlFor="duplicateTemplateName">
+                        New Template Name
+                    </label>
+                    <input
+                        name="duplicateTemplateName"
+                        className="min-h-10 flex-1 rounded-md border border-gray-300 px-4 text-sm outline-none outline-0 focus:border-sky-500"
+                        value={duplicateTemplateName}
+                        onChange={e => setDuplicateTemplateName(e.target.value)}
+                        placeholder="Enter new template name"
+                        autoFocus
+                    />
+                </div>
+            </DialogComponent>
         </div>
     );
 };
