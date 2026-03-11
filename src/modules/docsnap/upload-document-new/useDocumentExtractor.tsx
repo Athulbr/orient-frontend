@@ -9,14 +9,15 @@ export const useDocumentExtractor = () => {
     const toast = useToastStore();
 
     const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }) => {
-        const sendApiRequestToNodeJsExtractor = async (file: File, template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
+        const sendApiRequestToNodeJsExtractor = async (file: File | File[], template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
             let timer: NodeJS.Timeout | null = null;
+            const fileName = Array.isArray(file) ? (documentNumber || `Batch of ${file.length} Files`) : file.name;
 
             try {
                 const abortController = new AbortController();
-                timer = startTimer(file.name);
+                timer = startTimer(fileName);
 
-                updateExtractionQueue(file.name, {
+                updateExtractionQueue(fileName, {
                     status: 'processing',
                     time: 0,
                     abortController,
@@ -30,7 +31,13 @@ export const useDocumentExtractor = () => {
                 // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
                 formData.append('template', JSON.stringify(template)); // For only SLD module
-                if (file.size > 0) {
+                if (Array.isArray(file)) {
+                    file.forEach((f) => {
+                        if (f.size > 0) {
+                            formData.append('file', f);
+                        }
+                    });
+                } else if (file && file.size > 0) {
                     formData.append('file', file);
                 }
                 if (s3ImageNames && s3ImageNames.length > 0) {
@@ -67,7 +74,7 @@ export const useDocumentExtractor = () => {
                 }
 
                 const reader = response.body.getReader();
-                await processStream(reader, file.name, timer);
+                await processStream(reader, fileName, timer);
             } catch (error) {
                 console.error('API request error:', error);
 
@@ -80,7 +87,7 @@ export const useDocumentExtractor = () => {
                     console.error('Request was aborted');
                 }
 
-                updateExtractionQueue(file.name, { status: 'failed' });
+                updateExtractionQueue(fileName, { status: 'failed' });
             }
         };
         const sendApiRequestToPythonExtractor = async (file: File, template: any) => {
@@ -392,9 +399,15 @@ export const useDocumentExtractor = () => {
                     navigate('/docsnap/record/list');
                     return;
                 }
-                for (const file of Array.from(files)) {
-                    addNameToQueue(file.name);
-                    sendApiRequestToNodeJsExtractor(file, template);
+                if (template?.settings?.sendAllFilesAtOnce) {
+                    const fileName = segregatedDoc?.documentNumber || `Batch of ${files.length} Files`;
+                    addNameToQueue(fileName);
+                    sendApiRequestToNodeJsExtractor(files, template, segregatedDoc?.s3ImageNames || [], fileName);
+                } else {
+                    for (const file of Array.from(files)) {
+                        addNameToQueue(file.name);
+                        sendApiRequestToNodeJsExtractor(file, template);
+                    }
                 }
             } else if (template?.settings?.extractionEngine === 'python') {
                 for (const file of Array.from(files)) {
