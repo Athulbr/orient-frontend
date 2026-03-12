@@ -431,6 +431,21 @@ const PromptDialog = ({ isOpen, closeDialog, template, refreshPage }: { isOpen: 
         };
         try {
             await httpRequest('PATCH', `${config.nodeApiUrl}/idp/template/update/${template._id}`, requestBody);
+            
+            const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+            window?.sessionStorage?.removeItem('selectedTenant');
+
+            const resp: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+
+            if (prevSelectedTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
+            }
+
             toast.success('Prompt updated successfully');
             closeDialog();
             if (refreshPage) {
