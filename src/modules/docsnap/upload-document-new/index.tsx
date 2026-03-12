@@ -160,7 +160,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                 {module === 'content-creation' && (
                     <div className="flex w-full justify-end mb-4">
                         <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
-                            Sample input
+                            Sample Input File
                         </Button>
                     </div>
                 )}
