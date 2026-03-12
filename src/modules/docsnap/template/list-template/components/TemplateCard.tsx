@@ -169,7 +169,6 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             'name',
             'description',
             'primary_keyword',
-            'type_of_article',
             'author',
             'product_links',
         ];
