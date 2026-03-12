@@ -91,9 +91,6 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             setDuplicateTemplateName(`${template.name}-copy`);
             setShowDuplicateDialog(true);
         }
-        if (option === 'Sample input') {
-            downloadSampleExcel();
-        }
     };
 
     const duplicateTemplateApi = async () => {
@@ -163,31 +160,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         }
     };
 
-    const downloadSampleExcel = () => {
-        // --- File 1 ---
-        const headers1 = [
-            'name',
-            'description',
-            'primary_keyword',
-            'author',
-            'product_links',
-        ];
 
-        const sampleRow1 = [
-            '',
-            '',
-            '',
-            '',
-            '',
-            'links should be comma seperated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
-        ];
-
-        const worksheetData1 = [headers1, sampleRow1, Array(headers1.length).fill(''), Array(headers1.length).fill('')];
-        const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);
-        const workbook1 = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook1, worksheet1, 'Sample');
-        XLSX.writeFile(workbook1, 'sample_upload_template.xlsx');
-    };
 
     const cardStyle = flexBasis ? { flexBasis, minWidth: 0 } : {};
 
@@ -293,13 +266,12 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             {/* Title and Menu Row */}
             <div className="mb-2.5 flex w-full items-start justify-between">
                 <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
-                {(checkPermission('delete:template') || checkPermission('export:template') || checkPermission('duplicate:template') || module === 'content-creation') && (
+                {(checkPermission('delete:template') || checkPermission('export:template') || checkPermission('duplicate:template')) && (
                     <Dropdown
                         options={[
                             ...(exportTemplate && checkPermission('export:template') ? ['Export'] : []),
                             ...(checkPermission('duplicate:template') ? ['Duplicate'] : []),
-                            ...(checkPermission('delete:template') ? ['Delete'] : []),
-                            ...(module === 'content-creation' ? ['Sample input'] : [])
+                            ...(checkPermission('delete:template') ? ['Delete'] : [])
                         ]}
                         onChange={handleDropdownOptionChange}
                     >
@@ -330,11 +302,11 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     <Button
                         permission="edit:prompt"
                         outlined
-                        startIcon={<FileText size={14} className="text-gray-500" />}
+                        startIcon={<Edit size={14} className="text-gray-500" />}
                         onClick={() => setShowPromptDialog(true)}
                         small
                     >
-                        Prompt
+                        Edit Prompt
                     </Button>
                 ) : (
                     <Button
