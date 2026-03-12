@@ -158,7 +158,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     if (!state.showCreateTemplateDialog) return null;
     return (
         <DialogComponent
-            className={selectedModule === 'content-creation' ? 'w-[450px]' : 'max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]'}
+            className='max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]'
             name={showFileUploadUI ? 'Upload Document' : 'Create Template'}
             isOpen={state.showCreateTemplateDialog}
             closeDialog={closeDialog}
@@ -166,24 +166,9 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             onPrimaryAction={handleSubmit}
             primaryButtonDataTourId="dialog-create-template-button"
         >
-            <div className={selectedModule === 'content-creation' ? 'p-6 flex flex-col gap-1.5' : 'h-full p-6'}>
+            <div className='h-full p-6'>
                 {showFileUploadUI ? (
                     <FileUploadUIComponent closeDialog={closeDialog} />
-                ) : selectedModule === 'content-creation' ? (
-                    <>
-                        <label className="pl-1 text-sm font-light text-gray-600" htmlFor="templateName">
-                            Template Name
-                        </label>
-                        <input
-                            name="templateName"
-                            className={`min-h-10 flex-1 rounded-md border border-gray-300 px-4 text-sm outline-none outline-0 focus:border-sky-500 ${error ? 'border-red-500 focus:border-red-500' : ''}`}
-                            value={selectedTemplateName}
-                            onChange={onChangeTemplateName}
-                            placeholder="Enter template name"
-                            autoFocus
-                        />
-                        {error && <p className="pl-1 text-sm text-red-500">{error}</p>}
-                    </>
                 ) : (
                     <div className="flex h-full flex-col gap-8">
                         <div className="flex w-full items-center rounded-md border pl-3">

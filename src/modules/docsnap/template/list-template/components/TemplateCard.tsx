@@ -1,4 +1,4 @@
-import { Edit, FileText, FormInput, MoreVertical, Plus, Upload } from 'lucide-react';
+import { Edit, FileText, FormInput, MoreVertical, Plus, Upload, Save, RotateCcw, Copy, Check, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { Button } from '../../../../../components/Button';
@@ -9,7 +9,7 @@ import { AlertDialog } from '../../../../../components/alert/AlertDialog';
 import { useAlertStore } from '../../../../../components/alert/AlertStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 import { config } from '../../../../../config/default';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UseFormbuilder } from '../../../../../builders/formbuilder/use-formbuilder';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 interface PropsIF {
@@ -42,6 +42,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
     const [duplicateTemplateName, setDuplicateTemplateName] = useState('');
     const [isDuplicating, setIsDuplicating] = useState(false);
+    const [showPromptDialog, setShowPromptDialog] = useState(false);
 
     const module = sessionStorage.getItem('module');
 
@@ -326,16 +327,28 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             </div>
             {/* Upload Button Row */}
             <div className="flex w-full justify-between gap-2">
-                <Button
-                    permission="update:template"
-                    outlined
-                    startIcon={<Edit size={14} className="text-gray-500" />}
-                    onClick={() => navigate(`/docsnap/template/update/${template._id}`)}
-                    small
-                    data-tour-id="edit-fields-button"
-                >
-                    Edit Fields
-                </Button>
+                {module === 'content-creation' ? (
+                    <Button
+                        permission="edit:prompt"
+                        outlined
+                        startIcon={<FileText size={14} className="text-gray-500" />}
+                        onClick={() => setShowPromptDialog(true)}
+                        small
+                    >
+                        Prompt
+                    </Button>
+                ) : (
+                    <Button
+                        permission="update:template"
+                        outlined
+                        startIcon={<Edit size={14} className="text-gray-500" />}
+                        onClick={() => navigate(`/docsnap/template/update/${template._id}`)}
+                        small
+                        data-tour-id="edit-fields-button"
+                    >
+                        Edit Fields
+                    </Button>
+                )}
                 <Button
                     permission="update:template"
                     outlined
@@ -387,6 +400,113 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     />
                 </div>
             </DialogComponent>
+
+            <PromptDialog isOpen={showPromptDialog} closeDialog={() => setShowPromptDialog(false)} template={template} refreshPage={refreshPage} />
         </div>
+    );
+};
+
+const PromptDialog = ({ isOpen, closeDialog, template, refreshPage }: { isOpen: boolean, closeDialog: () => void, template: any, refreshPage?: () => void }) => {
+    const [editingPrompt, setEditingPrompt] = useState('');
+    const [copied, setCopied] = useState(false);
+    const toast = useToastStore();
+
+    useEffect(() => {
+        if (isOpen) {
+            setEditingPrompt(template?.settings?.extractionPrompt || '');
+        }
+    }, [isOpen, template]);
+
+    const handleSave = async () => {
+        const updatedSettings = {
+            ...template.settings,
+            extractionPrompt: editingPrompt
+        };
+        const requestBody = {
+            fields: template.fields,
+            settings: updatedSettings,
+            s3FileName: template.s3FileName,
+            name: template.name,
+            description: template.description,
+            active: template.active
+        };
+        try {
+            await httpRequest('PATCH', `${config.nodeApiUrl}/idp/template/update/${template._id}`, requestBody);
+            toast.success('Prompt updated successfully');
+            closeDialog();
+            if (refreshPage) {
+                refreshPage();
+            } else {
+                window.location.reload();
+            }
+        } catch (error) {
+            toast.error('Failed to update Prompt');
+        }
+    };
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(editingPrompt);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleReset = () => {
+        setEditingPrompt(template?.settings?.extractionPrompt || '');
+    };
+
+    return (
+        <DialogComponent name="Edit Prompt" className="h-[90%] w-[90%]" isOpen={isOpen} closeDialog={closeDialog} disableBlurCloseDialog>
+            <div className="flex h-full flex-1 gap-0 overflow-hidden p-4">
+                <div className="flex flex-1 flex-col">
+                    <div className="flex items-center justify-between border-b px-5 py-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-800">Prompt Editor</span>
+                            <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-medium tracking-wide text-gray-500">MANUAL</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                small
+                                outlined
+                                startIcon={copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                                onClick={handleCopy}
+                                disabled={!editingPrompt.trim()}
+                            >
+                                {copied ? 'Copied' : 'Copy'}
+                            </Button>
+                            <Button small outlined startIcon={<RotateCcw size={14} />} onClick={handleReset}>
+                                Reset
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-2 border-b bg-blue-50/60 px-5 py-2.5">
+                        <Info size={14} className="mt-0.5 shrink-0 text-blue-500" />
+                        <p className="text-xs leading-relaxed text-blue-700">
+                            Use <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] font-medium text-blue-800">{'{{variableName}}'}</code> to
+                            insert dynamic data at runtime —{' '}
+                            <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] text-blue-800">{'{{documentText}}'}</code>,{' '}
+                            <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] text-blue-800">{'{{schema}}'}</code>,{' '}
+                            <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] text-blue-800">{'{{previousOutput}}'}</code>
+                        </p>
+                    </div>
+                    <textarea
+                        value={editingPrompt}
+                        onChange={e => setEditingPrompt(e.target.value)}
+                        className="flex-1 resize-none p-5 font-mono text-sm leading-relaxed text-gray-800 outline-none placeholder:text-gray-400"
+                        placeholder={`Write your extraction prompt here...\n\nUse {{variableName}} to insert dynamic data. For example:\n\nExtract the following fields from the document:\n{{documentText}}\n\nUse this schema for extraction:\n{{schema}}\n\nEnsure all dates are in YYYY-MM-DD format.\nReturn null for missing fields.`}
+                        spellCheck={false}
+                    />
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 border-t bg-gray-50/50 px-6 py-4">
+                <Button outlined onClick={closeDialog}>
+                    Cancel
+                </Button>
+                <Button startIcon={<Save size={16} />} onClick={handleSave}>
+                    Save Prompt
+                </Button>
+            </div>
+        </DialogComponent>
     );
 };
