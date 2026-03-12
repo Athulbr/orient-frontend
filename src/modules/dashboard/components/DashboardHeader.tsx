@@ -12,6 +12,8 @@ export const DashboardHeaderComponent: FC = () => {
     const toast = useToastStore();
     const navigate = useNavigate();
 
+    const isContentCreationModule = sessionStorage.getItem('module') === 'content-creation';
+
     const handleCreateTemplateClick = () => {
         if (user?.role?.name === 'superadmin') {
             const selectedTenant = sessionStorage.getItem('selectedTenant');
@@ -31,10 +33,16 @@ export const DashboardHeaderComponent: FC = () => {
                 Welcome to makez.ai, <span className="capitalize">{user?.firstName}</span>
             </div>
             <div className="flex items-center gap-2">
-                <Button
-                    outlined
-                    onClick={() => navigate('/docsnap/template/list')}
-                >
+                {isContentCreationModule && (
+                    <Button
+                        permission="view:userGuide"
+                        outlined
+                        onClick={() => window.open('/module/content-creation/Blog%20genaration%C2%A0Module%20–%20User%20Manual%20v1.pdf', '_blank')}
+                    >
+                        User Guide
+                    </Button>
+                )}
+                <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                     View Template
                 </Button>
                 <Button
