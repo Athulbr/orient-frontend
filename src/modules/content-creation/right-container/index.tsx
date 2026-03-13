@@ -172,9 +172,9 @@ ${state.content}
         <div className="flex flex-col h-full min-h-0 gap-2 overflow-y-auto px-4">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-2">
                 <p className="text-xl font-semibold">Content Details</p>
-                <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
+                {/* <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
                     Edit Prompt
-                </Button>
+                </Button> */}
             </div>
 
             <div className="flex flex-col gap-3 border-b pb-4 mb-2">
@@ -219,12 +219,12 @@ ${state.content}
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
-                <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                {/* <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                     {isRegenerating ? 'Regenerating...' : 'Regenerate'}
                 </Button>
                 <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
-                </Button>
+                </Button> */}
                 <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
                     {isSaving ? 'Saving...' : 'Save'}
                 </Button>

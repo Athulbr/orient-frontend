@@ -24,7 +24,7 @@ export const useProductTour = ({ items, enabled = true, onComplete, onSkip }: Us
     useEffect(() => {
         // Check if tour has been shown before (user-specific)
         const tourShown = getTourState('productTourShown');
-        
+
         if (!enabled || tourShown || hasShownTour.current || !isUserLoggedIn() || !isTourEnabled()) {
             return;
         }

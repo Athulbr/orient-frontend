@@ -12,6 +12,9 @@ import { excelFileToArrayOfObjects } from '../../../global-utils/excelFileToArra
 import { groupVariationsByPageCount } from './functions/groupVariationsByPageCount';
 import { createProductWithVariationGroups } from './functions/createProductWithVariationGroups';
 import { SegregatedData, SegregatedDocuments } from './SegregatedDocuments';
+import * as XLSX from 'xlsx';
+import { Download } from 'lucide-react';
+
 interface UploadDocumentComponentIF {
     template?: any;
     closeDialog: () => void;
@@ -102,6 +105,31 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         });
     };
 
+    const downloadSampleExcel = () => {
+        const headers1 = [
+            'name',
+            'description',
+            'primary_keyword',
+            'author',
+            'product_links',
+        ];
+
+        const sampleRow1 = [
+            '',
+            '',
+            '',
+            '',
+            '',
+            'links should be comma seperated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
+        ];
+
+        const worksheetData1 = [headers1, sampleRow1, Array(headers1.length).fill(''), Array(headers1.length).fill('')];
+        const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);
+        const workbook1 = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook1, worksheet1, 'Sample');
+        XLSX.writeFile(workbook1, 'sample_upload_template.xlsx');
+    };
+
     if (showManualInputForm) {
         return (
             <UseFormbuilder
@@ -129,8 +157,13 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10 pt-5">
-               
-                   
+                {module === 'content-creation' && (
+                    <div className="flex w-full justify-end mb-4">
+                        <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
+                            Sample Input File
+                        </Button>
+                    </div>
+                )}
                 {showSegregatedDocuments && (
                     <SegregatedDocuments
                         selectedFiles={selectedFiles}
