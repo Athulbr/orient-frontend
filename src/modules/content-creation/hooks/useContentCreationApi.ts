@@ -7,8 +7,8 @@ import { useParams } from 'react-router-dom';
 
 export const useContentCreationApi = () => {
     const { setState } = useContentCreationEditorState();
-    const toast=useToastStore()
-    const {id}=useParams()
+    const toast = useToastStore()
+    const { id } = useParams()
 
     const fetchRecord = async () => {
         if (!id) return;
@@ -27,8 +27,8 @@ export const useContentCreationApi = () => {
             ...prev,
             extractedData: {
                 ...(fetchedRecord?.extractedData || {}),
-                name: fetchedRecord?.name || '',
-                author: fetchedRecord?.extractedData?.rowData?.author || '',
+                title: fetchedRecord?.title || fetchedRecord?.extractedData?.title || fetchedRecord?.extractedData?.rowData?.name || fetchedRecord?.name || '',
+                // author: fetchedRecord?.extractedData?.rowData?.author || '',
                 primaryImageUrl: fetchedRecord?.extractedData?.primaryImageUrl || '',
                 rowData: fetchedRecord?.extractedData?.rowData || {}
             },
@@ -55,7 +55,7 @@ export const useContentCreationApi = () => {
         }
     };
 
-     const updateRecordApi = async (requestBody: any) => {
+    const updateRecordApi = async (requestBody: any) => {
         try {
             const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/save/extraction/${id}`, requestBody);
             toast.success('Record updated successfully');
@@ -64,7 +64,7 @@ export const useContentCreationApi = () => {
         }
     };
 
-    
+
 
     return { fetchRecord, regenerateBlog, updateContentCreationPrompt, updateRecordApi };
 };

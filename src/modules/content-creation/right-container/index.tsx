@@ -28,9 +28,9 @@ export default function RightContainer() {
         setState(prev => {
             const extractedData = { ...(prev.extractedData || {}) } as any;
             extractedData[field] = value;
-            if (field === 'author') {
-                extractedData.rowData = { ...(extractedData.rowData || {}), author: value };
-            }
+            // if (field === 'author') {
+            //     extractedData.rowData = { ...(extractedData.rowData || {}), author: value };
+            // }
             return {
                 ...prev,
                 extractedData
@@ -87,7 +87,7 @@ ${state.content}
         setIsSaving(true);
         try {
             const payload = {
-                name: state.extractedData?.name,
+                title: state.extractedData?.title,
                 extractedData: {
                     ...state.extractedData,
                     htmlContent: state.content
@@ -117,13 +117,13 @@ ${state.content}
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
 
         const content = {
-            title: state.extractedData?.name || '',
+            title: state.extractedData?.title || '',
             category: '',
             summaryHTML: '',
             summaryImagePath: state.extractedData?.primaryImageUrl || '',
             product_category: '',
             html: fullHTML,
-            author: state.extractedData?.author || ''
+            // author: state.extractedData?.author || ''
         };
         const payload = {
             tenant_name: selectedTenantName,
@@ -179,15 +179,15 @@ ${state.content}
 
             <div className="flex flex-col gap-3 border-b pb-4 mb-2">
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">Name</label>
+                    <label className="text-sm font-medium text-gray-700">Title</label>
                     <input
                         className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        value={state.extractedData?.name || ''}
-                        onChange={e => handleFieldSave('name', e.target.value)}
-                        placeholder="Enter Name"
+                        value={state.extractedData?.title || ''}
+                        onChange={e => handleFieldSave('title', e.target.value)}
+                        placeholder="Enter title"
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                {/* <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Author</label>
                     <input
                         className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
@@ -195,7 +195,7 @@ ${state.content}
                         onChange={e => handleFieldSave('author', e.target.value)}
                         placeholder="Enter Author"
                     />
-                </div>
+                </div> */}
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Primary Image URL</label>
                     <input

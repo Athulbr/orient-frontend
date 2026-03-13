@@ -76,7 +76,18 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             }
 
             const excelRows = await excelFileToArrayOfObjects(files[0]);
-            const selectedProducts = excelRows.slice(0, Number(template?.settings?.extractionLimit) || 10);
+            
+            // Filter out purely empty rows and the instructional row
+            const validRows = excelRows.filter((row: any) => {
+                const values = Object.values(row);
+                return values.some((val: any) => 
+                    val && 
+                    String(val).trim() !== '' && 
+                    !String(val).includes('links should be comma seperated')
+                );
+            });
+
+            const selectedProducts = validRows.slice(0, Number(template?.settings?.extractionLimit) || 10);
             selectedProducts.forEach((row: any) => {
                 addToDocumentExtractor(latestTemplate, [], row);
             });
@@ -110,7 +121,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             'name',
             'description',
             'primary_keyword',
-            'author',
+            // 'author',
             'product_links',
         ];
 
@@ -118,8 +129,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             '',
             '',
             '',
-            '',
-            '',
+            // '',
+            // '',
             'links should be comma seperated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
         ];
 
