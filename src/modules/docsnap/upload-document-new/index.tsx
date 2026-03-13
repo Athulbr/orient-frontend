@@ -117,13 +117,48 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
     const downloadSampleExcel = () => {
-        const headers1 = [
-            'name',
-            'description',
-            'primary_keyword',
-            // 'author',
-            'product_links',
-        ];
+        const module = sessionStorage.getItem('module');
+
+        if (module === 'data-entry') {
+            const headers = [
+                'Page Count',
+                'Variation Style',
+                'Product or Variation',
+                'SKU',
+                'Description',
+                "Manufacturer's URL",
+                'UOM',
+                'Quantity',
+                'Cost',
+                'CSFP',
+                'CSFP Fixed Margin',
+                'Dealer Shipping Cost',
+                'Additional Fees',
+                'Price Method',
+                'MAP',
+                'Vendor Code',
+                'Product Vendor',
+                'Product Manufacturer',
+                'Product Category',
+            ];
+
+            const rows = [
+                ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+            ];
+
+            const worksheetData = [headers, ...rows];
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Sample');
+            XLSX.writeFile(workbook, 'data_entry_sample.xlsx');
+        } else {
+            const headers1 = [
+                'name',
+                'description',
+                'primary_keyword',
+                // 'author',
+                'product_links',
+            ];
 
         const sampleRow1 = [
             '',
@@ -134,11 +169,12 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             'links should be comma seperated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
         ];
 
-        const worksheetData1 = [headers1, sampleRow1, Array(headers1.length).fill(''), Array(headers1.length).fill('')];
-        const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);
-        const workbook1 = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook1, worksheet1, 'Sample');
-        XLSX.writeFile(workbook1, 'sample_upload_template.xlsx');
+            const worksheetData1 = [headers1, sampleRow1, Array(headers1.length).fill(''), Array(headers1.length).fill('')];
+            const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);
+            const workbook1 = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook1, worksheet1, 'Sample');
+            XLSX.writeFile(workbook1, 'sample_upload_template.xlsx');
+        }
     };
 
     if (showManualInputForm) {
@@ -168,7 +204,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             closeDialog={closeDialog}
         >
             <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-10 pt-5">
-                {module === 'content-creation' && (
+                {(module === 'content-creation' || module === 'data-entry') && (
                     <div className="flex w-full justify-end mb-4">
                         <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
                             Sample Input File
