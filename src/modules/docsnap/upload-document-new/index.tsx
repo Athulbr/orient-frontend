@@ -76,7 +76,18 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             }
 
             const excelRows = await excelFileToArrayOfObjects(files[0]);
-            const selectedProducts = excelRows.slice(0, Number(template?.settings?.extractionLimit) || 10);
+            
+            // Filter out purely empty rows and the instructional row
+            const validRows = excelRows.filter((row: any) => {
+                const values = Object.values(row);
+                return values.some((val: any) => 
+                    val && 
+                    String(val).trim() !== '' && 
+                    !String(val).includes('links should be comma seperated')
+                );
+            });
+
+            const selectedProducts = validRows.slice(0, Number(template?.settings?.extractionLimit) || 10);
             selectedProducts.forEach((row: any) => {
                 addToDocumentExtractor(latestTemplate, [], row);
             });
@@ -145,17 +156,18 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                 'name',
                 'description',
                 'primary_keyword',
-                'author',
+                // 'author',
                 'product_links',
             ];
 
-            const sampleRow1 = [
-                '',
-                '',
-                '',
-                '',
-                'links should be comma separated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
-            ];
+        const sampleRow1 = [
+            '',
+            '',
+            '',
+            // '',
+            // '',
+            'links should be comma seperated eg:-https://www.example_1.com,https://www.example_2.com/blogs.html,https://www.example_3.com/products.html'
+        ];
 
             const worksheetData1 = [headers1, sampleRow1, Array(headers1.length).fill(''), Array(headers1.length).fill('')];
             const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);

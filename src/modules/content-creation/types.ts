@@ -11,8 +11,8 @@ export interface Keyword {
 }
 
 export interface ExtractedDataIF {
-    name?: string;
-    author?: string;
+    title?: string;
+    // author?: string;
     primaryImageUrl?: string;
     rowData?: Record<string, any>;
     [key: string]: any;
@@ -23,5 +23,5 @@ export interface ContentCreationEditorStateIF {
     extractedData?: ExtractedDataIF;
     content?: string;
     record?: Record<string, any> | null;
-    extractionPrompt?: string; 
+    extractionPrompt?: string;
 }
