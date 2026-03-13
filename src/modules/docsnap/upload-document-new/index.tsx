@@ -133,15 +133,6 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
 
             const rows = [
                 ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-                // ['1', 'Table', 'Variation', 'TEST-ZN-PINE', 'zen-heated-blanket', 'https://gobiheat.com/products/zen-heated-blanket?_pos=1&_psq=zen&_ss=e&_v=1.0&variant=39598402469962', 'Each', '1', '174.3', '', '25', '10', '10', 'CSFP', '', 'TOPVAC', 'Turning Off Pages / Vendor Account Closed', '', ''],
-                // ['1', 'Table', 'Variation', 'TEST-ZN-MIST', 'zen-heated-blanket', 'https://gobiheat.com/products/zen-heated-blanket?_pos=1&_psq=zen&_ss=e&_v=1.0&variant=39598402469962', 'Each', '1', '174.3', '', '25', '10', '10', 'CSFP', '', 'TOPVAC', 'Turning Off Pages / Vendor Account Closed', '', ''],
-                // ['1', 'Table', 'Variation', 'TEST-ZN-STR', 'zen-heated-blanket', 'https://gobiheat.com/products/zen-heated-blanket?_pos=1&_psq=zen&_ss=e&_v=1.0&variant=39598402469962', 'Each', '1', '174.3', '', '25', '10', '10', 'CSFP', '', '', '', '', ''],
-                // ['1', 'Table', 'Variation', 'TEST-ZN-PLD', 'zen-heated-blanket', 'https://gobiheat.com/products/zen-heated-blanket?_pos=1&_psq=zen&_ss=e&_v=1.0&variant=39598402469962', 'Each', '1', '174.3', '', '25', '10', '10', 'CSFP', '', '', '', '', ''],
-                // ['1', 'Table', 'Variation', 'TEST-ZN-RYE', 'zen-heated-blanket', 'https://gobiheat.com/products/zen-heated-blanket?_pos=1&_psq=zen&_ss=e&_v=1.0&variant=39598402469962', 'Each', '1', '174.3', '', '25', '10', '10', 'CSFP', '', '', '', '', ''],
-                // ['2', 'Table', 'Product', 'zephyr-cooling-chair', 'Zephyr Dual-Zoned Cooling Camp Chair', 'https://gobiheat.com/search?q=zephyr+cooling+chair&_pos=1&_psq=zephyr-cooling-chair&_ss=e&_v=1.0', 'Each', '1', '139.3', '', '50', '10', '10', 'CSFP', '', '', '', '', ''],
-                // ['3', 'Table', 'Product', 'TEST-HALO-IC-WH', 'halo-ic-neck-cooling-fan', 'https://gobiheat.com/products/halo-ic-neck-cooling-fan?_pos=1&_sid=2fd4394bd&_ss=r', 'Each', '1', '41.3', '100', '25', '10', '10', 'CSFP', '', 'TOPVAC', 'Turning Off Pages / Vendor Account Closed', '', ''],
-                // ['3', 'Table', 'Variation', 'TEST-HALO-IC-WH', 'halo-ic-neck-cooling-fan', 'https://gobiheat.com/products/halo-ic-neck-cooling-fan?_pos=1&_sid=2fd4394bd&_ss=r', 'Each', '1', '41.3', '100', '25', '10', '10', 'CSFP', '', 'TOPVAC', 'Turning Off Pages / Vendor Account Closed', '', ''],
-                // ['3', 'Table', 'Variation', 'TEST-HALO-IC-NV', 'halo-ic-neck-cooling-fan', 'https://gobiheat.com/products/halo-ic-neck-cooling-fan?_pos=1&_sid=2fd4394bd&_ss=r', 'Each', '1', '41.3', '100', '25', '10', '10', 'CSFP', '', 'TOPVAC', 'Turning Off Pages / Vendor Account Closed', '', ''],
             ];
 
             const worksheetData = [headers, ...rows];
