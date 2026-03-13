@@ -3,7 +3,7 @@ import { useListRecordCustomTableApi } from './hooks/useListRecordCustomTableApi
 import { useListRecordCustomTableState } from './hooks/listRecordCustomTableStateContext';
 import { useExtractionStore } from '../../../../../zustand-store/extractionStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
-import { useRecordViewTour } from '../../../../../inApp-Tour/useRecordViewTour';
+import { useRecordViewTour } from '../../../../inApp-Tour/hooks/useRecordViewTour';
 
 interface TableHeaderIF {}
 

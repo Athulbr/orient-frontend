@@ -3,7 +3,7 @@ import { TabNavComponent } from '../../components/TabNav/TabNav';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { useParams } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
-import { useRecordViewTour } from '../../../../../inApp-Tour/useRecordViewTour';
+import { useRecordViewTour } from '../../../../inApp-Tour/hooks/useRecordViewTour';
 
 interface DataPreviewComponentIF {
     tabContents: {

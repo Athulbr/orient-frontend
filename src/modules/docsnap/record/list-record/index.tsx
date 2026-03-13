@@ -12,7 +12,7 @@ import ExcelExportDialogNew from './components/ExcelExportDialogNew';
 import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBuilder';
 import { ListRecordCustomTable } from './ListRecordCustomTable';
 import { PromptFieldIF } from '../../prompt-tuning/interface';
-import { useRecordListTour } from '../../../../inApp-Tour/useRecordListTour';
+import { useRecordListTour } from '../../../inApp-Tour/hooks/useRecordListTour';
 interface Project {
     _id: string;
     name: string;
