@@ -28,12 +28,26 @@ export default function RightContainer() {
         setState(prev => {
             const extractedData = { ...(prev.extractedData || {}) } as any;
             extractedData[field] = value;
-            // if (field === 'author') {
-            //     extractedData.rowData = { ...(extractedData.rowData || {}), author: value };
-            // }
+            
+            let newContent = prev.content;
+            if (field === 'title' && newContent) {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(newContent, 'text/html');
+                    const h1Tags = doc.getElementsByTagName('h1');
+                    if (h1Tags.length > 0) {
+                        h1Tags[0].innerText = value;
+                        newContent = doc.body.innerHTML;
+                    }
+                } catch (e) {
+                    console.error('Failed to update title in content', e);
+                }
+            }
+            
             return {
                 ...prev,
-                extractedData
+                extractedData,
+                content: newContent
             };
         });
     };
@@ -180,11 +194,12 @@ ${state.content}
             <div className="flex flex-col gap-3 border-b pb-4 mb-2">
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Title</label>
-                    <input
-                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    <textarea
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                         value={state.extractedData?.title || ''}
                         onChange={e => handleFieldSave('title', e.target.value)}
                         placeholder="Enter title"
+                        rows={3}
                     />
                 </div>
                 {/* <div className="flex flex-col gap-1">
