@@ -36,24 +36,24 @@ export const useProductTour = ({ items, enabled = true, onComplete, onSkip }: Us
                     const element = document.querySelector(`[data-tour-id="${item.key}"]`);
                     if (!element) return null;
 
-                    // Special step for Content Creation
-                    if (item.key === 'content-creation') {
-                        return {
-                            element: `[data-tour-id="${item.key}"]`,
-                            popover: {
-                                title: item.name,
-                                description: item.description || `This is the ${item.name} module. Click here to access ${item.name} features.`,
-                                side: 'right' as const,
-                                align: 'center' as const,
-                                nextBtnText: 'Done',
-                                onNextClick: () => {
-                                    window.open('/module/content-creation/Blog%20genaration%C2%A0Module%20–%20User%20Manual%20v1.pdf', '_blank');
-                                    setAllToursComplete();
-                                    driverRef.current?.destroy();
-                                }
-                            }
-                        } as DriveStep;
-                    }
+                    // // Special step for Content Creation
+                    // if (item.key === 'content-creation') {
+                    //     return {
+                    //         element: `[data-tour-id="${item.key}"]`,
+                    //         popover: {
+                    //             title: item.name,
+                    //             description: item.description || `This is the ${item.name} module. Click here to access ${item.name} features.`,
+                    //             side: 'right' as const,
+                    //             align: 'center' as const,
+                    //             nextBtnText: 'Done',
+                    //             onNextClick: () => {
+                    //                 window.open('/module/content-creation/Blog%20genaration%C2%A0Module%20–%20User%20Manual%20v1.pdf', '_blank');
+                    //                 setAllToursComplete();
+                    //                 driverRef.current?.destroy();
+                    //             }
+                    //         }
+                    //     } as DriveStep;
+                    // }
                     return {
                         element: `[data-tour-id="${item.key}"]`,
                         popover: {
