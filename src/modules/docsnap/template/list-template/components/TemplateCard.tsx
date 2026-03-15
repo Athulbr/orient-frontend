@@ -353,7 +353,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                 isOpen={showDuplicateDialog}
                 closeDialog={() => setShowDuplicateDialog(false)}
                 name="Duplicate Template"
-                primaryButtonText={isDuplicating ? 'Duplicating...' : 'Duplicate'}
+                primaryButtonText={isDuplicating ? 'Creating...' : 'Create'}
                 onPrimaryAction={duplicateTemplateApi}
                 className="w-[450px]"
             >
