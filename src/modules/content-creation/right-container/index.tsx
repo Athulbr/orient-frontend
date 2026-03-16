@@ -166,8 +166,9 @@ ${state.content}
         if (!state.content) return;
         setIsRegenerating(true);
         try {
+            const filteredKeywords = state.keywords?.filter((keyword: any) => keyword.selected);
             const res = await regenerateBlog({
-                keywords: state.keywords,
+                keywords: filteredKeywords,
                 extractedData: state.extractedData,
                 extractionPrompt: state.extractionPrompt
             });
@@ -234,10 +235,10 @@ ${state.content}
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
-                {/* <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                     {isRegenerating ? 'Regenerating...' : 'Regenerate'}
                 </Button>
-                <Button disabled={!state.content} onClick={downloadHTML}>
+                {/* <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
                 </Button> */}
                 <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
