@@ -49,7 +49,7 @@ const createVariationsGroup = (variations: ProductRowIF[]) => {
 export const createProductWithVariationGroups = (groupedVariations: ProductRowIF[][]) => {
     const products = groupedVariations.map((wholeProduct: ProductRowIF[]) => {
         const firstRow = wholeProduct[0];
-        if (firstRow['Product or Variation'] !== 'Product') {
+        if (firstRow['Product or Variation']?.toLowerCase() !== 'product') {
             throw new Error('First row should be Product');
         }
         const remainingRows = wholeProduct.slice(1);
