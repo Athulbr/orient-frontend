@@ -235,7 +235,7 @@ ${state.content}
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
-                <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                     {isRegenerating ? 'Regenerating...' : 'Regenerate'}
                 </Button>
                 {/* <Button disabled={!state.content} onClick={downloadHTML}>

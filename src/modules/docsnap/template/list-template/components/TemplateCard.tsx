@@ -45,6 +45,15 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     const [showPromptDialog, setShowPromptDialog] = useState(false);
 
     const module = sessionStorage.getItem('module');
+    const userStr = sessionStorage.getItem('user');
+    let currentUser: any = null;
+    if (userStr) {
+        try {
+            currentUser = JSON.parse(userStr);
+        } catch (e) {
+            console.error('Failed to parse user from session storage', e);
+        }
+    }
 
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
@@ -298,7 +307,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             </div>
             {/* Upload Button Row */}
             <div className="flex w-full justify-between gap-2">
-                {module === 'content-creation' ? (
+                {(module === 'content-creation' && currentUser?.role?.name !== 'superadmin') ? (
                     <Button
                         permission="edit:prompt"
                         outlined
