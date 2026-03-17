@@ -22,6 +22,7 @@ export interface TemplateStateIF {
     loadingCreateTemplate: boolean;
     searchText: string;
     showImportTemplateDialog: boolean;
+    showManualInputForm?: boolean;
 }
 const initialState = {
     id: '',
@@ -35,7 +36,8 @@ const initialState = {
     loadingPredefinedTemplates: false,
     loadingCreateTemplate: false,
     searchText: '',
-    showImportTemplateDialog: false
+    showImportTemplateDialog: false,
+    showManualInputForm: false
 };
 
 const ListTemplatePage: React.FC = () => {
@@ -54,7 +56,7 @@ const ListTemplatePage: React.FC = () => {
             </PageContainer>
             <CreateTemplateComponent state={state} setState={setState} />
             {state.showUploadDocumentDialog && (
-                <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false })} />
+                <UploadDocumentComponentNew template={state.selectedTemplate} closeDialog={() => setState({ ...state, showUploadDocumentDialog: false, showManualInputForm: false })} showManualInputForm={state.showManualInputForm} />
             )}
             {<ImportDialogComponent />}
         </TemplateStateProvider>
