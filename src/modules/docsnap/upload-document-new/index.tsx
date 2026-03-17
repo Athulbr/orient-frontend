@@ -199,7 +199,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     return (
         <DialogComponent
             className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col overflow-y-auto"
-            name="Upload Documents"
+            name="Bulk Import"
             isOpen={true}
             closeDialog={closeDialog}
         >
