@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../../components/Button';
-import { Pencil } from 'lucide-react';
+import { Pencil, SkipForward } from 'lucide-react';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import EditableField from '../components/EditableField';
 import SummaryImageField from '../components/SummaryImageField';
@@ -13,6 +13,7 @@ import httpRequest from '../../../global-utils/httpRequest';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { config } from '../../../config/default';
+import Tooltip from '../../../components/Tooltip';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
@@ -183,6 +184,16 @@ ${state.content}
         }
     };
 
+    const skipToNextDocumentHandler = () => {
+        const recordIdList = window?.sessionStorage?.getItem('recordIdList') as string;
+        if (!recordIdList) return;
+        const recordIdListArray = JSON.parse(recordIdList);
+        const index = recordIdListArray.indexOf(id);
+        if (index === -1) return;
+        setState(prev => ({ ...prev, loadingData: true, content: '', extractedData: undefined }));
+        navigate(`/content-creation/view/${recordIdListArray[index + 1]}`);
+    };
+
     return (
         <div className="flex flex-col h-full min-h-0 gap-2 overflow-y-auto px-4">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-2">
@@ -235,6 +246,11 @@ ${state.content}
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
+                {/* <Tooltip text="Skip to Next Document">
+                    <Button data-tour-id="skip-next-document-button" disabled={isRegenerating || isSaving} onClick={skipToNextDocumentHandler} startIcon={<SkipForward size={16} />}>
+                        Next
+                    </Button>
+                </Tooltip> */}
                 <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                     {isRegenerating ? 'Regenerating...' : 'Regenerate'}
                 </Button>

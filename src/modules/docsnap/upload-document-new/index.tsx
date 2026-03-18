@@ -173,7 +173,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             const worksheet1 = XLSX.utils.aoa_to_sheet(worksheetData1);
             const workbook1 = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook1, worksheet1, 'Sample');
-            XLSX.writeFile(workbook1, 'sample_upload_template.xlsx');
+            XLSX.writeFile(workbook1, 'content_creation_sample.xlsx');
         }
     };
 
