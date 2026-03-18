@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { driver, DriveStep, Config } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import './useProductTour.css';
+import '../styles/useProductTour.css';
 import { getTourState, setTourState, resetTourState, isUserLoggedIn, setAllToursComplete, isTourEnabled } from './tourStorage';
 
 interface TourItem {
