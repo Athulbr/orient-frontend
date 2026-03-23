@@ -53,9 +53,15 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
 
     const toggleGroupCollapse = (gi: number) => {
         setCollapsedGroups(prev => {
-            const next = new Set(prev);
-            next.has(gi) ? next.delete(gi) : next.add(gi);
-            return next;
+            const allIndices = keywordGroups.map((_, i) => i);
+            if (prev.has(gi)) {
+                // gi is collapsed → open it, collapse all others
+                const next = new Set(allIndices);
+                next.delete(gi);
+                return next;
+            }
+            // gi is open → collapse it
+            return new Set(allIndices);
         });
     };
 
@@ -134,6 +140,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                     }))
                 }));
                 setKeywordGroups(fetched);
+                // collapse all groups except the first
+                setCollapsedGroups(new Set(fetched.map((_, i) => i).slice(1)));
             } catch (e) {
                 toast.error('Failed to fetch SEO keywords');
                 // Proceed without keywords on error
@@ -294,7 +302,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             isOpen={true}
             closeDialog={closeDialog}
         >
-            <div className="flex w-full flex-col p-10 pt-5">
+            <div className="flex w-full min-h-0 flex-1 flex-col overflow-hidden p-10 pt-5">
                 {(module === 'content-creation' || module === 'data-entry') && (
                     <div className="flex w-full justify-end mb-4">
                         <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
@@ -322,7 +330,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
 
                 {/* Keyword selection — grouped by name */}
                 {!isFetchingKeywords && keywordGroups.length > 0 && (
-                    <div className="flex flex-col gap-4">
+                    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
                         {/* Global header */}
                         <div className="flex items-center justify-between">
                             <div>
@@ -338,8 +346,8 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                             </div>
                         </div>
 
-                        {/* Per-group sections */}
-                        <div className="flex flex-col gap-3">
+                        {/* Per-group sections — scrollable */}
+                        <div className="show-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
                             {keywordGroups.map((group, gi) => {
                                 const groupSelected = group.keywords.filter(k => k.selected).length;
                                 const allGroupSelected = groupSelected === group.keywords.length;
