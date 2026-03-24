@@ -82,27 +82,30 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
     const totalSelected = groups.reduce((acc, g) => acc + g.keywords.filter(k => k.selected).length, 0);
     const totalKeywords = groups.reduce((acc, g) => acc + g.keywords.length, 0);
 
-    // Per-group add keyword state: Map<groupIndex, inputValue>
-    const [addingKeyword, setAddingKeyword] = useState<Map<number, string>>(new Map());
+    // Add keyword per group
+    const [activeAddGroup, setActiveAddGroup] = useState<number | null>(null);
+    const [addValue, setAddValue] = useState('');
     const addInputRef = useRef<HTMLInputElement>(null);
 
     const openAddKeyword = (gi: number) => {
-        setAddingKeyword(prev => { const next = new Map(prev); next.set(gi, ''); return next; });
+        setActiveAddGroup(gi);
+        setAddValue('');
         setTimeout(() => addInputRef.current?.focus(), 50);
     };
 
-    const closeAddKeyword = (gi: number) => {
-        setAddingKeyword(prev => { const next = new Map(prev); next.delete(gi); return next; });
+    const closeAddKeyword = () => {
+        setActiveAddGroup(null);
+        setAddValue('');
     };
 
     const commitAddKeyword = (gi: number) => {
-        const value = (addingKeyword.get(gi) || '').trim();
-        if (!value) { closeAddKeyword(gi); return; }
+        const value = addValue.trim();
+        if (!value) { closeAddKeyword(); return; }
         setGroups(prev => prev.map((g, i) => i !== gi ? g : {
             ...g,
             keywords: [...g.keywords, { keyword: value, source: 'manual', selected: true }]
         }));
-        closeAddKeyword(gi);
+        closeAddKeyword();
     };
 
     const handleClose = () => {
@@ -206,20 +209,16 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
 
                                                 {/* Add keyword row */}
                                                 <div className="mt-2">
-                                                    {addingKeyword.has(gi) ? (
+                                                    {activeAddGroup === gi ? (
                                                         <div className="flex items-center gap-2">
                                                             <input
                                                                 ref={addInputRef}
                                                                 type="text"
-                                                                value={addingKeyword.get(gi) || ''}
-                                                                onChange={e => setAddingKeyword(prev => {
-                                                                    const next = new Map(prev);
-                                                                    next.set(gi, e.target.value);
-                                                                    return next;
-                                                                })}
+                                                                value={addValue}
+                                                                onChange={e => setAddValue(e.target.value)}
                                                                 onKeyDown={e => {
                                                                     if (e.key === 'Enter') commitAddKeyword(gi);
-                                                                    if (e.key === 'Escape') closeAddKeyword(gi);
+                                                                    if (e.key === 'Escape') closeAddKeyword();
                                                                 }}
                                                                 placeholder="Type a keyword and press Enter"
                                                                 className="flex-1 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
@@ -232,7 +231,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                                                 <Check size={13} strokeWidth={3} />
                                                             </button>
                                                             <button
-                                                                onClick={() => closeAddKeyword(gi)}
+                                                                onClick={() => closeAddKeyword()}
                                                                 className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 transition-colors"
                                                             >
                                                                 <X size={13} />

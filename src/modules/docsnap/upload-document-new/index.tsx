@@ -13,7 +13,7 @@ import { groupVariationsByPageCount } from './functions/groupVariationsByPageCou
 import { createProductWithVariationGroups } from './functions/createProductWithVariationGroups';
 import { SegregatedData, SegregatedDocuments } from './SegregatedDocuments';
 import * as XLSX from 'xlsx';
-import { Download, Check, ChevronDown } from 'lucide-react';
+import { Download } from 'lucide-react';
 import Spinner from '../../../components/Spinner';
 
 import { KeywordItem, KeywordGroup, KeywordSelectionDialog } from './KeywordSelectionDialog';
@@ -34,30 +34,17 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const [showSegregatedDocuments, setShowSegregatedDocuments] = useState(false);
     const module = sessionStorage.getItem('module');
 
-    // Content-creation keyword state
+    // Content-creation keyword state (bulk upload)
     const [keywordGroups, setKeywordGroups] = useState<KeywordGroup[]>([]);
     const [isFetchingKeywords, setIsFetchingKeywords] = useState(false);
     const [pendingRows, setPendingRows] = useState<any[]>([]);
-    const [isSubmittingExtraction, setIsSubmittingExtraction] = useState(false);
-    const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+    const [showBulkKeywordDialog, setShowBulkKeywordDialog] = useState(false);
+    const [isSubmittingBulk, setIsSubmittingBulk] = useState(false);
     // Manual form keyword state
     const [showKeywordDialog, setShowKeywordDialog] = useState(false);
     const [pendingManualRow, setPendingManualRow] = useState<any>(null);
     const [isSubmittingManual, setIsSubmittingManual] = useState(false);
 
-    const toggleGroupCollapse = (gi: number) => {
-        setCollapsedGroups(prev => {
-            const allIndices = keywordGroups.map((_, i) => i);
-            if (prev.has(gi)) {
-                // gi is collapsed → open it, collapse all others
-                const next = new Set(allIndices);
-                next.delete(gi);
-                return next;
-            }
-            // gi is open → collapse it
-            return new Set(allIndices);
-        });
-    };
 
     useEffect(() => {
         if (!template._id) {
@@ -134,8 +121,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                     }))
                 }));
                 setKeywordGroups(fetched);
-                // collapse all groups except the first
-                setCollapsedGroups(new Set(fetched.map((_, i) => i).slice(1)));
+                setShowBulkKeywordDialog(true);
             } catch (e) {
                 toast.error('Failed to fetch SEO keywords');
                 // Proceed without keywords on error
@@ -154,41 +140,20 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         }
     };
 
-    const handleToggleKeyword = (groupIndex: number, kwIndex: number) => {
-        setKeywordGroups(prev => prev.map((g, gi) =>
-            gi !== groupIndex ? g : {
-                ...g,
-                keywords: g.keywords.map((k, ki) => ki === kwIndex ? { ...k, selected: !k.selected } : k)
-            }
-        ));
-    };
 
-    const handleSelectAllInGroup = (groupIndex: number, selectAll: boolean) => {
-        setKeywordGroups(prev => prev.map((g, gi) =>
-            gi !== groupIndex ? g : { ...g, keywords: g.keywords.map(k => ({ ...k, selected: selectAll })) }
-        ));
-    };
-
-    const handleSelectAllKeywords = (selectAll: boolean) => {
-        setKeywordGroups(prev => prev.map(g => ({ ...g, keywords: g.keywords.map(k => ({ ...k, selected: selectAll })) })));
-    };
-
-    const totalSelected = keywordGroups.reduce((acc, g) => acc + g.keywords.filter(k => k.selected).length, 0);
-    const totalKeywords = keywordGroups.reduce((acc, g) => acc + g.keywords.length, 0);
-
-    const handleProceedWithKeywords = () => {
-        setIsSubmittingExtraction(true);
+    const handleProceedWithKeywords = (groups: KeywordGroup[]) => {
+        setIsSubmittingBulk(true);
         pendingRows.forEach((row: any) => {
-            // Find the matching group by name or primary_keyword
-            const matchingGroup = keywordGroups.find(
+            const matchingGroup = groups.find(
                 g => g.name === row.name || g.primary_keyword === row.primary_keyword
             );
             const selectedKeywords = matchingGroup
                 ? matchingGroup.keywords.filter(k => k.selected)
-                : [];
+                : groups.flatMap(g => g.keywords.filter(k => k.selected));
             addToDocumentExtractor(latestTemplate, [], { ...row, selectedKeywords });
         });
-        setIsSubmittingExtraction(false);
+        setIsSubmittingBulk(false);
+        setShowBulkKeywordDialog(false);
         closeDialog();
     };
 
@@ -354,132 +319,57 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     }
 
     return (
-        <DialogComponent
-            className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col"
-            name={keywordGroups.length > 0 ? 'Select Keywords' : 'Bulk Import'}
-            isOpen={true}
-            closeDialog={closeDialog}
-        >
-            <div className="flex w-full min-h-0 flex-1 flex-col overflow-hidden p-10 pt-5">
-                {(module === 'content-creation' || module === 'data-entry') && keywordGroups.length === 0 && (
-                    <div className="flex w-full justify-end mb-4">
-                        <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
-                            Sample Input File
-                        </Button>
-                    </div>
-                )}
-
-                {showSegregatedDocuments && (
-                    <SegregatedDocuments
-                        selectedFiles={selectedFiles}
-                        isOpen={showSegregatedDocuments}
-                        closeDialog={closeDialog}
-                        onSubmit={addSegregatedDocumentsToExtraction}
-                    />
-                )}
-
-                {/* Keyword loading indicator */}
-                {isFetchingKeywords && (
-                    <div className="flex flex-col items-center justify-center gap-3 py-16">
-                        <Spinner size={32} />
-                        <p className="text-sm text-gray-500">Fetching SEO keywords for your content...</p>
-                    </div>
-                )}
-
-                {/* Keyword selection — grouped by name */}
-                {!isFetchingKeywords && keywordGroups.length > 0 && (
-                    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
-                        {/* Global header */}
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-base font-semibold text-gray-800">SEO Keywords</p>
-                                <p className="text-xs text-gray-500 mt-0.5">
-                                    {totalSelected} of {totalKeywords} selected across {keywordGroups.length} product{keywordGroups.length > 1 ? 's' : ''}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => handleSelectAllKeywords(true)} className="text-xs text-blue-600 hover:underline cursor-pointer">Select All</button>
-                                <span className="text-gray-300">|</span>
-                                <button onClick={() => handleSelectAllKeywords(false)} className="text-xs text-gray-500 hover:underline cursor-pointer">Deselect All</button>
-                            </div>
-                        </div>
-
-                        {/* Per-group sections — scrollable */}
-                        <div className="show-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
-                            {keywordGroups.map((group, gi) => {
-                                const groupSelected = group.keywords.filter(k => k.selected).length;
-                                const allGroupSelected = groupSelected === group.keywords.length;
-                                const isCollapsed = collapsedGroups.has(gi);
-                                return (
-                                    <div key={gi} className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
-                                        {/* Group header — click to collapse/expand */}
-                                        <div
-                                            className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-gray-100 transition-colors"
-                                            onClick={() => toggleGroupCollapse(gi)}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <ChevronDown
-                                                    size={16}
-                                                    className={`text-gray-400 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
-                                                />
-                                                <span className="inline-block rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                                                    {groupSelected}/{group.keywords.length}
-                                                </span>
-                                                <p className="text-sm font-semibold text-gray-800 capitalize">{group.name}</p>
-                                            </div>
-                                            <button
-                                                onClick={e => { e.stopPropagation(); handleSelectAllInGroup(gi, !allGroupSelected); }}
-                                                className="text-xs text-blue-600 hover:underline cursor-pointer"
-                                            >
-                                                {allGroupSelected ? 'Deselect All' : 'Select All'}
-                                            </button>
-                                        </div>
-
-                                        {/* Keywords grid — hidden when collapsed */}
-                                        {!isCollapsed && (
-                                            <div className="px-4 pb-4 grid grid-cols-2 gap-2 md:grid-cols-3">
-                                                {group.keywords.map((kw, ki) => (
-                                                    <button
-                                                        key={ki}
-                                                        onClick={() => handleToggleKeyword(gi, ki)}
-                                                        className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-all cursor-pointer ${
-                                                            kw.selected
-                                                                ? 'border-blue-500 bg-blue-50 text-blue-800'
-                                                                : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        <span className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors ${
-                                                            kw.selected ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
-                                                        }`}>
-                                                            {kw.selected && <Check size={9} className="text-white" strokeWidth={3} />}
-                                                        </span>
-                                                        <span className="leading-snug break-words">{kw.keyword}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        <div className="flex justify-end gap-2 border-t pt-4">
-                            <Button outlined onClick={closeDialog}>Cancel</Button>
-                            <Button
-                                onClick={handleProceedWithKeywords}
-                                disabled={isSubmittingExtraction}
-                                startIcon={isSubmittingExtraction ? <Spinner size={14} /> : null}
-                            >
-                                {isSubmittingExtraction ? 'Processing...' : `Proceed with ${totalSelected} Keywords`}
+        <>
+            <DialogComponent
+                className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col"
+                name="Bulk Import"
+                isOpen={!showBulkKeywordDialog}
+                closeDialog={closeDialog}
+                disableBlurCloseDialog
+            >
+                <div className="flex w-full min-h-0 flex-1 flex-col overflow-hidden p-10 pt-5">
+                    {(module === 'content-creation' || module === 'data-entry') && (
+                        <div className="flex w-full justify-end mb-4">
+                            <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
+                                Sample Input File
                             </Button>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {!isFetchingKeywords && keywordGroups.length === 0 && (
-                    <DragAndDropFileInput accept={supportedFileTypes.join(', ')} onFilesChange={onFileDrop} />
-                )}
-            </div>
-        </DialogComponent>
+                    {showSegregatedDocuments && (
+                        <SegregatedDocuments
+                            selectedFiles={selectedFiles}
+                            isOpen={showSegregatedDocuments}
+                            closeDialog={closeDialog}
+                            onSubmit={addSegregatedDocumentsToExtraction}
+                        />
+                    )}
+
+                    {isFetchingKeywords && (
+                        <div className="flex flex-col items-center justify-center gap-3 py-16">
+                            <Spinner size={32} />
+                            <p className="text-sm text-gray-500">Fetching SEO keywords for your content...</p>
+                        </div>
+                    )}
+
+                    {!isFetchingKeywords && (
+                        <DragAndDropFileInput accept={supportedFileTypes.join(', ')} onFilesChange={onFileDrop} />
+                    )}
+                </div>
+            </DialogComponent>
+
+            {/* Reuse KeywordSelectionDialog for bulk upload flow */}
+            <KeywordSelectionDialog
+                isOpen={showBulkKeywordDialog}
+                keywordGroups={keywordGroups}
+                isFetching={false}
+                onClose={() => {
+                    setShowBulkKeywordDialog(false);
+                    setKeywordGroups([]);
+                }}
+                onProceed={handleProceedWithKeywords}
+                isSubmitting={isSubmittingBulk}
+            />
+        </>
     );
 };
