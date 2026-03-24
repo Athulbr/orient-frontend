@@ -16,17 +16,7 @@ import * as XLSX from 'xlsx';
 import { Download, Check, ChevronDown } from 'lucide-react';
 import Spinner from '../../../components/Spinner';
 
-interface KeywordItem {
-    keyword: string;
-    source: string;
-    selected: boolean;
-}
-
-interface KeywordGroup {
-    name: string;
-    primary_keyword: string;
-    keywords: KeywordItem[];
-}
+import { KeywordItem, KeywordGroup, KeywordSelectionDialog } from './KeywordSelectionDialog';
 
 interface UploadDocumentComponentIF {
     template?: any;
@@ -50,6 +40,10 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const [pendingRows, setPendingRows] = useState<any[]>([]);
     const [isSubmittingExtraction, setIsSubmittingExtraction] = useState(false);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+    // Manual form keyword state
+    const [showKeywordDialog, setShowKeywordDialog] = useState(false);
+    const [pendingManualRow, setPendingManualRow] = useState<any>(null);
+    const [isSubmittingManual, setIsSubmittingManual] = useState(false);
 
     const toggleGroupCollapse = (gi: number) => {
         setCollapsedGroups(prev => {
@@ -131,11 +125,11 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                     rows: selectedProducts
                 });
                 const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
-                    name: group.name,
-                    primary_keyword: group.primary_keyword,
-                    keywords: (group.keywords || []).map((item: any) => ({
-                        keyword: item.keyword,
-                        source: item.source,
+                    name: group?.name,
+                    primary_keyword: group?.primary_keyword,
+                    keywords: (group?.keywords || []).map((item: any) => ({
+                        keyword: item?.keyword,
+                        source: item?.source,
                         selected: true
                     }))
                 }));
@@ -254,7 +248,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             const headers1 = [
                 'name',
                 'description',
-                'primary_keyword',
+                'primary_keywords',
                 // 'author',
                 'product_links',
             ];
@@ -276,22 +270,86 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         }
     };
 
+    const handleManualFormSubmit = async (formData: any) => {
+        console.log('[Manual Form] Submitted, fetching keywords...', formData);
+        // Normalize field names — form returns primaryKeyword (camelCase, possibly comma-separated)
+        const rawKeyword = formData.primaryKeyword || formData.primary_keyword || formData.primary_keywords || '';
+        const keywordsArray: string[] = Array.isArray(rawKeyword)
+            ? rawKeyword.flatMap((k: string) => k.split(',').map((s: string) => s.trim()).filter(Boolean))
+            : String(rawKeyword).split(',').map((s: string) => s.trim()).filter(Boolean);
+        const normalizedFormData = {
+            ...formData,
+            primary_keywords: keywordsArray
+        };
+        setPendingManualRow(normalizedFormData);
+        setIsFetchingKeywords(true);
+        setShowKeywordDialog(true);
+        setKeywordGroups([]);
+        try {
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/get-keywords`, {
+                rows: [normalizedFormData]
+            });
+            const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
+                name: group?.name,
+                primary_keyword: group?.primary_keyword,
+                keywords: (group?.keywords || []).map((item: any) => ({
+                    keyword: item?.keyword,
+                    source: item?.source,
+                    selected: true
+                }))
+            }));
+            setKeywordGroups(fetched);
+        } catch (e) {
+            toast.error('Failed to fetch SEO keywords, proceeding without keywords');
+            addToDocumentExtractor(latestTemplate ?? template, [], formData);
+            setShowKeywordDialog(false);
+            setPendingManualRow(null);
+        } finally {
+            setIsFetchingKeywords(false);
+        }
+    };
+
+    const handleManualKeywordProceed = async (groups: KeywordGroup[]) => {
+        setIsSubmittingManual(true);
+        try {
+            const selectedKeywords = groups.flatMap(g => g.keywords.filter(k => k.selected));
+            addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords });
+            setShowKeywordDialog(false);
+            setPendingManualRow(null);
+            closeDialog();
+            setShowManualInputForm && setShowManualInputForm(false);
+        } finally {
+            setIsSubmittingManual(false);
+        }
+    };
+
     if (showManualInputForm) {
         return (
-            <UseFormbuilder
-                isOpen={true}
-                title="Create Blog Form"
-                name="Create Blog Form"
-                className="w-230"
-                existingData={{}}
-                onSubmit={e => {
-                    addToDocumentExtractor(latestTemplate, [], e);
-                }}
-                closeDialog={() => {
-                    closeDialog();
-                    setShowManualInputForm && setShowManualInputForm(false);
-                }}
-            />
+            <>
+                <UseFormbuilder
+                    isOpen={!showKeywordDialog}
+                    title="Create Blog Form"
+                    name="Create Blog Form"
+                    className="w-230"
+                    existingData={{}}
+                    onSubmit={handleManualFormSubmit}
+                    closeDialog={() => {
+                        closeDialog();
+                        setShowManualInputForm && setShowManualInputForm(false);
+                    }}
+                />
+                <KeywordSelectionDialog
+                    isOpen={showKeywordDialog}
+                    keywordGroups={keywordGroups}
+                    isFetching={isFetchingKeywords}
+                    onClose={() => {
+                        setShowKeywordDialog(false);
+                        setPendingManualRow(null);
+                    }}
+                    onProceed={handleManualKeywordProceed}
+                    isSubmitting={isSubmittingManual}
+                />
+            </>
         );
     }
 

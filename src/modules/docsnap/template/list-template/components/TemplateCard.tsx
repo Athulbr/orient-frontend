@@ -12,6 +12,8 @@ import { config } from '../../../../../config/default';
 import { useState, useEffect } from 'react';
 import { UseFormbuilder } from '../../../../../builders/formbuilder/use-formbuilder';
 import { DialogComponent } from '../../../../../components/DialogComponent';
+import { KeywordSelectionDialog, KeywordGroup } from '../../../upload-document-new/KeywordSelectionDialog';
+import { useDocumentExtractor } from '../../../upload-document-new/useDocumentExtractor';
 interface PropsIF {
     template?: any;
     onClickUpload?: () => void;
@@ -37,12 +39,20 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
     const { checkPermission } = usePermissionStore();
+    const { addToDocumentExtractor } = useDocumentExtractor();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [creatingRecord, setCreatingRecord] = useState(false);
     const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
     const [duplicateTemplateName, setDuplicateTemplateName] = useState('');
     const [isDuplicating, setIsDuplicating] = useState(false);
     const [showPromptDialog, setShowPromptDialog] = useState(false);
+
+    // Keyword selection state (content-creation manual form flow)
+    const [keywordGroups, setKeywordGroups] = useState<KeywordGroup[]>([]);
+    const [isFetchingKeywords, setIsFetchingKeywords] = useState(false);
+    const [showKeywordDialog, setShowKeywordDialog] = useState(false);
+    const [pendingFormData, setPendingFormData] = useState<any>(null);
+    const [isSubmittingKeywords, setIsSubmittingKeywords] = useState(false);
 
     const module = sessionStorage.getItem('module');
     const userStr = sessionStorage.getItem('user');
@@ -209,6 +219,39 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     }
 
     const handleCreateRecord = async (data: any) => {
+        if (module === 'content-creation') {
+            // For content-creation: fetch keywords before proceeding
+            setPendingFormData(data);
+            setShowCreateDialog(false);
+            setIsFetchingKeywords(true);
+            setShowKeywordDialog(true);
+            setKeywordGroups([]);
+            try {
+                const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/get-keywords`, {
+                    rows: [data]
+                });
+                const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
+                    name: group?.name,
+                    primary_keyword: group?.primary_keyword,
+                    keywords: (group?.keywords || []).map((item: any) => ({
+                        keyword: item?.keyword,
+                        source: item?.source,
+                        selected: true
+                    }))
+                }));
+                setKeywordGroups(fetched);
+            } catch (e) {
+                toast.error('Failed to fetch SEO keywords, proceeding without keywords');
+                // Proceed without keywords
+                addToDocumentExtractor(template, [], data);
+                setShowKeywordDialog(false);
+            } finally {
+                setIsFetchingKeywords(false);
+            }
+            return;
+        }
+
+        // Original flow for non-content-creation modules
         setCreatingRecord(true);
         const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
         const values: any = {};
@@ -233,6 +276,23 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         setShowCreateDialog(false);
         setCreatingRecord(false);
         navigate('/docsnap/record/list');
+    };
+
+    const handleProceedWithKeywords = async (groups: KeywordGroup[]) => {
+        setIsSubmittingKeywords(true);
+        try {
+            const matchingGroup = groups.find(
+                g => g.name === pendingFormData?.name || g.primary_keyword === pendingFormData?.primary_keyword
+            );
+            const selectedKeywords = matchingGroup
+                ? matchingGroup.keywords.filter(k => k.selected)
+                : groups.flatMap(g => g.keywords.filter(k => k.selected));
+            addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords });
+            setShowKeywordDialog(false);
+            setPendingFormData(null);
+        } finally {
+            setIsSubmittingKeywords(false);
+        }
     };
 
     if (!template) return null;
@@ -382,6 +442,19 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             </DialogComponent>
 
             <PromptDialog isOpen={showPromptDialog} closeDialog={() => setShowPromptDialog(false)} template={template} refreshPage={refreshPage} />
+
+            {/* Keyword Selection Dialog — shown after Create form submit in content-creation */}
+            <KeywordSelectionDialog
+                isOpen={showKeywordDialog}
+                keywordGroups={keywordGroups}
+                isFetching={isFetchingKeywords}
+                onClose={() => {
+                    setShowKeywordDialog(false);
+                    setPendingFormData(null);
+                }}
+                onProceed={handleProceedWithKeywords}
+                isSubmitting={isSubmittingKeywords}
+            />
         </div>
     );
 };
