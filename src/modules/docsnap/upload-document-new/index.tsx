@@ -356,12 +356,12 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     return (
         <DialogComponent
             className="flex max-h-[calc(100vh-200px)] min-h-[calc(100vh-200px)] w-[80vw] flex-col"
-            name="Bulk Import"
+            name={keywordGroups.length > 0 ? 'Select Keywords' : 'Bulk Import'}
             isOpen={true}
             closeDialog={closeDialog}
         >
             <div className="flex w-full min-h-0 flex-1 flex-col overflow-hidden p-10 pt-5">
-                {(module === 'content-creation' || module === 'data-entry') && (
+                {(module === 'content-creation' || module === 'data-entry') && keywordGroups.length === 0 && (
                     <div className="flex w-full justify-end mb-4">
                         <Button startIcon={<Download size={14} className="text-gray-500" />} outlined onClick={downloadSampleExcel}>
                             Sample Input File
