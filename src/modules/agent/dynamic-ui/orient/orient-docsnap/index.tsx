@@ -107,7 +107,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                 }
 
                 // Listen to SSE Stream for Completion
-                const streamUrl = `http://${address}:6007/api/executions/${executionId}/status-stream?apiKey=secret1`;
+                const streamUrl = `https://${address}/api/executions/${executionId}/status-stream?apiKey=secret1`;
                 const eventSource = new EventSource(streamUrl);
 
                 eventSource.onmessage = event => {
