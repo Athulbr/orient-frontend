@@ -13,7 +13,7 @@ interface ExtractionFloatingWindowIF {
 }
 
 const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => {
-        const { addToDocumentExtractor } = useDocumentExtractor();
+    const { addToDocumentExtractor } = useDocumentExtractor();
     const { extractionQueue, clearExtractionQueue } = useExtractionStore();
     const [minimize, setMinimize] = useState(false);
 
@@ -21,7 +21,7 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
 
     if (!extractionQueue.length) return null;
 
-    const getStatusUI = (status: string) => { 
+    const getStatusUI = (status: string) => {
         switch (status) {
             case 'completed':
                 return <CheckCircle2 className="text-green-500" />;
@@ -46,8 +46,8 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
     const handleRetry = (file: any) => {
         // console.log(file);
         if (file?.payload?.template?.settings?.module === 'data-entry') {
-             console.log(file);
-             addToDocumentExtractor(file?.payload?.template, [], file?.payload?.rowData);
+            console.log(file);
+            addToDocumentExtractor(file?.payload?.template, [], file?.payload?.rowData);
         }
     };
 
@@ -136,9 +136,13 @@ const ExtractionFloatingWindowNew: React.FC<ExtractionFloatingWindowIF> = () => 
                                     <span className="text-sm text-nowrap text-green-600">( {file.time}s )</span>
                                 </div>
                                 {getStatusUI(file.status)}
-                                {file.status === 'failed' && file?.payload?.template?.settings?.module === 'data-entry' && <Button small onClick={() => handleRetry(file)} >Retry</Button>}
+                                {file.status === 'failed' && file?.payload?.template?.settings?.module === 'data-entry' && (
+                                    <Button small onClick={() => handleRetry(file)}>
+                                        Retry
+                                    </Button>
+                                )}
                             </div>
-                            {file.status === 'processing' && getProgressUI(file.step, file.progress)}
+                            {(file.status === 'processing' || file.status === 'running') && getProgressUI(file.step, file.progress)}
                         </div>
                     ))}
                 </div>

@@ -28,6 +28,10 @@ const ListTemplateComponent: React.FC = () => {
         setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, refresh: state.refresh + 1 });
     };
 
+    const onClickManualButton = (template: any) => {
+        setState({ ...state, showUploadDocumentDialog: true, selectedTemplate: template, showManualInputForm: true });
+    };
+
     const exportTemplate = async (id: string) => {
         const template = await getTemplateApi(id);
         const data = {
@@ -70,6 +74,7 @@ const ListTemplateComponent: React.FC = () => {
                     template={template}
                     refreshPage={() => setState({ ...state, refresh: state.refresh + 1 })}
                     exportTemplate={exportTemplate}
+                    onClickManualButton={() => onClickManualButton(template)}
                     isFirstCard={idx === 0}
                 />
             ))}

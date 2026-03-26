@@ -11,7 +11,7 @@ export const useDocumentExtractor = () => {
     const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }) => {
         const sendApiRequestToNodeJsExtractor = async (file: File | File[], template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
             let timer: NodeJS.Timeout | null = null;
-            const fileName = Array.isArray(file) ? (documentNumber || `Batch of ${file.length} Files`) : file.name;
+            const fileName = Array.isArray(file) ? documentNumber || `Batch of ${file.length} Files` : file.name;
 
             try {
                 const abortController = new AbortController();
@@ -32,7 +32,7 @@ export const useDocumentExtractor = () => {
                 formData.append('templateId', template?._id);
                 formData.append('template', JSON.stringify(template)); // For only SLD module
                 if (Array.isArray(file)) {
-                    file.forEach((f) => {
+                    file.forEach(f => {
                         if (f.size > 0) {
                             formData.append('file', f);
                         }
@@ -46,7 +46,7 @@ export const useDocumentExtractor = () => {
                 if (documentNumber) {
                     formData.append('documentNumber', documentNumber);
                 }
-                formData.append('fromAddress', "frontend@makez.com");
+                formData.append('fromAddress', 'frontend@makez.com');
 
                 const module = template?.settings?.module;
 
@@ -291,8 +291,6 @@ export const useDocumentExtractor = () => {
             }
         };
 
-     
-
         const sendApiRequestToWorkflow = async (file: File, template: any) => {
             let timer: NodeJS.Timeout | null = null;
 
@@ -313,7 +311,7 @@ export const useDocumentExtractor = () => {
                 const formData = new FormData();
                 formData.append('templateId', template?._id);
                 formData.append('file', file);
-                const apiEndPoint = `http://localhost:4000/api/webhooks/trigger/docsnap-v2`;
+                const apiEndPoint = `http://localhost:4000/api/webhooks/trigger/orient-v1`;
 
                 const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
                 if (selectedTenant) {
@@ -338,7 +336,7 @@ export const useDocumentExtractor = () => {
                 if (selectedTenant) {
                     streamHeaders.tenantId = selectedTenant;
                 }
-                const streamResponse = await fetch(`http://localhost:4000/api/executions/${data.data?.executionId}/stream?apiKey=secret1`, {
+                const streamResponse = await fetch(`http://localhost:4000/api/executions/${data.data?.executionId}/status-stream?apiKey=secret1`, {
                     method: 'GET',
                     headers: streamHeaders,
                     signal: abortController.signal
@@ -372,7 +370,7 @@ export const useDocumentExtractor = () => {
 
         const addNameToQueue = (name: string) => {
             refreshExtractionQueue(name);
-            addToExtractionQueue(name,{template,rowData});
+            addToExtractionQueue(name, { template, rowData });
         };
 
         if (template?.settings?.module === 'data-entry') {
@@ -419,7 +417,7 @@ export const useDocumentExtractor = () => {
                     addNameToQueue(file.name);
                     sendApiRequestToWorkflow(file, template);
                 }
-            } else{
+            } else {
                 toast.error('No extraction engine found');
             }
         } catch (error) {

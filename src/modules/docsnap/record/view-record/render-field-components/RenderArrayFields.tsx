@@ -46,7 +46,7 @@ export const RenderArrayFields: FC<any> = ({ refs }) => {
                 return item.jsonKey === state.tableNames[mainIndex];
             });
             if (lineItems?.subFields) {
-                columnNames = lineItems.subFields.map((item: any) => item.name);
+                columnNames = lineItems.subFields.map((item: any) => item.jsonKey);
             }
         }
         // Create a new row object with the same column structure

@@ -13,7 +13,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
 
     const config = useMemo(
         () => ({
-            placeholder,
+            placeholder: value && value.trim() !== '' ? '' : placeholder,
             height,
             toolbarAdaptive: false,
             toolbarSticky: false,
@@ -84,7 +84,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
                 }
             ]
         }),
-        [placeholder, height]
+        [placeholder, height, value]
     );
 
     return (
