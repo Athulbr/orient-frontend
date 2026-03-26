@@ -11,10 +11,7 @@ export default defineConfig({
             'devapi.makez.ai',
             'dev.makez.ai',
             'app.makez.ai',
-            'atl-xfactr-web.maximtech.com',
-            'xfactr-web.rehabmart.com',
-            'demo.makez.ai',
-            'demo-makez-ai-alb-1532787530.us-east-1.elb.amazonaws.com'
+            '[IP_ADDRESS]'
         ]
     },
     test: {
