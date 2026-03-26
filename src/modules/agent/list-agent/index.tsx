@@ -25,7 +25,9 @@ const ListAgentsPage = () => {
         setIsLoading(true);
         try {
             // User requested a dummy api endpoint for now
-            const response: any = await httpRequest('GET', `http://localhost:6007/api/workflows?limit=100&category=main`);
+            const address = '54.243.28.4';
+            // const address = 'localhost';
+            const response: any = await httpRequest('GET', `http://${address}:6007/api/workflows?limit=100&category=main`);
 
             // Assume the response structure is PaginatedResponse or just an array
             if (response && response.data) {
@@ -148,9 +150,7 @@ const ListAgentsPage = () => {
                                         </div>
                                         <span
                                             className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${
-                                                agent.isActive
-                                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                                    : 'border-zinc-200 bg-slate-50 text-zinc-600'
+                                                agent.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-slate-50 text-zinc-600'
                                             }`}
                                         >
                                             {agent.isActive ? 'Active' : 'Inactive'}

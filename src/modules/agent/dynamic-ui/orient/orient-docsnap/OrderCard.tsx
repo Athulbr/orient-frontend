@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { FileText, Mail, UploadCloud, ExternalLink, Link2, Unlink, ArrowRight, Plus, X, Zap, Clock, User, Building2, Hash, Eye } from 'lucide-react';
+import { FileText, Mail, UploadCloud, ExternalLink, Link2, Unlink, ArrowRight, Plus, X, Zap, Clock, User, Building2, Hash, Eye, Phone, Edit, Trash2 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
 import { Order, Email, FileItem, TemplateRequirement } from './types';
 import { getFileNameFromUrl, getFileType } from './data';
+import Spinner from '../../../../../components/Spinner';
+import { useNavigate } from 'react-router-dom';
 
 interface OrderCardProps {
     order: Order;
@@ -13,11 +15,13 @@ interface OrderCardProps {
     uploadedFiles: File[];
     availableEmails: Email[];
     templateRequirements: TemplateRequirement[];
-    onLinkEmail: (orderId: string, emailId: string) => void;
-    onUnlinkEmail: (orderId: string, emailId: string) => void;
-    onUploadFiles: (orderId: string, files: File[]) => void;
-    onRemoveUploadedFile: (orderId: string, fileIndex: number) => void;
-    onProceed: (orderId: string) => void;
+    onLinkEmail: (orderId: number, emailId: string) => void;
+    onUnlinkEmail: (orderId: number, emailId: string) => void;
+    onUploadFiles: (orderId: number, files: File[]) => void;
+    onRemoveUploadedFile: (orderId: number, fileIndex: number) => void;
+    onProceed: (orderId: number) => void;
+    onEdit?: (order: Order) => void;
+    onDelete?: (orderId: number) => void;
     isProceeding: boolean;
 }
 
@@ -96,7 +100,7 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                         <span className={`text-[10px] font-extrabold tracking-widest font-mono ${cfg.text} ${cfg.bg} px-[6px] py-[3px] rounded-md`}>{cfg.label}</span>
 
                         {/* File name */}
-                        <span className="text-[11px] text-gray-500 font-medium text-center leading-[1.3] break-all line-clamp-3 w-full px-0.5">{shortName}</span>
+                        <span className="text-[11px] text-gray-600 font-bold text-center leading-[1.3] break-all line-clamp-3 w-full px-0.5">{shortName}</span>
 
                         {/* Hover open hint */}
                         <div
@@ -146,7 +150,7 @@ const GBtn: React.FC<{
 }> = ({ colorClass, borderClass, hoverClass, icon, label, onClick }) => (
     <button
         onClick={onClick}
-        className={`inline-flex items-center gap-1 px-[10px] py-[5px] rounded-md cursor-pointer text-xs font-bold border bg-transparent font-[inherit] transition-colors duration-150 ${colorClass} ${borderClass} ${hoverClass}`}
+        className={`inline-flex items-center gap-1 px-[12px] py-[6px] rounded-md cursor-pointer text-xs font-bold border bg-transparent font-[inherit] transition-colors duration-150 ${colorClass} ${borderClass} ${hoverClass}`}
     >
         {icon}
         {label}
@@ -172,12 +176,16 @@ const OrderCard: React.FC<OrderCardProps> = ({
     onUploadFiles,
     onRemoveUploadedFile,
     onProceed,
+    onEdit,
+    onDelete,
     isProceeding
 }) => {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const navigate = useNavigate();
 
-    const orderFiles: FileItem[] = order.documents.map(url => ({ name: getFileNameFromUrl(url), url, type: getFileType(url), source: 'order' as const }));
+    const orderFiles: FileItem[] = order.document_details.map(doc => ({ name: doc.documentName, url: doc.documentUrl, type: getFileType(doc.documentUrl), source: 'order' as const }));
     const emailFiles: FileItem[] = linkedEmails.flatMap(email => email.attachments) || [];
     const uploadedFileItems: (FileItem & { index: number })[] = uploadedFiles.map((f, i) => ({
         name: f.name,
@@ -187,9 +195,14 @@ const OrderCard: React.FC<OrderCardProps> = ({
         index: i
     }));
 
+    const handleViewExtractedData = () => {
+        console.log('order.extractionDetails.extractedData:===========', order.extractionDetails.extractedData);
+        navigate(`/docsnap/record/view/${order.extractionDetails.recordId}`);
+    };
+
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFiles.length;
     const hasDocuments = totalDocs > 0;
-    const status = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.DEFAULT;
+    const status = STATUS_CONFIG[order.order_details.order_status.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
 
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] bg-white border border-gray-200 rounded-2xl overflow-hidden w-full shadow-lg shadow-gray-200/80">
@@ -198,26 +211,55 @@ const OrderCard: React.FC<OrderCardProps> = ({
             <div className="flex items-start justify-between gap-4 px-[22px] pt-[18px] pb-4 border-b border-gray-100">
                 <div>
                     <div className="flex items-center gap-2 flex-wrap mb-[6px]">
-                        <span className="text-[22px] font-extrabold text-gray-900 tracking-tight">{order.order_id}</span>
+                        <span className="text-[22px] font-extrabold text-gray-900 tracking-tight">{order.order_details.order_no}</span>
                         <span className={`inline-flex items-center gap-1 text-xs font-extrabold ${status.text} ${status.bg} border ${status.border} px-2 py-[3px] rounded-full`}>
                             <span className={`w-[5px] h-[5px] rounded-full ${status.dot} inline-block`} />
-                            {order.status}
+                            {order.order_details.order_status}
                         </span>
-                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.order_type}</span>
+                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.order_details.type.toUpperCase()}</span>
                     </div>
 
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
-                        <Clock size={13} className="text-gray-300" />
-                        {new Date(order.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        <Building2 size={13} className="text-gray-300" />
+                        {order.order_details.location}
+                        <span className="mx-1.5">•</span>
+                        <span className="text-gray-500 font-semibold">{order.order_details.doc_submit_status} Submission</span>
                     </div>
 
-                    <div className="flex gap-[6px] flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                         {[
-                            { icon: <User size={12} className="text-gray-400" />, val: order.customer_name },
-                            { icon: <Building2 size={12} className="text-gray-400" />, val: order.branch_name },
-                            { icon: <Hash size={12} className="text-gray-400" />, val: order.branch_id }
-                        ].map(({ icon, val }) => (
-                            <div key={val} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-[9px] py-1 text-[13px] font-semibold text-gray-600">
+                            { icon: <User size={12} className="text-gray-400" />, val: `${order.user_details.name} (#${order.user_details.user_id})` },
+                            { icon: <Mail size={12} className="text-gray-400" />, val: order.user_details.email },
+                            { icon: <Phone size={12} className="text-gray-400" />, val: order.user_details.phone },
+                            { icon: <Building2 size={12} className="text-gray-400" />, val: order.order_details.branch },
+                            {
+                                icon: null,
+                                val: (
+                                    <>
+                                        <span className="text-gray-400 font-medium mr-[3px]">Branch ID:</span> <span className="text-gray-800 font-bold">{order.order_details.branch_id}</span>
+                                    </>
+                                )
+                            },
+                            {
+                                icon: null,
+                                val: (
+                                    <>
+                                        <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
+                                        <span className="text-gray-800 font-bold">₹{order.order_details.actual_amount.toLocaleString()}</span>
+                                    </>
+                                )
+                            },
+                            {
+                                icon: null,
+                                val: (
+                                    <>
+                                        <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
+                                        <span className="text-[#012D56] font-extrabold">₹{order.order_details.total_amount.toLocaleString()}</span>
+                                    </>
+                                )
+                            }
+                        ].map(({ icon, val }, idx) => (
+                            <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
                                 {icon}
                                 {val}
                             </div>
@@ -225,18 +267,33 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </div>
                 </div>
 
-                <div className="flex gap-[7px] flex-shrink-0">
-                    {[
-                        { n: orderFiles.length, l: 'ORDER', dark: false },
-                        { n: emailFiles.length, l: 'EMAIL', dark: false },
-                        { n: uploadedFiles.length, l: 'UPLOAD', dark: false },
-                        { n: totalDocs, l: 'TOTAL', dark: true }
-                    ].map(({ n, l, dark }) => (
-                        <div key={l} className={`rounded-[10px] py-[9px] px-[13px] text-center min-w-[58px] border ${dark ? 'bg-[#012D56] border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className={`text-2xl font-extrabold leading-none ${dark ? 'text-white' : 'text-gray-900'}`}>{n}</div>
-                            <div className={`text-[11px] font-bold tracking-[0.07em] mt-0.5 ${dark ? 'text-white/45' : 'text-gray-400'}`}>{l}</div>
-                        </div>
-                    ))}
+                <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                        {onEdit && <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />}
+                        {onDelete && (
+                            <GBtn
+                                colorClass="text-red-600"
+                                borderClass="border-red-200"
+                                hoverClass="hover:bg-red-50"
+                                icon={<Trash2 size={11} />}
+                                label="Delete"
+                                onClick={() => setShowDeleteConfirm(true)}
+                            />
+                        )}
+                    </div>
+                    <div className="flex gap-[7px]">
+                        {[
+                            { n: orderFiles.length, l: 'ORDER', dark: false },
+                            { n: emailFiles.length, l: 'EMAIL', dark: false },
+                            { n: uploadedFiles.length, l: 'UPLOAD', dark: false },
+                            { n: totalDocs, l: 'TOTAL', dark: true }
+                        ].map(({ n, l, dark }) => (
+                            <div key={l} className={`rounded-[10px] py-[9px] px-[13px] text-center min-w-[58px] border ${dark ? 'bg-[#012D56] border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
+                                <div className={`text-2xl font-extrabold leading-none ${dark ? 'text-white' : 'text-gray-900'}`}>{n}</div>
+                                <div className={`text-[11px] font-bold tracking-[0.07em] mt-0.5 ${dark ? 'text-white/45' : 'text-gray-400'}`}>{l}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -247,7 +304,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             <ColIcon bg="bg-blue-50" border="border-blue-200">
                                 <FileText size={15} className="text-blue-500" />
                             </ColIcon>
-                            <span className="text-[13px] font-bold text-gray-700">Order Documents</span>
+                            <span className="text-[13px] font-bold text-gray-700">Web Documents</span>
                             <ColCount colorClass="text-blue-700" bgClass="bg-blue-100" borderClass="border-blue-200" n={orderFiles.length} />
                         </div>
                     </div>
@@ -268,7 +325,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             <ColIcon bg="bg-violet-50" border="border-violet-200">
                                 <Mail size={15} className="text-violet-500" />
                             </ColIcon>
-                            <span className="text-[13px] font-bold text-gray-700">Email Attachments</span>
+                            <span className="text-[13px] font-bold text-gray-700">Email Documents</span>
                             <ColCount colorClass="text-violet-700" bgClass="bg-violet-100" borderClass="border-violet-200" n={emailFiles.length} />
                         </div>
                         <GBtn
@@ -297,7 +354,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     hoverClass="hover:bg-red-50"
                                     icon={<Unlink size={11} />}
                                     label="Unlink"
-                                    onClick={() => onUnlinkEmail(order.order_id, email.id)}
+                                    onClick={() => onUnlinkEmail(order.order_details.order_id, email.id)}
                                 />
                             </div>
                         ))}
@@ -316,7 +373,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <EmailLinkDialog
                             availableEmails={availableEmails}
                             onLink={id => {
-                                onLinkEmail(order.order_id, id);
+                                onLinkEmail(order.order_details.order_id, id);
                                 setShowLinkDialog(false);
                             }}
                         />
@@ -329,7 +386,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             <ColIcon bg="bg-emerald-50" border="border-emerald-200">
                                 <UploadCloud size={15} className="text-emerald-500" />
                             </ColIcon>
-                            <span className="text-[13px] font-bold text-gray-700">Uploaded Files</span>
+                            <span className="text-[13px] font-bold text-gray-700">Uploaded Documents</span>
                             <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFiles.length} />
                         </div>
                         <GBtn
@@ -345,7 +402,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     {uploadedFileItems.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px]">
                             {uploadedFileItems.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.order_id, f.index)} />
+                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.order_details.order_id, f.index)} />
                             ))}
                         </div>
                     ) : (
@@ -356,7 +413,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <div className="p-6">
                             <GenericFileInput
                                 onFilesChange={files => {
-                                    onUploadFiles(order.order_id, files);
+                                    onUploadFiles(order.order_details.order_id, files);
                                     setShowUploader(false);
                                 }}
                                 multiple
@@ -370,24 +427,56 @@ const OrderCard: React.FC<OrderCardProps> = ({
             </div>
 
             <div className="px-[22px] py-[13px] flex items-center justify-between">
-                <span className="text-sm text-gray-400 font-medium">
+                <span className="text-sm text-gray-400">
                     {totalDocs} document{totalDocs !== 1 ? 's' : ''} ready for extraction
                 </span>
-                <Button outlined onClick={() => onProceed(order.order_id)} disabled={!hasDocuments || isProceeding}>
-                    {isProceeding ? (
-                        <>
-                            <div className="w-[14px] h-[14px] rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                            Processing…
-                        </>
-                    ) : (
-                        <>
-                            <Zap size={15} />
-                            Proceed to Extract
-                            <ArrowRight size={15} />
-                        </>
-                    )}
-                </Button>
+                {!order.extractionDetails.recordId ? (
+                    <Button
+                        startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
+                        outlined
+                        onClick={() => onProceed(order.order_details.order_id)}
+                        disabled={!hasDocuments || isProceeding}
+                    >
+                        {isProceeding ? (
+                            'Processing…'
+                        ) : (
+                            <>
+                                {/* <Zap size={15} /> */}
+                                Proceed to Extract
+                                <ArrowRight size={15} />
+                            </>
+                        )}
+                    </Button>
+                ) : (
+                    <Button outlined onClick={handleViewExtractedData}>
+                        View Extracted Data
+                    </Button>
+                )}
             </div>
+
+            {onDelete && (
+                <DialogComponent isOpen={showDeleteConfirm} closeDialog={() => setShowDeleteConfirm(false)} name="Confirm Delete" className="max-w-[400px]">
+                    <div className="p-6">
+                        <p className="text-gray-600 mb-6 text-[15px]">
+                            Are you sure you want to delete order <strong className="text-gray-900">{order.order_details.order_no}</strong>? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <Button outlined onClick={() => setShowDeleteConfirm(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    onDelete(order.order_details.order_id);
+                                    setShowDeleteConfirm(false);
+                                }}
+                                className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </DialogComponent>
+            )}
         </div>
     );
 };
