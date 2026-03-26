@@ -47,12 +47,5 @@ export const config = {
     nodeApiUrl: envConfig.nodeApiUrl,
     extractionServicePython: envConfig.extractionServicePython,
     chatbotServicePython: envConfig.chatbotServicePython,
-    mlServiceNodejs: envConfig.mlServiceNodejs,
-    azure: {
-        tenantId: import.meta.env.VITE_AZURE_TENANT_ID,
-        clientId: import.meta.env.VITE_AZURE_CLIENT_ID
-    },
-    google: {
-        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID
-    }
+    mlServiceNodejs: envConfig.mlServiceNodejs
 };
