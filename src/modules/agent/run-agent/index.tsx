@@ -11,7 +11,7 @@ const RunAgentPage: React.FC = () => {
     useEffect(() => {
         const fetchWorkflow = async () => {
             try {
-                const address = '54.243.28.4';
+                const address = 'https://devapi.makez.ai/agents';
                 // const address = 'localhost';
                 const data = await httpRequest('GET', `http://${address}:6007/api/workflows/${id}`);
                 setWorkflow(data.data);
