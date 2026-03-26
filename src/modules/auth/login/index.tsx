@@ -3,7 +3,7 @@ import { WelComeText } from './components/WelComeText';
 import { LoginPageStateProvider } from './hooks/LoginPageStateProvider';
 import { AuthErrorComponent } from './components/AuthErrorComponent';
 import { Divider } from './components/Divider';
-import { OAuthButtons } from './components/OAuthButtons';
+// import { OAuthButtons } from './components/OAuthButtons';
 import { SignUpRedirectText } from './components/SignUpRedirectText';
 import { LoginInputs } from './components/LoginInputs';
 
@@ -40,9 +40,9 @@ const LoginPage: FC = () => {
                 <WelComeText />
                 <AuthErrorComponent />
                 <LoginInputs />
-                <Divider />
-                <OAuthButtons />
-                <SignUpRedirectText />
+                {/* <Divider /> */}
+                {/* <OAuthButtons /> */}
+                {/* <SignUpRedirectText /> */}
             </div>
         </LoginPageStateProvider>
     );

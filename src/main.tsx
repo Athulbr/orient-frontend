@@ -14,13 +14,13 @@ const startApp = async () => {
     const root = createRoot(document.getElementById('root')!);
     root.render(
         <GoogleOAuthProvider clientId={config.google.clientId as string}>
-            <MsalProvider instance={msalInstance}>
+            {/* <MsalProvider instance={msalInstance}> */}
                 <BrowserRouter>
                     {/* <StrictMode> */}
                     <App />
                     {/* </StrictMode> */}
                 </BrowserRouter>
-            </MsalProvider>
+            {/* </MsalProvider> */}
         </GoogleOAuthProvider>
     );
 };

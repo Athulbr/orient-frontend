@@ -8,7 +8,7 @@ import MicrosoftLogin from './msal';
 import ProfileContent from './profileContent';
 
 export const OAuthButtons: FC = () => {
-    const { loginWithGoogle, loginWithMSAL } = useLoginPageApi();
+    const { loginWithGoogle } = useLoginPageApi();
     const { state } = useLoginPageState();
     // const isAuthenticated = useIsAuthenticated();
 
