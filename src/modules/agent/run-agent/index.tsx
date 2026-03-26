@@ -31,7 +31,7 @@ const RunAgentPage: React.FC = () => {
 
     // console.log('workflow:===========', workflow);
 
-    const DynamicUI = getDynamicUserInterface(workflow?.agentSettings?.inputUiId);
+    const DynamicUI = getDynamicUserInterface(workflow?.agentSettings?.uiId);
 
     if (loading) {
         return <div>Loading workflow...</div>;
