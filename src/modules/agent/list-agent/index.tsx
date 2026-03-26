@@ -27,7 +27,7 @@ const ListAgentsPage = () => {
             // User requested a dummy api endpoint for now
             const address = 'devapi.makez.ai/agents';
             // const address = 'localhost';
-            const response: any = await httpRequest('GET', `http://${address}:6007/api/workflows?limit=100&category=main`);
+            const response: any = await httpRequest('GET', `http://${address}/api/workflows?limit=100&category=main`);
 
             // Assume the response structure is PaginatedResponse or just an array
             if (response && response.data) {
