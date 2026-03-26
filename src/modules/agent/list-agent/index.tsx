@@ -25,7 +25,7 @@ const ListAgentsPage = () => {
         setIsLoading(true);
         try {
             // User requested a dummy api endpoint for now
-            const address = 'https://devapi.makez.ai/agents';
+            const address = 'devapi.makez.ai/agents';
             // const address = 'localhost';
             const response: any = await httpRequest('GET', `http://${address}:6007/api/workflows?limit=100&category=main`);
 
