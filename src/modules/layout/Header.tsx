@@ -90,7 +90,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     const logOut = async () => {
         setTimeout(() => {
             window.sessionStorage.clear();
-            window?.location?.replace('/');
+            window?.location?.replace('/auth/logout-message');
         }, 2000);
         if (isAuthenticated) {
             instance.logoutRedirect({

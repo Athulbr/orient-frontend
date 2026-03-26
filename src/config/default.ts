@@ -49,5 +49,6 @@ export const config = {
     },
     google: {
         clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID
-    }
+    },
+    usePhpSessionApi: true // Toggle to true to use check-session.php endpoint, false to use local strict timer
 };
