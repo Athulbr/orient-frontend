@@ -2,39 +2,64 @@ import { Order, Email, TemplateRequirement, FileItem } from './types';
 
 export const sampleOrders: Order[] = [
     {
-        order_id: 'ORD-2024-008825',
-        customer_name: 'Priya Sharma',
-        order_type: 'TRANSFER',
-        status: 'PENDING',
-        branch_id: 'BR-PUN-004',
-        branch_name: 'Pune - Koregaon Park',
-        created_at: '2024-03-20T14:20:00+05:30',
-        updated_at: '2024-03-20T14:20:00+05:30',
-        documents: ['https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf']
-    },
-    {
-        order_id: 'ORD-2024-008826',
-        customer_name: 'Aditya Sharma',
-        order_type: 'TRANSFER',
-        status: 'PENDING',
-        branch_id: 'BR-PUN-004',
-        branch_name: 'Pune - Koregaon Park',
-        created_at: '2024-03-20T14:20:00+05:30',
-        updated_at: '2024-03-20T14:20:00+05:30',
-        documents: ['https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf']
-    },
-    {
-        order_id: 'ORD-2024-008827',
-        customer_name: 'Ganesh Sharma',
-        order_type: 'TRANSFER',
-        status: 'PENDING',
-        branch_id: 'BR-PUN-004',
-        branch_name: 'Pune - Koregaon Park',
-        created_at: '2024-03-20T14:20:00+05:30',
-        updated_at: '2024-03-20T14:20:00+05:30',
-        documents: ['https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf']
+        order_details: {
+            order_id: 1289082,
+            order_no: '20250417117175',
+            type: 'sell',
+            location: 'Bangalore',
+            loc_id: 5,
+            branch: 'Bangalore-Basavangudi',
+            branch_id: 5,
+            total_amount: 85000,
+            actual_amount: 84500,
+            order_status: 'Completed',
+            doc_submit_status: 'Online'
+        },
+        user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' },
+        currency_details: [
+            { sr_no: 1, currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
+            { sr_no: 2, currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
+        ],
+        document_details: [
+            { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
+            { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
+            { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
+            { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' },
+            { documentName: 'pan_card', documentUrl: 'http://www.orientexchange.in/uploads/pan.pdf' },
+            { documentName: 'university_offer_letter', documentUrl: 'http://www.orientexchange.in/uploads/offer_letter.pdf' }
+        ],
+        extractionDetails: {}
     }
 ];
+
+// const temp={
+//         order_details: {
+//             order_id: 1289082, // generate 8 digit random number not 7 digit
+//             order_no: '20250417117175', // generate random number year+month+day+timestamp
+//             type: 'sell', // single select input buy/sell
+//             location: 'Bangalore', // hardcode banglore
+//             loc_id: 5, // hardcode 5
+//             branch: 'Bangalore-Basavangudi', // hardcode banglore-basavangudi
+//             branch_id: 5, // hardcode 5
+//             total_amount: 85000, // text input
+//             actual_amount: 84500, // text input
+//             order_status: 'Completed', // hardcode pending
+//             doc_submit_status: 'Online' // hardcode offline
+//         },
+//         user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' }, // hardcode { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' }
+//         currency_details: [ // hardcode empty array
+//             { sr_no: 1, currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
+//             { sr_no: 2, currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
+//         ],
+//         document_details: [ // hardcode empty array
+//             { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
+//             { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
+//             { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
+//             { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' },
+//             { documentName: 'pan_card', documentUrl: 'http://www.orientexchange.in/uploads/pan.pdf' },
+//             { documentName: 'university_offer_letter', documentUrl: 'http://www.orientexchange.in/uploads/offer_letter.pdf' }
+//         ]
+//     }
 
 export const sampleEmails: Email[] = [
     {

@@ -11,7 +11,9 @@ const RunAgentPage: React.FC = () => {
     useEffect(() => {
         const fetchWorkflow = async () => {
             try {
-                const data = await httpRequest('GET', `http://localhost:6007/api/workflows/${id}`);
+                const address = '54.243.28.4';
+                // const address = 'localhost';
+                const data = await httpRequest('GET', `http://${address}:6007/api/workflows/${id}`);
                 setWorkflow(data.data);
             } catch (error) {
                 console.error('Error fetching workflow:', error);
@@ -27,7 +29,7 @@ const RunAgentPage: React.FC = () => {
         }
     }, [id]);
 
-    console.log('workflow:===========', workflow);
+    // console.log('workflow:===========', workflow);
 
     const DynamicUI = getDynamicUserInterface(workflow?.agentSettings?.inputUiId);
 
