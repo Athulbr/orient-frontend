@@ -38,11 +38,11 @@ export const DashboardHeaderComponent: FC = () => {
                         User Guide
                     </Button>
                 )}
-                <Button outlined onClick={() => navigate('/docsnap/template/list')}>
-                    View Template
-                </Button>
                 <Button outlined onClick={() => navigate('/agent/list')}>
                     Makez Agents
+                </Button>
+                <Button outlined onClick={() => navigate('/docsnap/template/list')}>
+                    View Template
                 </Button>
                 <Button permission="create:template" startIcon={<Plus strokeWidth={1.5} size={18} />} onClick={handleCreateTemplateClick} data-tour-id="create-template">
                     Create Template
