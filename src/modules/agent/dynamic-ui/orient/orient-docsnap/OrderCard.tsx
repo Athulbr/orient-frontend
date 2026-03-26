@@ -235,7 +235,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 icon: null,
                                 val: (
                                     <>
-                                        <span className="text-gray-400 font-medium mr-[3px]">Branch ID:</span> <span className="text-gray-800 font-bold">{order.order_details.branch_id}</span>
+                                        <span className="text-gray-400 font-medium mr-[3px]">Branch ID:</span> <span className="text-gray-600 font-bold">{order.order_details.branch_id}</span>
                                     </>
                                 )
                             },
@@ -244,7 +244,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 val: (
                                     <>
                                         <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
-                                        <span className="text-gray-800 font-bold">₹{order.order_details.actual_amount.toLocaleString()}</span>
+                                        <span className="text-gray-600 font-bold">₹{(order.order_details.actual_amount || order.order_details.total_amount).toLocaleString()}</span>
                                     </>
                                 )
                             },
@@ -253,7 +253,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 val: (
                                     <>
                                         <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
-                                        <span className="text-[#012D56] font-extrabold">₹{order.order_details.total_amount.toLocaleString()}</span>
+                                        <span className="text-gray-600 font-extrabold">₹{order.order_details.total_amount.toLocaleString()}</span>
                                     </>
                                 )
                             }
