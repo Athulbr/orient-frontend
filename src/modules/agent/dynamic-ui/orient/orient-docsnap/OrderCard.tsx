@@ -66,8 +66,8 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                 onMouseLeave={() => setHover(false)}
                 onClick={handleClick}
                 title={file.name}
-                className={`relative w-[96px] h-[112px] rounded-2xl flex flex-col items-center justify-center gap-2 px-2 pb-2 pt-3 cursor-pointer overflow-hidden flex-shrink-0 transition-all duration-200 shadow-sm
-                    ${hover ? 'bg-white shadow-md scale-[1.03] border border-gray-200' : 'bg-gray-50 border border-gray-150 scale-100'}`}
+                className={`relative w-[96px] h-[112px] rounded-2xl flex flex-col items-center justify-center gap-2 px-2 pb-2 pt-3 cursor-pointer overflow-hidden flex-shrink-0 transition-all duration-200 shadow-lg
+                    ${hover ? 'bg-white shadow-xl shadow-gray-800 scale-[1.03] border border-gray-300' : 'bg-gray-50 border border-gray-150 scale-100'}`}
                 style={{ boxShadow: hover ? '0 4px 18px 0 rgba(0,0,0,0.10)' : '0 1px 4px 0 rgba(0,0,0,0.06)' }}
             >
                 {/* Remove button */}
@@ -196,8 +196,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     }));
 
     const handleViewExtractedData = () => {
-        console.log('order.extractionDetails.extractedData:===========', order.extractionDetails.extractedData);
-        navigate(`/docsnap/record/view/${order.extractionDetails.recordId}`);
+        navigate(`/docsnap/record/view/${order.extractionDetails.recordId || '69c56168258294752e8708bb'}`, { state: { orient: true } });
     };
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFiles.length;
@@ -297,35 +296,37 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 border-b border-gray-100">
-                <div className="p-[15px_18px] border-r border-gray-100 min-w-0">
-                    <div className="flex items-center justify-between mb-[11px]">
-                        <div className="flex items-center gap-[6px]">
-                            <ColIcon bg="bg-blue-50" border="border-blue-200">
-                                <FileText size={15} className="text-blue-500" />
-                            </ColIcon>
-                            <span className="text-[13px] font-bold text-gray-700">Web Documents</span>
-                            <ColCount colorClass="text-blue-700" bgClass="bg-blue-100" borderClass="border-blue-200" n={orderFiles.length} />
+            <div className={`grid ${order.order_details.doc_submit_status === 'Online' ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
+                {order.order_details.doc_submit_status === 'Online' && (
+                    <div className="p-3 border-r border-gray-100 min-w-0">
+                        <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
+                            <div className="flex items-center gap-[8px]">
+                                <ColIcon bg="bg-blue-50" border="border-blue-200">
+                                    <FileText size={15} className="text-blue-500" />
+                                </ColIcon>
+                                <span className="text-[15px] font-bold text-gray-700">Web Documents</span>
+                                <ColCount colorClass="text-blue-700" bgClass="bg-blue-100" borderClass="border-blue-200" n={orderFiles.length} />
+                            </div>
                         </div>
+                        {orderFiles.length > 0 ? (
+                            <div className="flex flex-wrap gap-[7px]">
+                                {orderFiles.map((f, i) => (
+                                    <DocTile key={i} file={f} />
+                                ))}
+                            </div>
+                        ) : (
+                            <span className="text-[13px] text-gray-300 italic">No documents attached</span>
+                        )}
                     </div>
-                    {orderFiles.length > 0 ? (
-                        <div className="flex flex-wrap gap-[7px]">
-                            {orderFiles.map((f, i) => (
-                                <DocTile key={i} file={f} />
-                            ))}
-                        </div>
-                    ) : (
-                        <span className="text-[13px] text-gray-300 italic">No documents attached</span>
-                    )}
-                </div>
+                )}
 
-                <div className="p-[15px_18px] border-r border-gray-100 min-w-0">
-                    <div className="flex items-center justify-between mb-[11px]">
-                        <div className="flex items-center gap-[6px]">
+                <div className="p-3 border-r border-gray-100 min-w-0">
+                    <div className="flex items-center justify-between mb-[11px]  bg-gray-100 p-4 rounded-lg">
+                        <div className="flex items-center gap-[8px]">
                             <ColIcon bg="bg-violet-50" border="border-violet-200">
                                 <Mail size={15} className="text-violet-500" />
                             </ColIcon>
-                            <span className="text-[13px] font-bold text-gray-700">Email Documents</span>
+                            <span className="text-[15px] font-bold text-gray-700">Email Documents</span>
                             <ColCount colorClass="text-violet-700" bgClass="bg-violet-100" borderClass="border-violet-200" n={emailFiles.length} />
                         </div>
                         <GBtn
@@ -380,13 +381,13 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </DialogComponent>
                 </div>
 
-                <div className="p-[15px_18px] min-w-0">
-                    <div className="flex items-center justify-between mb-[11px]">
-                        <div className="flex items-center gap-[6px]">
+                <div className="p-3 min-w-0">
+                    <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
+                        <div className="flex items-center gap-[8px]">
                             <ColIcon bg="bg-emerald-50" border="border-emerald-200">
                                 <UploadCloud size={15} className="text-emerald-500" />
                             </ColIcon>
-                            <span className="text-[13px] font-bold text-gray-700">Uploaded Documents</span>
+                            <span className="text-[15px] font-bold text-gray-700">Uploaded Documents</span>
                             <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFiles.length} />
                         </div>
                         <GBtn

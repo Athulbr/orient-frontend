@@ -12,8 +12,14 @@ interface BackButtonIF {
 const BackButton: React.FC<BackButtonIF> = ({ onClick, tooltipText = 'Go back', className }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const isOrient = location.state?.orient;
+    console.log('isOrient:===========', isOrient);
 
     const onClickHandler = () => {
+        if (isOrient) {
+            navigate('/agent/run/69c512577f13230d0d7be991');
+            return;
+        }
         if (onClick) return onClick();
         if (location.state?.from) {
             // Convert absolute URL into relative pathname + search

@@ -86,43 +86,6 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
         <form onSubmit={handleSubmit} className="p-6">
             <div className="grid grid-cols-2 gap-5 mb-6 mt-2">
                 <div className="flex flex-col gap-5">
-                    <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
-                        <select
-                            value={type}
-                            onChange={e => setType(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-                            <option value="sell">Sell</option>
-                            <option value="buy">Buy</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
-                        <input
-                            type="number"
-                            value={totalAmount}
-                            onChange={e => setTotalAmount(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="e.g. 85000"
-                        />
-                    </div>
-                    {/* <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Actual Amount</label>
-                        <input
-                            type="number"
-                            value={actualAmount}
-                            onChange={e => setActualAmount(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="e.g. 84500"
-                        />
-                    </div> */}
-                </div>
-
-                <div className="flex flex-col gap-5">
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">User Details</h3>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
@@ -157,6 +120,42 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             placeholder="e.g. 9876543210"
                         />
                     </div>
+                </div>
+                <div className="flex flex-col gap-5">
+                    <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
+                        <select
+                            value={type}
+                            onChange={e => setType(e.target.value)}
+                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                            <option value="sell">Sell</option>
+                            <option value="buy">Buy</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                        <input
+                            type="number"
+                            value={totalAmount}
+                            onChange={e => setTotalAmount(e.target.value)}
+                            required
+                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="e.g. 85000"
+                        />
+                    </div>
+                    {/* <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Actual Amount</label>
+                        <input
+                            type="number"
+                            value={actualAmount}
+                            onChange={e => setActualAmount(e.target.value)}
+                            required
+                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="e.g. 84500"
+                        />
+                    </div> */}
                 </div>
             </div>
 

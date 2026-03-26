@@ -13,7 +13,6 @@ import ChatWithDocumentComponent from './ChatWithDocumentComponent';
 import { SelectVariationImagesDialog } from './components/SelectVariationImagesDialog';
 import { SelectPrimaryImageDialog } from './components/SelectPrimaryImageDialog';
 import { SelectAdditionalImagesDialog } from './components/SelectAdditionalImagesDialog';
-import { Button } from '../../../../components/Button';
 
 interface WirePoints {
     x1: number;
@@ -143,10 +142,7 @@ const ViewRecordPage: React.FC = () => {
 
     return (
         <ViewRecordStateProvider value={{ state, setState }}>
-            <div
-                className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[40vh]' : 'pb-0'}`}
-                ref={containerRef}
-            >
+            <div className={`absolute top-0 left-0 flex h-[100vh] w-[100vw] gap-2 bg-white ${state.selectedTableName ? 'pb-[40vh]' : 'pb-0'}`} ref={containerRef}>
                 <ResizableContainer
                     left={
                         <div className="flex h-[100vh] flex-1 flex-col overflow-hidden">
