@@ -13,7 +13,7 @@ const RunAgentPage: React.FC = () => {
             try {
                 const address = 'devapi.makez.ai/agents';
                 // const address = 'localhost';
-                const data = await httpRequest('GET', `http://${address}/api/workflows/${id}`);
+                const data = await httpRequest('GET', `https://${address}/api/workflows/${id}`);
                 setWorkflow(data.data);
             } catch (error) {
                 console.error('Error fetching workflow:', error);

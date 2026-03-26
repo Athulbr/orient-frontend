@@ -86,7 +86,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             try {
                 const address = 'devapi.makez.ai/agents';
                 // const address = 'localhost';
-                const response = await fetch(`http://${address}/api/webhooks/trigger/orient-v1`, {
+                const response = await fetch(`https://${address}/api/webhooks/trigger/orient-v1`, {
                     method: 'POST',
                     body: formData
                 });
