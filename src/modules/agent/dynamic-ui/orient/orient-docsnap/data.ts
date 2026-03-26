@@ -12,7 +12,7 @@ export const sampleOrders: Order[] = [
             branch_id: 5,
             total_amount: 85000,
             actual_amount: 84500,
-            order_status: 'Completed',
+            order_status: 'Pending',
             doc_submit_status: 'Online'
         },
         user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' },
@@ -24,9 +24,7 @@ export const sampleOrders: Order[] = [
             { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
             { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
             { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
-            { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' },
-            { documentName: 'pan_card', documentUrl: 'http://www.orientexchange.in/uploads/pan.pdf' },
-            { documentName: 'university_offer_letter', documentUrl: 'http://www.orientexchange.in/uploads/offer_letter.pdf' }
+            { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' }
         ],
         extractionDetails: {}
     }

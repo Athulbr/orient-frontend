@@ -24,10 +24,7 @@ const ListAgentsPage = () => {
     const fetchAgents = useCallback(async () => {
         setIsLoading(true);
         try {
-            // User requested a dummy api endpoint for now
-            const address = 'devapi.makez.ai/agent-service';
-            // const address = 'localhost';
-            const response: any = await httpRequest('GET', `https://${address}/api/workflows?limit=100&category=main`);
+            const response: any = await httpRequest('GET', `${config.workflowService}/api/workflows?limit=100&category=main`);
 
             // Assume the response structure is PaginatedResponse or just an array
             if (response && response.data) {

@@ -5,6 +5,7 @@ import { sampleOrders, sampleEmails, availableEmails as availableEmailsData, tem
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import CreateOrderDialog from './CreateOrderDialog';
+import { config } from '../../../../../config/default';
 
 interface OrientDocsnapUserInterfaceIF {
     test?: string;
@@ -84,9 +85,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             });
 
             try {
-                const address = 'devapi.makez.ai/agent-service';
-                // const address = 'localhost';
-                const response = await fetch(`https://${address}/api/webhooks/trigger/orient-v1`, {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-v1`, {
                     method: 'POST',
                     body: formData
                 });
@@ -107,7 +106,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                 }
 
                 // Listen to SSE Stream for Completion
-                const streamUrl = `https://${address}/api/executions/${executionId}/status-stream?apiKey=secret1`;
+                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=secret1`;
                 const eventSource = new EventSource(streamUrl);
 
                 eventSource.onmessage = event => {

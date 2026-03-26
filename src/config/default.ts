@@ -11,21 +11,24 @@ const globalEnv: any = {
         nodeApiUrl: import.meta.env.VITE_NODE_URL_DEV,
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_DEV
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_DEV,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_DEV
     },
     production: {
         baseUrl: import.meta.env.VITE_BASE_URL_PROD,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_PROD,
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_PROD,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_PROD,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_PROD
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_PROD,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_PROD
     },
     vinayak_local: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_DEV,
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL
     },
     rehab: {
         baseUrl: import.meta.env.VITE_BASE_URL_REHAB,
@@ -40,6 +43,7 @@ const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || 'local'];
 export const config = {
     baseUrl: envConfig.baseUrl,
     nodeApiUrl: envConfig.nodeApiUrl,
+    workflowService: envConfig.workflowService,
     extractionServicePython: envConfig.extractionServicePython,
     chatbotServicePython: envConfig.chatbotServicePython,
     mlServiceNodejs: envConfig.mlServiceNodejs,
