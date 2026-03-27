@@ -37,25 +37,6 @@ const ListAgentsPage = () => {
             }
         } catch (err) {
             console.error('Failed to load agents', err);
-            // For demo purposes, we can set some dummy data if the dummy endpoint fails
-            setAgents([
-                {
-                    _id: '1',
-                    name: 'Customer Support Bot',
-                    description: 'Handles basic customer inquiries.',
-                    isActive: true,
-                    nodes: [1, 2, 3],
-                    updatedAt: new Date().toISOString()
-                },
-                {
-                    _id: '2',
-                    name: 'Sales Agent',
-                    description: 'Qualifies leads and books meetings.',
-                    isActive: false,
-                    nodes: [1, 2],
-                    updatedAt: new Date().toISOString()
-                }
-            ]);
         } finally {
             setIsLoading(false);
         }

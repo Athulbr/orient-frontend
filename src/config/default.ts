@@ -40,7 +40,8 @@ const globalEnv: any = {
     orient: {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT
     }
 };
 const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || 'local'];
