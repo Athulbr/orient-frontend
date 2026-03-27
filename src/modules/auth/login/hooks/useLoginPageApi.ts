@@ -139,27 +139,8 @@ export const useLoginPageApi = () => {
     const loginWithPhpSession = async (sessionToken: string) => {
         try {
             setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
-            const userJson = atob(decodeURIComponent(sessionToken));
-            const phpUser = JSON.parse(userJson);
 
-            console.log('phpUser:===========', phpUser);
-
-            let firstName = phpUser.name || phpUser.username;
-            let lastName = '';
-            if (phpUser.name && phpUser.name.includes(' ')) {
-                const parts = phpUser.name.split(' ');
-                firstName = parts[0];
-                lastName = parts.slice(1).join(' ');
-            }
-
-            const ssoRegistration = {
-                firstName: firstName,
-                lastName: lastName,
-                email: phpUser.email || `${phpUser.username}@makez.com`,
-                sso: true
-            };
-
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/signup`, ssoRegistration);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken });
 
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
@@ -180,11 +161,11 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
                 window?.location?.replace('/docsnap');
             } else {
-                setState(prev => ({ ...prev, authError: 'Authentication with PHP session failed.' }));
+                setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.' }));
             }
         } catch (error: any) {
-            console.error('PHP Session login error:', error);
-            setState(prev => ({ ...prev, authError: 'Failed to login via Makez PHP. Please try again.' }));
+            console.error('Orient Session login error:', error);
+            setState(prev => ({ ...prev, authError: 'Please open from Orient portal' }));
         } finally {
             setState(prev => ({ ...prev, oAuthLoading: false }));
         }
@@ -193,8 +174,14 @@ export const useLoginPageApi = () => {
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
         const sessionToken = queryParams.get('token');
+
         if (sessionToken) {
+            window.history.replaceState({}, document.title, window.location.pathname);
             loginWithPhpSession(sessionToken);
+        } else {
+            // No token present — Show session expired banner message.
+            // Session expiry is handled exclusively by the session guards in AuthenticatedLayout.tsx.
+            setState(prev => ({ ...prev, authError: 'Session expired. Please login again.' }));
         }
     }, []);
 

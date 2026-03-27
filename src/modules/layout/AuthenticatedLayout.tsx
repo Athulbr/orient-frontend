@@ -26,39 +26,51 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         updateRolePermission();
         updateUserSettingsHandler();
 
-        const checkPhpSession = async () => {
-            if (config.usePhpSessionApi) { // Remote API Check
+        const triggerSessionEnded = () => {
+            window.sessionStorage.clear();
+            window?.location?.replace('/auth/logout-message');
+        };
+
+        const executeSessionCheck = async () => {
+            if (config.usePhpSessionApi) { 
                 try {
-                    const res = await fetch('http://localhost:8085/check-session.php', {
+                    const res = await fetch('http://localhost:8085/auth/session-status.php', {
                         method: 'GET',
                         credentials: 'include'
                     });
-                    const data = await res.json();
-                    if (data && data.active === false) {
-                        window.sessionStorage.clear();
-                        window?.location?.replace('/auth/logout-message');
-                    }
+                    console.log('res:===========', res);
+                    if (!res.ok) triggerSessionEnded();
                 } catch (error) {
-                    // Fail silently to prevent disruptions if API is down
+                    triggerSessionEnded();
                 }
-            } else { // Local TTL Check
+            } else { 
                 const loginTime = window.sessionStorage.getItem('reactLoginTime');
                 if (loginTime) {
-                    const elapsedMs = Date.now() - parseInt(loginTime, 10);
-                    if (elapsedMs > 30000) {  // 30 seconds
-                        window.sessionStorage.clear();
-                        window?.location?.replace('/auth/logout-message');
-                    }
+                    const elapsedMs = Date.now() - parseInt(loginTime, 60);
+                    if (elapsedMs > 60000) triggerSessionEnded();
                 }
             }
         };
 
-        const intervalId = setInterval(checkPhpSession, 5000); // Check every 5 seconds
-        
-        // Check once immediately on load
-        checkPhpSession();
+        // [07] Layer 1: Check session on initial application component wrapper load
+        executeSessionCheck();
 
-        return () => clearInterval(intervalId);
+        // Fire session-status on visibilitychange event when tab becomes visible
+        const visibilityHandler = () => {
+            if (document.visibilityState === 'visible') {
+                executeSessionCheck();
+            }
+        };
+        document.addEventListener('visibilitychange', visibilityHandler);
+
+        // Layer 3: Fallback Poller safety net 
+        // using 60 seconds (60000ms) frequency check
+        const fallBackPollerId = setInterval(executeSessionCheck, 60000);
+
+        return () => {
+            document.removeEventListener('visibilitychange', visibilityHandler);
+            clearInterval(fallBackPollerId);
+        };
     }, []);
 
     return (
