@@ -113,9 +113,10 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                 const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/get-keywords`, {
                     rows: selectedProducts
                 });
-                const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
+                const fetched: KeywordGroup[] = (res.data || []).map((group: any, index: number) => ({
                     name: group?.name,
                     primary_keyword: group?.primary_keyword,
+                    rowIndex: index,   // stamp the index so handlers don't rely on name-matching
                     keywords: (group?.keywords || []).map((item: any) => ({
                         keyword: item?.keyword,
                         source: item?.source,
@@ -150,31 +151,34 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             return;
         }
         setIsSubmittingBulk(true);
-        // Queue ALL remaining groups first (skipNavigate=true) so the Zustand
-        // store is fully populated before we navigate. Calling navigate inside
-        // a forEach loop causes React Router race conditions.
         groups.forEach((group) => {
-            const matchingRow = pendingRows.find(
-                (row: any) => row.name === group.name || row.primary_keyword === group.primary_keyword
-            );
-            const rowToProcess = matchingRow ?? pendingRows[0];
+            // Use rowIndex for precise lookup; fall back to name-match only if rowIndex missing
+            const rowToProcess =
+                group.rowIndex !== undefined
+                    ? pendingRows[group.rowIndex]
+                    : pendingRows.find((row: any) =>
+                          row.name === group.name || row.primary_keyword === group.primary_keyword
+                      ) ?? pendingRows[0];
             const selectedKeywords = group.keywords.filter(k => k.selected);
             addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
         });
         setIsSubmittingBulk(false);
         setShowBulkKeywordDialog(false);
         closeDialog();
-        // Show the floating window with ALL items (including per-group already-processing ones)
         setShowFloatingWindow(true);
         navigate('/docsnap/record/list');
     };
 
     /** Per-group proceed for bulk flow — does NOT close the dialog */
     const handleProceedBulkGroup = (group: KeywordGroup) => {
-        const matchingRow = pendingRows.find(
-            row => row.name === group.name || row.primary_keyword === group.primary_keyword
-        );
-        const rowToProcess = matchingRow ?? pendingRows[0]; // fallback to first row
+        // Use rowIndex stamped at group-creation time — avoids the name-match
+        // fallback that was silently re-uploading pendingRows[0] (Record 1)
+        const rowToProcess =
+            group.rowIndex !== undefined
+                ? pendingRows[group.rowIndex]
+                : pendingRows.find((row: any) =>
+                      row.name === group.name || row.primary_keyword === group.primary_keyword
+                  ) ?? pendingRows[0];
         const selectedKeywords = group.keywords.filter(k => k.selected);
         addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
     };

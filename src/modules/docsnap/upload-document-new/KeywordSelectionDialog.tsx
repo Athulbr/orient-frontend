@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { Button } from '../../../components/Button';
 import { Check, ChevronDown, Plus, X, AlertCircle } from 'lucide-react';
@@ -16,6 +17,8 @@ export interface KeywordGroup {
     name: string;
     primary_keyword: string;
     keywords: KeywordItem[];
+    /** Index into the parent's pendingRows array — set at creation time to avoid fragile name-matching */
+    rowIndex?: number;
 }
 
 interface KeywordSelectionDialogProps {
@@ -48,6 +51,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
     isSubmitting = false,
 }) => {
     const { showAlert } = useAlertStore();
+    const navigate = useNavigate();
     const { extractionQueue } = useExtractionStore();
 
     const [groups, setGroups] = useState<KeywordGroup[]>(initialGroups);
@@ -192,11 +196,11 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                     {totalSelected} of {totalKeywords} selected across {groups.length} product{groups.length > 1 ? 's' : ''}
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                                 <button onClick={() => handleSelectAll(true)} className="text-xs text-blue-600 hover:underline cursor-pointer">Select All</button>
                                 <span className="text-gray-300">|</span>
                                 <button onClick={() => handleSelectAll(false)} className="text-xs text-gray-500 hover:underline cursor-pointer">Deselect All</button>
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Groups list — scrollable */}
@@ -352,6 +356,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                                 {/* Add keyword & Proceed — only before proceeding */}
                                                 {!hasProceed && (
                                                     <>
+                                                        {/* Add keyword input */}
                                                         <div className="mt-2">
                                                             {activeAddGroup === gi ? (
                                                                 <div className="flex items-center gap-2">
@@ -391,16 +396,18 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                                                 </button>
                                                             )}
                                                         </div>
-                                                        <div className="mt-3 flex justify-end border-t pt-3">
-                                                            <Button
-                                                                small
-                                                                disabled={groupSelected === 0}
-                                                                onClick={e => { e.stopPropagation(); handleProceedGroup(gi); }}
-                                                            >
-                                                                {/* {`Proceed with ${groupSelected} keyword${groupSelected !== 1 ? 's' : ''}`} */}
-                                                                {`Proceed`}
-                                                            </Button>
-                                                        </div>
+                                                        {/* Per-group Proceed — hidden when only 1 remaining (use footer button instead) */}
+                                                        {(groups.length - proceededGroups.size) > 1 && (
+                                                            <div className="mt-3 flex justify-end border-t pt-3">
+                                                                <Button
+                                                                    small
+                                                                    disabled={groupSelected === 0}
+                                                                    onClick={e => { e.stopPropagation(); handleProceedGroup(gi); }}
+                                                                >
+                                                                    Proceed
+                                                                </Button>
+                                                            </div>
+                                                        )}
                                                     </>
                                                 )}
                                             </div>
@@ -410,29 +417,106 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                             })}
                         </div>
 
-                        {/* Footer */}
-                        <div className="flex items-center justify-between gap-2 border-t pt-4">
-                            <div className="text-xs text-gray-500">
-                                {proceededGroups.size > 0 && (
-                                    <span>{proceededGroups.size} of {groups.length} group{groups.length > 1 ? 's' : ''} queued for processing</span>
-                                )}
-                            </div>
-                            <div className="flex gap-2">
-                                <Button outlined onClick={handleClose}>Cancel</Button>
-                                <Button
-                                    onClick={() => {
-                                        // Only pass groups that haven't been individually proceeded yet
-                                        // — already-proceeded ones are already running in the background
-                                        const remaining = groups.filter((_, gi) => !proceededGroups.has(gi));
-                                        onProceed(remaining.length > 0 ? remaining : groups);
-                                    }}
-                                    disabled={isSubmitting}
-                                    startIcon={isSubmitting ? <Spinner size={14} /> : null}
-                                >
-                                    {isSubmitting ? 'Processing...' : 'Proceed All'}
-                                </Button>
-                            </div>
-                        </div>
+                        {/* Footer — state machine */}
+                        {(() => {
+                            const allProceeded = proceededGroups.size === groups.length && groups.length > 0;
+
+                            // Only compute statuses once all are proceeded
+                            const failedGroups = allProceeded
+                                ? groups.filter(g => getExtractionItem(g)?.status === 'failed')
+                                : [];
+                            const allCompleted = allProceeded &&
+                                groups.every(g => getExtractionItem(g)?.status === 'completed');
+                            const allSettled = allProceeded &&
+                                groups.every(g => {
+                                    const s = getExtractionItem(g)?.status;
+                                    return s === 'completed' || s === 'failed';
+                                });
+
+                            // ── State 2: all proceeded but still processing → no footer buttons ──
+                            if (allProceeded && !allSettled) {
+                                return (
+                                    <div className="flex items-center border-t pt-4">
+                                        <span className="text-xs text-orange-500 animate-pulse">
+                                            ⏳ {groups.length - failedGroups.length} of {groups.length} group{groups.length > 1 ? 's' : ''} processing...
+                                        </span>
+                                    </div>
+                                );
+                            }
+
+                            // ── State 3: all settled + all completed ──
+                            if (allSettled && allCompleted) {
+                                return (
+                                    <div className="flex items-center justify-between gap-2 border-t pt-4">
+                                        <span className="text-xs font-medium text-green-600">✓ All records completed successfully</span>
+                                        <div className="flex gap-2">
+                                            <Button outlined onClick={onClose}>Close</Button>
+                                            <Button onClick={() => { onClose(); navigate('/docsnap/record/list'); }}>
+                                                View Records
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // ── State 4: all settled + some failed ──
+                            if (allSettled && failedGroups.length > 0) {
+                                return (
+                                    <div className="flex items-center justify-between gap-2 border-t pt-4">
+                                        <span className="text-xs text-red-500">
+                                            ⚠ {failedGroups.length} record{failedGroups.length > 1 ? 's' : ''} failed
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <Button outlined onClick={onClose}>Close</Button>
+                                            <Button
+                                                onClick={() => {
+                                                    // Retry only the failed groups via per-group proceed
+                                                    // (keeps the dialog open, re-triggers extraction)
+                                                    failedGroups.forEach(group => {
+                                                        if (onProceedGroup) {
+                                                            onProceedGroup(group);
+                                                        }
+                                                    });
+                                                }}
+                                            >
+                                                Proceed Remaining {failedGroups.length}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // ── State 1: not all proceeded yet → Cancel + Proceed All ──
+                            return (
+                                <div className="flex items-center justify-between gap-2 border-t pt-4">
+                                    <div className="text-xs text-gray-500">
+                                        {proceededGroups.size > 0 && (
+                                            <span>{proceededGroups.size} of {groups.length} group{groups.length > 1 ? 's' : ''} queued</span>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button outlined onClick={handleClose}>Cancel</Button>
+                                        <Button
+                                            onClick={() => {
+                                                const remaining = groups.filter((_, gi) => !proceededGroups.has(gi));
+                                                onProceed(remaining.length > 0 ? remaining : groups);
+                                            }}
+                                            disabled={isSubmitting}
+                                            startIcon={isSubmitting ? <Spinner size={14} /> : null}
+                                        >
+                                            {isSubmitting
+                                                ? 'Processing...'
+                                                : groups.length === 1
+                                                    ? 'Proceed'
+                                                    : proceededGroups.size > 0
+                                                        ? `Proceed Remaining ${groups.length - proceededGroups.size}`
+                                                        : 'Proceed All'
+                                            }
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
             </div>
