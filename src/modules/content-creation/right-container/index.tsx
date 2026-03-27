@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../../components/Button';
-import { Pencil } from 'lucide-react';
+import { Pencil, SkipForward } from 'lucide-react';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import EditableField from '../components/EditableField';
 import SummaryImageField from '../components/SummaryImageField';
@@ -13,6 +13,7 @@ import httpRequest from '../../../global-utils/httpRequest';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { config } from '../../../config/default';
+import Tooltip from '../../../components/Tooltip';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
@@ -28,12 +29,26 @@ export default function RightContainer() {
         setState(prev => {
             const extractedData = { ...(prev.extractedData || {}) } as any;
             extractedData[field] = value;
-            if (field === 'author') {
-                extractedData.rowData = { ...(extractedData.rowData || {}), author: value };
+            
+            let newContent = prev.content;
+            if (field === 'title' && newContent) {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(newContent, 'text/html');
+                    const h1Tags = doc.getElementsByTagName('h1');
+                    if (h1Tags.length > 0) {
+                        h1Tags[0].innerText = value;
+                        newContent = doc.body.innerHTML;
+                    }
+                } catch (e) {
+                    console.error('Failed to update title in content', e);
+                }
             }
+            
             return {
                 ...prev,
-                extractedData
+                extractedData,
+                content: newContent
             };
         });
     };
@@ -87,7 +102,7 @@ ${state.content}
         setIsSaving(true);
         try {
             const payload = {
-                name: state.extractedData?.name,
+                title: state.extractedData?.title,
                 extractedData: {
                     ...state.extractedData,
                     htmlContent: state.content
@@ -117,13 +132,13 @@ ${state.content}
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
 
         const content = {
-            title: state.extractedData?.name || '',
+            title: state.extractedData?.title || '',
             category: '',
             summaryHTML: '',
             summaryImagePath: state.extractedData?.primaryImageUrl || '',
             product_category: '',
             html: fullHTML,
-            author: state.extractedData?.author || ''
+            // author: state.extractedData?.author || ''
         };
         const payload = {
             tenant_name: selectedTenantName,
@@ -152,8 +167,9 @@ ${state.content}
         if (!state.content) return;
         setIsRegenerating(true);
         try {
+            const filteredKeywords = state.keywords?.filter((keyword: any) => keyword.selected);
             const res = await regenerateBlog({
-                keywords: state.keywords,
+                keywords: filteredKeywords,
                 extractedData: state.extractedData,
                 extractionPrompt: state.extractionPrompt
             });
@@ -168,26 +184,37 @@ ${state.content}
         }
     };
 
+    const skipToNextDocumentHandler = () => {
+        const recordIdList = window?.sessionStorage?.getItem('recordIdList') as string;
+        if (!recordIdList) return;
+        const recordIdListArray = JSON.parse(recordIdList);
+        const index = recordIdListArray.indexOf(id);
+        if (index === -1) return;
+        setState(prev => ({ ...prev, loadingData: true, content: '', extractedData: undefined }));
+        navigate(`/content-creation/view/${recordIdListArray[index + 1]}`);
+    };
+
     return (
         <div className="flex flex-col h-full min-h-0 gap-2 overflow-y-auto px-4">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-2">
                 <p className="text-xl font-semibold">Content Details</p>
-                <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
+                {/* <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
                     Edit Prompt
-                </Button>
+                </Button> */}
             </div>
 
             <div className="flex flex-col gap-3 border-b pb-4 mb-2">
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">Name</label>
-                    <input
-                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        value={state.extractedData?.name || ''}
-                        onChange={e => handleFieldSave('name', e.target.value)}
-                        placeholder="Enter Name"
+                    <label className="text-sm font-medium text-gray-700">Title</label>
+                    <textarea
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                        value={state.extractedData?.title || ''}
+                        onChange={e => handleFieldSave('title', e.target.value)}
+                        placeholder="Enter title"
+                        rows={3}
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                {/* <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Author</label>
                     <input
                         className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
@@ -195,7 +222,7 @@ ${state.content}
                         onChange={e => handleFieldSave('author', e.target.value)}
                         placeholder="Enter Author"
                     />
-                </div>
+                </div> */}
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Primary Image URL</label>
                     <input
@@ -219,12 +246,17 @@ ${state.content}
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
-                <Button disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                {/* <Tooltip text="Skip to Next Document">
+                    <Button data-tour-id="skip-next-document-button" disabled={isRegenerating || isSaving} onClick={skipToNextDocumentHandler} startIcon={<SkipForward size={16} />}>
+                        Next
+                    </Button>
+                </Tooltip> */}
+                <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                     {isRegenerating ? 'Regenerating...' : 'Regenerate'}
                 </Button>
-                <Button disabled={!state.content} onClick={downloadHTML}>
+                {/* <Button disabled={!state.content} onClick={downloadHTML}>
                     Download HTML
-                </Button>
+                </Button> */}
                 <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
                     {isSaving ? 'Saving...' : 'Save'}
                 </Button>

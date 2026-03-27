@@ -7,6 +7,7 @@ import DragAndDropFileInput from '../../../../../components/DragAndDropFileInput
 import httpUploadRequest from '../../../../../global-utils/httpUploadRequest';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
 import { config } from '../../../../../config/default';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [selectedTemplateName, setSelectedTemplateName] = useState('');
@@ -16,6 +17,7 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const [error, setError] = useState('');
     const [showFileUploadUI, setShowFileUploadUI] = useState(false);
     const selectedModule = sessionStorage.getItem('module');
+    const toast = useToastStore();
 
     useEffect(() => {
         const module = sessionStorage.getItem('module');
@@ -28,14 +30,53 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     const handleSubmit = async () => {
         if (showFileUploadUI) return;
 
-        const template = state.templates.find((template: any) => template.name === selectedTemplateName);
+        const templatesSearchList = state.templates || [];
+        const template = templatesSearchList.find((template: any) => template?.name?.toLowerCase() === selectedTemplateName.toLowerCase());
         if (template) {
             setError('Template name already exists, Please choose any other name');
             return;
         }
+        if (!selectedTemplateName.trim()) {
+            setError('Template name is required');
+            return;
+        }
+
+        const templateIdPayload = selectedModule === 'content-creation' ? {} : { templateId: selectedTemplate?._id };
+
+        const contentCreationFields = selectedModule === 'content-creation' ? {
+            fields: [
+                {
+                    name: 'Article Information',
+                    dataType: 'dict',
+                    jsonKey: 'article_information',
+                    excludeExtraction: false,
+                    description: 'article information',
+                    instruction: 'Extract bibliographic and publication metadata typically found in the article header or information panel. Look for structured publication details, author information, and article identifiers.',
+                    isHidden: false,
+                    subFields: [
+                        {
+                            name: 'Title',
+                            dataType: 'str',
+                            jsonKey: 'title',
+                            regenerateFieldValueWithAI: false,
+                            required: false,
+                            excludeExtraction: false,
+                            description: 'title',
+                            instruction: "Extract the main article title, usually displayed prominently at the top of the document. Look for the largest text element in the header section that describes the article's subject matter.",
+                            showTextarea: false,
+                            isHidden: false,
+                            _id: '696466e51b56e80591979ff7'
+                        }
+                    ],
+                    _id: '696466e51b56e80591979ff6'
+                }
+            ]
+        } : {};
+
         const requestBody = {
             name: selectedTemplateName,
-            templateId: selectedTemplate._id,
+            ...templateIdPayload,
+            ...contentCreationFields,
             settings: {
                 module: selectedModule || 'docsnap',
                 primaryLLMProvider: 'azure',
@@ -66,29 +107,45 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
             }
         };
         setState({ ...state, loadingCreateTemplate: true });
-        const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
-        const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
-            pageSize: 1000,
-            custom: true,
-            filters: { deleted: false }
-        });
-        window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
-        if (state.isDashboard) {
+        try {
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+            toast.success(res?.message || 'Template created successfully');
+            if (state.isDashboard) {
+                setState({ ...state, loadingCreateTemplate: false, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
+                if (selectedModule !== 'content-creation') {
+                    navigate('/docsnap/template/list');
+                }
+                return;
+            }
+            setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1, loadingCreateTemplate: false });
+        } catch (err: any) {
+            toast.error(err?.message || 'Failed to create template. Please try again.');
             setState({ ...state, loadingCreateTemplate: false });
-            navigate('/docsnap/template/list');
-            return;
         }
-        setState({ ...state, showCreateTemplateDialog: false, refresh: state.refresh + 1 });
     };
 
     const onChangeTemplateName = (e: any) => {
-        const template = state.predefinedTemplates.find((template: any) => template.name === e.target.value);
-        if (template) {
+        const val = e.target.value;
+        let templateExists;
+        if (selectedModule === 'content-creation') {
+            const templatesSearchList = state.templates || [];
+            templateExists = templatesSearchList.find((template: any) => template?.name?.toLowerCase() === val.toLowerCase());
+        } else {
+            templateExists = state.predefinedTemplates?.find((template: any) => template.name === val);
+        }
+
+        if (templateExists) {
             setError('Template name already exists, Please choose any other name');
         } else {
             setError('');
         }
-        setSelectedTemplateName(e.target.value);
+        setSelectedTemplateName(val);
     };
 
     const closeDialog = () => {
@@ -101,15 +158,15 @@ export const CreateTemplateComponent = ({ state, setState }: any) => {
     if (!state.showCreateTemplateDialog) return null;
     return (
         <DialogComponent
-            className="max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]"
+            className='max-h-[calc(100vh-100px)] w-[calc(100vw-400px)]'
             name={showFileUploadUI ? 'Upload Document' : 'Create Template'}
             isOpen={state.showCreateTemplateDialog}
             closeDialog={closeDialog}
-            primaryButtonText={showFileUploadUI ? '' : state.loadingCreateTemplate ? 'Creating Template...' : 'Create Template'}
+            primaryButtonText={showFileUploadUI ? '' : state.loadingCreateTemplate ? 'Saving...' : 'Save'}
             onPrimaryAction={handleSubmit}
             primaryButtonDataTourId="dialog-create-template-button"
         >
-            <div className="h-full p-6">
+            <div className='h-full p-6'>
                 {showFileUploadUI ? (
                     <FileUploadUIComponent closeDialog={closeDialog} />
                 ) : (

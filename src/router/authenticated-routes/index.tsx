@@ -4,6 +4,7 @@ import { NotFoundPage } from '../not-found-routes/GlobalNotFoundPage';
 import FullScreenLoader from '../../components/FullScreenLoader';
 import DocumentCreationEditor from '../../modules/documentCreation/create-document';
 import ContentCreationEditor from '../../modules/content-creation';
+import AgentRoutes from './AgentRoutes';
 
 const ConfigRoutes = lazy(() => import('./config-routes'));
 const DashboardPage = lazy(() => import('../../modules/dashboard'));
@@ -57,6 +58,7 @@ const AuthenticatedRoutes = () => {
     return (
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
+                <Route path="agent/*" element={<AgentRoutes />} />
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
                 <Route path="data-entry/*" element={<DocSnapRoutes />} />
                 <Route path="sld/*" element={<DocSnapRoutes />} />

@@ -58,6 +58,7 @@ const ConfigRoutes = () => {
                         <Route path="prompt-tuning" element={<UpdatedFieldsListPage />} />
                         <Route path="user/list" element={<ListUserPage />} />
                         <Route path="comment/*" element={<ListCommentPage />} />
+                        <Route path="makez-agent/list" element={<ListMakezAgentPage />} />
                         {/* <Route path="transcript" element={<TranscriptionPage />} /> */}
                         <Route path="*" element={<NotFoundPage />} />
                     </Routes>
@@ -74,6 +75,7 @@ import { useLocation } from 'react-router-dom';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 import ListExportbuilderPage from '../../../modules/config/exportbuilder';
 import ExportQuickReportPage from '../../../modules/config/exportbuilder/quick-report';
+import ListMakezAgentPage from '../../../modules/config/makez-agent';
 
 const NavigationComponent: FC = () => {
     const navigate = useNavigate();

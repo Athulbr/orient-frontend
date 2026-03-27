@@ -14,7 +14,8 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
         'Content-Type': 'application/json;charset=UTF-8',
         tenantid: selectedTenant ? selectedTenant : user?.tenant?._id,
         roleid: selectedRole ? selectedRole : user?.role?._id,
-        module: selectedModule
+        module: selectedModule,
+        'x-api-key': 'secret1'
     };
 
     if (sessionStorageAccessToken) {
@@ -64,7 +65,7 @@ const httpRequest = async <T = any>(method: string, url: string, data: Record<st
 
             if (response?.status === 404) {
                 clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: response?.statusText, data: { url: response?.url } });
-                throw new Error(`Connection error, try again later`);
+                throw new Error(result.message);
             }
 
             if (response?.status === 504) {

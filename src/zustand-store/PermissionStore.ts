@@ -152,6 +152,13 @@ const allSettings: SettingsIF[] = [
                 path: '/config/exportbuilder/list',
                 key: 'exportbuilder',
                 permission: 'read:exportbuilder'
+            },
+            {
+                name: 'Makez Agents',
+                iconName: 'Upload',
+                path: '/config/makez-agent/list',
+                key: 'makez-agent',
+                permission: 'read:makez-agent'
             }
         ]
     },

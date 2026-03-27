@@ -1,4 +1,5 @@
-import { Edit, FileText, FormInput, MoreVertical, Plus, Upload } from 'lucide-react';
+import { Edit, FileText, FormInput, MoreVertical, Plus, Upload, Save, RotateCcw, Copy, Check, Info } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { Button } from '../../../../../components/Button';
 import httpRequest from '../../../../../global-utils/httpRequest';
@@ -8,8 +9,11 @@ import { AlertDialog } from '../../../../../components/alert/AlertDialog';
 import { useAlertStore } from '../../../../../components/alert/AlertStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 import { config } from '../../../../../config/default';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UseFormbuilder } from '../../../../../builders/formbuilder/use-formbuilder';
+import { DialogComponent } from '../../../../../components/DialogComponent';
+import { KeywordSelectionDialog, KeywordGroup } from '../../../upload-document-new/KeywordSelectionDialog';
+import { useDocumentExtractor } from '../../../upload-document-new/useDocumentExtractor';
 interface PropsIF {
     template?: any;
     onClickUpload?: () => void;
@@ -35,10 +39,31 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     const navigate = useNavigate();
     const { showAlert } = useAlertStore();
     const { checkPermission } = usePermissionStore();
+    const { addToDocumentExtractor } = useDocumentExtractor();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [creatingRecord, setCreatingRecord] = useState(false);
+    const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+    const [duplicateTemplateName, setDuplicateTemplateName] = useState('');
+    const [isDuplicating, setIsDuplicating] = useState(false);
+    const [showPromptDialog, setShowPromptDialog] = useState(false);
+
+    // Keyword selection state (content-creation manual form flow)
+    const [keywordGroups, setKeywordGroups] = useState<KeywordGroup[]>([]);
+    const [isFetchingKeywords, setIsFetchingKeywords] = useState(false);
+    const [showKeywordDialog, setShowKeywordDialog] = useState(false);
+    const [pendingFormData, setPendingFormData] = useState<any>(null);
+    const [isSubmittingKeywords, setIsSubmittingKeywords] = useState(false);
 
     const module = sessionStorage.getItem('module');
+    const userStr = sessionStorage.getItem('user');
+    let currentUser: any = null;
+    if (userStr) {
+        try {
+            currentUser = JSON.parse(userStr);
+        } catch (e) {
+            console.error('Failed to parse user from session storage', e);
+        }
+    }
 
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
@@ -59,8 +84,12 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
                 }
 
-                toast.success('Template deleted successfully');
-                window.location.reload();
+                toast.success(`Template deleted successfully`);
+                if (refreshPage) {
+                    refreshPage();
+                } else {
+                    window.location.reload();
+                }
                 return true;
             } catch (error) {
                 console.error('error:===========', error);
@@ -77,7 +106,80 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         if (option === 'Export') {
             exportTemplate && exportTemplate(template._id);
         }
+        if (option === 'Duplicate') {
+            setDuplicateTemplateName(`${template.name}-copy`);
+            setShowDuplicateDialog(true);
+        }
     };
+
+    const duplicateTemplateApi = async () => {
+        if (!duplicateTemplateName.trim()) {
+            toast.error('Template name is required');
+            return;
+        }
+
+        const currentTenant = window?.sessionStorage?.getItem('selectedTenant');
+        try {
+            setIsDuplicating(true);
+            
+            // First fetch the full template details since the list item might not have fields
+            let fullTemplate = template;
+            try {
+                const fullTemplateRes: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
+                if (fullTemplateRes?.data) {
+                    fullTemplate = fullTemplateRes.data;
+                }
+            } catch (err) {
+                console.error('Failed to fetch full template details structure', err);
+            }
+            
+            const requestBody = {
+                name: duplicateTemplateName,
+                templateId: fullTemplate._id,
+                ...(fullTemplate.settings && { settings: fullTemplate.settings }),
+                ...(fullTemplate.fields && { fields: fullTemplate.fields }),
+                ...(fullTemplate.s3FileName && { s3FileName: fullTemplate.s3FileName })
+            };
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/idp/template/create`, requestBody);
+
+            // Bypass: Temporarily remove selectedTenant to fetch ALL templates
+            window?.sessionStorage?.removeItem('selectedTenant');
+
+            const resp = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+
+            // Restore selectedTenant after fetching
+            if (currentTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', currentTenant);
+            }
+
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+            
+            toast.success('Template duplicated successfully');
+            setShowDuplicateDialog(false);
+            
+            if (refreshPage) {
+                refreshPage();
+            } else {
+                window.location.reload();
+            }
+        } catch (error: any) {
+            console.error('error:===========', error);
+            toast.error(error?.message || 'Failed to duplicate Template');
+
+            // Restore selectedTenant in case of error
+            if (currentTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', currentTenant);
+            }
+        } finally {
+            setIsDuplicating(false);
+        }
+    };
+
+
 
     const cardStyle = flexBasis ? { flexBasis, minWidth: 0 } : {};
 
@@ -117,6 +219,39 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     }
 
     const handleCreateRecord = async (data: any) => {
+        if (module === 'content-creation') {
+            // For content-creation: fetch keywords before proceeding
+            setPendingFormData(data);
+            setShowCreateDialog(false);
+            setIsFetchingKeywords(true);
+            setShowKeywordDialog(true);
+            setKeywordGroups([]);
+            try {
+                const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/get-keywords`, {
+                    rows: [data]
+                });
+                const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
+                    name: group?.name,
+                    primary_keyword: group?.primary_keyword,
+                    keywords: (group?.keywords || []).map((item: any) => ({
+                        keyword: item?.keyword,
+                        source: item?.source,
+                        selected: true
+                    }))
+                }));
+                setKeywordGroups(fetched);
+            } catch (e) {
+                toast.error('Failed to fetch SEO keywords, proceeding without keywords');
+                // Proceed without keywords
+                addToDocumentExtractor(template, [], data);
+                setShowKeywordDialog(false);
+            } finally {
+                setIsFetchingKeywords(false);
+            }
+            return;
+        }
+
+        // Original flow for non-content-creation modules
         setCreatingRecord(true);
         const res: any = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${template._id}`);
         const values: any = {};
@@ -141,6 +276,29 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         setShowCreateDialog(false);
         setCreatingRecord(false);
         navigate('/docsnap/record/list');
+    };
+
+    const handleProceedWithKeywords = async (groups: KeywordGroup[]) => {
+        setIsSubmittingKeywords(true);
+        try {
+            const matchingGroup = groups.find(
+                g => g.name === pendingFormData?.name || g.primary_keyword === pendingFormData?.primary_keyword
+            );
+            const selectedKeywords = matchingGroup
+                ? matchingGroup.keywords.filter(k => k.selected)
+                : groups.flatMap(g => g.keywords.filter(k => k.selected));
+            addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords });
+            setShowKeywordDialog(false);
+            setPendingFormData(null);
+        } finally {
+            setIsSubmittingKeywords(false);
+        }
+    };
+
+    /** Per-group proceed — does NOT close the dialog */
+    const handleProceedGroupKeywords = (group: KeywordGroup) => {
+        const selectedKeywords = group.keywords.filter(k => k.selected);
+        addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords }, undefined, true);
     };
 
     if (!template) return null;
@@ -183,8 +341,15 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             {/* Title and Menu Row */}
             <div className="mb-2.5 flex w-full items-start justify-between">
                 <div className="text truncate pr-2 font-semibold text-gray-800">{template?.name}</div>
-                {checkPermission('delete:template') && (
-                    <Dropdown options={exportTemplate ? ['Delete', 'Export'] : ['Delete']} onChange={handleDropdownOptionChange}>
+                {(checkPermission('delete:template') || checkPermission('export:template') || checkPermission('duplicate:template')) && (
+                    <Dropdown
+                        options={[
+                            ...(exportTemplate && checkPermission('export:template') ? ['Export'] : []),
+                            ...(checkPermission('duplicate:template') ? ['Duplicate'] : []),
+                            ...(checkPermission('delete:template') ? ['Delete'] : [])
+                        ]}
+                        onChange={handleDropdownOptionChange}
+                    >
                         <button className="flex-shrink-0 cursor-pointer rounded-md border border-gray-200 bg-white p-1.5 text-gray-500 hover:bg-gray-100">
                             <MoreVertical size={18} />
                         </button>
@@ -208,16 +373,28 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             </div>
             {/* Upload Button Row */}
             <div className="flex w-full justify-between gap-2">
-                <Button
-                    permission="update:template"
-                    outlined
-                    startIcon={<Edit size={14} className="text-gray-500" />}
-                    onClick={() => navigate(`/docsnap/template/update/${template._id}`)}
-                    small
-                    data-tour-id="edit-fields-button"
-                >
-                    Edit Fields
-                </Button>
+                {(module === 'content-creation' && currentUser?.role?.name !== 'superadmin') ? (
+                    <Button
+                        permission="edit:prompt"
+                        outlined
+                        startIcon={<Edit size={14} className="text-gray-500" />}
+                        onClick={() => setShowPromptDialog(true)}
+                        small
+                    >
+                        Edit Prompt
+                    </Button>
+                ) : (
+                    <Button
+                        permission="update:template"
+                        outlined
+                        startIcon={<Edit size={14} className="text-gray-500" />}
+                        onClick={() => navigate(`/docsnap/template/update/${template._id}`)}
+                        small
+                        data-tour-id="edit-fields-button"
+                    >
+                        Edit Fields
+                    </Button>
+                )}
                 <Button
                     permission="update:template"
                     outlined
@@ -226,7 +403,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     small
                     hidden={module !== 'content-creation'}
                 >
-                    Manual Input
+                    Create
                 </Button>
                 <Button
                     permission="extract:document"
@@ -246,6 +423,165 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     loadingPrimaryButton={creatingRecord}
                 />
             )}
+
+            <DialogComponent
+                isOpen={showDuplicateDialog}
+                closeDialog={() => setShowDuplicateDialog(false)}
+                name="Duplicate Template"
+                primaryButtonText={isDuplicating ? 'Creating...' : 'Create'}
+                onPrimaryAction={duplicateTemplateApi}
+                className="w-[450px]"
+            >
+                <div className="flex flex-col gap-1.5 p-6">
+                    <label className="pl-1 text-sm font-light text-gray-600" htmlFor="duplicateTemplateName">
+                        New Template Name
+                    </label>
+                    <input
+                        name="duplicateTemplateName"
+                        className="min-h-10 flex-1 rounded-md border border-gray-300 px-4 text-sm outline-none outline-0 focus:border-sky-500"
+                        value={duplicateTemplateName}
+                        onChange={e => setDuplicateTemplateName(e.target.value)}
+                        placeholder="Enter new template name"
+                        autoFocus
+                    />
+                </div>
+            </DialogComponent>
+
+            <PromptDialog isOpen={showPromptDialog} closeDialog={() => setShowPromptDialog(false)} template={template} refreshPage={refreshPage} />
+
+            {/* Keyword Selection Dialog — shown after Create form submit in content-creation */}
+            <KeywordSelectionDialog
+                isOpen={showKeywordDialog}
+                keywordGroups={keywordGroups}
+                isFetching={isFetchingKeywords}
+                onClose={() => {
+                    setShowKeywordDialog(false);
+                    setPendingFormData(null);
+                }}
+                onProceed={handleProceedWithKeywords}
+                onProceedGroup={handleProceedGroupKeywords}
+                isSubmitting={isSubmittingKeywords}
+            />
         </div>
+    );
+};
+
+const PromptDialog = ({ isOpen, closeDialog, template, refreshPage }: { isOpen: boolean, closeDialog: () => void, template: any, refreshPage?: () => void }) => {
+    const [editingPrompt, setEditingPrompt] = useState('');
+    const [copied, setCopied] = useState(false);
+    const toast = useToastStore();
+
+    useEffect(() => {
+        if (isOpen) {
+            setEditingPrompt(template?.settings?.extractionPrompt || '');
+        }
+    }, [isOpen, template]);
+
+    const handleSave = async () => {
+        const updatedSettings = {
+            ...template.settings,
+            extractionPrompt: editingPrompt
+        };
+        const requestBody = {
+            fields: template.fields,
+            settings: updatedSettings,
+            s3FileName: template.s3FileName,
+            name: template.name,
+            description: template.description,
+            active: template.active
+        };
+        try {
+            await httpRequest('PATCH', `${config.nodeApiUrl}/idp/template/update/${template._id}`, requestBody);
+            
+            const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+            window?.sessionStorage?.removeItem('selectedTenant');
+
+            const resp: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/template`, {
+                pageSize: 1000,
+                custom: true,
+                filters: { deleted: false }
+            });
+            window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
+
+            if (prevSelectedTenant) {
+                window?.sessionStorage?.setItem('selectedTenant', prevSelectedTenant);
+            }
+
+            toast.success('Prompt updated successfully');
+            closeDialog();
+            if (refreshPage) {
+                refreshPage();
+            } else {
+                window.location.reload();
+            }
+        } catch (error) {
+            toast.error('Failed to update Prompt');
+        }
+    };
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(editingPrompt);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleReset = () => {
+        setEditingPrompt(template?.settings?.extractionPrompt || '');
+    };
+
+    return (
+        <DialogComponent name="Edit Prompt" className="h-[90%] w-[90%]" isOpen={isOpen} closeDialog={closeDialog} disableBlurCloseDialog>
+            <div className="flex h-full flex-1 gap-0 overflow-hidden p-4">
+                <div className="flex flex-1 flex-col">
+                    <div className="flex items-center justify-between border-b px-5 py-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-800">Prompt Editor</span>
+                            <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-medium tracking-wide text-gray-500">MANUAL</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                small
+                                outlined
+                                startIcon={copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                                onClick={handleCopy}
+                                disabled={!editingPrompt.trim()}
+                            >
+                                {copied ? 'Copied' : 'Copy'}
+                            </Button>
+                            <Button small outlined startIcon={<RotateCcw size={14} />} onClick={handleReset}>
+                                Reset
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-2 border-b bg-blue-50/60 px-5 py-2.5">
+                        <Info size={14} className="mt-0.5 shrink-0 text-blue-500" />
+                        <p className="text-xs leading-relaxed text-blue-700">
+                            Use <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] font-medium text-blue-800">{'{{variableName}}'}</code> to
+                            insert dynamic data at runtime —{' '}
+                            <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] text-blue-800">{'{{documentText}}'}</code>,{' '}
+                            <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] text-blue-800">{'{{schema}}'}</code>,{' '}
+                            <code className="rounded bg-blue-100 px-1 py-0.5 font-mono text-[11px] text-blue-800">{'{{previousOutput}}'}</code>
+                        </p>
+                    </div>
+                    <textarea
+                        value={editingPrompt}
+                        onChange={e => setEditingPrompt(e.target.value)}
+                        className="flex-1 resize-none p-5 font-mono text-sm leading-relaxed text-gray-800 outline-none placeholder:text-gray-400"
+                        placeholder={`Write your extraction prompt here...\n\nUse {{variableName}} to insert dynamic data. For example:\n\nExtract the following fields from the document:\n{{documentText}}\n\nUse this schema for extraction:\n{{schema}}\n\nEnsure all dates are in YYYY-MM-DD format.\nReturn null for missing fields.`}
+                        spellCheck={false}
+                    />
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 border-t bg-gray-50/50 px-6 py-4">
+                <Button outlined onClick={closeDialog}>
+                    Cancel
+                </Button>
+                <Button startIcon={<Save size={16} />} onClick={handleSave}>
+                    Save Prompt
+                </Button>
+            </div>
+        </DialogComponent>
     );
 };

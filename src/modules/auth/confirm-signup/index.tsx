@@ -17,20 +17,30 @@ const ConfirmSignUpPage: React.FC = () => {
             if (res?.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res?.data?.accessToken));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                // window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
+                window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.user?.role));
+                window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
                 const resp = await Promise.all([
                     httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 })
+                    httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
+                    httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
                 ]);
                 window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
+                window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
+                window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
                 toast.success('Verification successful');
                 window?.location?.replace('/');
             } else {
-                toast.error('Verification failed. Please try again');
+                // show server-provided message when available
+                const message = res?.message || 'Verification failed. Please try again';
+                toast.error(message);
             }
         } catch (error) {
             console.error('error:===========', error);
-            toast.error('Verification failed. Please try again.');
+            const errMsg = (error as any)?.message || 'Verification failed. Please try again.';
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }

@@ -40,6 +40,7 @@ import { convertTemplateFields } from './utils/convertTemplateFields';
 import { FieldIF } from '../../../../builders/formbuilder/interface';
 import { DataRenderer } from './components/RenderTableOrKeyValuePairs';
 import { EditPromptDialog } from './components/EditPromptDialog';
+import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 
 export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const { state, setState } = useUpdateTemplateState();
@@ -49,6 +50,7 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
     const [postScriptOutput, setPostScriptOutput] = useState('');
     const [testExtractedData, setTestExtractedData] = useState<any>(null);
     const [loadingTestData, setLoadingTestData] = useState(false);
+    const { checkPermission } = usePermissionStore();
 
     const { getTemplateApi, createTemplateApi, updateTemplateApi, generateTemplateFieldsWithAI, updateTemplateFieldsWithAI, getTestExtractedData } =
         useUpdateTemplatePageApi();
@@ -344,9 +346,12 @@ export const FieldsContainer: React.FC<{ create?: boolean }> = ({ create }) => {
                     <Button startIcon={<FileText className="text-gray-500" size={16} />} outlined onClick={() => setShowEditPromptDialog(true)}>
                         Prompt
                     </Button>
-                    <Button startIcon={<Code className="text-gray-500" size={16} />} outlined onClick={() => setShowPostScriptDialog(true)}>
-                        Post Script
-                    </Button>
+
+                    { checkPermission('enable:postscript') && (
+                        <Button startIcon={<Code className="text-gray-500" size={16} />} outlined onClick={() => setShowPostScriptDialog(true)}>
+                            Post Script
+                        </Button>
+                    )}
                     <Button
                         startIcon={<FileCog className="text-gray-500" size={16} />}
                         outlined

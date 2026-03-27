@@ -27,8 +27,8 @@ export const useContentCreationApi = () => {
             ...prev,
             extractedData: {
                 ...(fetchedRecord?.extractedData || {}),
-                name: fetchedRecord?.name || '',
-                author: fetchedRecord?.extractedData?.rowData?.author || '',
+                title: fetchedRecord?.title || fetchedRecord?.extractedData?.title || fetchedRecord?.extractedData?.rowData?.name || fetchedRecord?.name || '',
+                // author: fetchedRecord?.extractedData?.rowData?.author || '',
                 primaryImageUrl: fetchedRecord?.extractedData?.primaryImageUrl || '',
                 rowData: fetchedRecord?.extractedData?.rowData || {}
             },

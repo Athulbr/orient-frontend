@@ -269,6 +269,8 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
     const subSubKey = (state.hoveredFieldId?.split(':')[2] as string) || '';
     const label = (state.hoveredFieldId?.split(':')[3] as string) || '';
 
+    const demoChange = false;
+
     return (
         <div className="flex h-full w-full flex-col">
             <PreviewHeaderComponent
@@ -286,10 +288,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                     <FullScreenLoader text="Loading Document..." />
                 </div>
             ) : (
-                <div
-                    ref={imageContainerRef}
-                    className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 pb-[45vh] shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}
-                >
+                <div ref={imageContainerRef} className={`relative flex h-full flex-col gap-6 overflow-auto bg-gray-200 pt-8 pb-[45vh] shadow ${zoom > 120 ? 'items-start' : 'items-center'}`}>
                     {state.images.map((imgSrc, index) => (
                         <div
                             className="relative w-fit bg-green-500 shadow-xl shadow-gray-400"
@@ -299,11 +298,13 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                             }}
                             key={index}
                         >
-                            {(state.reExtracting || !state.record?.extractedData || (state.generatingInvoice && state.tabIndex === 2)) && (
-                                <div className="absolute top-0 left-0 z-1000 flex h-full w-full items-center justify-center overflow-hidden border-3 border-sky-300 bg-[#1fa9f033]">
-                                    <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
-                                </div>
-                            )}
+                            {demoChange
+                                ? (state.reExtracting || !state.record?.extractedData || (state.generatingInvoice && state.tabIndex === 2)) && (
+                                      <div className="absolute top-0 left-0 z-1000 flex h-full w-full items-center justify-center overflow-hidden border-3 border-sky-300 bg-[#1fa9f033]">
+                                          <div className="animate-scan animate-pdf-scanner absolute top-0 left-0 h-[10px] w-full bg-[rgba(98,209,243,0.8)] shadow-[0_0_10px_2px_rgba(98,209,243,0.8)]"></div>
+                                      </div>
+                                  )
+                                : ''}
                             <img src={imgSrc} alt={`image-${index}`} className="h-full w-full transition-all duration-300" />
                             {/* ========================== Object Fields ========================== */}
                             {Object.entries(state.objectFields).map(([mainKey, mainValue], mainIndex) => {
@@ -317,7 +318,7 @@ export const PreviewComponent: FC<PreviewComponentProps> = ({ fieldRefs, contain
                                             return (
                                                 <div
                                                     key={`${hoveredFieldId}_${i}_${field?.confidence}_${field?.page}_${mainKey}_${key}`}
-                                                    className={`${field?.checked ? 'bg-[#53cd1b25]' : 'bg-[#dfea3f33]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
+                                                    className={`${field?.checked ? 'bg-[#53cd1b0c] border border-[#53cd1b]' : 'bg-[#dfea3f0b] border border-[#dfea3f]'} group absolute cursor-pointer hover:border-2 hover:border-blue-600`}
                                                     style={{
                                                         left: `${bbox.x_min * 100 - 0.4}%`,
                                                         top: `${bbox.y_min * 100 - 0.4}%`,

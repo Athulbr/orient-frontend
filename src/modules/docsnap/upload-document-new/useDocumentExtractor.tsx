@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../config/default';
-import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import { useExtractionStore } from '../../../zustand-store/extractionStore';
 import { useToastStore } from '../../../components/toast/ToastStore';
 
@@ -9,15 +8,16 @@ export const useDocumentExtractor = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
 
-    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }) => {
-        const sendApiRequestToNodeJsExtractor = async (file: File, template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
+    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }, skipNavigate?: boolean) => {
+        const sendApiRequestToNodeJsExtractor = async (file: File | File[], template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
             let timer: NodeJS.Timeout | null = null;
+            const fileName = Array.isArray(file) ? documentNumber || `Batch of ${file.length} Files` : file.name;
 
             try {
                 const abortController = new AbortController();
-                timer = startTimer(file.name);
+                timer = startTimer(fileName);
 
-                updateExtractionQueue(file.name, {
+                updateExtractionQueue(fileName, {
                     status: 'processing',
                     time: 0,
                     abortController,
@@ -31,7 +31,13 @@ export const useDocumentExtractor = () => {
                 // formData.append('template', JSON.stringify(template));
                 formData.append('templateId', template?._id);
                 formData.append('template', JSON.stringify(template)); // For only SLD module
-                if (file.size > 0) {
+                if (Array.isArray(file)) {
+                    file.forEach(f => {
+                        if (f.size > 0) {
+                            formData.append('file', f);
+                        }
+                    });
+                } else if (file && file.size > 0) {
                     formData.append('file', file);
                 }
                 if (s3ImageNames && s3ImageNames.length > 0) {
@@ -40,7 +46,7 @@ export const useDocumentExtractor = () => {
                 if (documentNumber) {
                     formData.append('documentNumber', documentNumber);
                 }
-                formData.append('fromAddress', "frontend@makez.com");
+                formData.append('fromAddress', 'frontend@makez.com');
 
                 const module = template?.settings?.module;
 
@@ -68,7 +74,7 @@ export const useDocumentExtractor = () => {
                 }
 
                 const reader = response.body.getReader();
-                await processStream(reader, file.name, timer);
+                await processStream(reader, fileName, timer);
             } catch (error) {
                 console.error('API request error:', error);
 
@@ -81,7 +87,7 @@ export const useDocumentExtractor = () => {
                     console.error('Request was aborted');
                 }
 
-                updateExtractionQueue(file.name, { status: 'failed' });
+                updateExtractionQueue(fileName, { status: 'failed' });
             }
         };
         const sendApiRequestToPythonExtractor = async (file: File, template: any) => {
@@ -285,22 +291,99 @@ export const useDocumentExtractor = () => {
             }
         };
 
+        const sendApiRequestToWorkflow = async (file: File, template: any) => {
+            let timer: NodeJS.Timeout | null = null;
+
+            try {
+                const abortController = new AbortController();
+                timer = startTimer(file.name);
+
+                updateExtractionQueue(file.name, {
+                    status: 'processing',
+                    time: 0,
+                    abortController,
+                    step: 'uploading',
+                    progress: 5
+                });
+
+                const token = window?.sessionStorage?.getItem('accessToken') || '';
+                const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+                const formData = new FormData();
+                formData.append('templateId', template?._id);
+                formData.append('file', file);
+                const apiEndPoint = `http://localhost:4000/api/webhooks/trigger/orient-v1`;
+
+                const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+                if (selectedTenant) {
+                    headers.tenantId = selectedTenant;
+                }
+
+                const response = await fetch(apiEndPoint, {
+                    method: 'POST',
+                    headers,
+                    body: formData,
+                    signal: abortController.signal
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Fetch the stream URL
+                const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
+                const streamHeaders: Record<string, string> = { authorization: `Bearer ${JSON.parse(accessToken)}` };
+                if (selectedTenant) {
+                    streamHeaders.tenantId = selectedTenant;
+                }
+                const streamResponse = await fetch(`http://localhost:4000/api/executions/${data.data?.executionId}/status-stream?apiKey=secret1`, {
+                    method: 'GET',
+                    headers: streamHeaders,
+                    signal: abortController.signal
+                });
+
+                if (!streamResponse.ok) {
+                    throw new Error(`Stream HTTP error! status: ${streamResponse.status}`);
+                }
+
+                if (!streamResponse.body) {
+                    throw new Error('ReadableStream not supported');
+                }
+
+                const reader = streamResponse.body.getReader();
+                await processStream(reader, file.name, timer);
+            } catch (error) {
+                console.error('API request error:', error);
+
+                if (timer) {
+                    clearInterval(timer);
+                }
+
+                // Handle abort separately
+                if (error instanceof Error && error.name === 'AbortError') {
+                    console.error('Request was aborted');
+                }
+
+                updateExtractionQueue(file.name, { status: 'failed' });
+            }
+        };
+
         const addNameToQueue = (name: string) => {
             refreshExtractionQueue(name);
-            addToExtractionQueue(name,{template,rowData});
+            addToExtractionQueue(name, { template, rowData });
         };
 
         if (template?.settings?.module === 'data-entry') {
             addNameToQueue(rowData.SKU);
             sendApiRequestToDataEntry(rowData, template);
-            navigate('/docsnap/record/list');
+            if (!skipNavigate) navigate('/docsnap/record/list');
             return;
         }
 
         if (template?.settings?.module === 'content-creation') {
             addNameToQueue(rowData.name);
             sendApiRequestToContentCreation(rowData, template);
-            navigate('/docsnap/record/list');
+            if (!skipNavigate) navigate('/docsnap/record/list');
             return;
         }
 
@@ -314,21 +397,34 @@ export const useDocumentExtractor = () => {
                     navigate('/docsnap/record/list');
                     return;
                 }
-                for (const file of Array.from(files)) {
-                    addNameToQueue(file.name);
-                    sendApiRequestToNodeJsExtractor(file, template);
+                if (template?.settings?.sendAllFilesAtOnce) {
+                    const fileName = segregatedDoc?.documentNumber || `Batch of ${files.length} Files`;
+                    addNameToQueue(fileName);
+                    sendApiRequestToNodeJsExtractor(files, template, segregatedDoc?.s3ImageNames || [], fileName);
+                } else {
+                    for (const file of Array.from(files)) {
+                        addNameToQueue(file.name);
+                        sendApiRequestToNodeJsExtractor(file, template);
+                    }
                 }
-            } else {
+            } else if (template?.settings?.extractionEngine === 'python') {
                 for (const file of Array.from(files)) {
                     addNameToQueue(file.name);
                     sendApiRequestToPythonExtractor(file, template);
                 }
+            } else if (template?.settings?.extractionEngine === 'workflow') {
+                for (const file of Array.from(files)) {
+                    addNameToQueue(file.name);
+                    sendApiRequestToWorkflow(file, template);
+                }
+            } else {
+                toast.error('No extraction engine found');
             }
         } catch (error) {
             console.error('Error processing files:', error);
         }
 
-        navigate('/docsnap/record/list');
+        if (!skipNavigate) navigate('/docsnap/record/list');
     };
 
     return {

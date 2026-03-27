@@ -1,5 +1,14 @@
 // Helper functions for tour storage management
 
+// ============================================================================
+// 🎯 TOUR ENABLE/DISABLE CONTROL
+// ============================================================================
+// Comment out the line below to DISABLE all tours
+// Uncomment the line below to ENABLE all tours
+const ENABLE_TOURS = true;
+// const ENABLE_TOURS = false; // Uncomment this line to disable tours
+// ============================================================================
+
 interface TourState {
     productTourShown?: boolean;
     templateCreationTourShown?: boolean;
@@ -99,4 +108,22 @@ export const setAllToursComplete = (): void => {
 // Check if user is logged in
 export const isUserLoggedIn = (): boolean => {
     return getUserId() !== 'guest';
+};
+
+// Check if user is superadmin
+const isSuperAdmin = (): boolean => {
+    const userStr = window.sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    return user?.role?.name === 'superadmin';
+};
+
+// Check if tour is enabled for the session
+export const isTourEnabled = (): boolean => {
+    // Super admin (sam admin) should never see tours
+    if (isSuperAdmin()) {
+        return false;
+    }
+    
+    // Simple code-level toggle - change ENABLE_TOURS at the top of this file
+    return ENABLE_TOURS;
 };

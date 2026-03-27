@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/Button';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
@@ -9,6 +10,9 @@ export const DashboardHeaderComponent: FC = () => {
     const { state, setState } = useDashboardState();
     const { user } = usePermissionStore();
     const toast = useToastStore();
+    const navigate = useNavigate();
+
+    const isContentCreationModule = sessionStorage.getItem('module') === 'content-creation';
 
     const handleCreateTemplateClick = () => {
         if (user?.role?.name === 'superadmin') {
@@ -28,14 +32,22 @@ export const DashboardHeaderComponent: FC = () => {
             <div className="flex-1 text-xl lg:text-2xl">
                 Welcome to makez.ai, <span className="capitalize">{user?.firstName}</span>
             </div>
-            <Button
-                permission="create:template"
-                startIcon={<Plus strokeWidth={1.5} size={18} />}
-                onClick={handleCreateTemplateClick}
-                data-tour-id="create-template"
-            >
-                Create Template
-            </Button>
+            <div className="flex items-center gap-2">
+                {isContentCreationModule && (
+                    <Button permission="view:userGuide" outlined onClick={() => window.open('/module/content-creation/Blog%20genaration%C2%A0Module%20–%20User%20Manual%20v1.pdf', '_blank')}>
+                        User Guide
+                    </Button>
+                )}
+                <Button outlined onClick={() => navigate('/agent/list')}>
+                    Makez Agents
+                </Button>
+                <Button outlined onClick={() => navigate('/docsnap/template/list')}>
+                    View Template
+                </Button>
+                <Button permission="create:template" startIcon={<Plus strokeWidth={1.5} size={18} />} onClick={handleCreateTemplateClick} data-tour-id="create-template">
+                    Create Template
+                </Button>
+            </div>
         </section>
     );
 };
