@@ -20,11 +20,15 @@ interface ExtractionStoreIF {
     refreshRecord: number;
     updateRefreshRecord: () => void;
 
+    showFloatingWindow: boolean;
+    setShowFloatingWindow: (show: boolean) => void;
+
     extractionQueue: ExtractionItem[];
     addToExtractionQueue: (fileName: string, payload?: PayloadIF) => void;
     updateExtractionQueue: (fileName: string, changes: Partial<ExtractionItem>) => void;
     clearExtractionQueue: () => void;
     refreshExtractionQueue: (fileName: string) => void;
+    filterExtractionQueue: (predicate: (item: ExtractionItem) => boolean) => void;
     handleCompletion: (timer: any, processingFiles: any[], fileName: string) => void;
     handleError: (timer: any, processingFiles: any[], fileName: string) => void;
     startTimer: (fileName: string) => NodeJS.Timeout;
@@ -35,8 +39,11 @@ export const useExtractionStore = create<ExtractionStoreIF>((set, get) => {
     return {
         refreshRecord: 0,
         extractionQueue: [],
+        showFloatingWindow: false,
 
         updateRefreshRecord: () => set({ refreshRecord: get().refreshRecord + 1 }),
+
+        setShowFloatingWindow: (show: boolean) => set({ showFloatingWindow: show }),
 
         startTimer: (fileName: string): NodeJS.Timeout => {
             return setInterval(() => {
@@ -70,6 +77,10 @@ export const useExtractionStore = create<ExtractionStoreIF>((set, get) => {
         },
 
         clearExtractionQueue: () => set({ extractionQueue: [] }),
+
+        filterExtractionQueue: (predicate) => {
+            set({ extractionQueue: get().extractionQueue.filter(predicate) });
+        },
 
         updateExtractionQueue: (fileName: string, changes: Partial<ExtractionItem>) => {
             set({

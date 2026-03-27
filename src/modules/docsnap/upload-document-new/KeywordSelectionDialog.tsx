@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DialogComponent } from '../../../components/DialogComponent';
 import { Button } from '../../../components/Button';
-import { Check, ChevronDown, Plus, X } from 'lucide-react';
+import { Check, ChevronDown, Plus, X, AlertCircle } from 'lucide-react';
 import Spinner from '../../../components/Spinner';
 import { useAlertStore } from '../../../components/alert/AlertStore';
+import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
 export interface KeywordItem {
     keyword: string;
@@ -23,8 +24,19 @@ interface KeywordSelectionDialogProps {
     isFetching: boolean;
     onClose: () => void;
     onProceed: (groups: KeywordGroup[]) => void;
+    /** Called when user clicks Proceed inside a single group — should NOT close the dialog */
+    onProceedGroup?: (group: KeywordGroup) => void | Promise<void>;
     isSubmitting?: boolean;
 }
+
+// Friendly labels for extraction steps
+const STEP_LABELS: Record<string, string> = {
+    uploading: 'Uploading...',
+    extracting: 'Extracting data...',
+    processing: 'Processing...',
+    generating: 'Generating blog...',
+    saving: 'Saving...',
+};
 
 export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
     isOpen,
@@ -32,13 +44,19 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
     isFetching,
     onClose,
     onProceed,
+    onProceedGroup,
     isSubmitting = false,
 }) => {
     const { showAlert } = useAlertStore();
+    const { extractionQueue } = useExtractionStore();
+
     const [groups, setGroups] = useState<KeywordGroup[]>(initialGroups);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(
         new Set(initialGroups.map((_, i) => i).slice(1))
     );
+
+    // Tracks which groups have had Proceed clicked (so we can look them up in extractionQueue)
+    const [proceededGroups, setProceededGroups] = useState<Set<number>>(new Set());
 
     // Sync when initialGroups changes (e.g. after fetch)
     const [lastGroups, setLastGroups] = useState(initialGroups);
@@ -46,17 +64,18 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
         setLastGroups(initialGroups);
         setGroups(initialGroups);
         setCollapsedGroups(new Set(initialGroups.map((_, i) => i).slice(1)));
+        setProceededGroups(new Set());
     }
 
     const toggleGroupCollapse = (gi: number) => {
         setCollapsedGroups(prev => {
-            const allIndices = groups.map((_, i) => i);
-            if (prev.has(gi)) {
-                const next = new Set(allIndices);
-                next.delete(gi);
-                return next;
+            const next = new Set(prev);
+            if (next.has(gi)) {
+                next.delete(gi); // was collapsed → expand
+            } else {
+                next.add(gi);    // was expanded → collapse
             }
-            return new Set(allIndices);
+            return next;
         });
     };
 
@@ -108,6 +127,23 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
         closeAddKeyword();
     };
 
+    // ——— Per-group proceed ———
+    const handleProceedGroup = async (gi: number) => {
+        // Mark as proceeded and collapse so user can review others
+        setProceededGroups(prev => new Set(prev).add(gi));
+        setCollapsedGroups(prev => {
+            const next = new Set(prev);
+            next.add(gi);
+            return next;
+        });
+
+        if (onProceedGroup) {
+            await Promise.resolve(onProceedGroup(groups[gi]));
+        } else {
+            await Promise.resolve(onProceed([groups[gi]]));
+        }
+    };
+
     const handleClose = () => {
         showAlert({
             alertText: "Are you sure you want to cancel? This will remove your selected keywords and terminate block generation.",
@@ -116,6 +152,17 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
             onPrimaryAction: onClose,
         });
     };
+
+    // Look up the real extraction item for a group by matching the group name to the queue fileName
+    const getExtractionItem = (group: KeywordGroup) => {
+        return extractionQueue.find(item => item.fileName === group.name);
+    };
+
+    const allGroupsDone = proceededGroups.size === groups.length && groups.length > 0 &&
+        groups.every(g => {
+            const item = getExtractionItem(g);
+            return item?.status === 'completed' || item?.status === 'failed';
+        });
 
     return (
         <DialogComponent
@@ -153,52 +200,147 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                         </div>
 
                         {/* Groups list — scrollable */}
-                        <div className="show-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+                        <div className="show-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-2">
                             {groups.map((group, gi) => {
                                 const groupSelected = group.keywords.filter(k => k.selected).length;
                                 const allGroupSelected = groupSelected === group.keywords.length;
                                 const isCollapsed = collapsedGroups.has(gi);
+                                const hasProceed = proceededGroups.has(gi);
+
+                                // Real extraction status from Zustand store
+                                const extractionItem = getExtractionItem(group);
+                                const isProcessing = hasProceed && extractionItem?.status === 'processing';
+                                const isDone = hasProceed && extractionItem?.status === 'completed';
+                                const isFailed = hasProceed && extractionItem?.status === 'failed';
+                                const progress = extractionItem?.progress ?? 0;
+                                const stepLabel = extractionItem?.step
+                                    ? (STEP_LABELS[extractionItem.step] || extractionItem.step)
+                                    : 'Processing...';
+                                const elapsed = extractionItem?.time ?? 0;
+
                                 return (
-                                    <div key={gi} className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
+                                    <div key={gi} className={`shrink-0 rounded-xl border transition-all duration-200 ${
+                                        isFailed
+                                            ? 'border-red-300 bg-red-50'
+                                            : isDone
+                                            ? 'border-green-300 bg-green-50'
+                                            : isProcessing
+                                            ? 'border-orange-300 bg-orange-50/40'
+                                            : 'border-gray-200 bg-gray-50'
+                                    }`}>
                                         {/* Group header */}
                                         <div
-                                            className="flex items-center justify-between px-4 py-3 cursor-pointer select-none hover:bg-gray-100 transition-colors"
+                                            className={`flex items-center justify-between px-4 py-3 select-none transition-colors cursor-pointer ${
+                                                isFailed ? 'hover:bg-red-100' :
+                                                isDone ? 'hover:bg-green-100' :
+                                                isProcessing ? 'hover:bg-orange-100/40' :
+                                                'hover:bg-gray-100'
+                                            }`}
                                             onClick={() => toggleGroupCollapse(gi)}
                                         >
-                                            <div className="flex items-center gap-2">
-                                                <ChevronDown
-                                                    size={16}
-                                                    className={`text-gray-400 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
-                                                />
-                                                <span className="inline-block rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                {/* Status icon */}
+                                                {isProcessing && <Spinner size={15} />}
+                                                {isDone && !isProcessing && (
+                                                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500">
+                                                        <Check size={11} className="text-white" strokeWidth={3} />
+                                                    </span>
+                                                )}
+                                                {isFailed && (
+                                                    <AlertCircle size={16} className="shrink-0 text-red-500" />
+                                                )}
+                                                {/* Always show chevron for expand/collapse */}
+                                                {!isProcessing && (
+                                                    <ChevronDown
+                                                        size={16}
+                                                        className={`shrink-0 text-gray-400 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
+                                                    />
+                                                )}
+
+                                                <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                    isFailed ? 'bg-red-100 text-red-700' :
+                                                    isDone ? 'bg-green-100 text-green-700' :
+                                                    isProcessing ? 'bg-orange-100 text-orange-700' :
+                                                    'bg-blue-100 text-blue-700'
+                                                }`}>
                                                     {groupSelected}/{group.keywords.length}
                                                 </span>
-                                                <p className="text-sm font-semibold text-gray-800 capitalize">{group.name}</p>
+                                                <p className="text-sm font-semibold text-gray-800 capitalize truncate">{group.name}</p>
+
+                                                {/* Elapsed time — shown in header whenever processing */}
+                                                {isProcessing && elapsed > 0 && (
+                                                    <span className="shrink-0 text-[10px] text-orange-400">{elapsed}s</span>
+                                                )}
+
+                                                {/* Completed label when collapsed */}
+                                                {isDone && isCollapsed && (
+                                                    <span className="ml-1 text-xs font-medium text-green-600">Completed</span>
+                                                )}
+
+                                                {/* Failed label when collapsed */}
+                                                {isFailed && isCollapsed && (
+                                                    <span className="ml-1 text-xs font-medium text-red-500">Failed</span>
+                                                )}
                                             </div>
-                                            <button
-                                                onClick={e => { e.stopPropagation(); handleSelectAllInGroup(gi, !allGroupSelected); }}
-                                                className="text-xs text-blue-600 hover:underline cursor-pointer"
-                                            >
-                                                {allGroupSelected ? 'Deselect All' : 'Select All'}
-                                            </button>
+
+                                            {/* Select All / Deselect All — only before proceeding */}
+                                            {!hasProceed && (
+                                                <button
+                                                    onClick={e => { e.stopPropagation(); handleSelectAllInGroup(gi, !allGroupSelected); }}
+                                                    className="ml-2 shrink-0 text-xs text-blue-600 hover:underline cursor-pointer"
+                                                >
+                                                    {allGroupSelected ? 'Deselect All' : 'Select All'}
+                                                </button>
+                                            )}
                                         </div>
 
-                                        {/* Keywords grid + add keyword */}
+                                        {/* Expanded processing state — step label + full progress bar */}
+                                        {isProcessing && !isCollapsed && (
+                                            <div className="px-4 pb-3 pt-1">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <span className="text-xs text-orange-600 font-medium">{stepLabel}</span>
+                                                    <span className="text-xs font-semibold text-orange-700">{progress}%</span>
+                                                </div>
+                                                <div className="h-2 w-full overflow-hidden rounded-full bg-orange-100">
+                                                    <div
+                                                        className="h-full rounded-full bg-orange-500 transition-all duration-500"
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                                {elapsed > 0 && (
+                                                    <p className="mt-1.5 text-[10px] text-gray-400">{elapsed}s elapsed</p>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Keywords grid — always visible when expanded */}
                                         {!isCollapsed && (
                                             <div className="px-4 pb-3">
                                                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                                                     {group.keywords.map((kw, ki) => (
                                                         <button
                                                             key={ki}
-                                                            onClick={() => handleToggleKeyword(gi, ki)}
-                                                            className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-all cursor-pointer ${
-                                                                kw.selected
-                                                                    ? 'border-blue-500 bg-blue-50 text-blue-800'
-                                                                    : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-100'
+                                                            onClick={() => !hasProceed && handleToggleKeyword(gi, ki)}
+                                                            className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-all ${
+                                                                hasProceed
+                                                                    ? kw.selected
+                                                                        ? isDone
+                                                                            ? 'border-green-300 bg-green-50 text-green-800 cursor-default'
+                                                                            : 'border-orange-300 bg-orange-50 text-orange-800 cursor-default'
+                                                                        : 'border-gray-200 bg-white text-gray-400 cursor-default opacity-50'
+                                                                    : kw.selected
+                                                                        ? 'border-blue-500 bg-blue-50 text-blue-800 cursor-pointer'
+                                                                        : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-100 cursor-pointer'
                                                             }`}
                                                         >
                                                             <span className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors ${
-                                                                kw.selected ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
+                                                                hasProceed
+                                                                    ? kw.selected
+                                                                        ? isDone ? 'border-green-500 bg-green-500' : 'border-orange-400 bg-orange-400'
+                                                                        : 'border-gray-200 bg-white'
+                                                                    : kw.selected
+                                                                        ? 'border-blue-500 bg-blue-500'
+                                                                        : 'border-gray-300 bg-white'
                                                             }`}>
                                                                 {kw.selected && <Check size={9} className="text-white" strokeWidth={3} />}
                                                             </span>
@@ -207,46 +349,60 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                                     ))}
                                                 </div>
 
-                                                {/* Add keyword row */}
-                                                <div className="mt-2">
-                                                    {activeAddGroup === gi ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                ref={addInputRef}
-                                                                type="text"
-                                                                value={addValue}
-                                                                onChange={e => setAddValue(e.target.value)}
-                                                                onKeyDown={e => {
-                                                                    if (e.key === 'Enter') commitAddKeyword(gi);
-                                                                    if (e.key === 'Escape') closeAddKeyword();
-                                                                }}
-                                                                placeholder="Type a keyword and press Enter"
-                                                                className="flex-1 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
-                                                                autoFocus
-                                                            />
-                                                            <button
-                                                                onClick={() => commitAddKeyword(gi)}
-                                                                className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                                                            >
-                                                                <Check size={13} strokeWidth={3} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => closeAddKeyword()}
-                                                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 transition-colors"
-                                                            >
-                                                                <X size={13} />
-                                                            </button>
+                                                {/* Add keyword & Proceed — only before proceeding */}
+                                                {!hasProceed && (
+                                                    <>
+                                                        <div className="mt-2">
+                                                            {activeAddGroup === gi ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <input
+                                                                        ref={addInputRef}
+                                                                        type="text"
+                                                                        value={addValue}
+                                                                        onChange={e => setAddValue(e.target.value)}
+                                                                        onKeyDown={e => {
+                                                                            if (e.key === 'Enter') commitAddKeyword(gi);
+                                                                            if (e.key === 'Escape') closeAddKeyword();
+                                                                        }}
+                                                                        placeholder="Type a keyword and press Enter"
+                                                                        className="flex-1 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+                                                                        autoFocus
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => commitAddKeyword(gi)}
+                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                                                                    >
+                                                                        <Check size={13} strokeWidth={3} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => closeAddKeyword()}
+                                                                        className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 transition-colors"
+                                                                    >
+                                                                        <X size={13} />
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => openAddKeyword(gi)}
+                                                                    className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer"
+                                                                >
+                                                                    <Plus size={13} />
+                                                                    Add keyword
+                                                                </button>
+                                                            )}
                                                         </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => openAddKeyword(gi)}
-                                                            className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors cursor-pointer"
-                                                        >
-                                                            <Plus size={13} />
-                                                            Add keyword
-                                                        </button>
-                                                    )}
-                                                </div>
+                                                        <div className="mt-3 flex justify-end border-t pt-3">
+                                                            <Button
+                                                                small
+                                                                disabled={groupSelected === 0}
+                                                                onClick={e => { e.stopPropagation(); handleProceedGroup(gi); }}
+                                                            >
+                                                                {/* {`Proceed with ${groupSelected} keyword${groupSelected !== 1 ? 's' : ''}`} */}
+                                                                {`Proceed`}
+                                                            </Button>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -255,15 +411,27 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                         </div>
 
                         {/* Footer */}
-                        <div className="flex justify-end gap-2 border-t pt-4">
-                            <Button outlined onClick={handleClose}>Cancel</Button>
-                            <Button
-                                onClick={() => onProceed(groups)}
-                                disabled={isSubmitting}
-                                startIcon={isSubmitting ? <Spinner size={14} /> : null}
-                            >
-                                {isSubmitting ? 'Processing...' : `Proceed with ${totalSelected} Keywords`}
-                            </Button>
+                        <div className="flex items-center justify-between gap-2 border-t pt-4">
+                            <div className="text-xs text-gray-500">
+                                {proceededGroups.size > 0 && (
+                                    <span>{proceededGroups.size} of {groups.length} group{groups.length > 1 ? 's' : ''} queued for processing</span>
+                                )}
+                            </div>
+                            <div className="flex gap-2">
+                                <Button outlined onClick={handleClose}>Cancel</Button>
+                                <Button
+                                    onClick={() => {
+                                        // Only pass groups that haven't been individually proceeded yet
+                                        // — already-proceeded ones are already running in the background
+                                        const remaining = groups.filter((_, gi) => !proceededGroups.has(gi));
+                                        onProceed(remaining.length > 0 ? remaining : groups);
+                                    }}
+                                    disabled={isSubmitting}
+                                    startIcon={isSubmitting ? <Spinner size={14} /> : null}
+                                >
+                                    {isSubmitting ? 'Processing...' : 'Proceed All'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 )}

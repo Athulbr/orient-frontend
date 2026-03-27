@@ -17,6 +17,7 @@ import { Download } from 'lucide-react';
 import Spinner from '../../../components/Spinner';
 
 import { KeywordItem, KeywordGroup, KeywordSelectionDialog } from './KeywordSelectionDialog';
+import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
 interface UploadDocumentComponentIF {
     template?: any;
@@ -30,6 +31,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
+    const { setShowFloatingWindow } = useExtractionStore();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [showSegregatedDocuments, setShowSegregatedDocuments] = useState(false);
     const module = sessionStorage.getItem('module');
@@ -142,19 +144,39 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
 
 
     const handleProceedWithKeywords = (groups: KeywordGroup[]) => {
+        if (!groups.length) {
+            setShowBulkKeywordDialog(false);
+            closeDialog();
+            return;
+        }
         setIsSubmittingBulk(true);
-        pendingRows.forEach((row: any) => {
-            const matchingGroup = groups.find(
-                g => g.name === row.name || g.primary_keyword === row.primary_keyword
+        // Queue ALL remaining groups first (skipNavigate=true) so the Zustand
+        // store is fully populated before we navigate. Calling navigate inside
+        // a forEach loop causes React Router race conditions.
+        groups.forEach((group) => {
+            const matchingRow = pendingRows.find(
+                (row: any) => row.name === group.name || row.primary_keyword === group.primary_keyword
             );
-            const selectedKeywords = matchingGroup
-                ? matchingGroup.keywords.filter(k => k.selected)
-                : groups.flatMap(g => g.keywords.filter(k => k.selected));
-            addToDocumentExtractor(latestTemplate, [], { ...row, selectedKeywords });
+            const rowToProcess = matchingRow ?? pendingRows[0];
+            const selectedKeywords = group.keywords.filter(k => k.selected);
+            addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
         });
         setIsSubmittingBulk(false);
         setShowBulkKeywordDialog(false);
         closeDialog();
+        // Show the floating window with ALL items (including per-group already-processing ones)
+        setShowFloatingWindow(true);
+        navigate('/docsnap/record/list');
+    };
+
+    /** Per-group proceed for bulk flow — does NOT close the dialog */
+    const handleProceedBulkGroup = (group: KeywordGroup) => {
+        const matchingRow = pendingRows.find(
+            row => row.name === group.name || row.primary_keyword === group.primary_keyword
+        );
+        const rowToProcess = matchingRow ?? pendingRows[0]; // fallback to first row
+        const selectedKeywords = group.keywords.filter(k => k.selected);
+        addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
@@ -277,15 +299,27 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const handleManualKeywordProceed = async (groups: KeywordGroup[]) => {
         setIsSubmittingManual(true);
         try {
-            const selectedKeywords = groups.flatMap(g => g.keywords.filter(k => k.selected));
-            addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords });
+            // Queue each group with skipNavigate=true, then navigate once
+            groups.forEach(g => {
+                const selectedKeywords = g.keywords.filter(k => k.selected);
+                addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords }, undefined, true);
+            });
             setShowKeywordDialog(false);
             setPendingManualRow(null);
             closeDialog();
             setShowManualInputForm && setShowManualInputForm(false);
+            // Show floating window with all items then navigate
+            setShowFloatingWindow(true);
+            navigate('/docsnap/record/list');
         } finally {
             setIsSubmittingManual(false);
         }
+    };
+
+    /** Per-group proceed for manual flow — does NOT close the dialog */
+    const handleManualKeywordProceedGroup = (group: KeywordGroup) => {
+        const selectedKeywords = group.keywords.filter(k => k.selected);
+        addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords }, undefined, true);
     };
 
     if (showManualInputForm) {
@@ -312,6 +346,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                         setPendingManualRow(null);
                     }}
                     onProceed={handleManualKeywordProceed}
+                    onProceedGroup={handleManualKeywordProceedGroup}
                     isSubmitting={isSubmittingManual}
                 />
             </>
@@ -368,6 +403,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                     setKeywordGroups([]);
                 }}
                 onProceed={handleProceedWithKeywords}
+                onProceedGroup={handleProceedBulkGroup}
                 isSubmitting={isSubmittingBulk}
             />
         </>

@@ -295,6 +295,12 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         }
     };
 
+    /** Per-group proceed — does NOT close the dialog */
+    const handleProceedGroupKeywords = (group: KeywordGroup) => {
+        const selectedKeywords = group.keywords.filter(k => k.selected);
+        addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords }, undefined, true);
+    };
+
     if (!template) return null;
     const { total, submitted, extracted } = template.count;
 
@@ -453,6 +459,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     setPendingFormData(null);
                 }}
                 onProceed={handleProceedWithKeywords}
+                onProceedGroup={handleProceedGroupKeywords}
                 isSubmitting={isSubmittingKeywords}
             />
         </div>

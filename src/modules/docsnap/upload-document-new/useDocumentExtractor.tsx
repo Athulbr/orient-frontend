@@ -8,7 +8,7 @@ export const useDocumentExtractor = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
 
-    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }) => {
+    const addToDocumentExtractor = async (template: any, files: File[], rowData?: any, segregatedDoc?: { documentNumber: string; s3ImageNames: string[] }, skipNavigate?: boolean) => {
         const sendApiRequestToNodeJsExtractor = async (file: File | File[], template: any, s3ImageNames: string[] = [], documentNumber: string = '') => {
             let timer: NodeJS.Timeout | null = null;
             const fileName = Array.isArray(file) ? documentNumber || `Batch of ${file.length} Files` : file.name;
@@ -376,14 +376,14 @@ export const useDocumentExtractor = () => {
         if (template?.settings?.module === 'data-entry') {
             addNameToQueue(rowData.SKU);
             sendApiRequestToDataEntry(rowData, template);
-            navigate('/docsnap/record/list');
+            if (!skipNavigate) navigate('/docsnap/record/list');
             return;
         }
 
         if (template?.settings?.module === 'content-creation') {
             addNameToQueue(rowData.name);
             sendApiRequestToContentCreation(rowData, template);
-            navigate('/docsnap/record/list');
+            if (!skipNavigate) navigate('/docsnap/record/list');
             return;
         }
 
@@ -424,7 +424,7 @@ export const useDocumentExtractor = () => {
             console.error('Error processing files:', error);
         }
 
-        navigate('/docsnap/record/list');
+        if (!skipNavigate) navigate('/docsnap/record/list');
     };
 
     return {
