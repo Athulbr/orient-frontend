@@ -15,34 +15,18 @@ export interface Email {
     attachments: FileItem[];
 }
 
-export interface OrderDetails {
-    order_id: number;
-    order_no: string;
-    type: string;
-    location: string;
-    loc_id: number;
-    branch: string;
-    branch_id: number;
-    total_amount: number;
-    actual_amount: number;
-    order_status: string;
-    doc_submit_status: string;
-}
-
 export interface UserDetails {
-    user_id: number;
-    name: string;
-    email: string;
-    phone: string;
+    user_name: string;
+    user_email: string;
+    user_phone: string;
+    pan_number?: string;
 }
 
 export interface CurrencyDetail {
-    sr_no: number;
     currency: string;
     product: string;
-    quantity: number;
-    rate: number;
-    amount: number;
+    quantity: string | number;
+    amount: string | number;
 }
 
 export interface DocumentDetail {
@@ -50,13 +34,33 @@ export interface DocumentDetail {
     documentUrl: string;
 }
 
+export interface OrderDetails {
+    order_id: number;
+    order_no: string;
+    type: string;
+    order_status: string;
+    loc_id: string;
+    branch_id: string;
+    branch: string;
+    payment_type?: string;
+    delivery_mode?: string;
+    delivery_charge?: string;
+    handling_charges?: string;
+    total_amount: string | number;
+    actual_amount?: string | number;
+    user_details: UserDetails;
+    doc_Submit_Status: string;
+    purpose?: string;
+    doc_upload_time?: string;
+    document_count?: number;
+    document_details: DocumentDetail[];
+    currency_details: CurrencyDetail[];
+}
+
 export interface Order {
     order_details: OrderDetails;
-    user_details: UserDetails;
-    currency_details: CurrencyDetail[];
-    document_details: DocumentDetail[];
     linkedEmailIds?: string[];
-    extractionDetails: Record<string, unknown>;
+    extractionDetails?: Record<string, unknown>;
 }
 
 export interface TemplateRequirement {

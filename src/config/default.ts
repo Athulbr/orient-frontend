@@ -36,6 +36,12 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_REHAB,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_REHAB,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_REHAB
+    },
+    orient: {
+        baseUrl: import.meta.env.VITE_BASE_URL_ORIENT,
+        nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT,
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT
     }
 };
 const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || 'local'];
@@ -46,12 +52,5 @@ export const config = {
     workflowService: envConfig.workflowService,
     extractionServicePython: envConfig.extractionServicePython,
     chatbotServicePython: envConfig.chatbotServicePython,
-    mlServiceNodejs: envConfig.mlServiceNodejs,
-    azure: {
-        tenantId: import.meta.env.VITE_AZURE_TENANT_ID,
-        clientId: import.meta.env.VITE_AZURE_CLIENT_ID
-    },
-    google: {
-        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID
-    }
+    mlServiceNodejs: envConfig.mlServiceNodejs
 };

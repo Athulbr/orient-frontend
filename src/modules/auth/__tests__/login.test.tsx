@@ -12,17 +12,6 @@ vi.mock('react-router-dom', () => ({
     useParams: () => ({})
 }));
 
-vi.mock('@azure/msal-react', () => ({
-    useMsal: () => ({
-        instance: { loginRedirect: vi.fn() },
-        accounts: []
-    })
-}));
-
-vi.mock('@react-oauth/google', () => ({
-    useGoogleLogin: () => vi.fn()
-}));
-
 vi.mock('../../../../components/toast/ToastStore', () => ({
     useToastStore: () => ({
         success: vi.fn(),
