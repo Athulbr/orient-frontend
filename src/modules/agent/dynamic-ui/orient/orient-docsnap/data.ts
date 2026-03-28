@@ -35,35 +35,35 @@ export const sampleOrders: Order[] = [
     }
 ];
 
-// export const oldSampleOrders: Order[] = [
-//     {
-//         order_details: {
-//             order_id: 1289082,
-//             order_no: '20250417117175',
-//             type: 'sell',
-//             location: 'Bangalore',
-//             loc_id: 5,
-//             order_status: 'Pending',
-//             branch: 'Bangalore-Basavangudi',
-//             branch_id: 5,
-//             total_amount: 85000,
-//             actual_amount: 84500,
-//             doc_submit_status: 'Online'
-//         },
-//         user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' },
-//         currency_details: [
-//             { sr_no: 1, currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
-//             { sr_no: 2, currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
-//         ],
-//         document_details: [
-//             { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
-//             { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
-//             { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
-//             { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' }
-//         ],
-//         extractionDetails: {}
-//     }
-// ];
+export const oldSampleOrders: Order[] = [
+    {
+        order_details: {
+            order_id: 1289082,
+            order_no: '20250417117175',
+            type: 'sell',
+            location: 'Bangalore',
+            loc_id: 5,
+            order_status: 'Pending',
+            branch: 'Bangalore-Basavangudi',
+            branch_id: 5,
+            total_amount: 85000,
+            actual_amount: 84500,
+            doc_submit_status: 'Online'
+        },
+        user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' },
+        currency_details: [
+            { sr_no: 1, currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
+            { sr_no: 2, currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
+        ],
+        document_details: [
+            { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
+            { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
+            { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
+            { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' }
+        ],
+        extractionDetails: {}
+    }
+];
 
 export const sampleEmails: Email[] = [
     {

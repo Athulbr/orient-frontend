@@ -7,7 +7,7 @@ import CreateOrderDialog from './CreateOrderDialog';
 import { config } from '../../../../../config/default';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 interface OrientDocsnapUserInterfaceIF {
     test?: string;
@@ -16,6 +16,7 @@ interface OrientDocsnapUserInterfaceIF {
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
+    const [availableEmails, setAvailableEmails] = useState<Email[]>([]);
     const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<number, File[]>>({});
     const [proceedingOrderId, setProceedingOrderId] = useState<number | null>(null);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -43,6 +44,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             try {
                 const res = await fetch(`${config.workflowService}/api/emails`);
                 if (res.ok) setEmails(await res.json());
+
+                const availRes = await fetch(`${config.workflowService}/api/emails?status=unlinked`);
+                if (availRes.ok) setAvailableEmails(await availRes.json());
             } catch (err) {
                 console.error('Failed to fetch emails', err);
             }
@@ -100,6 +104,16 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         [emails]
     );
 
+    const handleResetFilters = useCallback(() => {
+        setSearchQuery('');
+        setDebouncedSearchQuery('');
+        setStatusFilter('all');
+        setBranchFilter('5');
+        setDateRange({ startDate: '', endDate: '' });
+        setPerPage('10');
+        setCurrentPage(1);
+    }, []);
+
     const getAvailableEmails = useCallback((): Email[] => {
         const linkedIds = new Set(orders.flatMap(o => o.linkedEmailIds || []));
         return emails.filter(e => !linkedIds.has(e.id) && !e.orderId);
@@ -118,9 +132,18 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ linkedEmailIds })
                     });
+
+                    await fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: String(orderId) })
+                    });
+
+                    const availRes = await fetch(`${config.workflowService}/api/emails?status=unlinked`);
+                    if (availRes.ok) setAvailableEmails(await availRes.json());
                 }
             } catch (err) {
-                console.error('Failed to update linked emails', err);
+                console.error('Failed to link email', err);
             }
         },
         [orders]
@@ -139,9 +162,18 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ linkedEmailIds })
                     });
+
+                    await fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderId: '' })
+                    });
+
+                    const availRes = await fetch(`${config.workflowService}/api/emails?status=unlinked`);
+                    if (availRes.ok) setAvailableEmails(await availRes.json());
                 }
             } catch (err) {
-                console.error('Failed to update linked emails', err);
+                console.error('Failed to unlink email', err);
             }
         },
         [orders]
@@ -256,16 +288,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
 
     const currentAvailableEmails = getAvailableEmails();
 
-    const handleResetFilters = useCallback(() => {
-        setSearchQuery('');
-        setDebouncedSearchQuery('');
-        setStatusFilter('all');
-        setBranchFilter('5');
-        setDateRange({ startDate: '', endDate: '' });
-        setPerPage('10');
-        setCurrentPage(1);
-    }, []);
-
     return (
         <div className="min-h-full w-full bg-gray-50 flex flex-col">
             <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
@@ -292,8 +314,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                             options={[
                                 { label: 'All Status', value: 'all' },
                                 { label: 'Pending', value: 'pending' },
-                                { label: 'Completed', value: 'completed' },
-                                { label: 'Cancelled', value: 'cancelled' }
+                                { label: 'Review', value: 'extracted' },
+                                { label: 'Submitted', value: 'submitted' },
+                                { label: 'Failed', value: 'failed' }
                             ]}
                         />
                         <div className="flex flex-col gap-1">
@@ -309,9 +332,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                                 { label: '100', value: '100' }
                             ]}
                         />
-                        <Button onClick={handleResetFilters} outlined>
-                            Reset Filters
-                        </Button>
+                        <Button startIcon={<X size={16} />} onClick={handleResetFilters} outlined></Button>
                         <Button onClick={() => setShowCreateDialog(true)}>Create Order</Button>
                     </div>
                 </div>
@@ -324,7 +345,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         order={order}
                         linkedEmails={getLinkedEmails(order)}
                         uploadedFiles={uploadedFilesMap[order.order_details.order_id] || []}
-                        availableEmails={currentAvailableEmails}
+                        availableEmails={availableEmails}
                         onLinkEmail={handleLinkEmail}
                         onUnlinkEmail={handleUnlinkEmail}
                         onUploadFiles={handleUploadFiles}
