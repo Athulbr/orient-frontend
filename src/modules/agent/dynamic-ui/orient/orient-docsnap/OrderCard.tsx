@@ -194,7 +194,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     }));
 
     const handleViewExtractedData = () => {
-        navigate(`/docsnap/record/view/${order.extractionDetails.recordId || '69c56168258294752e8708bb'}`, { state: { orient: true } });
+        navigate(`/docsnap/record/view/${order.extractionDetails?.recordId || ''}`, { state: { orient: true } });
     };
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFiles.length;
@@ -507,7 +507,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 <span className="text-sm text-gray-400">
                     {totalDocs} document{totalDocs !== 1 ? 's' : ''} ready for extraction
                 </span>
-                {!order.extractionDetails.recordId ? (
+                {!order.extractionDetails?.recordId ? (
                     <Button
                         startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
                         outlined

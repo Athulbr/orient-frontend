@@ -1,28 +1,95 @@
 import React, { useState, useCallback } from 'react';
 import OrderCard from './OrderCard';
 import { Order, Email } from './types';
-import { sampleOrders, sampleEmails, availableEmails as availableEmailsData } from './data';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import CreateOrderDialog from './CreateOrderDialog';
 import { config } from '../../../../../config/default';
+import { SingleSelect } from '../../../../../components/SingleSelect';
+import DateTimePicker from '../../../../../components/DateTimePicker';
+import { Search } from 'lucide-react';
 
 interface OrientDocsnapUserInterfaceIF {
     test?: string;
 }
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
-    const [orders, setOrders] = useState<Order[]>(sampleOrders);
-    const [emails] = useState<Email[]>([...sampleEmails, ...availableEmailsData]);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [emails, setEmails] = useState<Email[]>([]);
     const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<number, File[]>>({});
     const [proceedingOrderId, setProceedingOrderId] = useState<number | null>(null);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
-    // console.log('orders:===========', orders);
+    // Filter and Pagination States
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [branchFilter, setBranchFilter] = useState('5');
+    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
+    const [perPage, setPerPage] = useState('10');
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const handleDeleteOrder = useCallback((orderId: number) => {
-        setOrders(prev => prev.filter(o => o.order_details.order_id !== orderId));
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    React.useEffect(() => {
+        const fetchEmails = async () => {
+            try {
+                const res = await fetch(`${config.workflowService}/api/emails`);
+                if (res.ok) setEmails(await res.json());
+            } catch (err) {
+                console.error('Failed to fetch emails', err);
+            }
+        };
+        fetchEmails();
+    }, []);
+
+    const fetchData = useCallback(async () => {
+        try {
+            const params = new URLSearchParams();
+            if (debouncedSearchQuery) params.append('search', debouncedSearchQuery);
+            if (statusFilter !== 'all') params.append('status', statusFilter);
+            if (branchFilter !== 'all') params.append('branch', branchFilter);
+            if (dateRange.startDate && dateRange.endDate) {
+                params.append('startDate', dateRange.startDate);
+                params.append('endDate', dateRange.endDate);
+            }
+            params.append('page', currentPage.toString());
+            params.append('limit', perPage);
+
+            const res = await fetch(`${config.workflowService}/api/orders?${params.toString()}`);
+            if (res.ok) {
+                const responseData = await res.json();
+                if (Array.isArray(responseData)) {
+                    setOrders(responseData);
+                } else if (responseData.data) {
+                    setOrders(responseData.data);
+                    setTotalPages(responseData.pagination.totalPages);
+                    setTotalCount(responseData.pagination.totalCount);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch orders', err);
+        }
+    }, [debouncedSearchQuery, statusFilter, branchFilter, dateRange, currentPage, perPage]);
+
+    React.useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleDeleteOrder = useCallback(async (orderId: number) => {
+        try {
+            await fetch(`${config.workflowService}/api/orders/${orderId}`, { method: 'DELETE' });
+            setOrders(prev => prev.filter(o => o.order_details.order_id !== orderId));
+        } catch (err) {
+            console.error('Failed to delete order', err);
+        }
     }, []);
 
     const getLinkedEmails = useCallback(
@@ -38,13 +105,47 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         return emails.filter(e => !linkedIds.has(e.id) && !e.orderId);
     }, [orders, emails]);
 
-    const handleLinkEmail = useCallback((orderId: number, emailId: string) => {
-        setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] } : o)));
-    }, []);
+    const handleLinkEmail = useCallback(
+        async (orderId: number, emailId: string) => {
+            setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] } : o)));
 
-    const handleUnlinkEmail = useCallback((orderId: number, emailId: string) => {
-        setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
-    }, []);
+            try {
+                const order = orders.find(o => o.order_details.order_id === orderId);
+                if (order) {
+                    const linkedEmailIds = [...(order.linkedEmailIds || []), emailId];
+                    await fetch(`${config.workflowService}/api/orders/${orderId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ linkedEmailIds })
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to update linked emails', err);
+            }
+        },
+        [orders]
+    );
+
+    const handleUnlinkEmail = useCallback(
+        async (orderId: number, emailId: string) => {
+            setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
+
+            try {
+                const order = orders.find(o => o.order_details.order_id === orderId);
+                if (order) {
+                    const linkedEmailIds = (order.linkedEmailIds || []).filter(id => id !== emailId);
+                    await fetch(`${config.workflowService}/api/orders/${orderId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ linkedEmailIds })
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to update linked emails', err);
+            }
+        },
+        [orders]
+    );
 
     const handleUploadFiles = useCallback((orderId: number, files: File[]) => {
         setUploadedFilesMap(prev => ({
@@ -122,11 +223,15 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0];
                                     if (finalData.extractedData) {
-                                        setOrders(prev =>
-                                            prev.map(o =>
-                                                o.order_details.order_id === orderId ? { ...o, extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId } } : o
-                                            )
-                                        );
+                                        const updateDetails = { extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId } };
+
+                                        fetch(`${config.workflowService}/api/orders/${orderId}`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(updateDetails)
+                                        }).catch(err => console.error('Failed to save extraction details', err));
+
+                                        setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, ...updateDetails } : o)));
                                     }
                                 }
                             }
@@ -151,17 +256,68 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
 
     const currentAvailableEmails = getAvailableEmails();
 
+    const handleResetFilters = useCallback(() => {
+        setSearchQuery('');
+        setDebouncedSearchQuery('');
+        setStatusFilter('all');
+        setBranchFilter('5');
+        setDateRange({ startDate: '', endDate: '' });
+        setPerPage('10');
+        setCurrentPage(1);
+    }, []);
+
     return (
-        <div className="min-h-full w-full bg-gray-50">
-            <div className="px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-10 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Orient Exchange Orders</h1>
-                    <p className="text-sm text-gray-500 mt-1">Review documents from all sources and proceed with extraction.</p>
+        <div className="min-h-full w-full bg-gray-50 flex flex-col">
+            <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Orient Exchange Orders</h1>
+                        <p className="text-xs text-gray-500 mt-1">Review documents from all sources and proceed with extraction.</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-end gap-2">
+                        <div className="relative w-64">
+                            <input
+                                type="text"
+                                className="w-full h-10 pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-0.5 focus:ring-blue-400 focus:border-blue-400"
+                                placeholder="Name, Email, or Order ID"
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                            />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        </div>
+                        <SingleSelect
+                            value={statusFilter}
+                            onValueChange={setStatusFilter}
+                            options={[
+                                { label: 'All Status', value: 'all' },
+                                { label: 'Pending', value: 'pending' },
+                                { label: 'Completed', value: 'completed' },
+                                { label: 'Cancelled', value: 'cancelled' }
+                            ]}
+                        />
+                        <div className="flex flex-col gap-1">
+                            <DateTimePicker onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
+                        </div>
+                        <SingleSelect
+                            value={perPage}
+                            onValueChange={setPerPage}
+                            options={[
+                                { label: '10', value: '10' },
+                                { label: '20', value: '20' },
+                                { label: '50', value: '50' },
+                                { label: '100', value: '100' }
+                            ]}
+                        />
+                        <Button onClick={handleResetFilters} outlined>
+                            Reset Filters
+                        </Button>
+                        <Button onClick={() => setShowCreateDialog(true)}>Create Order</Button>
+                    </div>
                 </div>
-                <Button onClick={() => setShowCreateDialog(true)}>Create Order</Button>
             </div>
 
-            <div className="px-6 py-6 flex flex-col gap-5">
+            <div className="p-4 flex flex-col gap-5 flex-grow">
                 {orders.map(order => (
                     <OrderCard
                         key={order.order_details.order_id}
@@ -179,6 +335,28 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         isProceeding={proceedingOrderId === order.order_details.order_id}
                     />
                 ))}
+                {orders.length === 0 && (
+                    <div className="flex items-center justify-center p-12 text-gray-500 bg-white border border-gray-200 rounded-lg">No orders match the current filter criteria.</div>
+                )}
+            </div>
+
+            <div className="p-4 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
+                <span className="text-sm text-gray-500">
+                    Showing {totalCount === 0 ? 0 : (currentPage - 1) * Number(perPage) + 1} to {Math.min(currentPage * Number(perPage), totalCount)} of {totalCount} orders
+                </span>
+                <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium text-gray-700">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <Button small outlined disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
+                            Previous
+                        </Button>
+                        <Button small outlined disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
+                            Next
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <DialogComponent
@@ -197,13 +375,36 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                             setShowCreateDialog(false);
                             setEditingOrder(null);
                         }}
-                        onCreate={newOrder => {
-                            setOrders([newOrder, ...orders]);
-                            setShowCreateDialog(false);
+                        onCreate={async newOrder => {
+                            try {
+                                const response = await fetch(`${config.workflowService}/api/orders`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(newOrder)
+                                });
+                                if (response.ok) {
+                                    const createdOrder = await response.json();
+                                    setOrders([createdOrder, ...orders]);
+                                    setShowCreateDialog(false);
+                                }
+                            } catch (err) {
+                                console.error('Failed to create order', err);
+                            }
                         }}
-                        onUpdate={updatedOrder => {
-                            setOrders(orders.map(o => (o.order_details.order_id === updatedOrder.order_details.order_id ? updatedOrder : o)));
-                            setEditingOrder(null);
+                        onUpdate={async updatedOrder => {
+                            try {
+                                const response = await fetch(`${config.workflowService}/api/orders/${updatedOrder.order_details.order_id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(updatedOrder)
+                                });
+                                if (response.ok) {
+                                    setOrders(orders.map(o => (o.order_details.order_id === updatedOrder.order_details.order_id ? updatedOrder : o)));
+                                    setEditingOrder(null);
+                                }
+                            } catch (err) {
+                                console.error('Failed to update order', err);
+                            }
                         }}
                     />
                 )}
