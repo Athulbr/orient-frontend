@@ -11,6 +11,7 @@ export interface Email {
     from: string;
     date: string;
     orderId?: string | number;
+    bodyInnerText?: string;
     body?: string;
     attachments: FileItem[];
 }
