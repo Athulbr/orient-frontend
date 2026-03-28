@@ -185,7 +185,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const navigate = useNavigate();
 
-    const orderFiles: FileItem[] = order.document_details.map(doc => ({ name: doc.documentName, url: doc.documentUrl, type: getFileType(doc.documentUrl), source: 'order' as const }));
+    const orderFiles: FileItem[] = (order.order_details.document_details || []).map(doc => ({
+        name: doc.documentName,
+        url: doc.documentUrl,
+        type: getFileType(doc.documentUrl),
+        source: 'order' as const
+    }));
     const emailFiles: FileItem[] = linkedEmails.flatMap(email => email.attachments) || [];
     const uploadedFileItems: (FileItem & { index: number })[] = uploadedFiles.map((f, i) => ({
         name: f.name,
@@ -196,12 +201,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
     }));
 
     const handleViewExtractedData = () => {
-        navigate(`/docsnap/record/view/${order.extractionDetails.recordId || '69c56168258294752e8708bb'}`, { state: { orient: true } });
+        navigate(`/docsnap/record/view/${order.extractionDetails?.recordId || '69c56168258294752e8708bb'}`, { state: { orient: true } });
     };
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFiles.length;
     const hasDocuments = totalDocs > 0;
-    const status = STATUS_CONFIG[order.order_details.order_status.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
+    const status = STATUS_CONFIG[order.order_details.order_status?.toUpperCase() || 'DEFAULT'] ?? STATUS_CONFIG.DEFAULT;
 
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] bg-white border border-gray-200 rounded-2xl overflow-hidden w-full shadow-lg shadow-gray-200/80">
@@ -220,16 +225,16 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
                         <Building2 size={13} className="text-gray-300" />
-                        {order.order_details.location}
+                        {order.order_details.branch}
                         <span className="mx-1.5">•</span>
-                        <span className="text-gray-500 font-semibold">{order.order_details.doc_submit_status} Submission</span>
+                        <span className="text-gray-500 font-semibold">{order.order_details.doc_Submit_Status} Submission</span>
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
                         {[
-                            { icon: <User size={12} className="text-gray-400" />, val: `${order.user_details.name} (#${order.user_details.user_id})` },
-                            { icon: <Mail size={12} className="text-gray-400" />, val: order.user_details.email },
-                            { icon: <Phone size={12} className="text-gray-400" />, val: order.user_details.phone },
+                            { icon: <User size={12} className="text-gray-400" />, val: `${order.order_details.user_details.user_name}` },
+                            { icon: <Mail size={12} className="text-gray-400" />, val: order.order_details.user_details.user_email },
+                            { icon: <Phone size={12} className="text-gray-400" />, val: order.order_details.user_details.user_phone },
                             { icon: <Building2 size={12} className="text-gray-400" />, val: order.order_details.branch },
                             {
                                 icon: null,
@@ -243,17 +248,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 icon: null,
                                 val: (
                                     <>
-                                        <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
-                                        <span className="text-gray-600 font-bold">₹{(order.order_details.actual_amount || order.order_details.total_amount).toLocaleString()}</span>
-                                    </>
-                                )
-                            },
-                            {
-                                icon: null,
-                                val: (
-                                    <>
                                         <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
-                                        <span className="text-gray-600 font-extrabold">₹{order.order_details.total_amount.toLocaleString()}</span>
+                                        <span className="text-gray-600 font-extrabold">₹{Number(order.order_details.total_amount).toLocaleString()}</span>
                                     </>
                                 )
                             }
@@ -296,8 +292,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
             </div>
 
-            <div className={`grid ${order.order_details.doc_submit_status === 'Online' ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
-                {order.order_details.doc_submit_status === 'Online' && (
+            <div className={`grid ${(order.order_details.doc_Submit_Status || '').toLowerCase() === 'online' ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
+                {(order.order_details.doc_Submit_Status || '').toLowerCase() === 'online' && (
                     <div className="p-3 border-r border-gray-100 min-w-0">
                         <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
                             <div className="flex items-center gap-[8px]">
@@ -431,7 +427,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 <span className="text-sm text-gray-400">
                     {totalDocs} document{totalDocs !== 1 ? 's' : ''} ready for extraction
                 </span>
-                {!order.extractionDetails.recordId ? (
+                {!order.extractionDetails?.recordId ? (
                     <Button
                         startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
                         outlined
