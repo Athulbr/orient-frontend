@@ -11,16 +11,6 @@ const LogoutMessagePage = lazy(() => import('../../modules/auth/logout'));
 const AuthLayoutComponent = lazy(() => import('../../modules/auth/AuthLayout'));
 
 const AuthRoutes = () => {
-    const location = useLocation();
-
-    if (location.pathname.includes('logout-message')) {
-        return (
-            <Routes>
-                <Route path="logout-message" element={<LogoutMessagePage />} />
-            </Routes>
-        );
-    }
-
     return (
         <AuthLayoutComponent>
             <Routes>
@@ -29,6 +19,7 @@ const AuthRoutes = () => {
                 <Route path="forgot-password/verify/:email/:token" element={<ConfirmForgotPasswordPage />} />
                 <Route path="signup" element={<SignUpPage />} />
                 <Route path="signup/verify/:email/:token" element={<ConfirmSignUpPage />} />
+                <Route path="logout-message" element={<LogoutMessagePage />} />
 
                 {/* Default: Redirect to login */}
                 <Route path="/" element={<Navigate to="login" replace />} />

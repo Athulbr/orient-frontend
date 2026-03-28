@@ -145,6 +145,9 @@ export const useLoginPageApi = () => {
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                 window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
+                if (res.data?.orientSessionId) {
+                    window?.sessionStorage?.setItem('orientSessionId', res.data.orientSessionId);
+                }
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                 window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
@@ -161,13 +164,11 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
                 window?.location?.replace('/docsnap');
             } else {
-                setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.' }));
+                setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.', oAuthLoading: false }));
             }
         } catch (error: any) {
             console.error('Orient Session login error:', error);
-            setState(prev => ({ ...prev, authError: 'Please open from Orient portal' }));
-        } finally {
-            setState(prev => ({ ...prev, oAuthLoading: false }));
+            setState(prev => ({ ...prev, authError: 'Please open from Orient portal', oAuthLoading: false }));
         }
     };
 
