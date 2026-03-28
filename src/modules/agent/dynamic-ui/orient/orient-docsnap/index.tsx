@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import OrderCard from './OrderCard';
 import { Order, Email } from './types';
-import { sampleOrders, sampleEmails, availableEmails as availableEmailsData, templateRequirements } from './data';
+import { newSampleOrders, sampleEmails, availableEmails as availableEmailsData } from './data';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import CreateOrderDialog from './CreateOrderDialog';
@@ -12,7 +12,7 @@ interface OrientDocsnapUserInterfaceIF {
 }
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
-    const [orders, setOrders] = useState<Order[]>(sampleOrders);
+    const [orders, setOrders] = useState<Order[]>(newSampleOrders);
     const [emails] = useState<Email[]>([...sampleEmails, ...availableEmailsData]);
     const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<number, File[]>>({});
     const [proceedingOrderId, setProceedingOrderId] = useState<number | null>(null);
@@ -169,7 +169,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         linkedEmails={getLinkedEmails(order)}
                         uploadedFiles={uploadedFilesMap[order.order_details.order_id] || []}
                         availableEmails={currentAvailableEmails}
-                        templateRequirements={templateRequirements}
                         onLinkEmail={handleLinkEmail}
                         onUnlinkEmail={handleUnlinkEmail}
                         onUploadFiles={handleUploadFiles}

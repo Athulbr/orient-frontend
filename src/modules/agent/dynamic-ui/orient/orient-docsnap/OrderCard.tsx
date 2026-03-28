@@ -4,7 +4,7 @@ import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
-import { Order, Email, FileItem, TemplateRequirement } from './types';
+import { Order, Email, FileItem } from './types';
 import { getFileNameFromUrl, getFileType } from './data';
 import Spinner from '../../../../../components/Spinner';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,6 @@ interface OrderCardProps {
     linkedEmails: Email[];
     uploadedFiles: File[];
     availableEmails: Email[];
-    templateRequirements: TemplateRequirement[];
     onLinkEmail: (orderId: number, emailId: string) => void;
     onUnlinkEmail: (orderId: number, emailId: string) => void;
     onUploadFiles: (orderId: number, files: File[]) => void;
@@ -170,7 +169,6 @@ const OrderCard: React.FC<OrderCardProps> = ({
     linkedEmails,
     uploadedFiles,
     availableEmails,
-    templateRequirements,
     onLinkEmail,
     onUnlinkEmail,
     onUploadFiles,
@@ -185,12 +183,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const navigate = useNavigate();
 
-    const orderFiles: FileItem[] = (order.order_details.document_details || []).map(doc => ({
-        name: doc.documentName,
-        url: doc.documentUrl,
-        type: getFileType(doc.documentUrl),
-        source: 'order' as const
-    }));
+    const orderFiles: FileItem[] = order.document_details.map(doc => ({ name: doc.documentName, url: doc.documentUrl, type: getFileType(doc.documentUrl), source: 'order' as const }));
     const emailFiles: FileItem[] = linkedEmails.flatMap(email => email.attachments) || [];
     const uploadedFileItems: (FileItem & { index: number })[] = uploadedFiles.map((f, i) => ({
         name: f.name,
@@ -201,12 +194,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
     }));
 
     const handleViewExtractedData = () => {
-        navigate(`/docsnap/record/view/${order.extractionDetails?.recordId || '69c56168258294752e8708bb'}`, { state: { orient: true } });
+        navigate(`/docsnap/record/view/${order.extractionDetails.recordId || '69c56168258294752e8708bb'}`, { state: { orient: true } });
     };
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFiles.length;
     const hasDocuments = totalDocs > 0;
-    const status = STATUS_CONFIG[order.order_details.order_status?.toUpperCase() || 'DEFAULT'] ?? STATUS_CONFIG.DEFAULT;
+    const status = STATUS_CONFIG[order.order_details.order_status.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
 
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] bg-white border border-gray-200 rounded-2xl overflow-hidden w-full shadow-lg shadow-gray-200/80">
@@ -225,16 +218,17 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
                         <Building2 size={13} className="text-gray-300" />
-                        {order.order_details.branch}
+                        {order.order_details.location || order.order_details.branch}
                         <span className="mx-1.5">•</span>
-                        <span className="text-gray-500 font-semibold">{order.order_details.doc_Submit_Status} Submission</span>
+                        <span className="text-gray-500 font-semibold">{order.order_details.doc_submit_status} Submission</span>
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
                         {[
-                            { icon: <User size={12} className="text-gray-400" />, val: `${order.order_details.user_details.user_name}` },
-                            { icon: <Mail size={12} className="text-gray-400" />, val: order.order_details.user_details.user_email },
-                            { icon: <Phone size={12} className="text-gray-400" />, val: order.order_details.user_details.user_phone },
+                            { icon: <User size={12} className="text-gray-400" />, val: `${order.user_details.name} (#${order.user_details.user_id})` },
+                            { icon: <Mail size={12} className="text-gray-400" />, val: order.user_details.email },
+                            { icon: <Phone size={12} className="text-gray-400" />, val: order.user_details.phone },
+                            ...(order.user_details.pan_number ? [{ icon: <Hash size={12} className="text-gray-400" />, val: `PAN: ${order.user_details.pan_number}` }] : []),
                             { icon: <Building2 size={12} className="text-gray-400" />, val: order.order_details.branch },
                             {
                                 icon: null,
@@ -248,11 +242,97 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 icon: null,
                                 val: (
                                     <>
-                                        <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
-                                        <span className="text-gray-600 font-extrabold">₹{Number(order.order_details.total_amount).toLocaleString()}</span>
+                                        <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
+                                        <span className="text-gray-600 font-bold">₹{(order.order_details.actual_amount || order.order_details.total_amount).toLocaleString()}</span>
                                     </>
                                 )
-                            }
+                            },
+                            {
+                                icon: null,
+                                val: (
+                                    <>
+                                        <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
+                                        <span className="text-gray-600 font-extrabold">₹{order.order_details.total_amount.toLocaleString()}</span>
+                                    </>
+                                )
+                            },
+                            ...(order.order_details.payment_type
+                                ? [
+                                      {
+                                          icon: null,
+                                          val: (
+                                              <>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Payment:</span>{' '}
+                                                  <span className="text-gray-600 font-bold">{order.order_details.payment_type}</span>
+                                              </>
+                                          )
+                                      }
+                                  ]
+                                : []),
+                            ...(order.order_details.delivery_mode
+                                ? [
+                                      {
+                                          icon: null,
+                                          val: (
+                                              <>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Delivery:</span>{' '}
+                                                  <span className="text-gray-600 font-bold">{order.order_details.delivery_mode}</span>
+                                              </>
+                                          )
+                                      }
+                                  ]
+                                : []),
+                            ...(order.order_details.delivery_charge !== undefined
+                                ? [
+                                      {
+                                          icon: null,
+                                          val: (
+                                              <>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Delivery Charge:</span>{' '}
+                                                  <span className="text-gray-600 font-bold">₹{order.order_details.delivery_charge}</span>
+                                              </>
+                                          )
+                                      }
+                                  ]
+                                : []),
+                            ...(order.order_details.handling_charges !== undefined
+                                ? [
+                                      {
+                                          icon: null,
+                                          val: (
+                                              <>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Handling:</span>{' '}
+                                                  <span className="text-gray-600 font-bold">₹{order.order_details.handling_charges}</span>
+                                              </>
+                                          )
+                                      }
+                                  ]
+                                : []),
+                            ...(order.order_details.purpose
+                                ? [
+                                      {
+                                          icon: null,
+                                          val: (
+                                              <>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Purpose:</span> <span className="text-gray-600 font-bold">{order.order_details.purpose}</span>
+                                              </>
+                                          )
+                                      }
+                                  ]
+                                : []),
+                            ...(order.order_details.doc_upload_time
+                                ? [
+                                      {
+                                          icon: <Clock size={12} className="text-gray-400" />,
+                                          val: (
+                                              <>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Uploaded:</span>{' '}
+                                                  <span className="text-gray-600 font-bold">{order.order_details.doc_upload_time}</span>
+                                              </>
+                                          )
+                                      }
+                                  ]
+                                : [])
                         ].map(({ icon, val }, idx) => (
                             <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
                                 {icon}
@@ -292,8 +372,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
             </div>
 
-            <div className={`grid ${(order.order_details.doc_Submit_Status || '').toLowerCase() === 'online' ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
-                {(order.order_details.doc_Submit_Status || '').toLowerCase() === 'online' && (
+            <div className={`grid ${order.order_details.doc_submit_status === 'Online' ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
+                {order.order_details.doc_submit_status === 'Online' && (
                     <div className="p-3 border-r border-gray-100 min-w-0">
                         <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
                             <div className="flex items-center gap-[8px]">
@@ -427,7 +507,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 <span className="text-sm text-gray-400">
                     {totalDocs} document{totalDocs !== 1 ? 's' : ''} ready for extraction
                 </span>
-                {!order.extractionDetails?.recordId ? (
+                {!order.extractionDetails.recordId ? (
                     <Button
                         startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
                         outlined

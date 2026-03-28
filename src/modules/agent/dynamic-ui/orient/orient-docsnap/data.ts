@@ -1,89 +1,68 @@
-import { Order, Email, TemplateRequirement, FileItem } from './types';
+import { Order, Email, FileItem } from './types';
 
-export const sampleOrders: Order[] = [
+export const newSampleOrders: Order[] = [
     {
         order_details: {
-            order_id: 1053184,
-            order_no: '20260327860891',
+            order_id: 1289082,
+            order_no: '20250417117175',
             type: 'sell',
-            order_status: 'completed',
-            loc_id: '5',
-            branch_id: '5',
-            branch: 'Bangalore - Basavangudi',
+            order_status: 'pending',
+            branch: 'Bangalore-Basavangudi',
+            branch_id: 5,
+            total_amount: 85000,
+            actual_amount: 84500,
             payment_type: 'UPI',
             delivery_mode: 'door',
-            delivery_charge: '100',
-            handling_charges: '50',
-            total_amount: '9136',
-            user_details: {
-                user_name: 'harshithaaa',
-                user_email: 'harshitha.poojary@orientexchange.in',
-                user_phone: '8884303229',
-                pan_number: 'AAAAA1234A'
-            },
-            doc_Submit_Status: 'online',
+            delivery_charge: 100,
+            handling_charges: 50,
+            doc_submit_status: 'Online',
             purpose: 'Education',
-            doc_upload_time: '2026-03-27 11:33:13',
-            document_count: 4,
-            document_details: [
-                {
-                    documentName: 'passport_first_page',
-                    documentUrl: 'https://10.11.100.10/uploads/1774605684_logo_175X77.png'
-                },
-                {
-                    documentName: 'passport_last_page',
-                    documentUrl: 'https://10.11.100.10/uploads/1774605684_logo_AND_TAGLINE_WITH_REGD_IN_BLACK.png'
-                },
-                {
-                    documentName: 'pan_card',
-                    documentUrl: 'https://10.11.100.10/uploads/1774605684_logo_175X77.png'
-                },
-                {
-                    documentName: 'university_offer_letter',
-                    documentUrl: 'https://10.11.100.10/uploads/1774605684_logo_175X77.png'
-                }
-            ],
-            currency_details: [
-                {
-                    currency: 'USD',
-                    product: 'unipay',
-                    quantity: '100',
-                    amount: '8914'
-                }
-            ]
+            doc_upload_time: '2026-03-27 11:33:13'
         },
+        user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210', pan_number: 'ABCDE1234F' },
+        currency_details: [
+            { currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
+            { currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
+        ],
+        document_details: [
+            { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
+            { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
+            { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
+            { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' }
+        ],
         extractionDetails: {}
     }
 ];
 
-// const temp={
-//         order_details: {
-//             order_id: 1289082, // generate 8 digit random number not 7 digit
-//             order_no: '20250417117175', // generate random number year+month+day+timestamp
-//             type: 'sell', // single select input buy/sell
-//             location: 'Bangalore', // hardcode banglore
-//             loc_id: 5, // hardcode 5
-//             branch: 'Bangalore-Basavangudi', // hardcode banglore-basavangudi
-//             branch_id: 5, // hardcode 5
-//             total_amount: 85000, // text input
-//             actual_amount: 84500, // text input
-//             order_status: 'Completed', // hardcode pending
-//             doc_submit_status: 'Online' // hardcode offline
-//         },
-//         user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' }, // hardcode { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' }
-//         currency_details: [ // hardcode empty array
-//             { sr_no: 1, currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
-//             { sr_no: 2, currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
-//         ],
-//         document_details: [ // hardcode empty array
-//             { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
-//             { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
-//             { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
-//             { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' },
-//             { documentName: 'pan_card', documentUrl: 'http://www.orientexchange.in/uploads/pan.pdf' },
-//             { documentName: 'university_offer_letter', documentUrl: 'http://www.orientexchange.in/uploads/offer_letter.pdf' }
-//         ]
-//     }
+export const sampleOrders: Order[] = [
+    {
+        order_details: {
+            order_id: 1289082,
+            order_no: '20250417117175',
+            type: 'sell',
+            location: 'Bangalore',
+            loc_id: 5,
+            order_status: 'Pending',
+            branch: 'Bangalore-Basavangudi',
+            branch_id: 5,
+            total_amount: 85000,
+            actual_amount: 84500,
+            doc_submit_status: 'Online'
+        },
+        user_details: { user_id: 501, name: 'Ritesh Singh', email: 'ritesh@example.com', phone: '9876543210' },
+        currency_details: [
+            { sr_no: 1, currency: 'USD', product: 'Forex Card', quantity: 1000, rate: 83.5, amount: 83500 },
+            { sr_no: 2, currency: 'EUR', product: 'Cash', quantity: 200, rate: 90.0, amount: 18000 }
+        ],
+        document_details: [
+            { documentName: 'passport', documentUrl: 'http://www.orientexchange.in/uploads/passport.pdf' },
+            { documentName: 'passport_last_page', documentUrl: 'http://www.orientexchange.in/uploads/passport_last.pdf' },
+            { documentName: 'visa', documentUrl: 'http://www.orientexchange.in/uploads/visa.pdf' },
+            { documentName: 'ticket_copy', documentUrl: 'http://www.orientexchange.in/uploads/ticket.pdf' }
+        ],
+        extractionDetails: {}
+    }
+];
 
 export const sampleEmails: Email[] = [
     {
@@ -150,14 +129,6 @@ export const availableEmails: Email[] = [
             }
         ]
     }
-];
-
-export const templateRequirements: TemplateRequirement[] = [
-    { name: 'PAN Card', fulfilled: false },
-    { name: 'Address Proof', fulfilled: false },
-    { name: 'Passport / ID Proof', fulfilled: false },
-    { name: 'Bank Statement', fulfilled: false },
-    { name: 'Signed Application Form', fulfilled: false }
 ];
 
 export const getFileNameFromUrl = (url: string): string => {

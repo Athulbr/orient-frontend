@@ -13,10 +13,10 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
     const isEdit = !!initialOrder;
     const [type, setType] = useState(initialOrder?.order_details.type || 'sell');
     const [totalAmount, setTotalAmount] = useState(initialOrder ? String(initialOrder.order_details.total_amount) : '');
-    const [actualAmount, setActualAmount] = useState(initialOrder && initialOrder.order_details.actual_amount ? String(initialOrder.order_details.actual_amount) : '');
-    const [userName, setUserName] = useState(initialOrder?.order_details.user_details.user_name || '');
-    const [userEmail, setUserEmail] = useState(initialOrder?.order_details.user_details.user_email || '');
-    const [userPhone, setUserPhone] = useState(initialOrder?.order_details.user_details.user_phone || '');
+    const [actualAmount, setActualAmount] = useState(initialOrder ? String(initialOrder.order_details.actual_amount) : '');
+    const [userName, setUserName] = useState(initialOrder?.user_details.name || '');
+    const [userEmail, setUserEmail] = useState(initialOrder?.user_details.email || '');
+    const [userPhone, setUserPhone] = useState(initialOrder?.user_details.phone || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,14 +27,14 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 order_details: {
                     ...initialOrder.order_details,
                     type,
-                    total_amount: totalAmount,
-                    actual_amount: actualAmount,
-                    user_details: {
-                        ...initialOrder.order_details.user_details,
-                        user_name: userName,
-                        user_email: userEmail,
-                        user_phone: userPhone
-                    }
+                    total_amount: Number(totalAmount) || 0,
+                    actual_amount: Number(actualAmount) || 0
+                },
+                user_details: {
+                    ...initialOrder.user_details,
+                    name: userName,
+                    email: userEmail,
+                    phone: userPhone
                 }
             };
             onUpdate(updatedOrder);
@@ -59,22 +59,21 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 order_id,
                 order_no,
                 type,
-                loc_id: '5',
-                branch: 'Bangalore - Basavangudi',
-                branch_id: '5',
-                total_amount: totalAmount || '0',
-                actual_amount: actualAmount || undefined,
+                branch: 'Bangalore-Basavangudi',
+                branch_id: 5,
+                total_amount: Number(totalAmount) || 0,
+                actual_amount: Number(actualAmount) || 0,
                 order_status: 'Pending',
-                doc_Submit_Status: 'Offline',
-                document_count: 0,
-                user_details: {
-                    user_name: userName,
-                    user_email: userEmail,
-                    user_phone: userPhone
-                },
-                document_details: [],
-                currency_details: []
+                doc_submit_status: 'Offline'
             },
+            user_details: {
+                user_id,
+                name: userName,
+                email: userEmail,
+                phone: userPhone
+            },
+            currency_details: [],
+            document_details: [],
             extractionDetails: {}
         };
 
