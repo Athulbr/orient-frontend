@@ -16,7 +16,6 @@ interface OrientDocsnapUserInterfaceIF {
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
-    const [availableEmails, setAvailableEmails] = useState<Email[]>([]);
     const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<number, File[]>>({});
     const [proceedingOrderId, setProceedingOrderId] = useState<number | null>(null);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -43,10 +42,10 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         const fetchEmails = async () => {
             try {
                 const res = await fetch(`${config.workflowService}/api/emails`);
-                if (res.ok) setEmails(await res.json());
-
-                const availRes = await fetch(`${config.workflowService}/api/emails?status=unlinked`);
-                if (availRes.ok) setAvailableEmails(await availRes.json());
+                if (res.ok) {
+                    const data = await res.json();
+                    setEmails(Array.isArray(data) ? data : (data.data ?? []));
+                }
             } catch (err) {
                 console.error('Failed to fetch emails', err);
             }
@@ -99,7 +98,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
     const getLinkedEmails = useCallback(
         (order: Order): Email[] => {
             if (!order.linkedEmailIds || order.linkedEmailIds.length === 0) return [];
-            return emails.filter(e => order.linkedEmailIds!.includes(e.id));
+            return emails.filter(e => order.linkedEmailIds!.includes(e.emailId));
         },
         [emails]
     );
@@ -113,11 +112,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         setPerPage('10');
         setCurrentPage(1);
     }, []);
-
-    const getAvailableEmails = useCallback((): Email[] => {
-        const linkedIds = new Set(orders.flatMap(o => o.linkedEmailIds || []));
-        return emails.filter(e => !linkedIds.has(e.id) && !e.orderId);
-    }, [orders, emails]);
 
     const handleLinkEmail = useCallback(
         async (orderId: number, emailId: string) => {
@@ -138,9 +132,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ orderId: String(orderId) })
                     });
-
-                    const availRes = await fetch(`${config.workflowService}/api/emails?status=unlinked`);
-                    if (availRes.ok) setAvailableEmails(await availRes.json());
                 }
             } catch (err) {
                 console.error('Failed to link email', err);
@@ -168,9 +159,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ orderId: '' })
                     });
-
-                    const availRes = await fetch(`${config.workflowService}/api/emails?status=unlinked`);
-                    if (availRes.ok) setAvailableEmails(await availRes.json());
                 }
             } catch (err) {
                 console.error('Failed to unlink email', err);
@@ -286,8 +274,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         [orders, getLinkedEmails, uploadedFilesMap]
     );
 
-    const currentAvailableEmails = getAvailableEmails();
-
     return (
         <div className="min-h-full w-full bg-gray-50 flex flex-col">
             <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
@@ -345,7 +331,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         order={order}
                         linkedEmails={getLinkedEmails(order)}
                         uploadedFiles={uploadedFilesMap[order.order_details.order_id] || []}
-                        availableEmails={availableEmails}
                         onLinkEmail={handleLinkEmail}
                         onUnlinkEmail={handleUnlinkEmail}
                         onUploadFiles={handleUploadFiles}

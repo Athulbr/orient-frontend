@@ -13,7 +13,6 @@ interface OrderCardProps {
     order: Order;
     linkedEmails: Email[];
     uploadedFiles: File[];
-    availableEmails: Email[];
     onLinkEmail: (orderId: number, emailId: string) => void;
     onUnlinkEmail: (orderId: number, emailId: string) => void;
     onUploadFiles: (orderId: number, files: File[]) => void;
@@ -164,20 +163,7 @@ const ColCount: React.FC<{ colorClass: string; bgClass: string; borderClass: str
     <span className={`text-xs font-extrabold ${colorClass} ${bgClass} border ${borderClass} px-[7px] py-[1px] rounded-full leading-[1.8]`}>{n}</span>
 );
 
-const OrderCard: React.FC<OrderCardProps> = ({
-    order,
-    linkedEmails,
-    uploadedFiles,
-    availableEmails,
-    onLinkEmail,
-    onUnlinkEmail,
-    onUploadFiles,
-    onRemoveUploadedFile,
-    onProceed,
-    onEdit,
-    onDelete,
-    isProceeding
-}) => {
+const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFiles, onLinkEmail, onUnlinkEmail, onUploadFiles, onRemoveUploadedFile, onProceed, onEdit, onDelete, isProceeding }) => {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -448,7 +434,6 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
                     <DialogComponent isOpen={showLinkDialog} closeDialog={() => setShowLinkDialog(false)} name="Select an Email to Link" className="w-[80vw] h-[90vh]">
                         <EmailLinkDialog
-                            availableEmails={availableEmails}
                             onLink={id => {
                                 onLinkEmail(order.order_details.order_id, id);
                                 setShowLinkDialog(false);

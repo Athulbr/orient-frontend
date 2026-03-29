@@ -6,7 +6,7 @@ export interface FileItem {
 }
 
 export interface Email {
-    id: string;
+    emailId: string;
     subject: string;
     from: string;
     date: string;
