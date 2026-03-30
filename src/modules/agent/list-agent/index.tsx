@@ -24,8 +24,7 @@ const ListAgentsPage = () => {
     const fetchAgents = useCallback(async () => {
         setIsLoading(true);
         try {
-            // User requested a dummy api endpoint for now
-            const response: any = await httpRequest('GET', `http://localhost:6007/api/workflows?limit=100&category=main`);
+            const response: any = await httpRequest('GET', `${config.workflowService}/api/workflows?limit=100&category=main`);
 
             // Assume the response structure is PaginatedResponse or just an array
             if (response && response.data) {
@@ -38,25 +37,6 @@ const ListAgentsPage = () => {
             }
         } catch (err) {
             console.error('Failed to load agents', err);
-            // For demo purposes, we can set some dummy data if the dummy endpoint fails
-            setAgents([
-                {
-                    _id: '1',
-                    name: 'Customer Support Bot',
-                    description: 'Handles basic customer inquiries.',
-                    isActive: true,
-                    nodes: [1, 2, 3],
-                    updatedAt: new Date().toISOString()
-                },
-                {
-                    _id: '2',
-                    name: 'Sales Agent',
-                    description: 'Qualifies leads and books meetings.',
-                    isActive: false,
-                    nodes: [1, 2],
-                    updatedAt: new Date().toISOString()
-                }
-            ]);
         } finally {
             setIsLoading(false);
         }
@@ -148,9 +128,7 @@ const ListAgentsPage = () => {
                                         </div>
                                         <span
                                             className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${
-                                                agent.isActive
-                                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                                    : 'border-zinc-200 bg-slate-50 text-zinc-600'
+                                                agent.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-slate-50 text-zinc-600'
                                             }`}
                                         >
                                             {agent.isActive ? 'Active' : 'Inactive'}

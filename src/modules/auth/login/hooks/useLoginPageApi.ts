@@ -1,18 +1,14 @@
 import { Key } from 'lucide-react';
-import { loginRequest } from '../sso/msal-config';
 import { useParams } from 'react-router-dom';
 import { useToastStore } from '../../../../components/toast/ToastStore';
 import { useLoginPageState } from './LoginPageStateProvider';
 import { validateEmail, validatePassword } from '../utils';
 import httpRequest from '../../../../global-utils/httpRequest';
-import { useGoogleLogin } from '@react-oauth/google';
-import { useMsal } from '@azure/msal-react';
 import { useEffect } from 'react';
 import { usePermissionStore } from '../../../../zustand-store/PermissionStore';
 import { config } from '../../../../config/default';
 
 export const useLoginPageApi = () => {
-    const { instance, accounts } = useMsal();
     const { state, setState } = useLoginPageState();
     const { settings, checkPermission, setPermissions } = usePermissionStore();
     const toast = useToastStore();
@@ -80,61 +76,6 @@ export const useLoginPageApi = () => {
         }
     };
 
-    // ============================= login With Google ==================================
-    const loginWithGoogle = useGoogleLogin({
-        onSuccess: async (response: any) => {
-            try {
-                setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
-
-                const user = await httpRequest('POST', `${config.nodeApiUrl}/auth/google/userinfo`, { access_token: response?.access_token });
-                const ssoRegistration = {
-                    firstName: user.given_name,
-                    lastName: user.family_name,
-                    email: user.email,
-                    sso: true
-                };
-                const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/signup`, ssoRegistration);
-                if (res.data?.accessToken) {
-                    window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
-                    window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
-                    window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
-                    window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
-                    // window?.sessionStorage?.setItem('role', JSON.stringify(res?.data?.role));
-                    const resp = await Promise.all([
-                        httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                        httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
-                        httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
-                        httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
-                    ]);
-                    window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
-                    window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
-                    window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
-                    window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
-                    window?.location?.replace('/');
-                } else {
-                    setState(prev => ({ ...prev, authError: 'Authentication failed. Please try again.' }));
-                }
-            } catch (error: any) {
-                console.error('Google login error:', error);
-                setState(prev => ({ ...prev, authError: 'Failed to login with Google. Please try again.' }));
-            } finally {
-                setState(prev => ({ ...prev, oAuthLoading: false }));
-            }
-        },
-        onError: error => {
-            console.error('Google Login Failed:', error);
-            setState(prev => ({ ...prev, oAuthLoading: false, authError: 'Failed to connect to Google. Please try again.' }));
-        }
-    });
-
-    // ============================= login With MSAL ==================================
-    const loginWithMSAL = async () => {
-        console.info('Login with Microsoft initiated');
-        instance.loginRedirect(loginRequest).catch(e => {
-            console.error('Sign In issue---->', e);
-        });
-    };
-
     // ============================= Return ==================================
-    return { loginWithEmailAndPassword, loginWithGoogle, loginWithMSAL };
+    return { loginWithEmailAndPassword };
 };

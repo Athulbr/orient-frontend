@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import getDynamicUserInterface from '../dynamic-ui';
 import httpRequest from '../../../global-utils/httpRequest';
+import { config } from '../../../config/default';
+import FullScreenLoader from '../../../components/FullScreenLoader';
 
 const RunAgentPage: React.FC = () => {
     const { id } = useParams();
@@ -11,7 +13,7 @@ const RunAgentPage: React.FC = () => {
     useEffect(() => {
         const fetchWorkflow = async () => {
             try {
-                const data = await httpRequest('GET', `http://localhost:6007/api/workflows/${id}`);
+                const data = await httpRequest('GET', `${config.workflowService}/api/workflows/${id}`);
                 setWorkflow(data.data);
             } catch (error) {
                 console.error('Error fetching workflow:', error);
@@ -27,12 +29,12 @@ const RunAgentPage: React.FC = () => {
         }
     }, [id]);
 
-    console.log('workflow:===========', workflow);
+    // console.log('workflow:===========', workflow);
 
-    const DynamicUI = getDynamicUserInterface(workflow?.agentSettings?.inputUiId);
+    const DynamicUI = getDynamicUserInterface(workflow?.agentSettings?.uiId);
 
     if (loading) {
-        return <div>Loading workflow...</div>;
+        return <FullScreenLoader />;
     }
 
     if (!DynamicUI) {

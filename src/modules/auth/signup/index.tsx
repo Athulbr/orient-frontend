@@ -1,8 +1,6 @@
 import { FC, useState } from 'react';
 import { WelComeText } from './components/WelComeText';
 import { AuthErrorComponent } from './components/AuthErrorComponent';
-import { Divider } from './components/Divider';
-import { OAuthButtons } from './components/OAuthButtons';
 import { LoginRedirectText } from '../signup/components/LoginRedirectText';
 import { SignupPageStateProvider } from './hooks/SignupPageStateProvider';
 import { SignupInputs } from './components/SignupInputs';
@@ -61,8 +59,6 @@ const SignupPage: FC = () => {
                     <>
                         <AuthErrorComponent />
                         <SignupInputs />
-                        <Divider />
-                        <OAuthButtons />
                         <LoginRedirectText />
                     </>
                 )}

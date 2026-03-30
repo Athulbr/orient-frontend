@@ -17,6 +17,7 @@ import { Download } from 'lucide-react';
 import Spinner from '../../../components/Spinner';
 
 import { KeywordItem, KeywordGroup, KeywordSelectionDialog } from './KeywordSelectionDialog';
+import { useExtractionStore } from '../../../zustand-store/extractionStore';
 
 interface UploadDocumentComponentIF {
     template?: any;
@@ -30,6 +31,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const [latestTemplate, setLatestTemplate] = useState<any>(null);
     const navigate = useNavigate();
     const { addToDocumentExtractor } = useDocumentExtractor();
+    const { setShowFloatingWindow } = useExtractionStore();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [showSegregatedDocuments, setShowSegregatedDocuments] = useState(false);
     const module = sessionStorage.getItem('module');
@@ -111,9 +113,10 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                 const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/get-keywords`, {
                     rows: selectedProducts
                 });
-                const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
+                const fetched: KeywordGroup[] = (res.data || []).map((group: any, index: number) => ({
                     name: group?.name,
                     primary_keyword: group?.primary_keyword,
+                    rowIndex: index,   // stamp the index so handlers don't rely on name-matching
                     keywords: (group?.keywords || []).map((item: any) => ({
                         keyword: item?.keyword,
                         source: item?.source,
@@ -142,19 +145,42 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
 
 
     const handleProceedWithKeywords = (groups: KeywordGroup[]) => {
+        if (!groups.length) {
+            setShowBulkKeywordDialog(false);
+            closeDialog();
+            return;
+        }
         setIsSubmittingBulk(true);
-        pendingRows.forEach((row: any) => {
-            const matchingGroup = groups.find(
-                g => g.name === row.name || g.primary_keyword === row.primary_keyword
-            );
-            const selectedKeywords = matchingGroup
-                ? matchingGroup.keywords.filter(k => k.selected)
-                : groups.flatMap(g => g.keywords.filter(k => k.selected));
-            addToDocumentExtractor(latestTemplate, [], { ...row, selectedKeywords });
+        groups.forEach((group) => {
+            // Use rowIndex for precise lookup; fall back to name-match only if rowIndex missing
+            const rowToProcess =
+                group.rowIndex !== undefined
+                    ? pendingRows[group.rowIndex]
+                    : pendingRows.find((row: any) =>
+                          row.name === group.name || row.primary_keyword === group.primary_keyword
+                      ) ?? pendingRows[0];
+            const selectedKeywords = group.keywords.filter(k => k.selected);
+            addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
         });
         setIsSubmittingBulk(false);
         setShowBulkKeywordDialog(false);
         closeDialog();
+        setShowFloatingWindow(true);
+        navigate('/docsnap/record/list');
+    };
+
+    /** Per-group proceed for bulk flow — does NOT close the dialog */
+    const handleProceedBulkGroup = (group: KeywordGroup) => {
+        // Use rowIndex stamped at group-creation time — avoids the name-match
+        // fallback that was silently re-uploading pendingRows[0] (Record 1)
+        const rowToProcess =
+            group.rowIndex !== undefined
+                ? pendingRows[group.rowIndex]
+                : pendingRows.find((row: any) =>
+                      row.name === group.name || row.primary_keyword === group.primary_keyword
+                  ) ?? pendingRows[0];
+        const selectedKeywords = group.keywords.filter(k => k.selected);
+        addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
@@ -277,15 +303,27 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     const handleManualKeywordProceed = async (groups: KeywordGroup[]) => {
         setIsSubmittingManual(true);
         try {
-            const selectedKeywords = groups.flatMap(g => g.keywords.filter(k => k.selected));
-            addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords });
+            // Queue each group with skipNavigate=true, then navigate once
+            groups.forEach(g => {
+                const selectedKeywords = g.keywords.filter(k => k.selected);
+                addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords }, undefined, true);
+            });
             setShowKeywordDialog(false);
             setPendingManualRow(null);
             closeDialog();
             setShowManualInputForm && setShowManualInputForm(false);
+            // Show floating window with all items then navigate
+            setShowFloatingWindow(true);
+            navigate('/docsnap/record/list');
         } finally {
             setIsSubmittingManual(false);
         }
+    };
+
+    /** Per-group proceed for manual flow — does NOT close the dialog */
+    const handleManualKeywordProceedGroup = (group: KeywordGroup) => {
+        const selectedKeywords = group.keywords.filter(k => k.selected);
+        addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords }, undefined, true);
     };
 
     if (showManualInputForm) {
@@ -312,6 +350,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                         setPendingManualRow(null);
                     }}
                     onProceed={handleManualKeywordProceed}
+                    onProceedGroup={handleManualKeywordProceedGroup}
                     isSubmitting={isSubmittingManual}
                 />
             </>
@@ -368,6 +407,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                     setKeywordGroups([]);
                 }}
                 onProceed={handleProceedWithKeywords}
+                onProceedGroup={handleProceedBulkGroup}
                 isSubmitting={isSubmittingBulk}
             />
         </>

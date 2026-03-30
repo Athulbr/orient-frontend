@@ -34,23 +34,17 @@ export const DashboardHeaderComponent: FC = () => {
             </div>
             <div className="flex items-center gap-2">
                 {isContentCreationModule && (
-                    <Button
-                        permission="view:userGuide"
-                        outlined
-                        onClick={() => window.open('/module/content-creation/Blog%20genaration%C2%A0Module%20–%20User%20Manual%20v1.pdf', '_blank')}
-                    >
+                    <Button permission="view:userGuide" outlined onClick={() => window.open('/module/content-creation/Blog%20genaration%C2%A0Module%20–%20User%20Manual%20v1.pdf', '_blank')}>
                         User Guide
                     </Button>
                 )}
+                <Button outlined onClick={() => navigate('/agent/list')}>
+                    Makez Agents
+                </Button>
                 <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                     View Template
                 </Button>
-                <Button
-                    permission="create:template"
-                    startIcon={<Plus strokeWidth={1.5} size={18} />}
-                    onClick={handleCreateTemplateClick}
-                    data-tour-id="create-template"
-                >
+                <Button permission="create:template" startIcon={<Plus strokeWidth={1.5} size={18} />} onClick={handleCreateTemplateClick} data-tour-id="create-template">
                     Create Template
                 </Button>
             </div>
