@@ -19,6 +19,8 @@ export interface KeywordGroup {
     keywords: KeywordItem[];
     /** Index into the parent's pendingRows array — set at creation time to avoid fragile name-matching */
     rowIndex?: number;
+    /** The original exact name from the form/excel row so progress tracking perfectly matches useDocumentExtractor */
+    rowName?: string;
 }
 
 interface KeywordSelectionDialogProps {
@@ -157,9 +159,10 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
         });
     };
 
-    // Look up the real extraction item for a group by matching the group name to the queue fileName
+    // Look up the real extraction item for a group by matching the exact original rowName
     const getExtractionItem = (group: KeywordGroup) => {
-        return extractionQueue.find(item => item.fileName === group.name);
+        const expectedFileName = group.rowName || group.name;
+        return extractionQueue.find(item => item.fileName === expectedFileName);
     };
 
     const allGroupsDone = proceededGroups.size === groups.length && groups.length > 0 &&

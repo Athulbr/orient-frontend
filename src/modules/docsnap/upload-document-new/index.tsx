@@ -117,6 +117,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                     name: group?.name,
                     primary_keyword: group?.primary_keyword,
                     rowIndex: index,   // stamp the index so handlers don't rely on name-matching
+                    rowName: selectedProducts[index]?.name || group?.name,
                     keywords: (group?.keywords || []).map((item: any) => ({
                         keyword: item?.keyword,
                         source: item?.source,
@@ -283,6 +284,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
             const fetched: KeywordGroup[] = (res.data || []).map((group: any) => ({
                 name: group?.name,
                 primary_keyword: group?.primary_keyword,
+                rowName: normalizedFormData?.name || group?.name,
                 keywords: (group?.keywords || []).map((item: any) => ({
                     keyword: item?.keyword,
                     source: item?.source,
