@@ -67,7 +67,7 @@ export const oldSampleOrders: Order[] = [
 
 export const sampleEmails: Email[] = [
     {
-        id: 'EMAIL-001',
+        emailId: 'EMAIL-001',
         subject: 'Order Documents - ORD-2024-008821',
         from: 'rahul.mehta@example.com',
         date: '2024-03-18T10:30:00+05:30',
@@ -80,7 +80,7 @@ export const sampleEmails: Email[] = [
         ]
     },
     {
-        id: 'EMAIL-002',
+        emailId: 'EMAIL-002',
         subject: 'KYC Documents Attached - Anita Desai',
         from: 'anita.desai@example.com',
         date: '2024-03-19T11:15:00+05:30',
@@ -96,7 +96,7 @@ export const sampleEmails: Email[] = [
 
 export const availableEmails: Email[] = [
     {
-        id: 'EMAIL-101',
+        emailId: 'EMAIL-101',
         subject: 'RE: Pending KYC Documents',
         from: 'support@orientexchange.com',
         date: '2024-03-20T08:00:00+05:30',
@@ -107,7 +107,7 @@ export const availableEmails: Email[] = [
         ]
     },
     {
-        id: 'EMAIL-102',
+        emailId: 'EMAIL-102',
         subject: 'Document Submission - Urgent',
         from: 'vikram.singh@example.com',
         date: '2024-03-20T09:45:00+05:30',
@@ -115,7 +115,7 @@ export const availableEmails: Email[] = [
         attachments: [{ name: 'Income_Proof.pdf', url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', type: 'pdf', source: 'email' }]
     },
     {
-        id: 'EMAIL-103',
+        emailId: 'EMAIL-103',
         subject: 'FWD: Transfer Authorization Documents',
         from: 'priya.sharma@example.com',
         date: '2024-03-20T12:30:00+05:30',

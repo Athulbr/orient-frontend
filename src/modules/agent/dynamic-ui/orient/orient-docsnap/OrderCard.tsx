@@ -403,7 +403,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
 
                     {linkedEmails.length > 0 &&
                         linkedEmails.map(email => (
-                            <div key={email.id} className="flex items-center gap-2 px-[10px] py-2 rounded-lg bg-violet-50 border border-violet-200 mb-[10px]">
+                            <div key={email.emailId} className="flex items-center gap-2 px-[10px] py-2 rounded-lg bg-violet-50 border border-violet-200 mb-[10px]">
                                 <div className="w-7 h-7 rounded-[7px] bg-violet-100 flex items-center justify-center flex-shrink-0">
                                     <Mail size={14} className="text-violet-700" />
                                 </div>
@@ -417,7 +417,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
                                     hoverClass="hover:bg-red-50"
                                     icon={<Unlink size={11} />}
                                     label="Unlink"
-                                    onClick={() => onUnlinkEmail(order.order_details.order_id, email.id)}
+                                    onClick={() => onUnlinkEmail(order.order_details.order_id, email.emailId)}
                                 />
                             </div>
                         ))}

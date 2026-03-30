@@ -133,7 +133,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                 ) : (
                     <div className="divide-y divide-gray-100">
                         {emails.map(email => (
-                            <button key={email.id} onClick={() => onLink(email.id)} className="w-full text-left px-6 py-4 hover:bg-purple-50 transition-colors group">
+                            <button key={email.emailId} onClick={() => onLink(email.emailId)} className="w-full text-left px-6 py-4 hover:bg-purple-50 transition-colors group">
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
