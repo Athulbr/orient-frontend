@@ -191,7 +191,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             const formData = new FormData();
             formData.append('orderId', orderId.toString());
             // formData.append('templateId', '68a8b19919dd45d21642d18d'); // PO_Private
-            formData.append('templateId', '69a1109890de8c4def6793e9'); // Orient_v1
+            formData.append('templateId', '69ca3b19a8a70950eaccf141'); // Orient_v1
 
             // Add uploaded files
             const uploaded = uploadedFilesMap[orderId] || [];
@@ -243,7 +243,8 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0];
                                     if (finalData.extractedData) {
-                                        const updateDetails = { extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId } };
+                                        const currentOrder = orders.find(o => o.order_details.order_id === orderId);
+                                        const updateDetails = { order_details: { ...(currentOrder?.order_details || {}), order_status: 'extracted' }, extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId } };
 
                                         fetch(`${config.workflowService}/api/orders/${orderId}`, {
                                             method: 'PUT',
@@ -251,7 +252,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                                             body: JSON.stringify(updateDetails)
                                         }).catch(err => console.error('Failed to save extraction details', err));
 
-                                        setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, ...updateDetails } : o)));
+                                        setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, order_details: { ...o.order_details, order_status: 'extracted' }, extractionDetails: updateDetails.extractionDetails } : o)));
                                     }
                                 }
                             }
