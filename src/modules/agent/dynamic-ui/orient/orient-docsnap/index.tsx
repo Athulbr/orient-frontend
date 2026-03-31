@@ -301,9 +301,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                             options={[
                                 { label: 'All Status', value: 'all' },
                                 { label: 'Pending', value: 'pending' },
-                                { label: 'Review', value: 'extracted' },
-                                { label: 'Submitted', value: 'submitted' },
-                                { label: 'Failed', value: 'failed' }
+                                { label: 'Extracted', value: 'extracted' },
+                                { label: 'Marekat Submitted', value: 'submitted' },
+                                { label: 'Extraction Failed', value: 'failed' }
                             ]}
                         />
                         <div className="flex flex-col gap-1">
