@@ -180,9 +180,7 @@ export const useLoginPageApi = () => {
             window.history.replaceState({}, document.title, window.location.pathname);
             loginWithPhpSession(sessionToken);
         } else {
-            // No token present — Show session expired banner message.
-            // Session expiry is handled exclusively by the session guards in AuthenticatedLayout.tsx.
-            setState(prev => ({ ...prev, authError: 'Session expired. Please login again.' }));
+            // No token present — Show login page.
         }
     }, []);
 

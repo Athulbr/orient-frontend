@@ -89,8 +89,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
 
     const logOut = async () => {
         setTimeout(() => {
+            const isOrientSSO = !!window.sessionStorage.getItem('orientSessionId');
             window.sessionStorage.clear();
-            window?.location?.replace('/auth/logout-message');
+            const redirectTarget = isOrientSSO ? '/auth/logout-message' : '/auth/login';
+            window?.location?.replace(redirectTarget);
         }, 2000);
         if (isAuthenticated) {
             instance.logoutRedirect({

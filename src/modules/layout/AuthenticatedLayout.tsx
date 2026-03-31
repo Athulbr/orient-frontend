@@ -28,8 +28,10 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         updateUserSettingsHandler();
 
         const triggerSessionEnded = () => {
+            const isOrientSSO = !!window.sessionStorage.getItem('orientSessionId');
             window.sessionStorage.clear();
-            window?.location?.replace('/auth/logout-message');
+            const redirectTarget = isOrientSSO ? '/auth/logout-message' : '/auth/login';
+            window?.location?.replace(redirectTarget);
         };
 
         let lastUserActivityTime = Date.now();
