@@ -76,6 +76,55 @@ export const useLoginPageApi = () => {
         }
     };
 
+    // ============================= login With PHP Session ==================================
+    const loginWithPhpSession = async (sessionToken: string) => {
+        try {
+            setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
+
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken });
+
+            if (res.data?.accessToken) {
+                window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
+                window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
+                if (res.data?.orientSessionId) {
+                    window?.sessionStorage?.setItem('orientSessionId', res.data.orientSessionId);
+                }
+                window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
+                window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
+                window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
+
+                const resp = await Promise.all([
+                    httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
+                    httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
+                    httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
+                ]);
+                window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+                window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
+                window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
+                window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
+                window?.location?.replace('/docsnap');
+            } else {
+                setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.', oAuthLoading: false }));
+            }
+        } catch (error: any) {
+            console.error('Orient Session login error:', error);
+            setState(prev => ({ ...prev, authError: 'Please open from Orient portal', oAuthLoading: false }));
+        }
+    };
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const sessionToken = queryParams.get('token');
+
+        if (sessionToken) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            loginWithPhpSession(sessionToken);
+        } else {
+            // No token present — Show login page.
+        }
+    }, []);
+
     // ============================= Return ==================================
-    return { loginWithEmailAndPassword };
+    return { loginWithEmailAndPassword, loginWithPhpSession };
 };

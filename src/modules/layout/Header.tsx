@@ -84,8 +84,10 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
 
     const logOut = async () => {
         setTimeout(() => {
+            const isOrientSSO = !!window.sessionStorage.getItem('orientSessionId');
             window.sessionStorage.clear();
-            window?.location?.replace('/');
+            const redirectTarget = isOrientSSO ? '/auth/logout-message' : '/auth/login';
+            window?.location?.replace(redirectTarget);
         }, 2000);
         await httpRequest('POST', `${config.nodeApiUrl}/auth/logout`, {});
         toast.success('Logged out successfully');

@@ -13,6 +13,7 @@ interface OrderCardProps {
     order: Order;
     linkedEmails: Email[];
     uploadedFiles: File[];
+
     onLinkEmail: (orderId: number, emailId: string) => void;
     onUnlinkEmail: (orderId: number, emailId: string) => void;
     onUploadFiles: (orderId: number, files: File[]) => void;

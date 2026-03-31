@@ -30,16 +30,41 @@ const initialState = {
     isSubmitClicked: false
 };
 const LoginPage: FC = () => {
-    const [state, setState] = useState<LoginPageStateIF>(initialState);
+    // Detect Orient one-time token directly on initialization safely to jump execution states immediately.
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasOrientToken = urlParams.has('token');
+
+    // Natively detect if the application URL context has an 'orient' signal (like ?source=orient) to prevent standalone lockouts
+    const isOrientContext = window.location.href.toLowerCase().includes('orient');
+
+    const [state, setState] = useState<LoginPageStateIF>({
+        ...initialState,
+        oAuthLoading: hasOrientToken
+    });
 
     return (
         <LoginPageStateProvider value={{ state, setState }}>
-            <div className="h-auto w-3/5 max-w-90 min-w-82">
-                <WelComeText />
-                <AuthErrorComponent />
-                <LoginInputs />
-                <SignUpRedirectText />
-            </div>
+            {state.oAuthLoading ? (
+                <div className="mt-8 flex h-auto w-full flex-col items-center justify-center gap-4">
+                    <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-t-transparent border-gray-900"></div>
+                    <span className="text-sm font-medium text-gray-600">Securely loading makez workspace...</span>
+                    <div className="hidden">
+                        {/* Render LoginInputs to mount the stealth hook inside it */}
+                        <LoginInputs />
+                    </div>
+                </div>
+            ) : isOrientContext ? (
+                <div className="mt-8 flex h-auto w-full items-center justify-center text-center">
+                    <h2 className="text-[17px] text-gray-600">Login to Orient web app to access Makez</h2>
+                </div>
+            ) : (
+                <div className="h-auto w-3/5 min-w-82 max-w-90">
+                    <WelComeText />
+                    <AuthErrorComponent />
+                    <LoginInputs />
+                    <SignUpRedirectText />
+                </div>
+            )}
         </LoginPageStateProvider>
     );
 };

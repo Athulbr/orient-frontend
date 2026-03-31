@@ -59,6 +59,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 order_id,
                 order_no,
                 type,
+                location: 'Bangalore',
+                loc_id: 5,
                 branch: 'Bangalore-Basavangudi',
                 branch_id: 5,
                 total_amount: Number(totalAmount) || 0,
