@@ -4,6 +4,8 @@ import { LoginPageStateProvider } from './hooks/LoginPageStateProvider';
 import { AuthErrorComponent } from './components/AuthErrorComponent';
 import { SignUpRedirectText } from './components/SignUpRedirectText';
 import { LoginInputs } from './components/LoginInputs';
+import { OAuthButtons } from './components/OAuthButtons';
+import { Divider } from './components/Divider';
 
 export interface LoginPageStateIF {
     email: string;
@@ -54,14 +56,18 @@ const LoginPage: FC = () => {
                     </div>
                 </div>
             ) : isOrientContext ? (
+                // Only hide the form and show the Orient blocker if the user URL context explicitly matches the 'orient' parameter
                 <div className="mt-8 flex h-auto w-full items-center justify-center text-center">
                     <h2 className="text-[17px] text-gray-600">Login to Orient web app to access Makez</h2>
                 </div>
             ) : (
+                // Standalone generic users get standard Makez logic dynamically restored securely
                 <div className="h-auto w-3/5 min-w-82 max-w-90">
                     <WelComeText />
                     <AuthErrorComponent />
                     <LoginInputs />
+                    <Divider />
+                    <OAuthButtons />
                     <SignUpRedirectText />
                 </div>
             )}
