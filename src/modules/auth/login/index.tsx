@@ -37,7 +37,7 @@ const LoginPage: FC = () => {
     const hasOrientToken = urlParams.has('token');
 
     // Natively detect if the application URL context has an 'orient' signal (like ?source=orient) to prevent standalone lockouts
-    const isOrientContext = window.location.href.toLowerCase().includes('orient');
+    // const isOrientContext = window.location.href.toLowerCase().includes('orient');
 
     const [state, setState] = useState<LoginPageStateIF>({
         ...initialState,
@@ -55,7 +55,7 @@ const LoginPage: FC = () => {
                         <LoginInputs />
                     </div>
                 </div>
-            ) : isOrientContext ? (
+            ) : hasOrientToken ? (
                 // Only hide the form and show the Orient blocker if the user URL context explicitly matches the 'orient' parameter
                 <div className="mt-8 flex h-auto w-full items-center justify-center text-center">
                     <h2 className="text-[17px] text-gray-600">Login to Orient web app to access Makez</h2>
