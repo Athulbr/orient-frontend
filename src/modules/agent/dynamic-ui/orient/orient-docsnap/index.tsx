@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import OrderCard from './OrderCard';
 import { Order, Email } from './types';
+
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import CreateOrderDialog from './CreateOrderDialog';
@@ -191,7 +192,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             const formData = new FormData();
             formData.append('orderNumber', orderNumber.toString());
             // formData.append('templateId', '68a8b19919dd45d21642d18d'); // PO_Private
-            formData.append('templateId', '69ca3b19a8a70950eaccf141'); // Orient_v1
+            formData.append('templateId', '69a1109890de8c4def6793e9'); // Orient_v1
 
             // Add uploaded files
             const uploaded = uploadedFilesMap[orderNumber] || [];
@@ -365,7 +366,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                     </div>
                 </div>
             </div>
-
             <DialogComponent
                 className="w-[800px]"
                 isOpen={showCreateDialog || !!editingOrder}

@@ -4,7 +4,7 @@ import { useExtractionStore } from '../../../zustand-store/extractionStore';
 import { useToastStore } from '../../../components/toast/ToastStore';
 
 export const useDocumentExtractor = () => {
-    const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue } = useExtractionStore();
+    const { extractionQueue, updateExtractionQueue, refreshExtractionQueue, startTimer, processStream, addToExtractionQueue, setShowFloatingWindow } = useExtractionStore();
     const navigate = useNavigate();
     const toast = useToastStore();
 
@@ -371,6 +371,7 @@ export const useDocumentExtractor = () => {
         const addNameToQueue = (name: string) => {
             refreshExtractionQueue(name);
             addToExtractionQueue(name, { template, rowData });
+            setShowFloatingWindow(true);
         };
 
         if (template?.settings?.module === 'data-entry') {
