@@ -1,4 +1,4 @@
-import { useMsal, AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated } from '@azure/msal-react';
+import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../sso/msal-config';
 import MSIcon from '../../../../assets/svg-icons/MSIcon';
 import { Button } from '../../../../components/Button';
@@ -7,6 +7,7 @@ import Spinner from '../../../../components/Spinner';
 
 const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
     const { instance } = useMsal();
+    const isAuthenticated = useIsAuthenticated();
     const { state } = useLoginPageState();
 
     const loginWithMicrosoft = async () => {
@@ -24,16 +25,15 @@ const MicrosoftLogin: React.FC<any> = ({ className, children }) => {
 
     return (
         <>
-            <AuthenticatedTemplate>
+            {isAuthenticated ? (
                 <Button className="w-full" outlined onClick={handleLogout} disabled={state.oAuthLoading}>
                     <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
                 </Button>
-            </AuthenticatedTemplate>
-            <UnauthenticatedTemplate>
+            ) : (
                 <Button className="w-full" outlined onClick={loginWithMicrosoft} disabled={state.oAuthLoading}>
                     <MSIcon /> Microsoft {state.oAuthLoading && <Spinner size={16} />}
                 </Button>
-            </UnauthenticatedTemplate>
+            )}
 
             {children}
         </>

@@ -20,7 +20,10 @@
         "build-storybook": "storybook build"
     },
     "dependencies": {
+        "@azure/msal-browser": "^4.25.0",
+        "@azure/msal-react": "^3.0.20",
         "@monaco-editor/react": "^4.7.0",
+        "@react-oauth/google": "^0.12.2",
         "@tailwindcss/vite": "^4.0.17",
         "axios": "^1.12.2",
         "chart.js": "^4.5.1",
