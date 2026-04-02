@@ -36,7 +36,7 @@ const ChatWithDocumentComponent: React.FC<ChatWithDocumentComponentIF> = () => {
         if (state.templateSettings?.extractionEngine === 'node') {
             sendMessageToNode(message);
         } else {
-            sendMessage(message);
+            sendMessageToNode(message);
         }
     };
     const messages = state.messages;
