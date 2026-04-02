@@ -10,8 +10,7 @@ import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
 import { Search, X } from 'lucide-react';
 
-interface OrientDocsnapUserInterfaceIF {
-}
+interface OrientDocsnapUserInterfaceIF {}
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -245,7 +244,10 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                                     const finalData = parsed.finalData[0];
                                     if (finalData.extractedData) {
                                         const currentOrder = orders.find(o => o.orderDetails.orderNumber === orderNumber);
-                                        const updateDetails = { orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' }, extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId } };
+                                        const updateDetails = {
+                                            orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
+                                            extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId }
+                                        };
 
                                         fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                                             method: 'PUT',
@@ -253,7 +255,13 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                                             body: JSON.stringify(updateDetails)
                                         }).catch(err => console.error('Failed to save extraction details', err));
 
-                                        setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, orderDetails: { ...o.orderDetails, orderStatus: 'extracted' }, extractionDetails: updateDetails.extractionDetails } : o)));
+                                        setOrders(prev =>
+                                            prev.map(o =>
+                                                o.orderDetails.orderNumber === orderNumber
+                                                    ? { ...o, orderDetails: { ...o.orderDetails, orderStatus: 'extracted' }, extractionDetails: updateDetails.extractionDetails }
+                                                    : o
+                                            )
+                                        );
                                     }
                                 }
                             }
@@ -310,16 +318,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         <div className="flex flex-col gap-1">
                             <DateTimePicker onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
                         </div>
-                        <SingleSelect
-                            value={perPage}
-                            onValueChange={setPerPage}
-                            options={[
-                                { label: '10', value: '10' },
-                                { label: '20', value: '20' },
-                                { label: '50', value: '50' },
-                                { label: '100', value: '100' }
-                            ]}
-                        />
                         <Button startIcon={<X size={16} />} onClick={handleResetFilters} outlined></Button>
                         <Button onClick={() => setShowCreateDialog(true)}>Create Order</Button>
                     </div>
@@ -353,6 +351,17 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                     Showing {totalCount === 0 ? 0 : (currentPage - 1) * Number(perPage) + 1} to {Math.min(currentPage * Number(perPage), totalCount)} of {totalCount} orders
                 </span>
                 <div className="flex items-center gap-4">
+                    <SingleSelect
+                        position="top"
+                        value={perPage}
+                        onValueChange={setPerPage}
+                        options={[
+                            { label: '10', value: '10' },
+                            { label: '20', value: '20' },
+                            { label: '50', value: '50' },
+                            { label: '100', value: '100' }
+                        ]}
+                    />
                     <span className="text-sm font-medium text-gray-700">
                         Page {currentPage} of {totalPages}
                     </span>

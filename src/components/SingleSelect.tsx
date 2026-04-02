@@ -15,17 +15,10 @@ interface SelectProps {
     placeholder?: string;
     className?: string;
     disabled?: boolean;
+    position?: 'top' | 'bottom';
 }
 
-export const SingleSelect: React.FC<SelectProps> = ({
-    value,
-    label,
-    options,
-    onValueChange,
-    placeholder = 'Select an option',
-    className = '',
-    disabled = false
-}) => {
+export const SingleSelect: React.FC<SelectProps> = ({ value, label, options, onValueChange, placeholder = 'Select an option', className = '', disabled = false, position = 'bottom' }) => {
     const [isOpen, setIsOpen] = useState(false);
     const selectRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +52,7 @@ export const SingleSelect: React.FC<SelectProps> = ({
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             {isOpen && (
-                <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg">
+                <div className={cn('absolute z-50 w-full overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg', position === 'top' ? 'bottom-full mb-1' : 'top-full mt-1')}>
                     <ul className="max-h-45 overflow-auto py-1" role="listbox">
                         {options.map(option => (
                             <li
