@@ -48,46 +48,109 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         await submitRecordApi();
     };
 
+    const handleNodeReExtraction = async () => {
+        const formData = new FormData();
+        formData.append('templateId', state.record?.templateId?._id);
+        formData.append('recordId', state.record?._id);
+        if (state.record?.imageFileNames) {
+            console.log('state.record?.imageFileNames:===========', state.record?.imageFileNames);
+            formData.append('imageFileNames', JSON.stringify(state.record?.imageFileNames));
+        }
+        await reExtractDocument(formData);
+    };
+
+    const handlePythonReExtraction = async () => {
+        try {
+            const token = window?.sessionStorage?.getItem('accessToken') || '';
+            const selectedTenant = window?.sessionStorage?.getItem('selectedTenant');
+            const formData = new FormData();
+            formData.append('template_id', state.record?.templateId?._id);
+            formData.append('s3_file_name', state.record?.pdfFileName);
+            const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document`;
+
+            const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+            if (selectedTenant) {
+                headers.tenantId = selectedTenant;
+            }
+
+            const response = await fetch(apiEndPoint, {
+                method: 'POST',
+                headers,
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Fetch the stream URL
+            const streamHeaders: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+            if (selectedTenant) {
+                streamHeaders.tenantId = selectedTenant;
+            }
+            
+            const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(token)}`, {
+                method: 'GET',
+                headers: streamHeaders
+            });
+
+            if (!streamResponse.ok) {
+                throw new Error(`Stream HTTP error! status: ${streamResponse.status}`);
+            }
+
+            if (!streamResponse.body) {
+                throw new Error('ReadableStream not supported');
+            }
+
+            const reader = streamResponse.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    if (!line.startsWith('data: ')) continue;
+
+                    try {
+                        let jsonString = line.substring(6); // Remove "data: " prefix
+                        if (!jsonString.trim()) continue;
+
+                        const parsedData = JSON.parse(jsonString);
+                        if (parsedData.current_step === 'Completed') {
+                            await updateExtractedData(parsedData?.result?.extracted_data || {});
+                            setState(prev => ({ ...prev, reExtracting: false }));
+                            await getRecordApiById(state.record?._id);
+                            return; // End parsing here
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse SSE message:', e, 'Line:', line);
+                        continue;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('API request error:', error);
+            setState(prev => ({ ...prev, reExtracting: false }));
+        }
+    };
+
     const handleReExtract = async () => {
         setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
+        
         if (state.record?.templateId?.settings?.extractionEngine !== 'python') {
-            const formData = new FormData();
-            formData.append('templateId', state.record?.templateId?._id);
-            formData.append('recordId', state.record?._id);
-            if (state.record?.imageFileNames) {
-                console.log('state.record?.imageFileNames:===========', state.record?.imageFileNames);
-                formData.append('imageFileNames', JSON.stringify(state.record?.imageFileNames));
-            }
-            await reExtractDocument(formData);
-            return;
+            await handleNodeReExtraction();
+        } else {
+            await handlePythonReExtraction();
         }
-
-        const requestBody: Record<string, any> = {
-            // document_type: state.record?.docType || 'other',
-            // entity_schema: convertedJson,
-            // include_confidence: true,
-            // include_bbox: true,
-            // confidence_threshold: 0.2,
-            s3_file_name: state.record?.pdfFileName,
-            template_id: state.record?.templateId?._id
-            // provider_id: 'azure',
-            // model_id: 'gpt-4o',
-            // use_latest: false
-        };
-        // requestBody.ocr_engine = 'google_vision'; // 'doctr';
-        const res = await httpRequest('POST', `${config.extractionServicePython}/api/v5/document/analyze_document_v5`, requestBody);
-        const accessToken = window?.sessionStorage?.getItem('accessToken') as string;
-        const eventSource = new EventSource(`${config.extractionServicePython}${res.stream_url}?token=Bearer ${JSON.parse(accessToken)}`);
-
-        eventSource.addEventListener('task_update', async (event: any) => {
-            const data = JSON.parse(event.data);
-            if (data.current_step === 'Completed') {
-                eventSource.close();
-                await updateExtractedData(data?.result?.extracted_data || {});
-                setState(prev => ({ ...prev, reExtracting: false }));
-                await getRecordApiById(state.record?._id);
-            }
-        });
     };
 
     const skipToNextDocumentHandler = () => {
