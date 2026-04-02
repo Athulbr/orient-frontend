@@ -144,7 +144,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     };
 
     const handleReExtract = async () => {
-        setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
+        setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1, reExtracting: true }));
         
         if (state.record?.templateId?.settings?.extractionEngine !== 'python') {
             await handleNodeReExtraction();
