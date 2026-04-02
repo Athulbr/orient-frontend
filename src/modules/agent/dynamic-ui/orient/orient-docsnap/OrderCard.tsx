@@ -1,5 +1,27 @@
 import React, { useState } from 'react';
-import { FileText, Mail, UploadCloud, ExternalLink, Link2, Unlink, ArrowRight, Plus, X, Zap, Clock, User, Building2, Hash, Eye, Phone, Edit, Trash2 } from 'lucide-react';
+import {
+    FileText,
+    Mail,
+    UploadCloud,
+    ExternalLink,
+    Link2,
+    Unlink,
+    ArrowRight,
+    Plus,
+    X,
+    Zap,
+    Clock,
+    User,
+    Building2,
+    Hash,
+    Eye,
+    Phone,
+    Edit,
+    Trash2,
+    RotateCcw,
+    RefreshCcw,
+    RefreshCw
+} from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -250,8 +272,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
                                           icon: null,
                                           val: (
                                               <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Payment:</span>{' '}
-                                                  <span className="text-gray-600 font-bold">{order.orderDetails.paymentType}</span>
+                                                  <span className="text-gray-400 font-medium mr-[3px]">Payment:</span> <span className="text-gray-600 font-bold">{order.orderDetails.paymentType}</span>
                                               </>
                                           )
                                       }
@@ -331,19 +352,23 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
                 </div>
 
                 <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                        {onEdit && <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />}
-                        {onDelete && (
-                            <GBtn
-                                colorClass="text-red-600"
-                                borderClass="border-red-200"
-                                hoverClass="hover:bg-red-50"
-                                icon={<Trash2 size={11} />}
-                                label="Delete"
-                                onClick={() => setShowDeleteConfirm(true)}
-                            />
-                        )}
-                    </div>
+                    {order.orderDetails.orderStatus !== 'submitted' && (
+                        <div className="flex items-center gap-2">
+                            {onEdit && (
+                                <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
+                            )}
+                            {onDelete && (
+                                <GBtn
+                                    colorClass="text-red-600"
+                                    borderClass="border-red-200"
+                                    hoverClass="hover:bg-red-50"
+                                    icon={<Trash2 size={11} />}
+                                    label="Delete"
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                />
+                            )}
+                        </div>
+                    )}
                     <div className="flex gap-[7px]">
                         {[
                             { n: orderFiles.length, l: 'ONLINE', dark: false },
@@ -492,7 +517,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
 
             <div className="px-[22px] py-[13px] flex items-center justify-between">
                 <span className="text-sm text-gray-400">
-                    {totalDocs} document{totalDocs !== 1 ? 's' : ''} ready for extraction
+                    {totalDocs || 'No'} {totalDocs === 1 ? 'document' : 'documents'} ready for extraction
                 </span>
                 {!order.extractionDetails?.recordId ? (
                     <Button
@@ -500,21 +525,24 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
                         outlined
                         onClick={() => onProceed(order.orderDetails?.orderNumber)}
                         disabled={!hasDocuments || isProceeding}
+                        endIcon={!isProceeding && <ArrowRight size={15} />}
                     >
-                        {isProceeding ? (
-                            'Processing…'
-                        ) : (
-                            <>
-                                {/* <Zap size={15} /> */}
-                                Proceed to Extract
-                                <ArrowRight size={15} />
-                            </>
-                        )}
+                        {isProceeding ? 'Processing…' : 'Extract Documents'}
                     </Button>
                 ) : (
-                    <Button outlined onClick={handleViewExtractedData}>
-                        View Extracted Data
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            startIcon={isProceeding ? <Spinner size={12} /> : <RefreshCw size={12} />}
+                            outlined
+                            onClick={() => onProceed(order.orderDetails?.orderNumber)}
+                            disabled={!hasDocuments || isProceeding}
+                        >
+                            {isProceeding ? 'Processing…' : 'Re-Extract'}
+                        </Button>
+                        <Button startIcon={<Eye size={15} />} outlined onClick={handleViewExtractedData}>
+                            View Extracted Data
+                        </Button>
+                    </div>
                 )}
             </div>
 
