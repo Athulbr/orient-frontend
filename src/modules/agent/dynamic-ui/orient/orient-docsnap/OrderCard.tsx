@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     FileText,
     Mail,
@@ -18,9 +18,9 @@ import {
     Phone,
     Edit,
     Trash2,
-    RotateCcw,
-    RefreshCcw,
-    RefreshCw
+    RefreshCw,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
@@ -29,11 +29,11 @@ import EmailLinkDialog from './EmailLinkDialog';
 import { Order, Email, FileItem } from './types';
 import Spinner from '../../../../../components/Spinner';
 import { useNavigate } from 'react-router-dom';
+import { config } from '../../../../../config/default';
 
 interface OrderCardProps {
     order: Order;
     linkedEmails: Email[];
-    uploadedFiles: File[];
     onLinkEmail: (orderNumber: number, emailId: string) => void;
     onUnlinkEmail: (orderNumber: number, emailId: string) => void;
     onUploadFiles: (orderNumber: number, files: File[]) => void;
@@ -42,6 +42,7 @@ interface OrderCardProps {
     onEdit?: (order: Order) => void;
     onDelete?: (orderNumber: number) => void;
     isProceeding: boolean;
+    isUploading?: boolean;
 }
 
 const FILE_COLORS = {
@@ -59,7 +60,8 @@ const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string; 
     DEFAULT: { text: 'text-gray-700', bg: 'bg-gray-100', border: 'border-gray-200', dot: 'bg-gray-400', stripe: 'from-gray-400' }
 };
 
-const getFileType = (url: string): FileItem['type'] => {
+const getFileType = (url: string = ''): FileItem['type'] => {
+    if (!url) return 'other';
     const lower = url.toLowerCase();
     if (lower.endsWith('.pdf')) return 'pdf';
     if (lower.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/)) return 'image';
@@ -67,17 +69,130 @@ const getFileType = (url: string): FileItem['type'] => {
     return 'other';
 };
 
+const getPreviewUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+        return url;
+    }
+    let normalizedPath = url.replace(/\\/g, '/');
+    // If it's an absolute path, extract the portion after 'temp/' to get the relative path
+    const tempIdx = normalizedPath.indexOf('/temp/');
+    if (tempIdx !== -1) {
+        normalizedPath = normalizedPath.substring(tempIdx + '/temp/'.length);
+    }
+    // Encode each segment individually to preserve slash structure for the wildcard route
+    const encodedPath = normalizedPath
+        .split('/')
+        .map(seg => encodeURIComponent(seg))
+        .join('/');
+    return `${config.workflowService}/api/temp-storage/preview/${encodedPath}?apiKey=secret1`;
+};
+
 const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void }> = ({ file, onRemove }) => {
     const [hover, setHover] = useState(false);
     const [preview, setPreview] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+    const [thumbLoading, setThumbLoading] = useState(file.type === 'image');
+    const [thumbError, setThumbError] = useState(false);
+    const [pageBlobUrls, setPageBlobUrls] = useState<Record<number, string>>({});
+    const pageBlobUrlsRef = useRef<Record<number, string>>({});
+    const [pageLoading, setPageLoading] = useState(false);
+
     const cfg = FILE_COLORS[file.type as keyof typeof FILE_COLORS] ?? FILE_COLORS.other;
     const shortName = file.name.replace(/\.[^.]+$/, '');
 
+    const allPages = file.pages && file.pages.length > 0 ? file.pages : file.url ? [file.url] : [];
+    const pageApiUrls = allPages.map(getPreviewUrl);
+    const totalPages = pageApiUrls.length;
+
+    // Fetch thumbnail blob on mount
+    useEffect(() => {
+        if (file.type !== 'image' || !pageApiUrls[0]) return;
+        let objectUrl: string;
+
+        const fetchThumb = async () => {
+            try {
+                const res = await fetch(pageApiUrls[0]);
+                if (!res.ok) throw new Error('Failed to fetch thumbnail');
+                const blob = await res.blob();
+                objectUrl = URL.createObjectURL(blob);
+                setThumbUrl(objectUrl);
+            } catch {
+                setThumbError(true);
+            } finally {
+                setThumbLoading(false);
+            }
+        };
+        fetchThumb();
+
+        return () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
+    }, [pageApiUrls[0]]);
+
+    // Fetch a specific page blob for the lightbox
+    const fetchPageBlob = async (pageIndex: number) => {
+        if (pageBlobUrlsRef.current[pageIndex]) return;
+        setPageLoading(true);
+        try {
+            const res = await fetch(pageApiUrls[pageIndex]);
+            if (!res.ok) throw new Error('Failed to fetch page');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            pageBlobUrlsRef.current[pageIndex] = url;
+            setPageBlobUrls(prev => ({ ...prev, [pageIndex]: url }));
+        } catch (err) {
+            console.error('Error fetching page:', err);
+        } finally {
+            setPageLoading(false);
+        }
+    };
+
+    // Cleanup all page blob URLs only on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(pageBlobUrlsRef.current).forEach(url => URL.revokeObjectURL(url));
+        };
+    }, []);
+
+    // When lightbox opens or page changes, fetch that page blob
+    useEffect(() => {
+        if (preview && pageApiUrls[currentPage]) {
+            fetchPageBlob(currentPage);
+        }
+    }, [preview, currentPage]);
+
     const handleClick = () => {
         if (file.type === 'image') {
+            setCurrentPage(0);
             setPreview(true);
         } else {
-            window.open(file.url, '_blank');
+            const apiUrl = pageApiUrls[0];
+            if (apiUrl) {
+                fetch(apiUrl)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                        setTimeout(() => URL.revokeObjectURL(url), 60000);
+                    })
+                    .catch(err => console.error('Preview error:', err));
+            }
+        }
+    };
+
+    const handleOpenOriginal = () => {
+        const apiUrl = pageApiUrls[currentPage];
+        if (apiUrl) {
+            fetch(apiUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    setTimeout(() => URL.revokeObjectURL(url), 60000);
+                })
+                .catch(err => console.error('Open original error:', err));
         }
     };
 
@@ -92,7 +207,6 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                     ${hover ? 'bg-white shadow-xl shadow-gray-800 scale-[1.03] border border-gray-300' : 'bg-gray-50 border border-gray-150 scale-100'}`}
                 style={{ boxShadow: hover ? '0 4px 18px 0 rgba(0,0,0,0.10)' : '0 1px 4px 0 rgba(0,0,0,0.06)' }}
             >
-                {/* Remove button */}
                 {onRemove && hover && (
                     <button
                         onClick={e => {
@@ -105,9 +219,22 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                     </button>
                 )}
 
+                {totalPages > 1 && <span className="absolute top-1.5 left-1.5 text-[9px] font-extrabold text-white bg-black/50 px-[5px] py-[2px] rounded-md z-10">{totalPages}p</span>}
+
                 {file.type === 'image' ? (
                     <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                        <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                        {thumbLoading ? (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                <Spinner size={16} />
+                            </div>
+                        ) : thumbError || !thumbUrl ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+                                <FileText size={20} className="mb-1 opacity-50" />
+                                <span className="text-[9px]">No preview</span>
+                            </div>
+                        ) : (
+                            <img src={thumbUrl} alt={file.name} className="w-full h-full object-cover" />
+                        )}
                         <div
                             className={`absolute inset-0 flex flex-col items-center justify-center gap-1 transition-opacity duration-150 ${hover ? 'opacity-100' : 'opacity-0'}`}
                             style={{ background: 'rgba(0,0,0,0.38)' }}
@@ -118,13 +245,8 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                     </div>
                 ) : (
                     <>
-                        {/* File type badge */}
                         <span className={`text-[10px] font-extrabold tracking-widest font-mono ${cfg.text} ${cfg.bg} px-[6px] py-[3px] rounded-md`}>{cfg.label}</span>
-
-                        {/* File name */}
                         <span className="text-[11px] text-gray-600 font-bold text-center leading-[1.3] break-all line-clamp-3 w-full px-0.5">{shortName}</span>
-
-                        {/* Hover open hint */}
                         <div
                             className={`absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-1 transition-opacity duration-150 ${hover ? 'opacity-100' : 'opacity-0'}`}
                             style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(2px)' }}
@@ -136,20 +258,65 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                 )}
             </div>
 
-            {/* Lightbox preview for images */}
+            {/* Lightbox preview — supports multiple pages */}
             {preview && file.type === 'image' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }} onClick={() => setPreview(false)}>
-                    <div className="relative max-w-[90vw] max-h-[88vh] rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <img src={file.url} alt={file.name} className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl" />
+                    <div
+                        className="relative max-w-[90vw] max-h-[88vh] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center"
+                        style={{ minWidth: 256, minHeight: 256 }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {pageLoading && !pageBlobUrls[currentPage] ? (
+                            <Spinner size={28} />
+                        ) : pageBlobUrls[currentPage] ? (
+                            <img src={pageBlobUrls[currentPage]} alt={`${file.name} - page ${currentPage + 1}`} className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl" />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center text-gray-400">
+                                <FileText size={32} className="mb-2 opacity-50" />
+                                <span className="text-sm">Preview unavailable</span>
+                            </div>
+                        )}
+
                         <button
                             onClick={() => setPreview(false)}
                             className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
                         >
                             <X size={15} className="text-white" />
                         </button>
-                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-3">
+
+                        {totalPages > 1 && (
+                            <>
+                                <button
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        setCurrentPage(p => Math.max(0, p - 1));
+                                    }}
+                                    disabled={currentPage === 0}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 flex items-center justify-center transition-colors"
+                                >
+                                    <ChevronLeft size={18} className="text-white" />
+                                </button>
+                                <button
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        setCurrentPage(p => Math.min(totalPages - 1, p + 1));
+                                    }}
+                                    disabled={currentPage === totalPages - 1}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 flex items-center justify-center transition-colors"
+                                >
+                                    <ChevronRight size={18} className="text-white" />
+                                </button>
+                            </>
+                        )}
+
+                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-3 items-center">
+                            {totalPages > 1 && (
+                                <span className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full">
+                                    {currentPage + 1} / {totalPages}
+                                </span>
+                            )}
                             <button
-                                onClick={() => window.open(file.url, '_blank')}
+                                onClick={handleOpenOriginal}
                                 className="flex items-center gap-1.5 bg-white/90 hover:bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow transition-colors"
                             >
                                 <ExternalLink size={12} /> Open original
@@ -187,27 +354,34 @@ const ColCount: React.FC<{ colorClass: string; bgClass: string; borderClass: str
     <span className={`text-xs font-extrabold ${colorClass} ${bgClass} border ${borderClass} px-[7px] py-[1px] rounded-full leading-[1.8]`}>{n}</span>
 );
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFiles, onLinkEmail, onUnlinkEmail, onUploadFiles, onRemoveUploadedFile, onProceed, onEdit, onDelete, isProceeding }) => {
+const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail, onUnlinkEmail, onUploadFiles, onRemoveUploadedFile, onProceed, onEdit, onDelete, isProceeding, isUploading }) => {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const navigate = useNavigate();
 
-    const orderFiles: FileItem[] = order.documentDetails.map(doc => ({ name: doc.documentName, url: doc.documentUrl, type: getFileType(doc.documentUrl), source: 'order' as const }));
+    const orderFiles: FileItem[] = (order.webDocuments || []).map(doc => {
+        const url = doc.documentPages?.[0] || '';
+        return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [] };
+    });
     const emailFiles: FileItem[] = linkedEmails.flatMap(email => email.attachments) || [];
-    const uploadedFileItems: (FileItem & { index: number })[] = uploadedFiles.map((f, i) => ({
-        name: f.name,
-        url: URL.createObjectURL(f),
-        type: getFileType(f.name),
-        source: 'upload' as const,
-        index: i
-    }));
+    const uploadedFileItems: (FileItem & { index: number })[] = (order.manualDocuments || []).map((f, i) => {
+        const url = f.documentPages?.[0] || '';
+        return {
+            name: f.documentName,
+            url,
+            type: getFileType(url),
+            source: 'upload' as const,
+            pages: f.documentPages || [],
+            index: i
+        };
+    });
 
     const handleViewExtractedData = () => {
         navigate(`/docsnap/record/view/${order.extractionDetails?.recordId || ''}`, { state: { orient: true } });
     };
 
-    const totalDocs = orderFiles.length + emailFiles.length + uploadedFiles.length;
+    const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
     const hasDocuments = totalDocs > 0;
     const status = STATUS_CONFIG[order.orderDetails.orderStatus.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
 
@@ -352,28 +526,26 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
                 </div>
 
                 <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                    {order.orderDetails.orderStatus !== 'submitted' && (
-                        <div className="flex items-center gap-2">
-                            {onEdit && (
-                                <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
-                            )}
-                            {onDelete && (
-                                <GBtn
-                                    colorClass="text-red-600"
-                                    borderClass="border-red-200"
-                                    hoverClass="hover:bg-red-50"
-                                    icon={<Trash2 size={11} />}
-                                    label="Delete"
-                                    onClick={() => setShowDeleteConfirm(true)}
-                                />
-                            )}
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {onEdit && order.orderDetails.orderStatus !== 'submitted' && (
+                            <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
+                        )}
+                        {onDelete && (
+                            <GBtn
+                                colorClass="text-red-600"
+                                borderClass="border-red-200"
+                                hoverClass="hover:bg-red-50"
+                                icon={<Trash2 size={11} />}
+                                label="Delete"
+                                onClick={() => setShowDeleteConfirm(true)}
+                            />
+                        )}
+                    </div>
                     <div className="flex gap-[7px]">
                         {[
                             { n: orderFiles.length, l: 'ONLINE', dark: false },
                             { n: emailFiles.length, l: 'EMAIL', dark: false },
-                            { n: uploadedFiles.length, l: 'MANUAL', dark: false },
+                            { n: uploadedFileItems.length, l: 'MANUAL', dark: false },
                             { n: totalDocs, l: 'TOTAL', dark: true }
                         ].map(({ n, l, dark }) => (
                             <div key={l} className={`rounded-[10px] py-[9px] px-[13px] text-center min-w-[58px] border ${dark ? 'bg-[#012D56] border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
@@ -473,18 +645,18 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, uploadedFile
                     <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
                         <div className="flex items-center gap-[8px]">
                             <ColIcon bg="bg-emerald-50" border="border-emerald-200">
-                                <UploadCloud size={15} className="text-emerald-500" />
+                                {isUploading ? <Spinner size={15} /> : <UploadCloud size={15} className="text-emerald-500" />}
                             </ColIcon>
-                            <span className="text-[15px] font-bold text-gray-700">Manual Documents</span>
-                            <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFiles.length} />
+                            <span className="text-[15px] font-bold text-gray-700">{isUploading ? 'Uploading...' : 'Manual Documents'}</span>
+                            <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFileItems.length} />
                         </div>
                         <GBtn
                             colorClass="text-emerald-700"
                             borderClass="border-emerald-300/50"
                             hoverClass="hover:bg-emerald-50"
-                            icon={<Plus size={11} />}
-                            label="Add Files"
-                            onClick={() => setShowUploader(true)}
+                            icon={isUploading ? <Spinner size={11} /> : <Plus size={11} />}
+                            label={isUploading ? 'Uploading' : 'Add Files'}
+                            onClick={() => !isUploading && setShowUploader(true)}
                         />
                     </div>
 

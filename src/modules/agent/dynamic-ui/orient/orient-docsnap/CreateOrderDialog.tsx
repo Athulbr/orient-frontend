@@ -75,7 +75,9 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 phone: userPhone
             },
             currencyDetails: [],
-            documentDetails: [],
+            webDocuments: [],
+            manualDocuments: [],
+            emailDocuments: [],
             extractionDetails: {}
         };
 
