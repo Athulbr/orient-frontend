@@ -66,6 +66,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             const formData = new FormData();
             formData.append('template_id', state.record?.templateId?._id);
             formData.append('s3_file_name', state.record?.pdfFileName);
+            formData.append('reExtractor', 'true');
             const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document`;
 
             const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
