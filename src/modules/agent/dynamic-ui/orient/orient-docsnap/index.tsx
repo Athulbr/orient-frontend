@@ -288,23 +288,54 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
 
             setProceedingOrderNumber(orderNumber);
 
-            const formData = new FormData();
-            formData.append('orderNumber', orderNumber.toString());
-            formData.append('templateId', agentSettings?.defaultTemplateId || '');
+            const linkedEmails = getLinkedEmails(order);
+            const actualEmailDocuments = linkedEmails.flatMap(email =>
+                (email.attachments || []).map((att: any) => ({
+                    documentName: att.documentName || att.name || '',
+                    documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
+                }))
+            );
 
             // Extraction workflow now uses pre-uploaded manualDocuments + webDocuments + emailDocuments
             // We just need to trigger the extraction if there are any documents
-            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + (order.emailDocuments?.length || 0) > 0;
+            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + actualEmailDocuments.length > 0;
             if (!hasDocuments) {
                 alert('Please upload files before extracting');
                 setProceedingOrderNumber(null);
                 return;
             }
 
+            const allDocDetails = [...actualEmailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
+
+            const payloadDocuments = allDocDetails.flatMap(doc => {
+                const pages = doc.documentPages || [];
+                if (pages.length === 0) return [];
+
+                // Remove file extension for cleaner names
+                const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'document';
+
+                if (pages.length === 1) {
+                    return [{ documentName: baseName, documentUrl: pages[0] }];
+                } else {
+                    return pages.map((pageUrl: string, index: number) => ({
+                        documentName: `${baseName}_page_${index + 1}`,
+                        documentUrl: pageUrl
+                    }));
+                }
+            });
+
             try {
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${agentSettings?.webhookUrl}`, {
+                // const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${agentSettings?.webhookUrl}`, {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/docsnap-v2`, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderNumber: orderNumber,
+                        templateId: agentSettings?.defaultTemplateId || '',
+                        documents: payloadDocuments
+                    })
                 });
 
                 if (!response.ok) {
