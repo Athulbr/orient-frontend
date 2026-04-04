@@ -364,7 +364,18 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
         const url = doc.documentPages?.[0] || '';
         return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [] };
     });
-    const emailFiles: FileItem[] = linkedEmails.flatMap(email => email.attachments) || [];
+    const emailFiles: FileItem[] = linkedEmails.flatMap(email =>
+        (email.attachments || []).map((att: any) => {
+            const url = att.documentPages?.[0] || att.url || '';
+            return {
+                name: att.documentName || att.name || '',
+                url,
+                type: getFileType(url),
+                source: 'email' as const,
+                pages: att.documentPages || att.pages || [],
+            };
+        })
+    );
     const uploadedFileItems: (FileItem & { index: number })[] = (order.manualDocuments || []).map((f, i) => {
         const url = f.documentPages?.[0] || '';
         return {

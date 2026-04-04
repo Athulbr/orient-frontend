@@ -10,9 +10,11 @@ import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
 import { Search, X } from 'lucide-react';
 
-interface OrientDocsnapUserInterfaceIF {}
+interface OrientDocsnapUserInterfaceIF {
+    agentSettings: any;
+}
 
-const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
+const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
     const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
@@ -288,8 +290,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
 
             const formData = new FormData();
             formData.append('orderNumber', orderNumber.toString());
-            // formData.append('templateId', '68a8b19919dd45d21642d18d'); // PO_Private
-            formData.append('templateId', '69ca3b19a8a70950eaccf141'); // Orient_v1
+            formData.append('templateId', agentSettings?.defaultTemplateId || '');
 
             // Extraction workflow now uses pre-uploaded manualDocuments + webDocuments + emailDocuments
             // We just need to trigger the extraction if there are any documents
@@ -301,7 +302,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             }
 
             try {
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-v1`, {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${agentSettings?.webhookUrl}`, {
                     method: 'POST',
                     body: formData
                 });
