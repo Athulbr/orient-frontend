@@ -78,7 +78,10 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             webDocuments: [],
             manualDocuments: [],
             emailDocuments: [],
-            extractionDetails: {}
+            extractionDetails: {
+                recordId: '',
+                extractedData: {}
+            }
         };
 
         onCreate(newOrder);

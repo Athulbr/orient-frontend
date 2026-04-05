@@ -69,5 +69,8 @@ export interface Order {
     manualDocuments?: DocumentDetail[];
     emailDocuments?: DocumentDetail[];
     linkedEmailIds?: string[];
-    extractionDetails: Record<string, unknown>;
+    extractionDetails: {
+        recordId?: string;
+        extractedData?: Record<string, unknown>;
+    };
 }

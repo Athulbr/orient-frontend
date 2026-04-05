@@ -30,6 +30,7 @@ import { Order, Email, FileItem } from './types';
 import Spinner from '../../../../../components/Spinner';
 import { useNavigate } from 'react-router-dom';
 import { config } from '../../../../../config/default';
+import { DocsnapComparisonUI } from './docsnap-comparison-page';
 
 interface OrderCardProps {
     order: Order;
@@ -358,6 +359,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showRecordDialog, setShowRecordDialog] = useState(false);
     const navigate = useNavigate();
 
     const orderFiles: FileItem[] = (order.webDocuments || []).map(doc => {
@@ -372,7 +374,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
                 url,
                 type: getFileType(url),
                 source: 'email' as const,
-                pages: att.documentPages || att.pages || [],
+                pages: att.documentPages || att.pages || []
             };
         })
     );
@@ -389,7 +391,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
     });
 
     const handleViewExtractedData = () => {
-        navigate(`/docsnap/record/view/${order.extractionDetails?.recordId || ''}`, { state: { orient: true } });
+        setShowRecordDialog(true);
     };
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
@@ -752,6 +754,10 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
                     </div>
                 </DialogComponent>
             )}
+
+            <DialogComponent isOpen={showRecordDialog} closeDialog={() => setShowRecordDialog(false)} fullScreen>
+                <DocsnapComparisonUI recordId={`${order.extractionDetails?.recordId}`} />
+            </DialogComponent>
         </div>
     );
 };
