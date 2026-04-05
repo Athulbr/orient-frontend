@@ -28,9 +28,9 @@ import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
 import { Order, Email, FileItem } from './types';
 import Spinner from '../../../../../components/Spinner';
-import { useNavigate } from 'react-router-dom';
 import { config } from '../../../../../config/default';
 import { DocsnapComparisonUI } from './docsnap-comparison-page';
+import { convertToIst } from '../../../../../global-utils/convert-date-format';
 
 interface OrderCardProps {
     order: Order;
@@ -44,6 +44,8 @@ interface OrderCardProps {
     onDelete?: (orderNumber: number) => void;
     isProceeding: boolean;
     isUploading?: boolean;
+    onDocsnapOpen?: () => void;
+    onDocsnapClose?: () => void;
 }
 
 const FILE_COLORS = {
@@ -355,12 +357,34 @@ const ColCount: React.FC<{ colorClass: string; bgClass: string; borderClass: str
     <span className={`text-xs font-extrabold ${colorClass} ${bgClass} border ${borderClass} px-[7px] py-[1px] rounded-full leading-[1.8]`}>{n}</span>
 );
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail, onUnlinkEmail, onUploadFiles, onRemoveUploadedFile, onProceed, onEdit, onDelete, isProceeding, isUploading }) => {
+const OrderCard: React.FC<OrderCardProps> = ({
+    order,
+    linkedEmails,
+    onLinkEmail,
+    onUnlinkEmail,
+    onUploadFiles,
+    onRemoveUploadedFile,
+    onProceed,
+    onEdit,
+    onDelete,
+    isProceeding,
+    isUploading,
+    onDocsnapOpen,
+    onDocsnapClose
+}) => {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showRecordDialog, setShowRecordDialog] = useState(false);
-    const navigate = useNavigate();
+
+    const openRecordDialog = () => {
+        setShowRecordDialog(true);
+        onDocsnapOpen?.();
+    };
+    const closeRecordDialog = () => {
+        setShowRecordDialog(false);
+        onDocsnapClose?.();
+    };
 
     const orderFiles: FileItem[] = (order.webDocuments || []).map(doc => {
         const url = doc.documentPages?.[0] || '';
@@ -390,9 +414,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
         };
     });
 
-    const handleViewExtractedData = () => {
-        setShowRecordDialog(true);
-    };
+    const handleViewExtractedData = () => openRecordDialog();
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
     const hasDocuments = totalDocs > 0;
@@ -411,10 +433,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
                             {order.orderDetails.orderStatus}
                         </span>
                         <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.orderType.toUpperCase()}</span>
+                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.productType.toUpperCase()}</span>
                     </div>
 
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
-                        <Building2 size={13} className="text-gray-300" />
+                        <Clock size={13} className="text-gray-400" />
+                        {order.createdAt ? convertToIst(order.createdAt) : 'N/A'}
+                        <span className="mx-1.5">•</span>
+                        <Building2 size={13} className="text-gray-400" />
                         {order.orderDetails.location || order.orderDetails.branch}
                         <span className="mx-1.5">•</span>
                         <span className="text-gray-500 font-semibold">{order.orderDetails.documentSubmitStatus} Submission</span>
@@ -755,8 +781,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, linkedEmails, onLinkEmail,
                 </DialogComponent>
             )}
 
-            <DialogComponent isOpen={showRecordDialog} closeDialog={() => setShowRecordDialog(false)} fullScreen>
-                <DocsnapComparisonUI recordId={`${order.extractionDetails?.recordId}`} />
+            <DialogComponent isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
+                <DocsnapComparisonUI recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
             </DialogComponent>
         </div>
     );

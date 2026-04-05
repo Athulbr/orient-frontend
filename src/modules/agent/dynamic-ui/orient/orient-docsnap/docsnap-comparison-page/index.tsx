@@ -1,8 +1,26 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal } from 'lucide-react';
-import hc7536 from '../../../../../../assets/hc7536.jpg';
-import { sampleExtractedData } from './extractedData';
+import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft } from 'lucide-react';
+import { config } from '../../../../../../config/default';
+
 import styles from './scrollbar.module.css';
+import { sampleRecord } from './sampleRecord';
+
+const getPreviewUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+        return url;
+    }
+    let normalizedPath = url.replace(/\\/g, '/');
+    const tempIdx = normalizedPath.indexOf('/temp/');
+    if (tempIdx !== -1) {
+        normalizedPath = normalizedPath.substring(tempIdx + '/temp/'.length);
+    }
+    const encodedPath = normalizedPath
+        .split('/')
+        .map(seg => encodeURIComponent(seg))
+        .join('/');
+    return `${config.workflowService}/api/temp-storage/preview/${encodedPath}?apiKey=secret1`;
+};
 
 interface BBox {
     x_min: number;
@@ -11,35 +29,58 @@ interface BBox {
     y_max: number;
 }
 
-interface FieldValue {
+type FieldValue = {
     value: string | number;
     bbox: BBox | null;
     page: number | null;
     confidence: number | null;
     index: number | null;
     wordIndexes: number[];
-}
+};
 
 type FieldGroup = Record<string, FieldValue>;
 type ExtractedData = Record<string, FieldGroup | any[]>;
 
 interface DocsnapComparisonUIProps {
     recordId: string;
+    onClose?: () => void;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-// @ts-ignore
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [leftWidth, setLeftWidth] = useState(70);
     const [isResizing, setIsResizing] = useState(false);
-    const [extractedData, setExtractedData] = useState<ExtractedData>(sampleExtractedData || {});
+    const [record, setRecord] = useState<any>({});
+    const [extractedData, setExtractedData] = useState<ExtractedData>({});
 
-    console.log('recordId:===========', recordId);
+    useEffect(() => {
+        const handlePopState = () => {
+            if (onClose) onClose();
+        };
+        window.history.pushState({ modal: 'docsnap' }, '');
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [onClose]);
+
+    const handleClose = () => {
+        if (window.history.state?.modal === 'docsnap') {
+            window.history.back();
+        } else {
+            if (onClose) onClose();
+        }
+    };
+
+    useEffect(() => {
+        setRecord(sampleRecord);
+        setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
+    }, [recordId]);
 
     const lineRef = useRef<SVGSVGElement>(null);
     const zoomLabelRef = useRef<HTMLDivElement>(null);
@@ -151,7 +192,46 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         }
     }, [updateConnectionLine]);
 
-    const imageUrls = [hc7536, hc7536, hc7536];
+    const apiUrls = useMemo<string[]>(() => {
+        return (record?.files?.localImagePaths || []).map((path: string) => getPreviewUrl(path));
+    }, [record]);
+
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+
+    useEffect(() => {
+        let isMounted = true;
+        if (!apiUrls.length) return;
+
+        const loadBlobs = async () => {
+            const urls: string[] = new Array(apiUrls.length).fill('');
+            for (let i = 0; i < apiUrls.length; i++) {
+                try {
+                    const res = await fetch(apiUrls[i]);
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        if (isMounted) {
+                            urls[i] = URL.createObjectURL(blob);
+                            setImageUrls([...urls]);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error fetching docsnap image:', e);
+                }
+            }
+        };
+
+        loadBlobs();
+
+        return () => {
+            isMounted = false;
+            setImageUrls(urls => {
+                urls.forEach(url => {
+                    if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+                });
+                return [];
+            });
+        };
+    }, [apiUrls]);
 
     const scrollToBbox = useCallback((id: string) => {
         const bboxEl = document.getElementById(`bbox-${id}`);
@@ -412,7 +492,12 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             <div ref={leftPaneRef} className="flex h-full flex-shrink-0 flex-col border-r border-zinc-200 bg-zinc-100" style={{ width: `${leftWidth}%` }}>
                 {/* Toolbar */}
                 <div className="z-10 flex h-12 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-4 shadow-sm">
-                    <span className="max-w-[200px] truncate text-sm font-medium text-zinc-600">Document Viewer</span>
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleClose} className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900" title="Back">
+                            <ArrowLeft size={18} />
+                        </button>
+                        <span className="max-w-[200px] truncate text-sm font-medium text-zinc-600">Document Viewer</span>
+                    </div>
                     <div className="flex items-center space-x-1 rounded-md border border-zinc-200 bg-zinc-100 p-1">
                         <button onClick={handleZoomOut} className="rounded p-1.5 text-zinc-600 transition-all hover:bg-white hover:shadow-sm" title="Zoom Out">
                             <ZoomOut size={16} />
@@ -579,6 +664,13 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
 
                 {/* Fixed Save Bar */}
                 <div className="flex shrink-0 items-center justify-end gap-2 border-t border-zinc-200 px-4 py-3">
+                    <button
+                        onClick={handleClose}
+                        className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:shadow-md"
+                    >
+                        Close
+                    </button>
+
                     <button className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md">
                         Save
                     </button>

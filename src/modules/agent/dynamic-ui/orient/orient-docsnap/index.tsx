@@ -34,6 +34,26 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
 
+    // Track whether the fullscreen docsnap dialog is open (owned by any OrderCard)
+    const [docsnapOpen, setDocsnapOpen] = useState(false);
+
+    // Push sentinel on mount so we always have a state to intercept.
+    // On popstate, if the docsnap dialog is NOT open, re-push to keep the user on this page.
+    React.useEffect(() => {
+        window.history.pushState({ page: 'orient-docsnap' }, '');
+
+        const handlePopState = () => {
+            if (!docsnapOpen) {
+                // Re-push so back-button doesn't leave the page
+                window.history.pushState({ page: 'orient-docsnap' }, '');
+            }
+            // If docsnapOpen, DocsnapComparisonUI's own popstate handler fires first and closes the dialog
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [docsnapOpen]);
+
     React.useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
         return () => clearTimeout(timer);
@@ -466,6 +486,8 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                         onDelete={handleDeleteOrder}
                         isProceeding={proceedingOrderNumber === order.orderDetails.orderNumber}
                         isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
+                        onDocsnapOpen={() => setDocsnapOpen(true)}
+                        onDocsnapClose={() => setDocsnapOpen(false)}
                     />
                 ))}
                 {orders.length === 0 && (

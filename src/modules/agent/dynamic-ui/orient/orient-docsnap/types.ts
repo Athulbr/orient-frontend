@@ -73,4 +73,5 @@ export interface Order {
         recordId?: string;
         extractedData?: Record<string, unknown>;
     };
+    createdAt?: string;
 }
