@@ -78,8 +78,34 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     };
 
     useEffect(() => {
-        setRecord(sampleRecord);
-        setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
+        let isMounted = true;
+        const fetchRecord = async () => {
+            try {
+                if (!recordId) return;
+                const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (isMounted && data.success && data.record) {
+                        setRecord(data.record);
+                        setExtractedData(data.record.finalOutput as unknown as ExtractedData);
+                        return;
+                    }
+                }
+                throw new Error('Failed to fetch from API');
+            } catch (err) {
+                console.error('Error fetching record:', err);
+                if (isMounted) {
+                    // Fallback to sampleRecord for development if database fails
+                    setRecord(sampleRecord);
+                    setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
+                }
+            }
+        };
+
+        fetchRecord();
+        return () => {
+            isMounted = false;
+        };
     }, [recordId]);
 
     const lineRef = useRef<SVGSVGElement>(null);
@@ -543,8 +569,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                             <div
                                                 key={b.id}
                                                 id={`bbox-${b.id}`}
-                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-400 hover:bg-blue-400/10 ${
-                                                    activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-500 bg-yellow-500/4'
+                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${
+                                                    activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
                                                 }`}
                                                 style={{
                                                     left: `${(b.bbox.x_min - 0.004) * 100}%`,
