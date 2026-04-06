@@ -353,7 +353,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                     },
                     body: JSON.stringify({
                         orderNumber: orderNumber,
-                        templateId: agentSettings?.defaultTemplateId || '',
+                        templateId: agentSettings?.defaultTemplateId || '69d3935d6f204a5de0c1a640',
                         documents: payloadDocuments
                     })
                 });
