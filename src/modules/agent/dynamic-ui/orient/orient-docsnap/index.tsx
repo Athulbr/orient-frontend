@@ -495,7 +495,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                 )}
             </div>
 
-            <div className="p-4 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
+            <div className="p-4 py-3 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
                 <span className="text-sm text-gray-500">
                     Showing {totalCount === 0 ? 0 : (currentPage - 1) * Number(perPage) + 1} to {Math.min(currentPage * Number(perPage), totalCount)} of {totalCount} orders
                 </span>
@@ -510,13 +510,14 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                             { label: '50', value: '50' },
                             { label: '100', value: '100' }
                         ]}
+                        size="sm"
                     />
                     <span className="text-sm font-medium text-gray-700">
                         Page {currentPage} of {totalPages}
                     </span>
                     <div className="flex items-center gap-2">
                         <Button small outlined disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
-                            Previous
+                            Prev
                         </Button>
                         <Button small outlined disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
                             Next
