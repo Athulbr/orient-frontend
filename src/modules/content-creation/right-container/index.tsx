@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Button } from '../../../components/Button';
-import { Pencil, SkipForward } from 'lucide-react';
+import { Pencil, SkipForward, Plus, Check, X, Sparkles } from 'lucide-react';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import EditableField from '../components/EditableField';
 import SummaryImageField from '../components/SummaryImageField';
 import KeywordsSection from '../components/KeywordsSection';
 import EditPromptDialog from '../components/EditPromptDialog';
+import GenerateTitlesDialog from '../components/GenerateTitlesDialog';
 import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
 import Spinner from '../../../components/Spinner';
@@ -21,8 +22,59 @@ export default function RightContainer() {
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isGenerateTitlesOpen, setIsGenerateTitlesOpen] = useState(false);
+    const [originalCustomTitle, setOriginalCustomTitle] = useState('');
     const toast = useToastStore();
     const { id } = useParams();
+
+    const handleGenerateMoreTitles = async (data: any) => {
+        setIsGenerateTitlesOpen(false);
+        try {
+            toast.info(`Generating ${data.count} titles in a ${data.tone} tone...`);
+            setState(prev => ({ ...prev, loadingData: true }));
+            
+            const payload = {
+                content: {
+                    name: state.extractedData?.title || state.record?.name || 'Original Product Title',
+                    description: state.record?.extractedData?.description || state.extractedData?.blogSummary || state.content || ''
+                },
+                count: data.count,
+                tone: data.tone,
+                instructions: data.instructions,
+                previousTitles: state.extractedData?.rowData?.titleList || []
+            };
+
+            const res: any = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/generate-titles`, payload);
+            
+            if (res?.data) {
+                const newTitles = Array.isArray(res.data) ? res.data : (res.data.titles || res.data.data || []);
+                if (newTitles && Array.isArray(newTitles) && newTitles.length > 0) {
+                   setState(prev => {
+                       const extractedData = { ...(prev.extractedData || {}) } as any;
+                       const rowData = { ...(extractedData.rowData || {}) };
+                       const titleList = [...(rowData.titleList || [])];
+                       
+                       newTitles.forEach((t: string) => {
+                           if (!titleList.includes(t)) titleList.push(t);
+                       });
+                       
+                       rowData.titleList = titleList;
+                       extractedData.rowData = rowData;
+                       return { ...prev, extractedData };
+                   });
+                   toast.success('Successfully generated new titles!');
+                } else {
+                   toast.info('No new titles were generated.');
+                }
+            }
+        } catch (e: any) {
+             console.error('Error generating titles:', e);
+             toast.error(e?.response?.data?.message || e?.message || 'Failed to generate titles');
+        } finally {
+             setState(prev => ({ ...prev, loadingData: false }));
+        }
+    };
+
     const navigate = useNavigate();
 
     const handleFieldSave = (field: string, value: string) => {
@@ -207,12 +259,69 @@ ${state.content}
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Title</label>
                     <textarea
-                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                        className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none mb-4"
                         value={state.extractedData?.title || ''}
                         onChange={e => handleFieldSave('title', e.target.value)}
                         placeholder="Enter title"
                         rows={3}
                     />
+
+                    <div className="flex flex-col mb-2 border-t pt-4">
+                        <label className="text-[17px] font-bold text-gray-800">Choose a generated title</label>
+                        <p className="text-[13px] text-gray-500">{state.extractedData?.rowData?.titleList?.length || 0} AI-generated titles. Select one or generate more.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+                        <div className="flex flex-col gap-2 max-h-96 overflow-y-auto pr-2">
+                            {state.extractedData?.rowData?.titleList?.map((t: string, idx: number) => {
+                            const isSelected = state.extractedData?.title === t;
+                            return (
+                                <div 
+                                    key={idx} 
+                                    className={`flex items-start gap-4 p-3.5 border rounded-md cursor-pointer transition-all bg-white ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 hover:border-blue-300'}`}
+                                    onClick={() => {
+                                        if (isSelected) {
+                                            handleFieldSave('title', originalCustomTitle);
+                                        } else {
+                                            if (!state.extractedData?.rowData?.titleList?.includes(state.extractedData?.title)) {
+                                                setOriginalCustomTitle(state.extractedData?.title || '');
+                                            }
+                                            handleFieldSave('title', t);
+                                        }
+                                    }}
+                                >
+                                    <div className="pt-0.5 pointer-events-none">
+                                        <input 
+                                            type="radio" 
+                                            name="titleSelection" 
+                                            checked={isSelected}
+                                            readOnly
+                                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col flex-1 pointer-events-none">
+                                        <span className={`text-[15px] leading-snug ${isSelected ? 'text-blue-700 font-semibold' : 'text-gray-800 font-medium'}`}>
+                                            {t}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {(!state.extractedData?.rowData?.titleList || state.extractedData.rowData.titleList.length === 0) && (
+                            <p className="text-sm text-gray-500 italic py-2">No AI-generated titles available.</p>
+                        )}
+                        </div>
+
+                        <div className="mt-2 flex flex-col gap-2 pt-2">
+                            <button
+                                onClick={() => setIsGenerateTitlesOpen(true)}
+                                className="flex items-center gap-2 w-fit px-3 py-2 text-sm font-semibold text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors cursor-pointer"
+                            >
+                                <Sparkles size={16} className="text-blue-500" /> Generate more titles
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 {/* <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Author</label>
@@ -266,6 +375,7 @@ ${state.content}
             </div>
 
             <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={state.record || null} />
+            <GenerateTitlesDialog isOpen={isGenerateTitlesOpen} onClose={() => setIsGenerateTitlesOpen(false)} onGenerate={handleGenerateMoreTitles} />
         </div>
     );
 }
