@@ -4,6 +4,8 @@ import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
 import { sampleRecord } from './sampleRecord';
+import SubmitToMaraekat from './SubmitToMaraekat';
+import { Order } from '../types';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -44,11 +46,12 @@ type ExtractedData = Record<string, FieldGroup | any[]>;
 interface DocsnapComparisonUIProps {
     recordId: string;
     onClose?: () => void;
+    order: Order;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -57,6 +60,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [isResizing, setIsResizing] = useState(false);
     const [record, setRecord] = useState<any>({});
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         const handlePopState = () => {
@@ -74,6 +78,31 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             window.history.back();
         } else {
             if (onClose) onClose();
+        }
+    };
+
+    const handleSave = async () => {
+        if (!recordId) return;
+        setIsSaving(true);
+        try {
+            const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ finalOutput: extractedData })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    setRecord(data.record);
+                }
+            }
+        } catch (error) {
+            console.error('Error saving record:', error);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -561,7 +590,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     >
                         {imageUrls.map((url, index) => (
                             <div key={index} className="relative w-full bg-white px-8 shadow-lg ring-1 ring-black/5">
-                                <img src={url} alt={`Document Page ${index + 1}`} className="pointer-events-none block w-full object-contain select-none" draggable={false} />
+                                {url ? <img src={url} alt={`Document Page ${index + 1}`} className="pointer-events-none block w-full object-contain select-none" draggable={false} /> : null}
                                 <div className="absolute inset-y-0 right-8 left-8">
                                     {allBboxes
                                         .filter(b => b.page === index + 1)
@@ -697,13 +726,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         Close
                     </button>
 
-                    <button className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md">
-                        Save
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isSaving ? 'Saving...' : 'Save'}
                     </button>
 
-                    <button className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md">
-                        Submit
-                    </button>
+                    <SubmitToMaraekat order={order} extractedData={extractedData} />
                 </div>
             </div>
 

@@ -788,7 +788,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
             )}
 
             <DialogComponent isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
-                <DocsnapComparisonUI recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
+                <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
             </DialogComponent>
         </div>
     );
