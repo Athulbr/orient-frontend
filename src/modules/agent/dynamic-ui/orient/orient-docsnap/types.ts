@@ -21,7 +21,7 @@ export interface OrderDetails {
     orderId: number;
     orderNumber: number;
     orderType: 'buy' | 'sell';
-    productType: 'currency' | 'card' | 'tt';
+    productType: ('currency' | 'card' | 'tt')[];
     location?: string;
     locationId?: number;
     branch: string;
