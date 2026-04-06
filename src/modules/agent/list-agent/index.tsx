@@ -20,6 +20,7 @@ const ListAgentsPage = () => {
 
     const [agents, setAgents] = useState<Agent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
 
     const fetchAgents = useCallback(async () => {
         setIsLoading(true);
@@ -36,6 +37,7 @@ const ListAgentsPage = () => {
                 setAgents([]);
             }
         } catch (err) {
+            setError('Failed to load agents');
             console.error('Failed to load agents', err);
         } finally {
             setIsLoading(false);
@@ -44,7 +46,7 @@ const ListAgentsPage = () => {
 
     useEffect(() => {
         fetchAgents();
-    }, [fetchAgents]);
+    }, []);
 
     return (
         <div className="min-h-screen bg-slate-50 text-zinc-900 min-w-screen">
@@ -102,6 +104,13 @@ const ListAgentsPage = () => {
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <Spinner />
+                    </div>
+                ) : error ? (
+                    <div className="rounded-2xl border border-red-200 bg-white p-12 text-center shadow-sm">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-zinc-400">
+                            <Workflow size={32} />
+                        </div>
+                        <h3 className="mb-2 text-lg font-medium text-red-700">{error}</h3>
                     </div>
                 ) : agents.length === 0 ? (
                     <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center shadow-sm">

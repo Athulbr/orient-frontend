@@ -3,6 +3,7 @@ export interface FileItem {
     url: string;
     type: 'pdf' | 'image' | 'doc' | 'other';
     source: 'order' | 'email' | 'upload';
+    pages?: string[];
 }
 
 export interface Email {
@@ -56,14 +57,21 @@ export interface CurrencyDetail {
 
 export interface DocumentDetail {
     documentName: string;
-    documentUrl: string;
+    // documentUrl: string;  // -- old
+    documentPages: string[]; // -- new
 }
 
 export interface Order {
     orderDetails: OrderDetails;
     userDetails: UserDetails;
     currencyDetails: CurrencyDetail[];
-    documentDetails: DocumentDetail[];
+    webDocuments: DocumentDetail[];
+    manualDocuments?: DocumentDetail[];
+    emailDocuments?: DocumentDetail[];
     linkedEmailIds?: string[];
-    extractionDetails: Record<string, unknown>;
+    extractionDetails: {
+        recordId?: string;
+        extractedData?: Record<string, unknown>;
+    };
+    createdAt?: string;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import OrderCard from './OrderCard';
-import { Order, Email } from './types';
+import { Order, Email, DocumentDetail } from './types';
 
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -10,12 +10,14 @@ import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
 import { Search, X } from 'lucide-react';
 
-interface OrientDocsnapUserInterfaceIF {}
+interface OrientDocsnapUserInterfaceIF {
+    agentSettings: any;
+}
 
-const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
+const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
-    const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<number, File[]>>({});
+    const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
     const [proceedingOrderNumber, setProceedingOrderNumber] = useState<number | null>(null);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -31,6 +33,26 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
 
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+
+    // Track whether the fullscreen docsnap dialog is open (owned by any OrderCard)
+    const [docsnapOpen, setDocsnapOpen] = useState(false);
+
+    // Push sentinel on mount so we always have a state to intercept.
+    // On popstate, if the docsnap dialog is NOT open, re-push to keep the user on this page.
+    React.useEffect(() => {
+        window.history.pushState({ page: 'orient-docsnap' }, '');
+
+        const handlePopState = () => {
+            if (!docsnapOpen) {
+                // Re-push so back-button doesn't leave the page
+                window.history.pushState({ page: 'orient-docsnap' }, '');
+            }
+            // If docsnapOpen, DocsnapComparisonUI's own popstate handler fires first and closes the dialog
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [docsnapOpen]);
 
     React.useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
@@ -166,50 +188,174 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         [orders]
     );
 
-    const handleUploadFiles = useCallback((orderNumber: number, files: File[]) => {
-        setUploadedFilesMap(prev => ({
-            ...prev,
-            [orderNumber]: [...(prev[orderNumber] || []), ...files]
-        }));
-    }, []);
+    const handleUploadFiles = useCallback(
+        async (orderNumber: number, files: File[]) => {
+            if (files.length === 0) return;
 
-    const handleRemoveUploadedFile = useCallback((orderNumber: number, fileIndex: number) => {
-        setUploadedFilesMap(prev => ({
-            ...prev,
-            [orderNumber]: (prev[orderNumber] || []).filter((_, i) => i !== fileIndex)
-        }));
-    }, []);
+            setUploadingOrders(prev => ({ ...prev, [orderNumber]: true }));
+
+            const formData = new FormData();
+            formData.append('orderNumber', orderNumber.toString());
+            files.forEach(file => {
+                formData.append('file', file);
+            });
+
+            try {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-file-upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    console.error('Upload API response error:', response.status);
+                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    return;
+                }
+
+                const responseData = await response.json();
+                const executionId = responseData?.data?.executionId;
+
+                if (!executionId) {
+                    console.error('No executionId found in response');
+                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    return;
+                }
+
+                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=secret1`;
+                const eventSource = new EventSource(streamUrl);
+
+                eventSource.onmessage = async event => {
+                    try {
+                        const jsonString = event.data;
+                        if (!jsonString || jsonString.trim() === '' || jsonString === '{}') return;
+
+                        const parsed = JSON.parse(jsonString);
+                        if (parsed.status) {
+                            if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
+                                eventSource.close();
+                                setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+
+                                if (parsed.status === 'completed') {
+                                    const finalData = parsed.finalData[0] || {};
+                                    let newDocs: DocumentDetail[] = [];
+
+                                    finalData.manualDocuments.forEach((doc: string[]) => {
+                                        if (doc && doc.length > 0) {
+                                            newDocs.push({
+                                                documentName: doc[0].split('/').pop() || new Date().toISOString(),
+                                                documentPages: doc
+                                            });
+                                        }
+                                    });
+
+                                    if (newDocs.length > 0) {
+                                        const currentOrder = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+                                        const updatedManualDocuments = [...(currentOrder?.manualDocuments || []), ...newDocs];
+
+                                        setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
+
+                                        await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ manualDocuments: updatedManualDocuments })
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                };
+
+                eventSource.onerror = err => {
+                    console.error('SSE EventSource error:', err);
+                    eventSource.close();
+                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                };
+            } catch (err) {
+                console.error('Upload API error:', err);
+                setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+            }
+        },
+        [orders]
+    );
+
+    const handleRemoveUploadedFile = useCallback(
+        async (orderNumber: number, fileIndex: number) => {
+            const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+            if (!order || !order.manualDocuments) return;
+
+            const updatedManualDocuments = order.manualDocuments.filter((_, i) => i !== fileIndex);
+
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
+
+            try {
+                await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ manualDocuments: updatedManualDocuments })
+                });
+            } catch (err) {
+                console.error('Failed to remove manual document', err);
+            }
+        },
+        [orders]
+    );
 
     const handleProceed = useCallback(
         async (orderNumber: number) => {
-            console.log('test:===========', orderNumber);
             const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
             if (!order) return;
 
             setProceedingOrderNumber(orderNumber);
 
-            const formData = new FormData();
-            formData.append('orderNumber', orderNumber.toString());
-            // formData.append('templateId', '68a8b19919dd45d21642d18d'); // PO_Private
-            // formData.append('templateId', '69ca3b19a8a70950eaccf141'); // dev
-            formData.append('templateId', '69ce515a6f204a5de0c19f62'); // Orient
+            const linkedEmails = getLinkedEmails(order);
+            const actualEmailDocuments = linkedEmails.flatMap(email =>
+                (email.attachments || []).map((att: any) => ({
+                    documentName: att.documentName || att.name || '',
+                    documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
+                }))
+            );
 
-            // Add uploaded files
-            const uploaded = uploadedFilesMap[orderNumber] || [];
-            if (uploaded.length === 0) {
-                alert('Please upload files');
+            // Extraction workflow now uses pre-uploaded manualDocuments + webDocuments + emailDocuments
+            // We just need to trigger the extraction if there are any documents
+            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + actualEmailDocuments.length > 0;
+            if (!hasDocuments) {
+                alert('Please upload files before extracting');
                 setProceedingOrderNumber(null);
-
                 return;
             }
-            uploaded.forEach(file => {
-                formData.append('file', file);
+
+            const allDocDetails = [...actualEmailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
+
+            const payloadDocuments = allDocDetails.flatMap(doc => {
+                const pages = doc.documentPages || [];
+                if (pages.length === 0) return [];
+
+                // Remove file extension for cleaner names
+                const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'document';
+
+                if (pages.length === 1) {
+                    return [{ documentName: baseName, documentUrl: pages[0] }];
+                } else {
+                    return pages.map((pageUrl: string, index: number) => ({
+                        documentName: `${baseName}_page_${index + 1}`,
+                        documentUrl: pageUrl
+                    }));
+                }
             });
 
             try {
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-v1`, {
+                // const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${agentSettings?.webhookUrl}`, {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/docsnap-v2`, {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderNumber: orderNumber,
+                        templateId: agentSettings?.defaultTemplateId || '',
+                        documents: payloadDocuments
+                    })
                 });
 
                 if (!response.ok) {
@@ -282,7 +428,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                 setProceedingOrderNumber(null);
             }
         },
-        [orders, getLinkedEmails, uploadedFilesMap]
+        [orders, getLinkedEmails]
     );
 
     return (
@@ -331,7 +477,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         key={order.orderDetails.orderNumber}
                         order={order}
                         linkedEmails={getLinkedEmails(order)}
-                        uploadedFiles={uploadedFilesMap[order.orderDetails.orderNumber] || []}
                         onLinkEmail={handleLinkEmail}
                         onUnlinkEmail={handleUnlinkEmail}
                         onUploadFiles={handleUploadFiles}
@@ -340,6 +485,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         onEdit={order => setEditingOrder(order)}
                         onDelete={handleDeleteOrder}
                         isProceeding={proceedingOrderNumber === order.orderDetails.orderNumber}
+                        isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
+                        onDocsnapOpen={() => setDocsnapOpen(true)}
+                        onDocsnapClose={() => setDocsnapOpen(false)}
                     />
                 ))}
                 {orders.length === 0 && (
@@ -347,7 +495,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                 )}
             </div>
 
-            <div className="p-4 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
+            <div className="p-4 py-3 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
                 <span className="text-sm text-gray-500">
                     Showing {totalCount === 0 ? 0 : (currentPage - 1) * Number(perPage) + 1} to {Math.min(currentPage * Number(perPage), totalCount)} of {totalCount} orders
                 </span>
@@ -362,13 +510,14 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                             { label: '50', value: '50' },
                             { label: '100', value: '100' }
                         ]}
+                        size="sm"
                     />
                     <span className="text-sm font-medium text-gray-700">
                         Page {currentPage} of {totalPages}
                     </span>
                     <div className="flex items-center gap-2">
                         <Button small outlined disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
-                            Previous
+                            Prev
                         </Button>
                         <Button small outlined disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
                             Next

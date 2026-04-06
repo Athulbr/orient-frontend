@@ -75,8 +75,13 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 phone: userPhone
             },
             currencyDetails: [],
-            documentDetails: [],
-            extractionDetails: {}
+            webDocuments: [],
+            manualDocuments: [],
+            emailDocuments: [],
+            extractionDetails: {
+                recordId: '',
+                extractedData: {}
+            }
         };
 
         onCreate(newOrder);

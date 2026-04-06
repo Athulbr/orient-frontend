@@ -66,6 +66,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             const formData = new FormData();
             formData.append('template_id', state.record?.templateId?._id);
             formData.append('s3_file_name', state.record?.pdfFileName);
+            formData.append('reExtractor', 'true');
             const apiEndPoint = `${config.extractionServicePython}/api/v5/document/analyze_document`;
 
             const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
@@ -144,7 +145,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     };
 
     const handleReExtract = async () => {
-        setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1 }));
+        setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1, reExtracting: true }));
         
         if (state.record?.templateId?.settings?.extractionEngine !== 'python') {
             await handleNodeReExtraction();
