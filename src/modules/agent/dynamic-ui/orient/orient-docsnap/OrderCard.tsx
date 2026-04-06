@@ -582,16 +582,19 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </div>
                     <div className="flex gap-[7px]">
                         {[
-                            { n: orderFiles.length, l: 'ONLINE', dark: false },
-                            { n: emailFiles.length, l: 'EMAIL', dark: false },
-                            { n: uploadedFileItems.length, l: 'MANUAL', dark: false },
-                            { n: totalDocs, l: 'TOTAL', dark: true }
-                        ].map(({ n, l, dark }) => (
-                            <div key={l} className={`rounded-[10px] py-[9px] px-[13px] text-center min-w-[58px] border ${dark ? 'bg-[#012D56] border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
-                                <div className={`text-2xl font-extrabold leading-none ${dark ? 'text-white' : 'text-gray-900'}`}>{n}</div>
-                                <div className={`text-[11px] font-bold tracking-[0.07em] mt-0.5 ${dark ? 'text-white/45' : 'text-gray-400'}`}>{l}</div>
-                            </div>
-                        ))}
+                            { n: orderFiles.length, l: 'ONLINE', dark: false, show: order.orderDetails.documentSubmitStatus === 'Online' },
+                            { n: emailFiles.length, l: 'EMAIL', dark: false, show: true },
+                            { n: uploadedFileItems.length, l: 'MANUAL', dark: false, show: true },
+                            { n: totalDocs, l: 'TOTAL', dark: true, show: true }
+                        ].map(({ n, l, dark, show }) => {
+                            if (!show) return null;
+                            return (
+                                <div key={l} className={`rounded-[10px] py-[9px] px-[13px] text-center min-w-[58px] border ${dark ? 'bg-[#012D56] border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
+                                    <div className={`text-2xl font-extrabold leading-none ${dark ? 'text-white' : 'text-gray-900'}`}>{n}</div>
+                                    <div className={`text-[11px] font-bold tracking-[0.07em] mt-0.5 ${dark ? 'text-white/45' : 'text-gray-400'}`}>{l}</div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -758,14 +761,17 @@ const OrderCard: React.FC<OrderCardProps> = ({
             </div>
 
             {onDelete && (
-                <DialogComponent isOpen={showDeleteConfirm} closeDialog={() => setShowDeleteConfirm(false)} name="Confirm Delete" className="max-w-[400px]">
+                <DialogComponent isOpen={showDeleteConfirm} closeDialog={() => setShowDeleteConfirm(false)} name="Confirm Delete" className="max-w-[600px]">
                     <div className="p-6">
-                        <p className="text-gray-600 mb-6 text-[15px]">
-                            Are you sure you want to delete order <strong className="text-gray-900">{order.orderDetails.orderNumber}</strong>? This action cannot be undone.
-                        </p>
+                        <div className="text-gray-600 mb-6">
+                            <strong className="text-gray-900 text-md">Delete Order?</strong>
+                            <div className="text-sm pt-2">
+                                Order<strong className=" text-sm"> {order.orderDetails.orderNumber}</strong> will be permanently deleted. This action cannot be undone
+                            </div>
+                        </div>
                         <div className="flex justify-end gap-3">
                             <Button outlined onClick={() => setShowDeleteConfirm(false)}>
-                                Cancel
+                                Keep Order
                             </Button>
                             <Button
                                 onClick={() => {
