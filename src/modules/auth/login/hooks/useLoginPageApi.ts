@@ -162,7 +162,7 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                 window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
-                window?.location?.replace('/docsnap');
+                window?.location?.replace('/agent/list');
             } else {
                 setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.', oAuthLoading: false }));
             }
