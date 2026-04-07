@@ -7,8 +7,9 @@ interface DialogTooltipProps {
 
 export default function DialogTooltip({ content, children }: DialogTooltipProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [align, setAlign] = useState<'center' | 'left' | 'right'>('center');
     const [maxWidth, setMaxWidth] = useState<number>(220);
+    const [leftOffset, setLeftOffset] = useState<number | null>(null);
+    const [arrowOffset, setArrowOffset] = useState<number | null>(null);
     const wrapperRef = useRef<HTMLSpanElement | null>(null);
     const tooltipRef = useRef<HTMLSpanElement | null>(null);
 
@@ -18,35 +19,54 @@ export default function DialogTooltip({ content, children }: DialogTooltipProps)
         }
 
         const padding = 12;
-        const tooltipRect = tooltipRef.current.getBoundingClientRect();
         const boundaryElement = wrapperRef.current.closest('[role="dialog"]') as HTMLElement | null;
         const boundaryRect = boundaryElement?.getBoundingClientRect();
         const boundaryLeft = boundaryRect?.left ?? 0;
         const boundaryRight = boundaryRect?.right ?? window.innerWidth;
         const availableWidth = Math.max(160, boundaryRight - boundaryLeft - padding * 2);
+        const nextMaxWidth = Math.min(220, availableWidth);
 
-        setMaxWidth(Math.min(220, availableWidth));
-
-        if (tooltipRect.left < boundaryLeft + padding) {
-            setAlign('left');
-        } else if (tooltipRect.right > boundaryRight - padding) {
-            setAlign('right');
-        } else {
-            setAlign('center');
+        if (maxWidth !== nextMaxWidth) {
+            setMaxWidth(nextMaxWidth);
         }
-    }, [isOpen, content]);
+
+        const tooltipRect = tooltipRef.current.getBoundingClientRect();
+        const wrapperRect = wrapperRef.current.getBoundingClientRect();
+        const tooltipWidth = Math.min(tooltipRect.width, nextMaxWidth);
+        const desiredLeft = wrapperRect.left + wrapperRect.width / 2 - tooltipWidth / 2;
+        const clampedLeft = Math.min(
+            Math.max(desiredLeft, boundaryLeft + padding),
+            boundaryRight - padding - tooltipWidth
+        );
+        const nextLeftOffset = clampedLeft - wrapperRect.left;
+        const wrapperCenter = wrapperRect.left + wrapperRect.width / 2;
+        const desiredArrowLeft = wrapperCenter - clampedLeft;
+        const minArrow = 12;
+        const maxArrow = Math.max(minArrow, tooltipWidth - 12);
+        const nextArrowOffset = Math.min(Math.max(desiredArrowLeft, minArrow), maxArrow);
+
+        if (leftOffset !== nextLeftOffset) {
+            setLeftOffset(nextLeftOffset);
+        }
+
+        if (arrowOffset !== nextArrowOffset) {
+            setArrowOffset(nextArrowOffset);
+        }
+    }, [isOpen, content, maxWidth, leftOffset, arrowOffset]);
 
     return (
         <span
             ref={wrapperRef}
             className="relative inline-flex"
             onMouseEnter={() => {
-                setAlign('center');
+                setLeftOffset(null);
+                setArrowOffset(null);
                 setIsOpen(true);
             }}
             onMouseLeave={() => setIsOpen(false)}
             onFocus={() => {
-                setAlign('center');
+                setLeftOffset(null);
+                setArrowOffset(null);
                 setIsOpen(true);
             }}
             onBlur={() => setIsOpen(false)}
@@ -55,24 +75,20 @@ export default function DialogTooltip({ content, children }: DialogTooltipProps)
             {isOpen && (
                 <span
                     ref={tooltipRef}
-                    style={{ maxWidth: `${maxWidth}px` }}
-                    className={`absolute bottom-full z-10 mb-2 w-max max-w-[220px] rounded-md bg-gray-800 px-3 py-2 text-xs leading-relaxed text-white shadow-lg ${
-                        align === 'center'
-                            ? 'left-1/2 -translate-x-1/2'
-                            : align === 'left'
-                                ? 'left-0'
-                                : 'right-0'
-                    }`}
+                    style={{
+                        maxWidth: `${maxWidth}px`,
+                        left: leftOffset === null ? '50%' : `${leftOffset}px`,
+                        transform: leftOffset === null ? 'translateX(-50%)' : 'none',
+                    }}
+                    className="absolute bottom-full z-10 mb-2 w-max max-w-[220px] rounded-md bg-gray-800 px-3 py-2 text-xs leading-relaxed text-white shadow-lg"
                 >
                     {content}
                     <span
-                        className={`absolute top-full h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-800 ${
-                            align === 'center'
-                                ? 'left-1/2 -translate-x-1/2'
-                                : align === 'left'
-                                    ? 'left-4'
-                                    : 'right-4'
-                        }`}
+                        style={{
+                            left: arrowOffset === null ? '50%' : `${arrowOffset}px`,
+                            transform: 'translate(-50%, -50%) rotate(45deg)',
+                        }}
+                        className="absolute top-full h-2 w-2 bg-gray-800"
                     />
                 </span>
             )}
