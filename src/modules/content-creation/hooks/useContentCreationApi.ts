@@ -55,6 +55,18 @@ export const useContentCreationApi = () => {
         }
     };
 
+    const editSelectedContent = async (requestBody: {
+        selectedText: string;
+        userInstruction: string;
+    }): Promise<string | null> => {
+        try {
+            const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/edit-content`, requestBody);
+            return res.data?.content ?? null;
+        } catch {
+            return null;
+        }
+    };
+
     const updateRecordApi = async (requestBody: any) => {
         try {
             const res = await httpRequest('PATCH', `${config.nodeApiUrl}/idp/history/save/extraction/${id}`, requestBody);
@@ -66,5 +78,5 @@ export const useContentCreationApi = () => {
 
 
 
-    return { fetchRecord, regenerateBlog, updateContentCreationPrompt, updateRecordApi };
+    return { fetchRecord, regenerateBlog, updateContentCreationPrompt, updateRecordApi, editSelectedContent };
 };
