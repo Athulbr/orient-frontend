@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '../../../../../components/Button';
+import { SingleSelect } from '../../../../../components/SingleSelect';
 import { Order } from './types';
 
 interface CreateOrderDialogProps {
@@ -12,15 +13,47 @@ interface CreateOrderDialogProps {
 const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onClose, onCreate, onUpdate }) => {
     const isEdit = !!initialOrder;
     const [orderType, setOrderType] = useState(initialOrder?.orderDetails.orderType || 'sell');
-    const [productType, setProductType] = useState(initialOrder?.orderDetails.productType || 'card');
+    const [productType, setProductType] = useState<string[]>(
+        initialOrder?.orderDetails.productType ? (Array.isArray(initialOrder.orderDetails.productType) ? initialOrder.orderDetails.productType : [initialOrder.orderDetails.productType as string]) : []
+    );
+    const [purpose, setPurpose] = useState(initialOrder?.orderDetails.purpose || '');
     const [totalAmount, setTotalAmount] = useState(initialOrder ? String(initialOrder.orderDetails.totalAmount) : '');
     const [actualAmount, setActualAmount] = useState(initialOrder ? String(initialOrder.orderDetails.actualAmount) : '');
     const [userName, setUserName] = useState(initialOrder?.userDetails.name || '');
     const [userEmail, setUserEmail] = useState(initialOrder?.userDetails.email || '');
     const [userPhone, setUserPhone] = useState(initialOrder?.userDetails.phone || '');
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const newErrors: { [key: string]: string } = {};
+
+        if (!userName.trim()) {
+            newErrors.userName = 'Full Name is required';
+        }
+        if (userEmail.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(userEmail)) {
+                newErrors.userEmail = 'Invalid email format';
+            }
+        }
+        if (userPhone.trim()) {
+            if (userPhone.length < 10) newErrors.userPhone = 'Phone number must be at least 10 digits';
+            if (userPhone.length > 15) newErrors.userPhone = 'Phone number is too long';
+        }
+        if (!purpose.trim()) {
+            newErrors.purpose = 'Purpose is required';
+        }
+        if (productType.length === 0) {
+            newErrors.productType = 'At least one product type must be selected';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        setErrors({});
 
         if (isEdit && initialOrder && onUpdate) {
             const updatedOrder: Order = {
@@ -28,6 +61,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 orderDetails: {
                     ...initialOrder.orderDetails,
                     orderType,
+                    productType: productType as ('currency' | 'card' | 'tt')[],
+                    purpose,
                     totalAmount: Number(totalAmount) || 0,
                     actualAmount: Number(actualAmount) || 0
                 },
@@ -60,7 +95,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 orderId,
                 orderNumber,
                 orderType,
-                productType,
+                productType: productType as ('currency' | 'card' | 'tt')[],
+                purpose,
                 branch: 'Bangalore-Basavangudi',
                 branchId: 5,
                 totalAmount: Number(totalAmount) || 0,
@@ -93,41 +129,53 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 <div className="flex flex-col gap-5">
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">User Details</h3>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Full Name <span className="text-red-500">*</span>
+                        </label>
                         <input
                             type="text"
                             value={userName}
-                            onChange={e => setUserName(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="e.g. Ritesh Singh"
+                            onChange={e => {
+                                setUserName(e.target.value);
+                                if (errors.userName) setErrors(prev => ({ ...prev, userName: '' }));
+                            }}
+                            className={`w-full border ${errors.userName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                            placeholder="Ritesh Singh"
                         />
+                        {errors.userName && <p className="text-red-500 text-xs mt-1">{errors.userName}</p>}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                         <input
                             type="email"
                             value={userEmail}
-                            onChange={e => setUserEmail(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="e.g. ritesh@example.com"
+                            onChange={e => {
+                                setUserEmail(e.target.value);
+                                if (errors.userEmail) setErrors(prev => ({ ...prev, userEmail: '' }));
+                            }}
+                            className={`w-full border ${errors.userEmail ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                            placeholder="ritesh@example.com"
                         />
+                        {errors.userEmail && <p className="text-red-500 text-xs mt-1">{errors.userEmail}</p>}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <input
                             type="number"
                             value={userPhone}
-                            onChange={e => setUserPhone(e.target.value)}
-                            required
-                            className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="e.g. 9876543210"
+                            onChange={e => {
+                                setUserPhone(e.target.value);
+                                if (errors.userPhone) setErrors(prev => ({ ...prev, userPhone: '' }));
+                            }}
+                            className={`w-full border ${errors.userPhone ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                            placeholder="9876543210"
                         />
+                        {errors.userPhone && <p className="text-red-500 text-xs mt-1">{errors.userPhone}</p>}
                     </div>
                 </div>
                 <div className="flex flex-col gap-5">
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
                         <div className="flex gap-4 mt-2">
@@ -156,42 +204,54 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Type</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Product Type <span className="text-red-500">*</span>
+                        </label>
                         <div className="flex gap-4 mt-2">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="productType"
-                                    value="card"
-                                    checked={productType === 'card'}
-                                    onChange={e => setProductType(e.target.value as 'card' | 'currency' | 'tt')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                />
-                                <span className="text-sm text-gray-700">Card</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="productType"
-                                    value="currency"
-                                    checked={productType === 'currency'}
-                                    onChange={e => setProductType(e.target.value as 'card' | 'currency' | 'tt')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                />
-                                <span className="text-sm text-gray-700">Currency</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="productType"
-                                    value="tt"
-                                    checked={productType === 'tt'}
-                                    onChange={e => setProductType(e.target.value as 'card' | 'currency' | 'tt')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                                />
-                                <span className="text-sm text-gray-700">TT</span>
-                            </label>
+                            {['card', 'currency', 'TT'].map(type => (
+                                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="productType"
+                                        value={type}
+                                        checked={productType.includes(type)}
+                                        onChange={e => {
+                                            const newTypes = e.target.checked ? [...productType, type] : productType.filter(t => t !== type);
+                                            setProductType(newTypes);
+                                            if (errors.productType && newTypes.length > 0) {
+                                                setErrors(prev => ({ ...prev, productType: '' }));
+                                            }
+                                        }}
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    />
+                                    <span className="text-sm text-gray-700 capitalize">{type}</span>
+                                </label>
+                            ))}
                         </div>
+                        {errors.productType && <p className="text-red-500 text-xs mt-1">{errors.productType}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Purpose <span className="text-red-500">*</span>
+                        </label>
+                        <SingleSelect
+                            value={purpose}
+                            onValueChange={val => {
+                                setPurpose(val);
+                                if (errors.purpose) setErrors(prev => ({ ...prev, purpose: '' }));
+                            }}
+                            options={[
+                                { value: 'Travel', label: 'Travel' },
+                                { value: 'Study', label: 'Study' },
+                                { value: 'Medical Treatment', label: 'Medical Treatment' },
+                                { value: 'Business', label: 'Business' },
+                                { value: 'Immigration', label: 'Immigration' },
+                                { value: 'Other', label: 'Other' }
+                            ]}
+                            className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
+                            placeholder="Travel, Study"
+                        />
+                        {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                     </div>
                 </div>
             </div>

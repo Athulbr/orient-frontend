@@ -55,7 +55,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     }, [docsnapOpen]);
 
     React.useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+        const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
@@ -445,19 +445,20 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                             <input
                                 type="text"
                                 className="w-full h-10 pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-0.5 focus:ring-blue-400 focus:border-blue-400"
-                                placeholder="Name, Email, or Order ID"
+                                placeholder="Name, Email, or Order Number"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                         </div>
                         <SingleSelect
+                            className="min-w-40"
                             value={statusFilter}
                             onValueChange={setStatusFilter}
                             options={[
                                 { label: 'All Status', value: 'all' },
                                 { label: 'Pending', value: 'pending' },
-                                { label: 'Extracted', value: 'extracted' },
+                                { label: 'Review Pending', value: 'extracted' },
                                 { label: 'Maraekat Submitted', value: 'submitted' },
                                 { label: 'Extraction Failed', value: 'failed' }
                             ]}

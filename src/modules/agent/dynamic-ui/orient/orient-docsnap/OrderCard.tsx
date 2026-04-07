@@ -430,10 +430,15 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <span className="text-[22px] font-extrabold text-gray-900 tracking-tight">{order.orderDetails.orderNumber}</span>
                         <span className={`inline-flex items-center gap-1 text-xs font-extrabold ${status.text} ${status.bg} border ${status.border} px-2 py-[3px] rounded-full`}>
                             <span className={`w-[5px] h-[5px] rounded-full ${status.dot} inline-block`} />
-                            {order.orderDetails.orderStatus}
+                            {order.orderDetails.orderStatus === 'extracted' ? 'Review Pending' : order.orderDetails.orderStatus}
                         </span>
                         <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.orderType.toUpperCase()}</span>
-                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.productType.toUpperCase()}</span>
+                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
+                            Purpose: {order.orderDetails?.purpose?.toUpperCase()}
+                        </span>
+                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
+                            {(Array.isArray(order.orderDetails.productType) ? order.orderDetails.productType.join(', ') : String(order.orderDetails.productType || '')).toUpperCase()}
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
@@ -788,7 +793,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
             )}
 
             <DialogComponent isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
-                <DocsnapComparisonUI recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
+                <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
             </DialogComponent>
         </div>
     );
