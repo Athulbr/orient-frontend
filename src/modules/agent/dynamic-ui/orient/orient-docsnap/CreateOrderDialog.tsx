@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '../../../../../components/Button';
+import { SingleSelect } from '../../../../../components/SingleSelect';
 import { Order } from './types';
 
 interface CreateOrderDialogProps {
@@ -174,22 +175,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 </div>
                 <div className="flex flex-col gap-5">
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Purpose <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={purpose}
-                            onChange={e => {
-                                setPurpose(e.target.value);
-                                if (errors.purpose) setErrors(prev => ({ ...prev, purpose: '' }));
-                            }}
-                            className={`w-full border ${errors.purpose ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                            placeholder="Travel, Study"
-                        />
-                        {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
-                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
                         <div className="flex gap-4 mt-2">
@@ -222,7 +208,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             Product Type <span className="text-red-500">*</span>
                         </label>
                         <div className="flex gap-4 mt-2">
-                            {['card', 'currency', 'tt'].map(type => (
+                            {['card', 'currency', 'TT'].map(type => (
                                 <label key={type} className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -243,6 +229,29 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             ))}
                         </div>
                         {errors.productType && <p className="text-red-500 text-xs mt-1">{errors.productType}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Purpose <span className="text-red-500">*</span>
+                        </label>
+                        <SingleSelect
+                            value={purpose}
+                            onValueChange={val => {
+                                setPurpose(val);
+                                if (errors.purpose) setErrors(prev => ({ ...prev, purpose: '' }));
+                            }}
+                            options={[
+                                { value: 'Travel', label: 'Travel' },
+                                { value: 'Study', label: 'Study' },
+                                { value: 'Medical Treatment', label: 'Medical Treatment' },
+                                { value: 'Business', label: 'Business' },
+                                { value: 'Immigration', label: 'Immigration' },
+                                { value: 'Other', label: 'Other' }
+                            ]}
+                            className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
+                            placeholder="Travel, Study"
+                        />
+                        {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                     </div>
                 </div>
             </div>
