@@ -150,7 +150,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                                                     minute: '2-digit'
                                                 })}
                                             </p>
-                                            {email.body && <p className="text-sm text-gray-600 line-clamp-2 mt-2 italic border-l-2 border-gray-200 pl-3">{email.body}</p>}
+                                            {email.bodyInnerText && <p className="text-sm text-gray-600 line-clamp-5 mt-2 italic border-l-2 border-gray-200 pl-3">{email.bodyInnerText}</p>}
                                         </div>
                                         <div className="flex items-center gap-1.5 shrink-0 mt-1 bg-white border border-gray-200 px-2.5 py-1 rounded-md shadow-sm">
                                             <Paperclip size={14} className="text-gray-500" />
@@ -206,3 +206,133 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
 };
 
 export default EmailLinkDialog;
+
+
+
+// curl --location --request POST 'http://182.73.170.218:2053/orientapi/PUSHFXBOOKING' \
+
+// --header 'Content-Type: application/json' \
+
+// --data-raw '{
+
+// "Token":"E4359F40-D51C-4B1A-AB50-32902A6B2484",
+
+// "BRANCHCODE":"MUM",
+
+// "BOOKINGTYPE":"SALE",
+
+// "BOOKINGNO":"52000000001",
+
+// "BOOKINGDATE":"24-MAR-2026",
+
+// "SOURCEFROM":"OEONLINE",
+
+// "HANDLEDBY":"SAJI",
+
+// "BOOKEDBY":"SHAILESH",
+
+// "PAXNAME":"USHA M.",
+
+// "PASSPORTNO":"P1234567",
+
+// "PASSPORT_ISSUEFROM":"MUM",
+
+// "PASSPORT_ISSUEDATE":"01-APR-2020",
+
+// "PASSPORT_EXPIRYDATE":"31-MAR-2030",
+
+// "DOB":"22-FEB-1972",
+
+// "GENDER":"FEMALE",
+
+// "NATIONALITY":"INDIAN",
+
+// "PANNO":"AUZPM2687E",
+
+// "PANCARDHOLDERNAME":"USHA SHAILESH MEISHERI",
+
+// "FATHERNAME":" ",
+
+// "TYPEOFPERSON":"",
+
+// "ADHAARCARDNO":"",
+
+// "PAXADDRESS":"",
+
+// "MOBILENO":"",
+
+// "EMAILID":"",
+
+// "PARENTNAME":"",
+
+// "VOTERCARDNO":"",
+
+// "FIRSTNAME":"",
+
+// "LASTNAME":"",
+
+// "DRIVINGLICNO":"",
+
+// "BuildingFlatNO":"",
+
+// "STREETNAME":"",
+
+// "LOCATION":"MUMBAI",
+
+// "CITY":"MUMBAI",
+
+// "PINCODE":"400080",
+
+// "STATENAME":"MAHARASHTRA",
+
+// "COUNTRY":"INDIA",
+
+// "PNRNO":"PNR123",
+
+// "TICKETNO":"",
+
+// "AIRLINENAME":"AIR CANADA",
+
+// "DEPARTUREFROM":"MUM",
+
+// "DEPARTUREDATE":"01-APR-2026",
+
+// "TRAVELINGCOUNTRY":"UNITED KINGDOM",
+
+// "ARRIVALDATE":"",
+
+// "ROUTE":""
+
+// }'
+
+
+
+// curl --location --request POST 'http://182.73.170.218:2053/orientapi/PUSHFXBOOKINGRP' \
+
+// --header 'Content-Type: application/json' \
+
+// --data-raw '{
+
+// "Token":"Y7863O96-W02M-9Y2L-PA28-96459M1X5623",
+
+// "BRANCHCODE":"MUM",
+
+// "BOOKINGTYPE":"SALE",
+
+// "BOOKINGNO":"52000000001",
+
+// "EONBOOKINGNO":"MUM5900001",
+
+// "CASHBANK":"ICICI",
+
+// "CHQNO":"99",
+
+// "CHQDT":"21-MAR-2026",
+
+// "DRAWNON":"HDFC",
+
+// "BANKBRANCH":"MUM",
+
+// "AMOUNT":"100000"
+
+// }'

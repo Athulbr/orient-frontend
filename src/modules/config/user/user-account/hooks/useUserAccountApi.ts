@@ -69,7 +69,7 @@ export const useUserAccountApi = () => {
         window.sessionStorage.clear();
         toast.success('Logged out successfully');
         setTimeout(() => {
-            window?.location?.replace('/');
+            window?.location?.replace('/auth/logout-message');
         }, 1000);
     };
 

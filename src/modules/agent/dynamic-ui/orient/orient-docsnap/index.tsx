@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import OrderCard from './OrderCard';
-import { Order, Email } from './types';
+import { Order, Email, DocumentDetail } from './types';
+
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import CreateOrderDialog from './CreateOrderDialog';
@@ -10,14 +11,14 @@ import DateTimePicker from '../../../../../components/DateTimePicker';
 import { Search, X } from 'lucide-react';
 
 interface OrientDocsnapUserInterfaceIF {
-    test?: string;
+    agentSettings: any;
 }
 
-const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () => {
+const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
-    const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<number, File[]>>({});
-    const [proceedingOrderId, setProceedingOrderId] = useState<number | null>(null);
+    const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
+    const [proceedingOrderNumber, setProceedingOrderNumber] = useState<number | null>(null);
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
@@ -33,8 +34,28 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
 
+    // Track whether the fullscreen docsnap dialog is open (owned by any OrderCard)
+    const [docsnapOpen, setDocsnapOpen] = useState(false);
+
+    // Push sentinel on mount so we always have a state to intercept.
+    // On popstate, if the docsnap dialog is NOT open, re-push to keep the user on this page.
     React.useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
+        window.history.pushState({ page: 'orient-docsnap' }, '');
+
+        const handlePopState = () => {
+            if (!docsnapOpen) {
+                // Re-push so back-button doesn't leave the page
+                window.history.pushState({ page: 'orient-docsnap' }, '');
+            }
+            // If docsnapOpen, DocsnapComparisonUI's own popstate handler fires first and closes the dialog
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [docsnapOpen]);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
@@ -86,10 +107,10 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         fetchData();
     }, [fetchData]);
 
-    const handleDeleteOrder = useCallback(async (orderId: number) => {
+    const handleDeleteOrder = useCallback(async (orderNumber: number) => {
         try {
-            await fetch(`${config.workflowService}/api/orders/${orderId}`, { method: 'DELETE' });
-            setOrders(prev => prev.filter(o => o.order_details.order_id !== orderId));
+            await fetch(`${config.workflowService}/api/orders/${orderNumber}`, { method: 'DELETE' });
+            setOrders(prev => prev.filter(o => o.orderDetails.orderNumber !== orderNumber));
         } catch (err) {
             console.error('Failed to delete order', err);
         }
@@ -114,14 +135,14 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
     }, []);
 
     const handleLinkEmail = useCallback(
-        async (orderId: number, emailId: string) => {
-            setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] } : o)));
+        async (orderNumber: number, emailId: string) => {
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] } : o)));
 
             try {
-                const order = orders.find(o => o.order_details.order_id === orderId);
+                const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
                 if (order) {
                     const linkedEmailIds = [...(order.linkedEmailIds || []), emailId];
-                    await fetch(`${config.workflowService}/api/orders/${orderId}`, {
+                    await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ linkedEmailIds })
@@ -130,7 +151,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                     await fetch(`${config.workflowService}/api/emails/${emailId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderId: String(orderId) })
+                        body: JSON.stringify({ orderNumber: String(orderNumber) })
                     });
                 }
             } catch (err) {
@@ -141,14 +162,14 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
     );
 
     const handleUnlinkEmail = useCallback(
-        async (orderId: number, emailId: string) => {
-            setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
+        async (orderNumber: number, emailId: string) => {
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
 
             try {
-                const order = orders.find(o => o.order_details.order_id === orderId);
+                const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
                 if (order) {
                     const linkedEmailIds = (order.linkedEmailIds || []).filter(id => id !== emailId);
-                    await fetch(`${config.workflowService}/api/orders/${orderId}`, {
+                    await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ linkedEmailIds })
@@ -157,7 +178,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                     await fetch(`${config.workflowService}/api/emails/${emailId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderId: '' })
+                        body: JSON.stringify({ orderNumber: '' })
                     });
                 }
             } catch (err) {
@@ -167,53 +188,27 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
         [orders]
     );
 
-    const handleUploadFiles = useCallback((orderId: number, files: File[]) => {
-        setUploadedFilesMap(prev => ({
-            ...prev,
-            [orderId]: [...(prev[orderId] || []), ...files]
-        }));
-    }, []);
+    const handleUploadFiles = useCallback(
+        async (orderNumber: number, files: File[]) => {
+            if (files.length === 0) return;
 
-    const handleRemoveUploadedFile = useCallback((orderId: number, fileIndex: number) => {
-        setUploadedFilesMap(prev => ({
-            ...prev,
-            [orderId]: (prev[orderId] || []).filter((_, i) => i !== fileIndex)
-        }));
-    }, []);
-
-    const handleProceed = useCallback(
-        async (orderId: number) => {
-            const order = orders.find(o => o.order_details.order_id === orderId);
-            if (!order) return;
-
-            setProceedingOrderId(orderId);
+            setUploadingOrders(prev => ({ ...prev, [orderNumber]: true }));
 
             const formData = new FormData();
-            formData.append('orderId', orderId.toString());
-            // formData.append('templateId', '68a8b19919dd45d21642d18d'); // PO_Private
-            formData.append('templateId', '69a1109890de8c4def6793e9'); // Orient_v1
-
-            // Add uploaded files
-            const uploaded = uploadedFilesMap[orderId] || [];
-            if (uploaded.length === 0) {
-                alert('Please upload files');
-                setProceedingOrderId(null);
-
-                return;
-            }
-            uploaded.forEach(file => {
+            formData.append('orderNumber', orderNumber.toString());
+            files.forEach(file => {
                 formData.append('file', file);
             });
 
             try {
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-v1`, {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-file-upload`, {
                     method: 'POST',
                     body: formData
                 });
 
                 if (!response.ok) {
-                    console.error('Extraction API response error:', response.status);
-                    setProceedingOrderId(null);
+                    console.error('Upload API response error:', response.status);
+                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     return;
                 }
 
@@ -222,7 +217,159 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
 
                 if (!executionId) {
                     console.error('No executionId found in response');
-                    setProceedingOrderId(null);
+                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    return;
+                }
+
+                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=secret1`;
+                const eventSource = new EventSource(streamUrl);
+
+                eventSource.onmessage = async event => {
+                    try {
+                        const jsonString = event.data;
+                        if (!jsonString || jsonString.trim() === '' || jsonString === '{}') return;
+
+                        const parsed = JSON.parse(jsonString);
+                        if (parsed.status) {
+                            if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
+                                eventSource.close();
+                                setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+
+                                if (parsed.status === 'completed') {
+                                    const finalData = parsed.finalData[0] || {};
+                                    let newDocs: DocumentDetail[] = [];
+
+                                    finalData.manualDocuments.forEach((doc: string[]) => {
+                                        if (doc && doc.length > 0) {
+                                            newDocs.push({
+                                                documentName: doc[0].split('/').pop() || new Date().toISOString(),
+                                                documentPages: doc
+                                            });
+                                        }
+                                    });
+
+                                    if (newDocs.length > 0) {
+                                        const currentOrder = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+                                        const updatedManualDocuments = [...(currentOrder?.manualDocuments || []), ...newDocs];
+
+                                        setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
+
+                                        await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ manualDocuments: updatedManualDocuments })
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                };
+
+                eventSource.onerror = err => {
+                    console.error('SSE EventSource error:', err);
+                    eventSource.close();
+                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                };
+            } catch (err) {
+                console.error('Upload API error:', err);
+                setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+            }
+        },
+        [orders]
+    );
+
+    const handleRemoveUploadedFile = useCallback(
+        async (orderNumber: number, fileIndex: number) => {
+            const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+            if (!order || !order.manualDocuments) return;
+
+            const updatedManualDocuments = order.manualDocuments.filter((_, i) => i !== fileIndex);
+
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
+
+            try {
+                await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ manualDocuments: updatedManualDocuments })
+                });
+            } catch (err) {
+                console.error('Failed to remove manual document', err);
+            }
+        },
+        [orders]
+    );
+
+    const handleProceed = useCallback(
+        async (orderNumber: number) => {
+            const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+            if (!order) return;
+
+            setProceedingOrderNumber(orderNumber);
+
+            const linkedEmails = getLinkedEmails(order);
+            const actualEmailDocuments = linkedEmails.flatMap(email =>
+                (email.attachments || []).map((att: any) => ({
+                    documentName: att.documentName || att.name || '',
+                    documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
+                }))
+            );
+
+            // Extraction workflow now uses pre-uploaded manualDocuments + webDocuments + emailDocuments
+            // We just need to trigger the extraction if there are any documents
+            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + actualEmailDocuments.length > 0;
+            if (!hasDocuments) {
+                alert('Please upload files before extracting');
+                setProceedingOrderNumber(null);
+                return;
+            }
+
+            const allDocDetails = [...actualEmailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
+
+            const payloadDocuments = allDocDetails.flatMap(doc => {
+                const pages = doc.documentPages || [];
+                if (pages.length === 0) return [];
+
+                // Remove file extension for cleaner names
+                const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'document';
+
+                if (pages.length === 1) {
+                    return [{ documentName: baseName, documentUrl: pages[0] }];
+                } else {
+                    return pages.map((pageUrl: string, index: number) => ({
+                        documentName: `${baseName}_page_${index + 1}`,
+                        documentUrl: pageUrl
+                    }));
+                }
+            });
+
+            try {
+                // const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${agentSettings?.webhookUrl}`, {
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/docsnap-v2`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderNumber: orderNumber,
+                        templateId: agentSettings?.defaultTemplateId || '',
+                        documents: payloadDocuments
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error('Extraction API response error:', response.status);
+                    setProceedingOrderNumber(null);
+                    return;
+                }
+
+                const responseData = await response.json();
+                const executionId = responseData?.data?.executionId;
+
+                if (!executionId) {
+                    console.error('No executionId found in response');
+                    setProceedingOrderNumber(null);
                     return;
                 }
 
@@ -239,19 +386,29 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         if (parsed.status) {
                             if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
                                 eventSource.close();
-                                setProceedingOrderId(null);
+                                setProceedingOrderNumber(null);
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0];
                                     if (finalData.extractedData) {
-                                        const updateDetails = { extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId } };
+                                        const currentOrder = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+                                        const updateDetails = {
+                                            orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
+                                            extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId }
+                                        };
 
-                                        fetch(`${config.workflowService}/api/orders/${orderId}`, {
+                                        fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                                             method: 'PUT',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updateDetails)
                                         }).catch(err => console.error('Failed to save extraction details', err));
 
-                                        setOrders(prev => prev.map(o => (o.order_details.order_id === orderId ? { ...o, ...updateDetails } : o)));
+                                        setOrders(prev =>
+                                            prev.map(o =>
+                                                o.orderDetails.orderNumber === orderNumber
+                                                    ? { ...o, orderDetails: { ...o.orderDetails, orderStatus: 'extracted' }, extractionDetails: updateDetails.extractionDetails }
+                                                    : o
+                                            )
+                                        );
                                     }
                                 }
                             }
@@ -264,14 +421,14 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                 eventSource.onerror = err => {
                     console.error('SSE EventSource error:', err);
                     eventSource.close();
-                    setProceedingOrderId(null);
+                    setProceedingOrderNumber(null);
                 };
             } catch (err) {
                 console.error('Extraction API error:', err);
-                setProceedingOrderId(null);
+                setProceedingOrderNumber(null);
             }
         },
-        [orders, getLinkedEmails, uploadedFilesMap]
+        [orders, getLinkedEmails]
     );
 
     return (
@@ -288,36 +445,27 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                             <input
                                 type="text"
                                 className="w-full h-10 pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-0.5 focus:ring-blue-400 focus:border-blue-400"
-                                placeholder="Name, Email, or Order ID"
+                                placeholder="Name, Email, or Order Number"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                             />
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                         </div>
                         <SingleSelect
+                            className="min-w-40"
                             value={statusFilter}
                             onValueChange={setStatusFilter}
                             options={[
                                 { label: 'All Status', value: 'all' },
                                 { label: 'Pending', value: 'pending' },
-                                { label: 'Review', value: 'extracted' },
-                                { label: 'Submitted', value: 'submitted' },
-                                { label: 'Failed', value: 'failed' }
+                                { label: 'Review Pending', value: 'extracted' },
+                                { label: 'Maraekat Submitted', value: 'submitted' },
+                                { label: 'Extraction Failed', value: 'failed' }
                             ]}
                         />
                         <div className="flex flex-col gap-1">
                             <DateTimePicker onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
                         </div>
-                        <SingleSelect
-                            value={perPage}
-                            onValueChange={setPerPage}
-                            options={[
-                                { label: '10', value: '10' },
-                                { label: '20', value: '20' },
-                                { label: '50', value: '50' },
-                                { label: '100', value: '100' }
-                            ]}
-                        />
                         <Button startIcon={<X size={16} />} onClick={handleResetFilters} outlined></Button>
                         <Button onClick={() => setShowCreateDialog(true)}>Create Order</Button>
                     </div>
@@ -327,10 +475,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
             <div className="p-4 flex flex-col gap-5 flex-grow">
                 {orders.map(order => (
                     <OrderCard
-                        key={order.order_details.order_id}
+                        key={order.orderDetails.orderNumber}
                         order={order}
                         linkedEmails={getLinkedEmails(order)}
-                        uploadedFiles={uploadedFilesMap[order.order_details.order_id] || []}
                         onLinkEmail={handleLinkEmail}
                         onUnlinkEmail={handleUnlinkEmail}
                         onUploadFiles={handleUploadFiles}
@@ -338,7 +485,10 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         onProceed={handleProceed}
                         onEdit={order => setEditingOrder(order)}
                         onDelete={handleDeleteOrder}
-                        isProceeding={proceedingOrderId === order.order_details.order_id}
+                        isProceeding={proceedingOrderNumber === order.orderDetails.orderNumber}
+                        isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
+                        onDocsnapOpen={() => setDocsnapOpen(true)}
+                        onDocsnapClose={() => setDocsnapOpen(false)}
                     />
                 ))}
                 {orders.length === 0 && (
@@ -346,17 +496,29 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                 )}
             </div>
 
-            <div className="p-4 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
+            <div className="p-4 py-3 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
                 <span className="text-sm text-gray-500">
                     Showing {totalCount === 0 ? 0 : (currentPage - 1) * Number(perPage) + 1} to {Math.min(currentPage * Number(perPage), totalCount)} of {totalCount} orders
                 </span>
                 <div className="flex items-center gap-4">
+                    <SingleSelect
+                        position="top"
+                        value={perPage}
+                        onValueChange={setPerPage}
+                        options={[
+                            { label: '10', value: '10' },
+                            { label: '20', value: '20' },
+                            { label: '50', value: '50' },
+                            { label: '100', value: '100' }
+                        ]}
+                        size="sm"
+                    />
                     <span className="text-sm font-medium text-gray-700">
                         Page {currentPage} of {totalPages}
                     </span>
                     <div className="flex items-center gap-2">
                         <Button small outlined disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
-                            Previous
+                            Prev
                         </Button>
                         <Button small outlined disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
                             Next
@@ -364,7 +526,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                     </div>
                 </div>
             </div>
-
             <DialogComponent
                 className="w-[800px]"
                 isOpen={showCreateDialog || !!editingOrder}
@@ -399,13 +560,13 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = () =>
                         }}
                         onUpdate={async updatedOrder => {
                             try {
-                                const response = await fetch(`${config.workflowService}/api/orders/${updatedOrder.order_details.order_id}`, {
+                                const response = await fetch(`${config.workflowService}/api/orders/${updatedOrder.orderDetails.orderNumber}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(updatedOrder)
                                 });
                                 if (response.ok) {
-                                    setOrders(orders.map(o => (o.order_details.order_id === updatedOrder.order_details.order_id ? updatedOrder : o)));
+                                    setOrders(orders.map(o => (o.orderDetails.orderNumber === updatedOrder.orderDetails.orderNumber ? updatedOrder : o)));
                                     setEditingOrder(null);
                                 }
                             } catch (err) {

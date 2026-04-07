@@ -3,6 +3,7 @@ export interface FileItem {
     url: string;
     type: 'pdf' | 'image' | 'doc' | 'other';
     source: 'order' | 'email' | 'upload';
+    pages?: string[];
 }
 
 export interface Email {
@@ -10,42 +11,43 @@ export interface Email {
     subject: string;
     from: string;
     date: string;
-    orderId?: string | number;
     bodyInnerText?: string;
     body?: string;
     attachments: FileItem[];
+    orderNumber?: number;
 }
 
 export interface OrderDetails {
-    order_id: number;
-    order_no: string;
-    type: string;
+    orderId: number;
+    orderNumber: number;
+    orderType: 'buy' | 'sell';
+    productType: ('currency' | 'card' | 'tt')[];
     location?: string;
-    loc_id?: number;
+    locationId?: number;
     branch: string;
-    branch_id: number;
-    total_amount: number;
-    actual_amount: number;
-    order_status: string;
-    doc_submit_status: string;
-    payment_type?: string;
-    delivery_mode?: string;
-    delivery_charge?: number;
-    handling_charges?: number;
+    branchId: number;
+    totalAmount: number;
+    actualAmount: number;
+    orderStatus: 'pending' | 'extracted' | 'submitted' | 'failed';
+    documentSubmitStatus: string;
+    paymentType?: string;
+    deliveryMode?: string;
+    deliveryCharge?: number;
+    handlingCharges?: number;
     purpose?: string;
-    doc_upload_time?: string;
+    documentUploadTime?: string;
 }
 
 export interface UserDetails {
-    user_id: number;
+    userId: number;
     name: string;
     email: string;
     phone: string;
-    pan_number?: string;
+    panNumber?: string;
 }
 
 export interface CurrencyDetail {
-    sr_no?: number;
+    serialNumber?: number;
     currency: string;
     product: string;
     quantity: number;
@@ -55,14 +57,21 @@ export interface CurrencyDetail {
 
 export interface DocumentDetail {
     documentName: string;
-    documentUrl: string;
+    // documentUrl: string;  // -- old
+    documentPages: string[]; // -- new
 }
 
 export interface Order {
-    order_details: OrderDetails;
-    user_details: UserDetails;
-    currency_details: CurrencyDetail[];
-    document_details: DocumentDetail[];
+    orderDetails: OrderDetails;
+    userDetails: UserDetails;
+    currencyDetails: CurrencyDetail[];
+    webDocuments: DocumentDetail[];
+    manualDocuments?: DocumentDetail[];
+    emailDocuments?: DocumentDetail[];
     linkedEmailIds?: string[];
-    extractionDetails: Record<string, unknown>;
+    extractionDetails: {
+        recordId?: string;
+        extractedData?: Record<string, unknown>;
+    };
+    createdAt?: string;
 }

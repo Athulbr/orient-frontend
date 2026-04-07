@@ -31,7 +31,7 @@ const RunAgentPage: React.FC = () => {
 
     // console.log('workflow:===========', workflow);
 
-    const DynamicUI = getDynamicUserInterface(workflow?.agentSettings?.uiId);
+    const DynamicUI = getDynamicUserInterface(workflow?.agentSettings);
 
     if (loading) {
         return <FullScreenLoader />;
@@ -42,7 +42,7 @@ const RunAgentPage: React.FC = () => {
     }
 
     // We can pass the workflow data to the dynamic UI component if needed
-    return <DynamicUI />;
+    return DynamicUI;
 };
 
 export default RunAgentPage;
