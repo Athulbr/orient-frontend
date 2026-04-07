@@ -112,7 +112,7 @@ export default function GenerateTitlesDialog({ isOpen, onClose, onGenerate }: Ge
                             {tones.map((toneOption) => (
                                 <DialogTooltip key={toneOption.label} content={toneOption.description}>
                                     <button
-                                        onClick={() => setTone(toneOption.label)}
+                                        onClick={() => setTone(tone === toneOption.label ? '' : toneOption.label)}
                                         className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                                             tone === toneOption.label 
                                                 ? 'bg-blue-600 text-white border border-blue-500' 
@@ -157,7 +157,12 @@ export default function GenerateTitlesDialog({ isOpen, onClose, onGenerate }: Ge
                     </button>
                     <button 
                         onClick={handleGenerate}
-                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer shadow-sm"
+                        disabled={!count || (!tone && !instructions.trim())}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer shadow-sm ${
+                            !count || (!tone && !instructions.trim())
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
                     >
                         <Sparkles className="w-4 h-4 text-blue-200" />
                         Generate {count} more titles
