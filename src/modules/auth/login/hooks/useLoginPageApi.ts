@@ -146,8 +146,8 @@ export const useLoginPageApi = () => {
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                 window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
-                if (res.data?.client_id) {
-                    window?.sessionStorage?.setItem('orientClientId', res.data.client_id);
+                if (res.data?.orientClientId) {
+                    window?.sessionStorage?.setItem('orientClientId', res.data.orientClientId);
                 }
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
