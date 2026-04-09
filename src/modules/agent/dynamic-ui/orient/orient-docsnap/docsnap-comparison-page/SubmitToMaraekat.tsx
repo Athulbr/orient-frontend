@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, CheckCircle, AlertCircle, GripHorizontal, Loader2 } from 'lucide-react';
-
+import { config } from '../../../../../../config/default';
 import { Order } from '../types';
 
 type ResultMessage = {
@@ -344,7 +344,8 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
     const makeAuthentication = async () => {
         if (token) return token;
         try {
-            const workflowServiceUrl = import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL || 'http://localhost:6007';
+            // const workflowServiceUrl = import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL || 'http://localhost:6007';
+            const workflowServiceUrl = config.workflowService
             const response = await fetch(`${workflowServiceUrl}/api/orient/login`, {
                 method: 'POST'
             });
