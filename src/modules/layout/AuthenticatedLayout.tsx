@@ -28,7 +28,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         updateUserSettingsHandler();
 
         const triggerSessionEnded = () => {
-            const isOrientSSO = !!window.sessionStorage.getItem('orientSessionId');
+            const isOrientSSO = !!window.sessionStorage.getItem('orientClientId');
             window.sessionStorage.clear();
             const redirectTarget = isOrientSSO ? '/auth/logout-message' : '/auth/login';
             window?.location?.replace(redirectTarget);
@@ -74,11 +74,11 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
             // due to being a sleeping background tab, ping Orient to check/extend the session.
             if (elapsedMs >= makezSessionLimitMs - 15000 && config.usePhpSessionApi) {
                 try {
-                    const orientSessionId = window.sessionStorage.getItem('orientSessionId') || '';
+                    const orientClientId = window.sessionStorage.getItem('orientClientId') || '';
                     
                     // Ping Orient to retrieve session status 
-                    // const url = `${config.orientSessionApi}?session_id=${orientSessionId}`;
-                    const url = `https://www.orientexchange.in/branch/session_status?user_id=banw@orientexchange.in&client_id=8ed44e023fba09a619b0070ef567cfb1`;
+                    // const url = `${config.orientSessionApi}?session_id=${orientClientId}`;
+                    const url = `https://www.orientexchange.in/branch/session_status?user_id=banw@orientexchange.in&client_id=${orientClientId}`;
                     console.log('url', url);
                     const res = await fetch(url, {
                         method: 'GET',
