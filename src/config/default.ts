@@ -37,14 +37,20 @@ const globalEnv: any = {
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_REHAB,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_REHAB
     },
-    orient: {
+    orientInternal: {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT,
         workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT
+    },
+    orientExternal: {
+        baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_TEST,
+        nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_TEST,
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_TEST,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_TEST
     }
 };
-const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || 'local'];
+const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || ''];
 
 export const config = {
     baseUrl: envConfig.baseUrl,

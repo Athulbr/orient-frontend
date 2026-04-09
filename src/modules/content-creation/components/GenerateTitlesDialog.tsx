@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { DialogComponent } from '../../../components/DialogComponent';
+import DialogTooltip from '../../../components/DialogTooltip';
 
 interface GenerateTitlesDialogProps {
     isOpen: boolean;
@@ -13,8 +14,49 @@ export default function GenerateTitlesDialog({ isOpen, onClose, onGenerate }: Ge
     const [tone, setTone] = useState('Neutral');
     const [count, setCount] = useState<number>(5);
 
-    const tones = ['Neutral', 'Conversational', 'Authority', 'Listicle', 'How-to'];
     const counts = [3, 5, 10];
+    const tones = [
+        {
+            label: 'Authoritative',
+            description: 'Write from a place of clinical expertise. The platform is run by occupational and physical therapists, so content should reflect professional knowledge and credibility.',
+        },
+        {
+            label: 'Educational',
+            description: 'Informative and instructional in nature, focused on teaching readers how to solve a problem or understand a condition.',
+        },
+        {
+            label: 'Empathetic',
+            description: 'Warm and understanding toward readers who may be caregivers, patients, or parents of special needs children dealing with difficult circumstances.',
+        },
+        {
+            label: 'Empowering',
+            description: 'Encouraging and uplifting, helping readers feel capable of taking action and improving quality of life.',
+        },
+        {
+            label: 'Conversational',
+            description: 'Approachable and easy to read, avoiding heavy medical jargon so content resonates with non-clinical audiences like family caregivers.',
+        },
+        {
+            label: 'Compassionate',
+            description: 'Sensitive to the emotional and physical challenges of the audience, never dismissive or clinical to the point of coldness.',
+        },
+        {
+            label: 'Neutral',
+            description: 'Objective and balanced when presenting product options or medical information, without bias or overpromising outcomes.',
+        },
+        {
+            label: 'Practical',
+            description: 'Grounded and solution-focused, giving readers actionable takeaways they can apply to real-life caregiving or rehabilitation situations.',
+        },
+        {
+            label: 'Trustworthy',
+            description: 'Honest and accurate, avoiding sensationalism or exaggerated claims that could mislead vulnerable readers.',
+        },
+        {
+            label: 'Inclusive',
+            description: 'Respectful of all audiences — seniors, disabled individuals, special needs children, and caregivers — using person-first, dignity-centered language throughout.',
+        },
+    ];
 
     const handleGenerate = () => {
         onGenerate({ instructions, tone, count });
@@ -67,18 +109,19 @@ export default function GenerateTitlesDialog({ isOpen, onClose, onGenerate }: Ge
                     <div className="flex flex-col gap-2 pt-1">
                         <label className="text-sm font-medium text-gray-700">Tone</label>
                         <div className="flex flex-wrap gap-2">
-                            {tones.map((t) => (
-                                <button
-                                    key={t}
-                                    onClick={() => setTone(t)}
-                                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                                        tone === t 
-                                            ? 'bg-blue-600 text-white border border-blue-500' 
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {t}
-                                </button>
+                            {tones.map((toneOption) => (
+                                <DialogTooltip key={toneOption.label} content={toneOption.description}>
+                                    <button
+                                        onClick={() => setTone(tone === toneOption.label ? '' : toneOption.label)}
+                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                                            tone === toneOption.label 
+                                                ? 'bg-blue-600 text-white border border-blue-500' 
+                                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {toneOption.label}
+                                    </button>
+                                </DialogTooltip>
                             ))}
                         </div>
                     </div>
@@ -114,7 +157,12 @@ export default function GenerateTitlesDialog({ isOpen, onClose, onGenerate }: Ge
                     </button>
                     <button 
                         onClick={handleGenerate}
-                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer shadow-sm"
+                        disabled={!count || (!tone && !instructions.trim())}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer shadow-sm ${
+                            !count || (!tone && !instructions.trim())
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
                     >
                         <Sparkles className="w-4 h-4 text-blue-200" />
                         Generate {count} more titles

@@ -170,7 +170,7 @@ const validatePayload = (payload: any): { isValid: boolean; errors: string[] } =
     const NATIONALITIES = ['INDIAN', 'US', 'UK', 'UAE'];
     const STATES = ['MAHARASHTRA', 'DELHI', 'KARNATAKA', 'GUJARAT', 'JHARKHAND'];
     const COUNTRIES = ['INDIA', 'USA', 'UNITED KINGDOM', 'UAE'];
-    const AIRLINES = ['AIR INDIA', 'INDIGO', 'EMIRATES', 'VISTARA'];
+    const AIRLINES = ['AIR INDIA', 'INDIGO', 'EMIRATES', 'VISTARA', 'AIR CANADA'];
     const TRAVEL_COUNTRIES = ['INDIA', 'UAE', 'USA', 'UK'];
 
     const isSale = String(BOOKINGTYPE).toUpperCase() === 'SALE';
@@ -236,6 +236,19 @@ const validatePayload = (payload: any): { isValid: boolean; errors: string[] } =
 
     if (!isPresent(DOB) || !isValidDateFormat(DOB) || !isPastOrToday(parseDate(DOB))) {
         errors.push('DOB is mandatory and must be a valid past date in DD-MMM-YYYY format.');
+    } else {
+        const dobDate = parseDate(DOB);
+        if (dobDate) {
+            const today = new Date();
+            let age = today.getFullYear() - dobDate.getFullYear();
+            const m = today.getMonth() - dobDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+            }
+            if (age < 12) {
+                errors.push('User age must be at least 12 years.');
+            }
+        }
     }
 
     const validGenders = ['Male', 'Female', 'Other', 'M', 'F', 'O', 'MALE', 'FEMALE', 'OTHER'];
@@ -390,6 +403,29 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
         ROUTE: extractedData?.travel_itinerary?.route?.value || ''
     };
 
+    const callExchangeApi = async (eonBookingNo: string, bookingNo: string) => {
+        const payload = {
+            BRANCHCODE: 'MUM',
+            BOOKINGTYPE: 'SALE',
+            BOOKINGNO: bookingNo,
+            EONBOOKINGNO: eonBookingNo,
+            CURRENCY: 'CAD',
+            FCNAMOUNT: '1000',
+            BOOKINGRATE: '65.6565'
+        };
+        const workflowServiceUrl = import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL || 'http://localhost:6007';
+        const response = await fetch(`${workflowServiceUrl}/api/orient/submit-exchange`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        console.log('Submit Response:', data.Result);
+    };
+
     const submitDataToMaraekat = async (token: string) => {
         try {
             const workflowServiceUrl = import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL || 'http://localhost:6007';
@@ -418,6 +454,7 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
                         type: 'success',
                         messages: [`Booking No: ${successItem.BOOKINGNO}`, successItem.BOOKINGSTATUS]
                     });
+                    // await callExchangeApi(successItem.BOOKINGNO, payload.BOOKINGNO);
                 } else {
                     // Formulate error messages
                     const errors = data.Result.map((item: any) => `${item.ERRORCODE ? `[${item.ERRORCODE}] ` : ''}${item.ERRORDESC || 'Unknown Error'}`);
@@ -434,14 +471,14 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
 
     const handleSubmit = async () => {
         setResultMessage(null);
-        const validationResult = validatePayload(payload);
-        if (!validationResult.isValid) {
-            setResultMessage({
-                type: 'error',
-                messages: validationResult.errors
-            });
-            return;
-        }
+        // const validationResult = validatePayload(payload);
+        // if (!validationResult.isValid) {
+        //     setResultMessage({
+        //         type: 'error',
+        //         messages: validationResult.errors
+        //     });
+        //     return;
+        // }
         setIsSubmitting(true);
         try {
             const token = await makeAuthentication();
