@@ -142,11 +142,12 @@ export const useLoginPageApi = () => {
 
             const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId });
 
+            console.log('response from bootstrap-------->', res?.data);
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                 window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
-                if (res.data?.orientSessionId) {
-                    window?.sessionStorage?.setItem('orientSessionId', res.data.orientSessionId);
+                if (res.data?.client_id) {
+                    window?.sessionStorage?.setItem('orientClientId', res.data.client_id);
                 }
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
