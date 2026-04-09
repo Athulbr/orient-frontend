@@ -77,7 +77,10 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
                     const orientSessionId = window.sessionStorage.getItem('orientSessionId') || '';
                     
                     // Ping Orient to retrieve session status 
-                    const res = await fetch(`${config.orientSessionApi}?session_id=${orientSessionId}`, {
+                    // const url = `${config.orientSessionApi}?session_id=${orientSessionId}`;
+                    const url = `https://www.orientexchange.in/branch/session_status?user_id=banw@orientexchange.in&client_id=8ed44e023fba09a619b0070ef567cfb1`;
+                    console.log('url', url);
+                    const res = await fetch(url, {
                         method: 'GET',
                         credentials: 'omit' // No longer strictly need cookies since we explicitly pass session_id
                     });
