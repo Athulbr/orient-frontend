@@ -136,11 +136,11 @@ export const useLoginPageApi = () => {
     };
 
     // ============================= login With PHP Session ==================================
-    const loginWithPhpSession = async (sessionToken: string) => {
+    const loginWithPhpSession = async (sessionToken: string, clientId: string) => {
         try {
             setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
 
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId });
 
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
@@ -175,10 +175,11 @@ export const useLoginPageApi = () => {
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
         const sessionToken = queryParams.get('token');
+        const clientId = queryParams.get('client_id');
 
-        if (sessionToken) {
+        if (sessionToken && clientId) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            loginWithPhpSession(sessionToken);
+            loginWithPhpSession(sessionToken, clientId);
         } else {
             // No token present — Show login page.
         }
