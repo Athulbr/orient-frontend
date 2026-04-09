@@ -471,9 +471,10 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 val: (
                                     <>
                                         <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
-                                        <span className="text-gray-600 font-bold">₹{(order.orderDetails.actualAmount || order.orderDetails.totalAmount).toLocaleString()}</span>
+                                        <span className="text-gray-600 font-bold">₹{(order.orderDetails.actualAmount).toLocaleString()}</span>
                                     </>
-                                )
+                                ),
+                                hide: !Boolean(order.orderDetails.actualAmount)
                             },
                             {
                                 icon: null,
@@ -482,7 +483,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                         <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
                                         <span className="text-gray-600 font-extrabold">₹{order.orderDetails.totalAmount.toLocaleString()}</span>
                                     </>
-                                )
+                                ),
+                                hide: !Boolean(order.orderDetails.totalAmount)
                             },
                             ...(order.orderDetails.paymentType
                                 ? [
@@ -560,12 +562,21 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                       }
                                   ]
                                 : [])
-                        ].map(({ icon, val }, idx) => (
+                        ].map(({ icon, val, hide }, idx) =>{
+                            if(hide)return null
+                            
+                            return(
                             <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
                                 {icon}
                                 {val}
                             </div>
-                        ))}
+                        )})}
+                        
+                            {order.currencyDetails?.map((item, idx) => (
+                                    <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
+                                        {item.currency}
+                                    </div>
+                                ))}
                     </div>
                 </div>
 
