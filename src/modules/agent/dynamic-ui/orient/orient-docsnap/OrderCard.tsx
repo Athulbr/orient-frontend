@@ -20,13 +20,14 @@ import {
     Trash2,
     RefreshCw,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Coins
 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
-import { Order, Email, FileItem } from './types';
+import { Order, Email, FileItem, CurrencyDetail } from './types';
 import Spinner from '../../../../../components/Spinner';
 import { config } from '../../../../../config/default';
 import { DocsnapComparisonUI } from './docsnap-comparison-page';
@@ -357,6 +358,32 @@ const ColCount: React.FC<{ colorClass: string; bgClass: string; borderClass: str
     <span className={`text-xs font-extrabold ${colorClass} ${bgClass} border ${borderClass} px-[7px] py-[1px] rounded-full leading-[1.8]`}>{n}</span>
 );
 
+const CurrencyMiniCard: React.FC<{ item: CurrencyDetail }> = ({ item }) => (
+    <div className="flex items-center gap-3 bg-slate-50/50 border border-slate-200 rounded-lg px-3 py-1.5 transition-all hover:bg-white hover:shadow-md hover:border-blue-200 group">
+        <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded flex items-center justify-center bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <Coins size={11} />
+            </div>
+            <span className="text-xs font-extrabold text-slate-700 tracking-tight leading-none group-hover:text-blue-700">{item.currency}</span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded border border-slate-100 group-hover:border-blue-100">
+                {item.product}
+            </span>
+        </div>
+        
+        <div className="h-3 w-[1px] bg-slate-200" />
+        
+        <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+            <span>{item.quantity.toLocaleString()}</span>
+            <span className="text-slate-300">×</span>
+            <span>{item.rate.toLocaleString()}</span>
+        </div>
+
+        <div className="text-xs font-black text-slate-900 ml-1">
+            ₹{item.amount.toLocaleString()}
+        </div>
+    </div>
+);
+
 const OrderCard: React.FC<OrderCardProps> = ({
     order,
     linkedEmails,
@@ -471,9 +498,10 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 val: (
                                     <>
                                         <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
-                                        <span className="text-gray-600 font-bold">₹{(order.orderDetails.actualAmount || order.orderDetails.totalAmount).toLocaleString()}</span>
+                                        <span className="text-gray-600 font-bold">₹{(order.orderDetails.actualAmount).toLocaleString()}</span>
                                     </>
-                                )
+                                ),
+                                hide: !Boolean(order.orderDetails.actualAmount)
                             },
                             {
                                 icon: null,
@@ -482,7 +510,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                         <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
                                         <span className="text-gray-600 font-extrabold">₹{order.orderDetails.totalAmount.toLocaleString()}</span>
                                     </>
-                                )
+                                ),
+                                hide: !Boolean(order.orderDetails.totalAmount)
                             },
                             ...(order.orderDetails.paymentType
                                 ? [
@@ -560,12 +589,17 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                       }
                                   ]
                                 : [])
-                        ].map(({ icon, val }, idx) => (
+                        ].map(({ icon, val, hide }, idx) =>{
+                            if(hide)return null
+                            
+                            return(
                             <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
                                 {icon}
                                 {val}
                             </div>
-                        ))}
+                        )})}
+                        
+    
                     </div>
                 </div>
 
@@ -734,10 +768,15 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
             </div>
 
-            <div className="px-[22px] py-[13px] flex items-center justify-between">
-                <span className="text-sm text-gray-400">
+            <div className="px-[22px] py-[13px] flex items-center justify-between bg-slate-50/30 border-t border-gray-50">
+                <div className="flex flex-wrap gap-2.5">
+                    {order.currencyDetails?.map((item, idx) => (
+                        <CurrencyMiniCard key={idx} item={item} />
+                    ))}
+                </div>
+                {/* <span className="text-sm text-gray-400">
                     {totalDocs || 'No'} {totalDocs === 1 ? 'document' : 'documents'} ready for extraction
-                </span>
+                </span> */}
                 {!order.extractionDetails?.recordId ? (
                     <Button
                         startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
@@ -766,11 +805,10 @@ const OrderCard: React.FC<OrderCardProps> = ({
             </div>
 
             {onDelete && (
-                <DialogComponent isOpen={showDeleteConfirm} closeDialog={() => setShowDeleteConfirm(false)} name="Confirm Delete" className="max-w-[600px]">
+                <DialogComponent isOpen={showDeleteConfirm} closeDialog={() => setShowDeleteConfirm(false)} name="Delete Order?" className="max-w-[600px]">
                     <div className="p-6">
                         <div className="text-gray-600 mb-6">
-                            <strong className="text-gray-900 text-md">Delete Order?</strong>
-                            <div className="text-sm pt-2">
+                            <div className="text-sm">
                                 Order<strong className=" text-sm"> {order.orderDetails.orderNumber}</strong> will be permanently deleted. This action cannot be undone
                             </div>
                         </div>
