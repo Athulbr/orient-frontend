@@ -89,28 +89,37 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
                         credentials: 'omit' // No longer strictly need cookies since we explicitly pass session_id
                     });
                     
-                    if (res.ok) {
-                        // Orient guarantees valid session. Check our local activity.
-                        if (isUserActiveLocally) {
-                            // User is actively working in Makez, extend Makez session if this was a natural timeout
-                            if (!forceCheck) {
-                                window.sessionStorage.setItem('reactLoginTime', Date.now().toString());
-                            }
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.ok && data?.active) {
+                        // Orient guarantees valid session.
+                        if (forceCheck) {
+                            // If tab-switch triggered this, definitively trust Orient is alive and silently extend Makez local clock!
+                            window.sessionStorage.setItem('reactLoginTime', Date.now().toString());
                         } else {
-                            // User left Makez untouched completely and Makez has now timed out!
-                            handleSessionDeath();
+                            if (isUserActiveLocally) {
+                                // User actively working in natural timeout limit, extend Makez session
+                                window.sessionStorage.setItem('reactLoginTime', Date.now().toString());
+                            } else {
+                                // User left Makez untouched completely and Makez has naturally timed out
+                                handleSessionDeath();
+                            }
                         }
                     } else {
-                        // Orient session status is officially closed. Throw hard-block immediately if forced.
+                        // Orient API explicitly returned an error or active: false
                         if (forceCheck) {
+                            // Tab-focus verification explicitly verified Orient is dead -> Hard Modal immediately! NO grace period!
                             setShowExpiredModal(true);
                         } else {
+                            // Natural timeout discovery -> 15 second grace period
                             handleSessionDeath();
                         }
                     }
                 } catch (error) {
-                    if (forceCheck) setShowExpiredModal(true);
-                    else handleSessionDeath();
+                    // Network glitch. Do not falsely fail a forceCheck over a momentary network drop
+                    if (!forceCheck) {
+                        handleSessionDeath();
+                    }
                 }
             } else if (!config.usePhpSessionApi && elapsedMs > makezSessionLimitMs) {
                 // strict fallback mapping entirely ignoring the server if disabled natively
