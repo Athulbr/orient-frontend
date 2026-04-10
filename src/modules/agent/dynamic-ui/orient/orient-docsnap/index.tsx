@@ -457,7 +457,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                             onValueChange={setStatusFilter}
                             options={[
                                 { label: 'All Status', value: 'all' },
-                                { label: 'Pending', value: 'pending' },
+                                { label: 'Extraction Pending', value: 'pending' },
                                 { label: 'Review Pending', value: 'extracted' },
                                 { label: 'Maraekat Submitted', value: 'submitted' },
                                 { label: 'Extraction Failed', value: 'failed' }

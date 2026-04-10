@@ -457,7 +457,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <span className="text-[22px] font-extrabold text-gray-900 tracking-tight">{order.orderDetails.orderNumber}</span>
                         <span className={`inline-flex items-center gap-1 text-xs font-extrabold ${status.text} ${status.bg} border ${status.border} px-2 py-[3px] rounded-full`}>
                             <span className={`w-[5px] h-[5px] rounded-full ${status.dot} inline-block`} />
-                            {order.orderDetails.orderStatus === 'extracted' ? 'Review Pending' : order.orderDetails.orderStatus}
+                            {order.orderDetails.orderStatus === 'extracted' ? 'Review Pending' :order.orderDetails.orderStatus === 'pending' ? 'Extraction Pending' : order.orderDetails.orderStatus}
                         </span>
                         <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.orderType.toUpperCase()}</span>
                         <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
@@ -480,7 +480,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
                     <div className="flex gap-2 flex-wrap">
                         {[
-                            { icon: <User size={12} className="text-gray-400" />, val: `${order.userDetails.name} (#${order.userDetails.userId})` },
+                            { icon: <User size={12} className="text-gray-400" />, val: `${order.userDetails.name}` },
                             { icon: <Mail size={12} className="text-gray-400" />, val: order.userDetails.email },
                             { icon: <Phone size={12} className="text-gray-400" />, val: order.userDetails.phone },
                             ...(order.userDetails.panNumber ? [{ icon: <Hash size={12} className="text-gray-400" />, val: `PAN: ${order.userDetails.panNumber}` }] : []),

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import { Order } from './types';
@@ -6,8 +7,8 @@ import { Order } from './types';
 interface CreateOrderDialogProps {
     initialOrder?: Order;
     onClose: () => void;
-    onCreate: (order: Order) => void;
-    onUpdate?: (order: Order) => void;
+    onCreate: (order: Order) => void | Promise<void>;
+    onUpdate?: (order: Order) => void | Promise<void>;
 }
 
 const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onClose, onCreate, onUpdate }) => {
@@ -23,8 +24,9 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
     const [userEmail, setUserEmail] = useState(initialOrder?.userDetails.email || '');
     const [userPhone, setUserPhone] = useState(initialOrder?.userDetails.phone || '');
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const newErrors: { [key: string]: string } = {};
@@ -54,9 +56,11 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             return;
         }
         setErrors({});
+        setIsLoading(true);
 
-        if (isEdit && initialOrder && onUpdate) {
-            const updatedOrder: Order = {
+        try {
+            if (isEdit && initialOrder && onUpdate) {
+                const updatedOrder: Order = {
                 ...initialOrder,
                 orderDetails: {
                     ...initialOrder.orderDetails,
@@ -73,7 +77,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     phone: userPhone
                 }
             };
-            onUpdate(updatedOrder);
+            await onUpdate(updatedOrder);
             return;
         }
 
@@ -120,7 +124,10 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             }
         };
 
-        onCreate(newOrder);
+        await onCreate(newOrder);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -177,7 +184,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type <span className="text-red-500">*</span></label>
                         <div className="flex gap-4 mt-2">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -186,7 +193,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                     value="sell"
                                     checked={orderType === 'sell'}
                                     onChange={e => setOrderType(e.target.value as 'sell' | 'buy')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
                                 />
                                 <span className="text-sm text-gray-700">Sell</span>
                             </label>
@@ -197,7 +204,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                     value="buy"
                                     checked={orderType === 'buy'}
                                     onChange={e => setOrderType(e.target.value as 'sell' | 'buy')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
                                 />
                                 <span className="text-sm text-gray-700">Buy</span>
                             </label>
@@ -208,23 +215,23 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             Product Type <span className="text-red-500">*</span>
                         </label>
                         <div className="flex gap-4 mt-2">
-                            {['card', 'currency', 'TT'].map(type => (
-                                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                            {[{ label: 'Card', value: 'card' }, { label: 'Currency', value: 'currency' }, { label: 'TT', value: 'tt' }, { label: 'TP', value: 'tp' }].map(type => (
+                                <label key={type.value} className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         name="productType"
-                                        value={type}
-                                        checked={productType.includes(type)}
+                                        value={type.value}
+                                        checked={productType.includes(type.value)}
                                         onChange={e => {
-                                            const newTypes = e.target.checked ? [...productType, type] : productType.filter(t => t !== type);
+                                            const newTypes = e.target.checked ? [...productType, type.value] : productType.filter(t => t !== type.value);
                                             setProductType(newTypes);
                                             if (errors.productType && newTypes.length > 0) {
                                                 setErrors(prev => ({ ...prev, productType: '' }));
                                             }
                                         }}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
                                     />
-                                    <span className="text-sm text-gray-700 capitalize">{type}</span>
+                                    <span className="text-sm text-gray-700 capitalize">{type.label}</span>
                                 </label>
                             ))}
                         </div>
@@ -257,11 +264,16 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <Button outlined onClick={onClose} type="button">
+                <Button outlined onClick={onClose} type="button" disabled={isLoading}>
                     Cancel
                 </Button>
-                <Button onClick={handleSubmit} type="submit">
-                    {isEdit ? 'Update Order' : 'Create Order'}
+                <Button 
+                    onClick={handleSubmit} 
+                    type="submit" 
+                    disabled={isLoading}
+                    startIcon={isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : undefined}
+                >
+                    {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Order' : 'Create Order')}
                 </Button>
             </div>
         </form>

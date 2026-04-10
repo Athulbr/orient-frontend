@@ -6,6 +6,8 @@ import styles from './scrollbar.module.css';
 import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
 import { Order } from '../types';
+import { useToastStore } from '../../../../../../components/toast/ToastStore';
+
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -61,6 +63,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [record, setRecord] = useState<any>({});
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
     const [isSaving, setIsSaving] = useState(false);
+    const toast = useToastStore();
+
 
     useEffect(() => {
         const handlePopState = () => {
@@ -97,9 +101,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 const data = await res.json();
                 if (data.success) {
                     setRecord(data.record);
+                    toast.success('Record saved successfully');
                 }
             }
         } catch (error) {
+            toast.error('Failed to save record');
             console.error('Error saving record:', error);
         } finally {
             setIsSaving(false);
