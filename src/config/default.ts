@@ -67,6 +67,6 @@ export const config = {
         clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID
     },
     usePhpSessionApi: true, // Toggle to true to use check-session.php endpoint, false to use local strict timer
-    sessionTTLSeconds: 60, // Global timeout sync natively matching the Orient backend configs
+    sessionTTLSeconds: 1800, // Global timeout sync natively matching the Orient backend configs (30 mins)
     orientSessionApi: import.meta.env.VITE_ORIENT_SESSION_API
 };

@@ -136,13 +136,10 @@ export const useLoginPageApi = () => {
     };
 
     // ============================= login With PHP Session ==================================
-    const loginWithPhpSession = async (sessionToken: string, clientId: string) => {
+    const loginWithPhpSession = async (sessionToken: string, clientId: string, orderId?: string) => {
         try {
             setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
-
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId });
-
-            console.log('response from bootstrap-------->', res?.data);
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId, order_id: orderId });
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                 window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
@@ -163,7 +160,7 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                 window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
-                window?.location?.replace('/agent/list');
+                window?.location?.replace('/agent/run/69ce4d5d95ebad5341099ad1');
             } else {
                 setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.', oAuthLoading: false }));
             }
@@ -174,13 +171,17 @@ export const useLoginPageApi = () => {
     };
 
     useEffect(() => {
-        const queryParams = new URLSearchParams(window.location.search);
+        // Intercept native URL query strings to safely decode '+' literal symbols preserving base64 tokens before Space corruption
+        const rawSearch = window.location.search.replace(/\+/g, '%2B');
+        const queryParams = new URLSearchParams(rawSearch);
+
         const sessionToken = queryParams.get('token');
         const clientId = queryParams.get('client_id');
+        const orderId = queryParams.get('order_id');
 
         if (sessionToken && clientId) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            loginWithPhpSession(sessionToken, clientId);
+            loginWithPhpSession(sessionToken, clientId, orderId || undefined);
         } else {
             // No token present — Show login page.
         }
