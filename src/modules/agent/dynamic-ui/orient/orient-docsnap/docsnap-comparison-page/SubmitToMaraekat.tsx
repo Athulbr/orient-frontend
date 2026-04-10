@@ -366,7 +366,7 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
         SOURCEFROM: order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE',
         HANDLEDBY: 'SAJI',
         BOOKEDBY: 'SHAILESH',
-        PAXNAME: extractedData?.passport?.pax_name?.value || '',
+        PAXNAME: extractedData?.pan_card?.pax_name?.value || '',
         PASSPORTNO: extractedData?.passport?.passport_number?.value || '',
         PASSPORT_ISSUEFROM: extractedData?.passport?.passport_issued_from?.value || '',
         PASSPORT_ISSUEDATE: extractedData?.passport?.passport_issue_date?.value || '',
