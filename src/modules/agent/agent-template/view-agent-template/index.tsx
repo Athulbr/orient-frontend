@@ -1,38 +1,44 @@
-import { useState, useRef, useEffect, useCallback, DragEvent, MouseEvent } from "react";
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import httpRequest from '../../../../global-utils/httpRequest';
+import { config } from '../../../../config/default';
+import Editor from '@monaco-editor/react';
+import {
+    Settings,
+    Plus,
+    Trash2,
+    GripVertical,
+    ChevronDown,
+    ChevronRight,
+    Layers,
+    Table2,
+    FileText,
+    Save,
+    Check,
+    Zap,
+    MousePointerClick,
+    Type,
+    AlignLeft,
+    Code2,
+    ToggleLeft,
+    Hash,
+    List,
+    X,
+    ArrowLeft
+} from 'lucide-react';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────
 
-type LLMProvider = "openai" | "anthropic" | "azure" | "gemini";
+type LLMProvider = 'openai' | 'anthropic' | 'azure' | 'gemini';
 
-const llmModels: Record<LLMProvider, string[]> = {
-    openai: ["gpt-4o", "gpt-4o-mini", "gpt-5"],
-    anthropic: ["claude-sonnet-4-20250514", "claude-sonnet-4-5-20250929", "claude-3-7-sonnet-20250219"],
-    azure: ["gpt-4o-docsnap", "gpt-4o-mini-docsnap"],
-    gemini: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3-pro-preview", "gemini-3-flash-preview"],
+const LLM_MODELS: Record<LLMProvider, string[]> = {
+    openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-5'],
+    anthropic: ['claude-sonnet-4-20250514', 'claude-sonnet-4-5-20250929', 'claude-3-7-sonnet-20250219'],
+    azure: ['gpt-4o-docsnap', 'gpt-4o-mini-docsnap'],
+    gemini: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3-pro-preview', 'gemini-3-flash-preview']
 };
 
-type GroupType = "basic" | "table";
-
-interface Field {
-    key: string;
-    label: string;
-    instruction: string;
-    excludeExtraction: boolean;
-    hidden: boolean;
-    isTextarea: boolean;
-    required: boolean;
-    regularExpression: string;
-}
-
-interface Group {
-    id: string;
-    name: string;
-    type: GroupType;
-    instruction: string;
-    fields: Field[];
-}
-
-interface Settings {
+interface TemplateSettings {
     llmProvider: LLMProvider;
     llmModel: string;
     extractionLimit: number;
@@ -41,1211 +47,1137 @@ interface Settings {
     includeOcrTextForExtraction: boolean;
 }
 
+interface Field {
+    id: string;
+    key: string;
+    instruction: string;
+    label: string;
+    enums: string[];
+    validationScript: string;
+    excludeExtraction: boolean;
+    hidden: boolean;
+    isTextarea: boolean;
+    required: boolean;
+    regularExpression: string;
+}
+
+type SectionType = 'group' | 'table';
+
+interface Section {
+    id: string;
+    type: SectionType;
+    key: string;
+    label: string;
+    instruction?: string;
+    fields: Field[];
+}
+
 interface SelectedField {
-    groupId: string;
-    fieldKey: string;
+    field: Field;
+    sectionId: string;
+}
+
+type DragType = 'field' | 'section';
+
+interface DragPayload {
+    type?: DragType;
+    sectionId?: string;
+    fieldId?: string;
 }
 
 interface DragState {
-    sourceGroupId: string;
-    sourceIndex: number;
-    fieldKey: string;
+    draggingFieldId?: string;
+    overFieldId?: string;
+    draggingSectionId?: string;
+    overSectionId?: string;
 }
 
-interface DropTarget {
-    groupId: string;
-    index: number;
-}
+// ── Defaults ───────────────────────────────────────────────────────────────
 
-interface Toast {
-    msg: string;
-    icon: string;
-}
+const DEFAULT_SETTINGS: TemplateSettings = {
+    llmProvider: 'gemini',
+    llmModel: 'gemini-2.5-flash',
+    extractionLimit: 10,
+    disableBoundingBox: false,
+    alignmentCorrection: false,
+    includeOcrTextForExtraction: false
+};
 
-// ── Data ───────────────────────────────────────────────────────────────────────
+const DEFAULT_FIELD = (): Field => ({
+    id: crypto.randomUUID(),
+    key: 'new_field',
+    instruction: '',
+    label: 'New Field',
+    enums: [],
+    validationScript: '',
+    excludeExtraction: false,
+    hidden: false,
+    isTextarea: false,
+    required: false,
+    regularExpression: ''
+});
 
-const initialGroups: Group[] = [
+const DEFAULT_GROUP = (): Section => ({
+    id: crypto.randomUUID(),
+    type: 'group',
+    key: 'new_group',
+    label: 'New Group',
+    instruction: '',
+    fields: [DEFAULT_FIELD()]
+});
+
+const DEFAULT_TABLE = (): Section => ({
+    id: crypto.randomUUID(),
+    type: 'table',
+    key: 'new_table',
+    label: 'New Table',
+    instruction: '',
+    fields: [DEFAULT_FIELD()]
+});
+
+const INITIAL_SECTIONS: Section[] = [
     {
-        id: "basic_details", name: "Basic Details", type: "basic",
-        instruction: "Extract PO Number and PO Date",
+        id: 's1',
+        type: 'group',
+        key: 'basic_details',
+        label: 'Basic Details',
+        instruction: 'Extract PO Number and PO Date',
         fields: [
-            { key: "po_number", label: "PO Number", instruction: "Extract PO Number", excludeExtraction: false, hidden: false, isTextarea: false, required: true, regularExpression: "" },
-            { key: "po_date", label: "PO Date", instruction: "Extract PO Date", excludeExtraction: false, hidden: false, isTextarea: false, required: true, regularExpression: "" },
-        ],
+            {
+                id: 'f1',
+                key: 'po_number',
+                instruction: 'Extract PO Number',
+                label: 'PO Number',
+                enums: [],
+                validationScript: '',
+                excludeExtraction: false,
+                hidden: false,
+                isTextarea: false,
+                required: true,
+                regularExpression: ''
+            },
+            {
+                id: 'f2',
+                key: 'po_date',
+                instruction: 'Extract PO Date',
+                label: 'PO Date',
+                enums: [],
+                validationScript: '',
+                excludeExtraction: false,
+                hidden: false,
+                isTextarea: false,
+                required: true,
+                regularExpression: ''
+            }
+        ]
     },
     {
-        id: "line_items", name: "Line Items", type: "table",
-        instruction: "Extract Line Items",
+        id: 's2',
+        type: 'table',
+        key: 'line_items',
+        label: 'Line Items',
+        instruction: 'Extract Line Items',
         fields: [
-            { key: "item_name", label: "Sl No", instruction: "", excludeExtraction: false, hidden: false, isTextarea: false, required: true, regularExpression: "" },
-            { key: "description", label: "Description", instruction: "Extract Description", excludeExtraction: false, hidden: false, isTextarea: true, required: true, regularExpression: "" },
-            { key: "quantity", label: "Quantity", instruction: "Extract Quantity", excludeExtraction: false, hidden: false, isTextarea: false, required: true, regularExpression: "" },
-            { key: "unit_price", label: "Unit Price", instruction: "Extract Unit Price", excludeExtraction: false, hidden: false, isTextarea: false, required: true, regularExpression: "" },
-        ],
-    },
+            {
+                id: 'f3',
+                key: 'sl_no',
+                instruction: '',
+                label: 'Sl No',
+                enums: [],
+                validationScript: '',
+                excludeExtraction: false,
+                hidden: false,
+                isTextarea: false,
+                required: true,
+                regularExpression: ''
+            },
+            {
+                id: 'f4',
+                key: 'description',
+                instruction: 'Extract Description',
+                label: 'Description',
+                enums: [],
+                validationScript: '',
+                excludeExtraction: false,
+                hidden: false,
+                isTextarea: true,
+                required: true,
+                regularExpression: ''
+            },
+            {
+                id: 'f5',
+                key: 'quantity',
+                instruction: 'Extract Quantity',
+                label: 'Quantity',
+                enums: [],
+                validationScript: '',
+                excludeExtraction: false,
+                hidden: false,
+                isTextarea: false,
+                required: true,
+                regularExpression: ''
+            },
+            {
+                id: 'f6',
+                key: 'unit_price',
+                instruction: 'Extract Unit Price',
+                label: 'Unit Price',
+                enums: [],
+                validationScript: '',
+                excludeExtraction: false,
+                hidden: false,
+                isTextarea: false,
+                required: true,
+                regularExpression: ''
+            }
+        ]
+    }
 ];
 
-// ── Icons ──────────────────────────────────────────────────────────────────────
+// ── Sub-components ─────────────────────────────────────────────────────────
 
-type IconPath = string | string[];
+interface ToggleProps {
+    checked: boolean;
+    onChange: (value: boolean) => void;
+}
 
-const Icon = ({
-    d,
-    size = 14,
-    fill = "none",
-    stroke = "currentColor",
-    strokeWidth = 2,
-}: {
-    d: IconPath;
-    size?: number;
-    fill?: string;
-    stroke?: string;
-    strokeWidth?: number;
-}) => (
-    <svg
-        width={size} height={size} viewBox="0 0 24 24"
-        fill={fill} stroke={stroke} strokeWidth={strokeWidth}
-        strokeLinecap="round" strokeLinejoin="round"
-    >
-        {Array.isArray(d) ? d.map((p, i) => <path key={i} d={p} />) : <path d={d} />}
-    </svg>
-);
-
-const GripIcon = () => (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-        <circle cx="9" cy="5" r="1.5" /><circle cx="15" cy="5" r="1.5" />
-        <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
-        <circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" />
-    </svg>
-);
-
-// ── Toggle ─────────────────────────────────────────────────────────────────────
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ checked, onChange }: ToggleProps) {
     return (
-        <button
-            onClick={() => onChange(!checked)}
-            style={{
-                width: 34, height: 18, borderRadius: 9, border: "none",
-                cursor: "pointer", position: "relative",
-                background: checked ? "#4F46E5" : "#D1D5DB",
-                transition: "background .2s",
-                flexShrink: 0,
-            }}
-        >
-            <span style={{
-                position: "absolute", width: 14, height: 14,
-                background: "white", borderRadius: "50%",
-                top: 2, left: checked ? 18 : 2,
-                transition: "left .2s",
-                boxShadow: "0 1px 2px rgba(0,0,0,.15)",
-            }} />
-        </button>
+        <div onClick={() => onChange(!checked)} className={`relative flex-shrink-0 w-9 h-5 rounded-full cursor-pointer transition-colors duration-200 ${checked ? 'bg-blue-600' : 'bg-gray-300'}`}>
+            <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200" style={{ left: checked ? '18px' : '2px' }} />
+        </div>
     );
 }
 
-// ── useToast ───────────────────────────────────────────────────────────────────
-
-function useToast() {
-    const [toast, setToast] = useState<Toast | null>(null);
-    // @ts-ignore
-    const timer = useRef<ReturnType<typeof setTimeout>>();
-    const show = (msg: string, icon = "✓") => {
-        setToast({ msg, icon });
-        clearTimeout(timer.current);
-        timer.current = setTimeout(() => setToast(null), 2400);
-    };
-    return { toast, show };
+interface FieldLabelProps {
+    children: React.ReactNode;
 }
 
-// ── useResize ──────────────────────────────────────────────────────────────────
-
-function useResize(initialWidth: number, min: number, max: number, side: "left" | "right" = "right") {
-    const [width, setWidth] = useState(initialWidth);
-    const dragging = useRef(false);
-    const startX = useRef(0);
-    const startW = useRef(0);
-
-    const onMouseDown = useCallback((e: MouseEvent<HTMLDivElement>) => {
-        dragging.current = true;
-        startX.current = e.clientX;
-        startW.current = width;
-        document.body.style.cursor = "col-resize";
-        document.body.style.userSelect = "none";
-    }, [width]);
-
-    useEffect(() => {
-        const onMove = (e: globalThis.MouseEvent) => {
-            if (!dragging.current) return;
-            const delta = side === "right" ? e.clientX - startX.current : startX.current - e.clientX;
-            setWidth(Math.max(min, Math.min(max, startW.current + delta)));
-        };
-        const onUp = () => {
-            if (!dragging.current) return;
-            dragging.current = false;
-            document.body.style.cursor = "";
-            document.body.style.userSelect = "";
-        };
-        window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseup", onUp);
-        return () => {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
-        };
-    }, [min, max, side]);
-
-    return { width, onMouseDown };
+function FieldLabel({ children }: FieldLabelProps) {
+    return <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{children}</div>;
 }
 
-// ── ResizeHandle ───────────────────────────────────────────────────────────────
+interface PanelSectionProps {
+    title: string;
+    icon: React.ElementType;
+    children: React.ReactNode;
+}
 
-function ResizeHandle({ onMouseDown }: { onMouseDown: (e: MouseEvent<HTMLDivElement>) => void }) {
-    const [hovered, setHovered] = useState(false);
+function PanelSection({ title, icon: Icon, children }: PanelSectionProps) {
     return (
-        <div
-            onMouseDown={onMouseDown}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                width: 4, flexShrink: 0, cursor: "col-resize",
-                position: "relative", zIndex: 10,
-                background: hovered ? "#818CF8" : "#E5E7EB",
-                transition: "background .15s",
-            }}
+        <div className="mb-5">
+            <div className="flex items-center gap-1.5 mb-2.5">
+                <Icon size={13} className="text-gray-400" />
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{title}</span>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+function Divider() {
+    return <div className="border-t border-gray-100 mb-5" />;
+}
+
+interface ToggleRowProps {
+    label: string;
+    desc: string;
+    checked: boolean;
+    onChange: (value: boolean) => void;
+    index: number;
+    total: number;
+}
+
+function ToggleRow({ label, desc, checked, onChange, index, total }: ToggleRowProps) {
+    const isFirst = index === 0;
+    const isLast = index === total - 1;
+    const radius = isFirst ? 'rounded-t-lg' : isLast ? 'rounded-b-lg' : 'rounded-none';
+    const borderTop = isFirst ? 'border' : 'border border-t-0';
+    const bg = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+
+    return (
+        <div className={`flex items-center justify-between px-3 py-2.5 ${bg} ${radius} ${borderTop} border-gray-200`}>
+            <div>
+                <div className="text-[13px] font-medium text-gray-900">{label}</div>
+                <div className="text-[11px] text-gray-400 mt-0.5">{desc}</div>
+            </div>
+            <Toggle checked={checked} onChange={onChange} />
+        </div>
+    );
+}
+
+interface SelectProps {
+    value: string;
+    onChange: React.ChangeEventHandler<HTMLSelectElement>;
+    children: React.ReactNode;
+}
+
+function Select({ value, onChange, children }: SelectProps) {
+    return (
+        <select
+            value={value}
+            onChange={onChange}
+            className="w-full px-2.5 py-2 border border-gray-200 rounded-lg text-[13px] text-gray-900 bg-white outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors"
+        >
+            {children}
+        </select>
+    );
+}
+
+interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+    className?: string;
+}
+
+function TextInput({ className = '', ...rest }: TextInputProps) {
+    return (
+        <input
+            className={`w-full px-2.5 py-2 border border-gray-200 rounded-lg text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors ${className}`}
+            {...rest}
         />
     );
 }
 
-// ── Settings Dialog ────────────────────────────────────────────────────────────
+// ── Template Settings Panel ────────────────────────────────────────────────
 
-function SettingsDialog({
-    settings,
-    onUpdate,
-    onClose,
-}: {
-    settings: Settings;
-    onUpdate: (c: Partial<Settings>) => void;
-    onClose: () => void;
-}) {
-    const models = llmModels[settings.llmProvider] ?? [];
-    const flags: Array<[keyof Settings, string]> = [
-        ["disableBoundingBox", "Disable bounding box"],
-        ["alignmentCorrection", "Alignment correction"],
-        ["includeOcrTextForExtraction", "Include OCR text for extraction"],
+interface TemplateSettingsPanelProps {
+    settings: TemplateSettings;
+    onChange: (settings: TemplateSettings) => void;
+}
+
+function TemplateSettingsPanel({ settings, onChange }: TemplateSettingsPanelProps) {
+    const set = <K extends keyof TemplateSettings>(k: K, v: TemplateSettings[K]) => onChange({ ...settings, [k]: v });
+
+    const toggles: Array<{ key: keyof Pick<TemplateSettings, 'disableBoundingBox' | 'alignmentCorrection' | 'includeOcrTextForExtraction'>; label: string; desc: string }> = [
+        { key: 'disableBoundingBox', label: 'Disable Bounding Box', desc: 'Skip bounding box detection' },
+        { key: 'alignmentCorrection', label: 'Alignment Correction', desc: 'Auto-correct document alignment' },
+        { key: 'includeOcrTextForExtraction', label: 'Include OCR Text', desc: 'Use OCR text layer for extraction' }
     ];
 
-    const selectStyle: React.CSSProperties = {
-        width: "100%", padding: "6px 8px",
-        border: "0.5px solid #D1D5DB", borderRadius: 6,
-        background: "#F9FAFB", color: "#111827",
-        fontSize: 13, fontFamily: "inherit", outline: "none",
-        appearance: "none",
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "right 8px center",
-        paddingRight: 28,
+    return (
+        <div className="p-5 overflow-y-auto h-full">
+            <PanelSection title="Model" icon={Zap}>
+                <div className="mb-2.5">
+                    <FieldLabel>Provider</FieldLabel>
+                    <Select
+                        value={settings.llmProvider}
+                        onChange={e =>
+                            onChange({
+                                ...settings,
+                                llmProvider: e.target.value as LLMProvider,
+                                llmModel: LLM_MODELS[e.target.value as LLMProvider][0]
+                            })
+                        }
+                    >
+                        {(Object.keys(LLM_MODELS) as LLMProvider[]).map(p => (
+                            <option key={p} value={p}>
+                                {p.charAt(0).toUpperCase() + p.slice(1)}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
+                <div>
+                    <FieldLabel>Model</FieldLabel>
+                    <Select value={settings.llmModel} onChange={e => set('llmModel', e.target.value)}>
+                        {(LLM_MODELS[settings.llmProvider] ?? []).map(m => (
+                            <option key={m} value={m}>
+                                {m}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
+            </PanelSection>
+
+            <Divider />
+
+            <PanelSection title="Extraction" icon={Hash}>
+                <FieldLabel>Extraction Limit</FieldLabel>
+                <TextInput type="number" value={settings.extractionLimit} onChange={e => set('extractionLimit', Number(e.target.value))} min={1} max={100} />
+            </PanelSection>
+
+            <Divider />
+
+            <PanelSection title="Options" icon={ToggleLeft}>
+                <div className="flex flex-col">
+                    {toggles.map(({ key, label, desc }, i) => (
+                        <ToggleRow key={key} label={label} desc={desc} checked={settings[key]} onChange={v => set(key, v)} index={i} total={toggles.length} />
+                    ))}
+                </div>
+            </PanelSection>
+        </div>
+    );
+}
+
+// ── Field Settings Panel ───────────────────────────────────────────────────
+
+interface FieldSettingsPanelProps {
+    field: Field;
+    sectionId: string;
+    onUpdate: (sectionId: string, fieldId: string, patch: Partial<Field>) => void;
+    onClose: () => void;
+}
+
+function FieldSettingsPanel({ field, sectionId, onUpdate, onClose }: FieldSettingsPanelProps) {
+    const set = <K extends keyof Field>(k: K, v: Field[K]) => onUpdate(sectionId, field.id, { [k]: v });
+    const [newEnum, setNewEnum] = useState('');
+
+    const toggles: Array<{ key: keyof Pick<Field, 'required' | 'isTextarea' | 'excludeExtraction' | 'hidden'>; label: string; desc: string }> = [
+        { key: 'required', label: 'Required', desc: 'Field must be present in extraction' },
+        { key: 'isTextarea', label: 'Textarea', desc: 'Render as multi-line text input' },
+        { key: 'excludeExtraction', label: 'Exclude from Extraction', desc: 'Skip this field during extraction' },
+        { key: 'hidden', label: 'Hidden', desc: 'Hide this field from output' }
+    ];
+
+    const handleAddEnum = () => {
+        if (newEnum.trim() !== '') {
+            const values = newEnum
+                .split(',')
+                .map(v => v.trim())
+                .filter(v => v !== '');
+            const currentEnums = field.enums || [];
+            const newValues = values.filter(v => !currentEnums.includes(v));
+            if (newValues.length > 0) {
+                set('enums', [...currentEnums, ...newValues]);
+            }
+            setNewEnum('');
+        }
+    };
+
+    const handleRemoveEnum = (val: string) => {
+        set(
+            'enums',
+            (field.enums || []).filter(e => e !== val)
+        );
     };
 
     return (
-        <div
-            style={{
-                position: "fixed", inset: 0, background: "rgba(0,0,0,.4)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                zIndex: 1000, padding: 20,
-            }}
-            onClick={(e) => e.target === e.currentTarget && onClose()}
-        >
-            <div style={{
-                background: "white", borderRadius: 12,
-                width: "100%", maxWidth: 400, overflow: "hidden",
-                border: "0.5px solid #E5E7EB",
-                boxShadow: "0 20px 40px rgba(0,0,0,.12)",
-            }}>
-                {/* Header */}
-                <div style={{
-                    padding: "12px 14px", borderBottom: "0.5px solid #F3F4F6",
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{
-                            width: 26, height: 26, borderRadius: 6,
-                            background: "#EEF2FF", color: "#4338CA",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                        }}>
-                            <Icon d="M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" size={12} />
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: "#111827" }}>LLM settings</span>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            width: 24, height: 24, border: "none", background: "transparent",
-                            borderRadius: 4, cursor: "pointer", display: "flex",
-                            alignItems: "center", justifyContent: "center", color: "#9CA3AF",
-                        }}
-                    >
-                        <Icon d="M18 6L6 18M6 6l12 12" size={13} />
-                    </button>
+        <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+                <div>
+                    <div className="text-[13px] font-bold text-gray-900">{field.label}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">Field configuration</div>
                 </div>
+                <button
+                    onClick={onClose}
+                    className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-500 border border-gray-200 rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                >
+                    <ChevronRight size={12} /> Deselect
+                </button>
+            </div>
 
-                {/* Body */}
-                <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                        {[
-                            {
-                                label: "Provider",
-                                control: (
-                                    <select
-                                        value={settings.llmProvider}
-                                        style={selectStyle}
-                                        onChange={(e) => {
-                                            const p = e.target.value as LLMProvider;
-                                            onUpdate({ llmProvider: p, llmModel: llmModels[p]?.[0] ?? "" });
-                                        }}
+            <div className="flex-1 overflow-y-auto p-4">
+                <PanelSection title="Identity" icon={Type}>
+                    <div className="flex gap-3">
+                        <div className="flex-1">
+                            <FieldLabel>Label</FieldLabel>
+                            <TextInput
+                                value={field.label}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    const newKey = val
+                                        .trim()
+                                        .toLowerCase()
+                                        .replace(/[^a-z0-9]+/g, '_')
+                                        .replace(/^_|_$/g, '');
+                                    onUpdate(sectionId, field.id, { label: val, key: newKey });
+                                }}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <FieldLabel>Key</FieldLabel>
+                            <TextInput value={field.key || ''} onChange={e => set('key', e.target.value)} />
+                        </div>
+                    </div>
+                </PanelSection>
+                <Divider />
+                <PanelSection title="Instruction" icon={AlignLeft}>
+                    <textarea
+                        value={field.instruction}
+                        onChange={e => set('instruction', e.target.value)}
+                        rows={4}
+                        placeholder="Describe what to extract for this field..."
+                        className="w-full px-2.5 py-2 border border-gray-200 rounded-lg text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors resize-y leading-relaxed font-sans"
+                    />
+                </PanelSection>
+                <Divider />
+                <PanelSection title="Enums" icon={List}>
+                    <FieldLabel>Allowed Values</FieldLabel>
+                    <div className="flex gap-2">
+                        <TextInput
+                            value={newEnum}
+                            onChange={e => setNewEnum(e.target.value)}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddEnum();
+                                }
+                            }}
+                            placeholder="Add enum value..."
+                            className="flex-1"
+                        />
+                        <button onClick={handleAddEnum} className="px-3 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-[13px] font-medium hover:bg-blue-100 transition-colors">
+                            Add
+                        </button>
+                    </div>
+                    {field.enums && field.enums.length > 0 && (
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                            {field.enums.map(enumVal => (
+                                <span key={enumVal} className="flex items-center gap-1 pl-2 pr-1 py-1 bg-gray-100 border border-gray-200 rounded-md text-[11px] text-gray-700">
+                                    {enumVal}
+                                    <button
+                                        onClick={() => handleRemoveEnum(enumVal)}
+                                        className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-red-500 rounded hover:bg-gray-200 transition-colors"
                                     >
-                                        {(Object.keys(llmModels) as LLMProvider[]).map((p) => (
-                                            <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
-                                        ))}
-                                    </select>
-                                ),
-                            },
-                            {
-                                label: "Model",
-                                control: (
-                                    <select
-                                        value={settings.llmModel}
-                                        style={selectStyle}
-                                        onChange={(e) => onUpdate({ llmModel: e.target.value })}
-                                    >
-                                        {models.map((m) => <option key={m} value={m}>{m}</option>)}
-                                    </select>
-                                ),
-                            },
-                        ].map(({ label, control }) => (
-                            <div key={label}>
-                                <div style={{ fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: ".07em", color: "#9CA3AF", marginBottom: 4 }}>{label}</div>
-                                {control}
-                            </div>
+                                        <X size={10} />
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </PanelSection>
+                <Divider />
+                <PanelSection title="Options" icon={ToggleLeft}>
+                    <div className="flex flex-col">
+                        {toggles.map(({ key, label, desc }, i) => (
+                            <ToggleRow key={key} label={label} desc={desc} checked={field[key]} onChange={v => set(key, v)} index={i} total={toggles.length} />
                         ))}
                     </div>
+                </PanelSection>
+                <PanelSection title="Validation" icon={Code2}>
+                    <FieldLabel>Regular Expression</FieldLabel>
+                    <input
+                        value={field.regularExpression}
+                        onChange={e => set('regularExpression', e.target.value)}
+                        placeholder="e.g. ^\d{4}-\d{2}-\d{2}$"
+                        className="w-full px-2.5 py-2 border border-gray-200 rounded-lg text-[12px] text-gray-700 font-mono outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors"
+                    />
+                    {field.regularExpression && (
+                        <div className="mt-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-md text-[11px] text-green-700 font-mono break-all">{field.regularExpression}</div>
+                    )}
 
-                    <div>
-                        <div style={{ fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: ".07em", color: "#9CA3AF", marginBottom: 4 }}>Extraction limit</div>
+                    <div className="mt-4">
+                        <FieldLabel>Script</FieldLabel>
+                        <div className="border border-gray-200 rounded-lg overflow-hidden bg-[#1e1e1e]">
+                            <Editor
+                                height="250px"
+                                defaultLanguage="javascript"
+                                theme="vs-light"
+                                value={field.validationScript}
+                                onChange={value => set('validationScript', value || '')}
+                                options={{
+                                    minimap: { enabled: false },
+                                    fontSize: 14,
+                                    fontFamily: 'sans-serif', // Set font family here
+                                    lineNumbers: 'on',
+                                    lineHeight: 24,
+                                    scrollBeyondLastLine: false,
+                                    wordWrap: 'on',
+                                    folding: false,
+                                    lineDecorationsWidth: 16,
+                                    lineNumbersMinChars: 3,
+                                    tabSize: 2,
+                                    padding: { top: 12, bottom: 12 }
+                                }}
+                            />
+                        </div>
+                    </div>
+                </PanelSection>
+                <Divider />
+            </div>
+        </div>
+    );
+}
+
+// ── Field Row ──────────────────────────────────────────────────────────────
+
+interface FieldRowProps {
+    field: Field;
+    sectionId: string;
+    onDelete: (sectionId: string, fieldId: string) => void;
+    onDragStart: (e: React.DragEvent, sectionId: string, fieldId: string) => void;
+    onDragOver: (e: React.DragEvent, sectionId: string, fieldId: string) => void;
+    onDrop: (e: React.DragEvent, sectionId: string, fieldId: string) => void;
+    isDragging: boolean;
+    isOver: boolean;
+    isSelected: boolean;
+    onSelect: (field: Field, sectionId: string) => void;
+}
+
+function FieldRow({ field, sectionId, onDelete, onDragStart, onDragOver, onDrop, isDragging, isOver, isSelected, onSelect }: FieldRowProps) {
+    interface Badge {
+        label: string;
+        cls: string;
+    }
+
+    const badges: Badge[] = [
+        field.required ? { label: 'Required', cls: 'text-red-600 bg-red-50' } : null,
+        field.hidden ? { label: 'Hidden', cls: 'text-gray-500 bg-gray-100' } : null,
+        field.isTextarea ? { label: 'Textarea', cls: 'text-violet-600 bg-violet-50' } : null,
+        field.excludeExtraction ? { label: 'Excluded', cls: 'text-amber-600 bg-amber-50' } : null
+    ].filter((b): b is Badge => b !== null);
+
+    return (
+        <div
+            draggable
+            onDragStart={e => {
+                onDragStart(e, sectionId, field.id);
+                e.stopPropagation();
+            }}
+            onDragOver={e => {
+                onDragOver(e, sectionId, field.id);
+            }}
+            onDrop={e => {
+                onDrop(e, sectionId, field.id);
+            }}
+            onClick={() => onSelect(field, sectionId)}
+            className={`flex items-center gap-2 px-2.5 py-3 rounded-lg mb-3 cursor-pointer transition-all duration-100 border
+        ${
+            isSelected
+                ? 'border-blue-400 bg-blue-50 shadow-[0_0_0_3px_rgba(191,219,254,0.4)]'
+                : isOver
+                  ? 'border-blue-300 bg-blue-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+        }
+        ${isDragging ? 'opacity-40' : 'opacity-100'}
+      `}
+        >
+            <GripVertical size={14} className={`flex-shrink-0 cursor-grab ${isSelected ? 'text-blue-300' : 'text-gray-300'}`} />
+
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`text-[13px] font-medium ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>{field.label}</span>
+                    {badges.map(b => (
+                        <span key={b.label} className={`text-[10px] font px-1.5 py-px rounded ${b.cls}`}>
+                            {b.label}
+                        </span>
+                    ))}
+                </div>
+                {field.instruction && <div className="text-[11px] text-gray-400 mt-0.5 truncate">{field.instruction}</div>}
+            </div>
+
+            <button
+                onClick={e => {
+                    e.stopPropagation();
+                    onDelete(sectionId, field.id);
+                }}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center border border-red-200 rounded-md bg-white text-red-400 hover:text-red-600 hover:border-red-400 transition-colors opacity-60 hover:opacity-100"
+            >
+                <Trash2 size={11} />
+            </button>
+        </div>
+    );
+}
+
+// ── Section Card ───────────────────────────────────────────────────────────
+
+interface SectionCardProps {
+    section: Section;
+    onUpdate: (id: string, key: keyof Section, val: string) => void;
+    onDelete: (id: string) => void;
+    onAddField: (sectionId: string) => void;
+    onDeleteField: (sectionId: string, fieldId: string) => void;
+    onDragStart: (e: React.DragEvent, sectionId: string, fieldId: string) => void;
+    onDragOver: (e: React.DragEvent, sectionId: string, fieldId: string) => void;
+    onDrop: (e: React.DragEvent, sectionId: string, fieldId: string) => void;
+    onSectionDragStart: (e: React.DragEvent, sectionId: string) => void;
+    onSectionDragOver: (e: React.DragEvent, sectionId: string) => void;
+    onSectionDrop: (e: React.DragEvent, sectionId: string) => void;
+    dragState: DragState;
+    selectedFieldId?: string;
+    onSelectField: (field: Field, sectionId: string) => void;
+    isSectionOver: boolean;
+    isSectionDragging: boolean;
+}
+
+function SectionCard({
+    section,
+    onUpdate,
+    onDelete,
+    onAddField,
+    onDeleteField,
+    onDragStart,
+    onDragOver,
+    onDrop,
+    onSectionDragStart,
+    onSectionDragOver,
+    onSectionDrop,
+    dragState,
+    selectedFieldId,
+    onSelectField,
+    isSectionOver,
+    isSectionDragging
+}: SectionCardProps) {
+    const [collapsed, setCollapsed] = useState(false);
+    const isTable = section.type === 'table';
+
+    const accentClasses = isTable
+        ? { icon: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-200', ring: 'border-violet-400' }
+        : { icon: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', ring: 'border-blue-400' };
+
+    return (
+        <div
+            draggable
+            onDragStart={e => onSectionDragStart(e, section.id)}
+            onDragOver={e => onSectionDragOver(e, section.id)}
+            onDrop={e => onSectionDrop(e, section.id)}
+            className={`rounded-xl bg-white mb-2.5 border transition-all duration-150
+        ${isSectionOver ? `${accentClasses.ring} shadow-[0_0_0_3px_rgba(191,219,254,0.3)]` : 'border-gray-200'}
+        ${isSectionDragging ? 'opacity-40 shadow-xl' : 'shadow-sm'}
+      `}
+        >
+            <div className={`flex items-center gap-2 px-3 py-2.5 cursor-grab ${!collapsed ? 'border-b border-gray-100' : ''}`}>
+                <GripVertical size={14} className="text-gray-300" />
+
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${accentClasses.bg} border ${accentClasses.border}`}>
+                    {isTable ? <Table2 size={12} className={accentClasses.icon} /> : <Layers size={12} className={accentClasses.icon} />}
+                </div>
+
+                <div className="flex-1 flex items-center gap-2 min-w-0">
+                    <input
+                        value={section.label || ''}
+                        onChange={e => {
+                            const val = e.target.value;
+                            const newKey = val
+                                .trim()
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '_')
+                                .replace(/^_|_$/g, '');
+                            onUpdate(section.id, 'label', val);
+                            onUpdate(section.id, 'key', newKey);
+                        }}
+                        onClick={e => e.stopPropagation()}
+                        placeholder="Group Label"
+                        className="w-1/2 min-w-0 border-none outline-none text-[12px] font-semibold text-gray-900 bg-transparent"
+                    />
+                    <input
+                        value={section.key || ''}
+                        onChange={e => onUpdate(section.id, 'key', e.target.value)}
+                        onClick={e => e.stopPropagation()}
+                        placeholder="group_key"
+                        className="w-1/2 min-w-0 border-none outline-none text-[10px] font-mono text-gray-500 bg-transparent"
+                    />
+                </div>
+
+                <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200 whitespace-nowrap">
+                    {isTable ? 'table' : 'group'} · {section.fields.length}
+                </span>
+
+                <button onClick={() => onDelete(section.id)} className="text-gray-200 hover:text-red-500 transition-colors p-0.5">
+                    <Trash2 size={13} />
+                </button>
+
+                <button onClick={() => setCollapsed(p => !p)} className="text-gray-400 hover:text-gray-600 transition-colors p-0.5">
+                    {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                </button>
+            </div>
+
+            {!collapsed && (
+                <div className="px-3 pb-3 pt-3">
+                    <div className="mb-3">
                         <input
-                            type="number" min={1} max={100}
-                            value={settings.extractionLimit}
-                            onChange={(e) => onUpdate({ extractionLimit: parseInt(e.target.value) || 1 })}
-                            style={{
-                                width: 90, padding: "6px 8px",
-                                border: "0.5px solid #D1D5DB", borderRadius: 6,
-                                fontFamily: "monospace", fontSize: 13,
-                                background: "#F9FAFB", color: "#111827", outline: "none",
-                            }}
+                            value={(section['instruction'] as string) ?? ''}
+                            onChange={e => onUpdate(section.id, 'instruction', e.target.value)}
+                            placeholder={`${isTable ? 'Table' : 'Group'} instruction...`}
+                            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md text-[12px] text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-colors"
                         />
                     </div>
 
-                    <div style={{ borderTop: "0.5px solid #F3F4F6", paddingTop: 12 }}>
-                        <div style={{ fontSize: 10, fontWeight: 500, textTransform: "uppercase", letterSpacing: ".07em", color: "#9CA3AF", marginBottom: 8 }}>Feature flags</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {flags.map(([key, label]) => (
-                                <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <span style={{ fontSize: 12, color: "#374151" }}>{label}</span>
-                                    <Toggle checked={settings[key] as boolean} onChange={(v) => onUpdate({ [key]: v })} />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                    {section.fields.map(f => (
+                        <FieldRow
+                            key={f.id}
+                            field={f}
+                            sectionId={section.id}
+                            onDelete={onDeleteField}
+                            onDragStart={onDragStart}
+                            onDragOver={onDragOver}
+                            onDrop={onDrop}
+                            isDragging={dragState.draggingFieldId === f.id}
+                            isOver={dragState.overFieldId === f.id}
+                            isSelected={selectedFieldId === f.id}
+                            onSelect={onSelectField}
+                        />
+                    ))}
 
-                {/* Footer */}
-                <div style={{
-                    padding: "10px 14px", borderTop: "0.5px solid #F3F4F6",
-                    background: "#F9FAFB", display: "flex", justifyContent: "flex-end",
-                }}>
                     <button
-                        onClick={onClose}
-                        style={{
-                            padding: "6px 16px", borderRadius: 6, border: "none",
-                            background: "#4F46E5", color: "white", fontSize: 13,
-                            fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
-                        }}
+                        onClick={() => onAddField(section.id)}
+                        className={`w-full py-1.5 border-2 border-dashed border-gray-200 rounded-lg text-[12px] text-gray-400 flex items-center justify-center gap-1.5 transition-all
+              ${isTable ? 'hover:border-violet-400 hover:text-violet-600' : 'hover:border-blue-400 hover:text-blue-600'}
+            `}
                     >
-                        Done
+                        <Plus size={12} /> Add Field
                     </button>
                 </div>
-            </div>
-        </div>
-    );
-}
-
-// ── Field Row ──────────────────────────────────────────────────────────────────
-
-function FieldRow({
-    field, groupId, index, isSelected, isDragging,
-    showIndicatorAbove, showIndicatorBelow,
-    onSelect, onDelete, onDuplicate, onDragStart, onDragOver, onDragEnd,
-}: {
-    field: Field;
-    groupId: string;
-    index: number;
-    isSelected: boolean;
-    isDragging: boolean;
-    showIndicatorAbove: boolean;
-    showIndicatorBelow: boolean;
-    onSelect: (groupId: string, fieldKey: string) => void;
-    onDelete: (groupId: string, fieldKey: string) => void;
-    onDuplicate: (groupId: string, fieldKey: string) => void;
-    onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string, index: number, fieldKey: string) => void;
-    onDragOver: (e: DragEvent<HTMLDivElement>, groupId: string, index: number) => void;
-    onDragEnd: () => void;
-}) {
-    const [hovered, setHovered] = useState(false);
-    const dotColor = field.isTextarea ? "#7C3AED" : field.required ? "#059669" : "#4F46E5";
-
-    return (
-        <div style={{ position: "relative", paddingTop: showIndicatorAbove ? 3 : 0, paddingBottom: showIndicatorBelow ? 3 : 0 }}>
-            {showIndicatorAbove && (
-                <div style={{ position: "absolute", top: 0, left: 4, right: 4, height: 2, background: "#4F46E5", borderRadius: 1, zIndex: 5 }} />
-            )}
-            <div
-                draggable
-                onDragStart={(e) => onDragStart(e, groupId, index, field.key)}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); onDragOver(e, groupId, index); }}
-                onDragEnd={onDragEnd}
-                onClick={() => onSelect(groupId, field.key)}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-                style={{
-                    display: "flex", alignItems: "center",
-                    background: "white",
-                    border: `0.5px solid ${isSelected ? "#4F46E5" : hovered ? "#9CA3AF" : "#E5E7EB"}`,
-                    borderRadius: 6, minHeight: 36,
-                    cursor: "grab", userSelect: "none",
-                    opacity: isDragging ? 0.25 : 1,
-                    boxShadow: isSelected ? "0 0 0 2px rgba(79,70,229,.12)" : "none",
-                    transition: "border-color .12s, box-shadow .12s, opacity .12s",
-                    overflow: "hidden",
-                }}
-            >
-                {/* Grip */}
-                <div style={{ width: 26, display: "flex", alignItems: "center", justifyContent: "center", color: "#D1D5DB", flexShrink: 0 }}>
-                    <GripIcon />
-                </div>
-
-                {/* Dot */}
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor, flexShrink: 0, marginRight: 8 }} />
-
-                {/* Label */}
-                <div style={{ flex: 1, fontSize: 12, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#111827" }}>
-                    {field.label}
-                </div>
-
-                {/* Key */}
-                <div style={{ fontFamily: "monospace", fontSize: 10, color: "#9CA3AF", padding: "0 8px", flexShrink: 0 }}>
-                    {field.key}
-                </div>
-
-                {/* Tags */}
-                <div style={{ display: "flex", gap: 3, paddingRight: 4, flexShrink: 0 }}>
-                    {field.required && <span style={{ fontSize: 10, fontWeight: 500, padding: "1px 5px", borderRadius: 3, background: "#D1FAE5", color: "#065F46" }}>Req</span>}
-                    {field.hidden && <span style={{ fontSize: 10, fontWeight: 500, padding: "1px 5px", borderRadius: 3, background: "#FEF3C7", color: "#92400E" }}>Hidden</span>}
-                    {field.isTextarea && <span style={{ fontSize: 10, fontWeight: 500, padding: "1px 5px", borderRadius: 3, background: "#EDE9FE", color: "#4C1D95" }}>Txt</span>}
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: "flex", gap: 2, padding: "0 4px", flexShrink: 0, opacity: hovered || isSelected ? 1 : 0, transition: "opacity .12s" }}>
-                    {[
-                        {
-                            icon: <Icon d={["M9 9h13v13H9z", "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"]} size={11} />,
-                            onClick: (e: React.MouseEvent) => { e.stopPropagation(); onDuplicate(groupId, field.key); },
-                            danger: false,
-                        },
-                        {
-                            icon: <Icon d={["M3 6h18", "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6", "M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"]} size={11} />,
-                            onClick: (e: React.MouseEvent) => { e.stopPropagation(); onDelete(groupId, field.key); },
-                            danger: true,
-                        },
-                    ].map(({ icon, onClick, danger }, i) => (
-                        <ActionButton key={i} onClick={onClick} danger={danger}>{icon}</ActionButton>
-                    ))}
-                </div>
-            </div>
-            {showIndicatorBelow && (
-                <div style={{ position: "absolute", bottom: 0, left: 4, right: 4, height: 2, background: "#4F46E5", borderRadius: 1, zIndex: 5 }} />
             )}
         </div>
     );
 }
 
-// ── ActionButton ───────────────────────────────────────────────────────────────
+// ── Main ───────────────────────────────────────────────────────────────────
 
-function ActionButton({ children, onClick, danger = false }: {
-    children: React.ReactNode;
-    onClick: (e: React.MouseEvent) => void;
-    danger?: boolean;
-}) {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <button
-            onClick={onClick}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                width: 24, height: 24, border: "none", borderRadius: 4,
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                background: hovered ? (danger ? "#FEE2E2" : "#F3F4F6") : "transparent",
-                color: hovered ? (danger ? "#DC2626" : "#374151") : "#9CA3AF",
-                transition: "background .1s, color .1s",
-            }}
-        >
-            {children}
-        </button>
-    );
-}
+export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
 
-// ── Group Card ─────────────────────────────────────────────────────────────────
+    const [templateName, setTemplateName] = useState('New Template');
+    const [settings, setSettings] = useState<TemplateSettings>(DEFAULT_SETTINGS);
+    const [sections, setSections] = useState<Section[]>([]);
+    const [saved, setSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 
-function GroupCard({
-    group, selectedField, dropTarget, dragState,
-    onSelectField, onDeleteGroup, onUpdateGroup, onAddField,
-    onDeleteField, onDuplicateField, onDragStart, onDragOver, onDragEnd, onDropIntoGroup,
-}: {
-    group: Group;
-    selectedField: SelectedField | null;
-    dropTarget: DropTarget | null;
-    dragState: DragState | null;
-    onSelectField: (groupId: string, fieldKey: string) => void;
-    onDeleteGroup: (id: string) => void;
-    onUpdateGroup: (id: string, changes: Partial<Group>) => void;
-    onAddField: (groupId: string) => void;
-    onDeleteField: (groupId: string, fieldKey: string) => void;
-    onDuplicateField: (groupId: string, fieldKey: string) => void;
-    onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string, index: number, fieldKey: string) => void;
-    onDragOver: (e: DragEvent<HTMLDivElement>, groupId: string, index: number) => void;
-    onDragEnd: () => void;
-    onDropIntoGroup: (e: DragEvent<HTMLDivElement>, groupId: string) => void;
-}) {
-    const isTable = group.type === "table";
-    const isActiveTarget = dropTarget?.groupId === group.id;
-    const [delHovered, setDelHovered] = useState(false);
-    const [addHovered, setAddHovered] = useState(false);
-
-    return (
-        <div style={{
-            background: "white",
-            border: `0.5px solid ${isActiveTarget ? "#818CF8" : "#E5E7EB"}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: isActiveTarget ? "0 0 0 3px rgba(99,102,241,.1)" : "0 1px 2px rgba(0,0,0,.03)",
-            transition: "border-color .15s, box-shadow .15s",
-        }}>
-            {/* Header */}
-            <div style={{
-                padding: "10px 12px", background: "#F9FAFB",
-                borderBottom: "0.5px solid #F3F4F6",
-                display: "flex", alignItems: "center", gap: 8,
-            }}>
-                <div style={{
-                    width: 28, height: 28, borderRadius: 6,
-                    background: isTable ? "#F5F3FF" : "#EEF2FF",
-                    color: isTable ? "#6D28D9" : "#4338CA",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    flexShrink: 0,
-                }}>
-                    {isTable
-                        ? <Icon d={["M3 3h18v18H3z", "M3 9h18", "M3 15h18", "M9 3v18"]} size={13} />
-                        : <Icon d={["M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z", "M14 2v6h6"]} size={13} />
+    // Load existing template in edit mode
+    useEffect(() => {
+        if (!isCreate && id) {
+            setIsLoadingTemplate(true);
+            httpRequest('GET', `${config.workflowService}/api/agent-templates/${id}`)
+                .then((res: any) => {
+                    if (res?.success && res.template) {
+                        const t = res.template;
+                        setTemplateName(t.name || 'Untitled');
+                        if (t.settings) setSettings(t.settings);
+                        if (t.sections) setSections(t.sections);
                     }
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    <input
-                        value={group.name}
-                        onChange={(e) => onUpdateGroup(group.id, { name: e.target.value })}
-                        style={{
-                            fontSize: 13, fontWeight: 500, border: "none", background: "transparent",
-                            fontFamily: "inherit", outline: "none", width: "100%", color: "#111827",
-                        }}
-                    />
-                    <div style={{ fontFamily: "monospace", fontSize: 10, color: "#9CA3AF", marginTop: 1 }}>{group.id}</div>
-                </div>
-                <span style={{
-                    fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 4,
-                    background: isTable ? "#F5F3FF" : "#EEF2FF",
-                    color: isTable ? "#6D28D9" : "#4338CA",
-                }}>
-                    {group.type}
-                </span>
-                <button
-                    onMouseEnter={() => setDelHovered(true)}
-                    onMouseLeave={() => setDelHovered(false)}
-                    onClick={() => onDeleteGroup(group.id)}
-                    style={{
-                        width: 24, height: 24, border: "none", borderRadius: 4,
-                        background: delHovered ? "#FEE2E2" : "transparent",
-                        color: delHovered ? "#DC2626" : "#9CA3AF",
-                        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "background .1s, color .1s",
-                    }}
-                >
-                    <Icon d={["M3 6h18", "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6", "M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"]} size={12} />
-                </button>
-            </div>
+                })
+                .catch((err: any) => console.error('Failed to load template', err))
+                .finally(() => setIsLoadingTemplate(false));
+        }
+    }, [id, isCreate]);
+    const [selectedField, setSelectedField] = useState<SelectedField | null>(null);
 
-            {/* Instruction */}
-            <div style={{
-                padding: "7px 12px", borderBottom: "0.5px solid #F3F4F6",
-                display: "flex", alignItems: "center", gap: 7,
-            }}>
-                <span style={{ color: "#9CA3AF", flexShrink: 0 }}>
-                    <Icon d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" size={11} />
-                </span>
-                <input
-                    value={group.instruction}
-                    onChange={(e) => onUpdateGroup(group.id, { instruction: e.target.value })}
-                    placeholder={`${isTable ? "Table" : "Group"} instruction for AI extraction...`}
-                    style={{
-                        flex: 1, border: "none", background: "transparent",
-                        fontFamily: "inherit", fontSize: 12, color: "#6B7280",
-                        outline: "none", fontStyle: "italic",
-                    }}
-                />
-            </div>
+    const [dragState, setDragState] = useState<DragState>({});
+    const dragPayload = useRef<DragPayload>({});
 
-            {/* Fields */}
-            <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => onDropIntoGroup(e, group.id)}
-                style={{ padding: 8, display: "flex", flexDirection: "column", gap: 4, minHeight: 48 }}
-            >
-                {group.fields.length === 0 ? (
-                    <div style={{
-                        border: `0.5px dashed ${isActiveTarget ? "#818CF8" : "#D1D5DB"}`,
-                        borderRadius: 6, padding: "10px 12px",
-                        textAlign: "center", fontSize: 11,
-                        color: isActiveTarget ? "#6D28D9" : "#9CA3AF",
-                        background: isActiveTarget ? "#F5F3FF" : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        transition: "all .15s",
-                    }}>
-                        <Icon d="M12 5v14M5 12h14" size={11} />
-                        Drop fields here or add below
-                    </div>
-                ) : (
-                    group.fields.map((field, i) => {
-                        const isBeingDragged = dragState?.fieldKey === field.key && dragState?.sourceGroupId === group.id;
-                        return (
-                            <FieldRow
-                                key={field.key}
-                                field={field}
-                                groupId={group.id}
-                                index={i}
-                                isSelected={selectedField?.groupId === group.id && selectedField?.fieldKey === field.key}
-                                isDragging={isBeingDragged}
-                                showIndicatorAbove={isActiveTarget && dropTarget?.index === i}
-                                showIndicatorBelow={isActiveTarget && dropTarget?.index === group.fields.length && i === group.fields.length - 1}
-                                onSelect={onSelectField}
-                                onDelete={onDeleteField}
-                                onDuplicate={onDuplicateField}
-                                onDragStart={onDragStart}
-                                onDragOver={onDragOver}
-                                onDragEnd={onDragEnd}
-                            />
-                        );
-                    })
-                )}
-            </div>
+    const [panelPcts, setPanelPcts] = useState({ left: 30, mid: 35 });
+    const containerRef = useRef<HTMLDivElement>(null);
 
-            {/* Footer */}
-            <div style={{ padding: "7px 10px", borderTop: "0.5px solid #F3F4F6", background: "#F9FAFB" }}>
-                <button
-                    onMouseEnter={() => setAddHovered(true)}
-                    onMouseLeave={() => setAddHovered(false)}
-                    onClick={() => onAddField(group.id)}
-                    style={{
-                        display: "flex", alignItems: "center", gap: 5,
-                        padding: "4px 8px", border: "none",
-                        background: addHovered ? "#EEF2FF" : "transparent",
-                        color: "#4F46E5", fontSize: 12, fontWeight: 500,
-                        cursor: "pointer", fontFamily: "inherit", borderRadius: 4,
-                        transition: "background .12s",
-                    }}
-                >
-                    <Icon d="M12 5v14M5 12h14" size={11} /> Add field
-                </button>
-            </div>
-        </div>
-    );
-}
+    const startResizeLeft = useCallback((e: React.MouseEvent) => {
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
 
-// ── Field Editor ───────────────────────────────────────────────────────────────
+        const onMove = (ev: MouseEvent) => {
+            if (!containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+            let newLeftPct = ((ev.clientX - rect.left) / rect.width) * 100;
 
-function FieldEditor({
-    field, groupId, onClose, onUpdate, onDelete,
-}: {
-    field: Field | null | undefined;
-    groupId: string | undefined;
-    onClose: () => void;
-    onUpdate: (key: keyof Field, value: Field[keyof Field]) => void;
-    onDelete: (groupId: string, fieldKey: string) => void;
-}) {
-    if (!field || !groupId) {
+            setPanelPcts(prev => {
+                const maxLeftPct = 90 - prev.mid;
+                newLeftPct = Math.max(5, Math.min(newLeftPct, maxLeftPct));
+                return { ...prev, left: newLeftPct };
+            });
+        };
+
+        const onUp = () => {
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    }, []);
+
+    const startResizeMid = useCallback((e: React.MouseEvent) => {
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+
+        const onMove = (ev: MouseEvent) => {
+            if (!containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+
+            setPanelPcts(prev => {
+                let newMidRightEdge = ((ev.clientX - rect.left) / rect.width) * 100;
+                let newMidPct = newMidRightEdge - prev.left;
+                newMidPct = Math.max(10, Math.min(newMidPct, 95 - prev.left));
+                return { ...prev, mid: newMidPct };
+            });
+        };
+
+        const onUp = () => {
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+    }, []);
+
+    const updateSection = (id: string, key: keyof Section, val: string) => setSections(s => s.map(sec => (sec.id === id ? { ...sec, [key]: val } : sec)));
+
+    const deleteSection = (id: string) => {
+        setSections(s => s.filter(sec => sec.id !== id));
+        if (selectedField?.sectionId === id) setSelectedField(null);
+    };
+
+    const addField = (sectionId: string) => {
+        const f = DEFAULT_FIELD();
+        setSections(s => s.map(sec => (sec.id === sectionId ? { ...sec, fields: [...sec.fields, f] } : sec)));
+        setSelectedField({ field: f, sectionId });
+    };
+
+    const deleteField = (sectionId: string, fieldId: string) => {
+        setSections(s => s.map(sec => (sec.id === sectionId ? { ...sec, fields: sec.fields.filter(f => f.id !== fieldId) } : sec)));
+        if (selectedField?.field.id === fieldId) setSelectedField(null);
+    };
+
+    const updateField = (sectionId: string, fieldId: string, patch: Partial<Field>) => {
+        setSections(s => s.map(sec => (sec.id === sectionId ? { ...sec, fields: sec.fields.map(f => (f.id === fieldId ? { ...f, ...patch } : f)) } : sec)));
+        if (selectedField?.field.id === fieldId) setSelectedField(prev => (prev ? { ...prev, field: { ...prev.field, ...patch } } : null));
+    };
+
+    const onSelectField = (field: Field, sectionId: string) => setSelectedField(prev => (prev?.field.id === field.id ? null : { field, sectionId }));
+
+    // Field DnD
+    const onFieldDragStart = (e: React.DragEvent, sectionId: string, fieldId: string) => {
+        dragPayload.current = { type: 'field', sectionId, fieldId };
+        setDragState(p => ({ ...p, draggingFieldId: fieldId }));
+        e.stopPropagation();
+    };
+    const onFieldDragOver = (e: React.DragEvent, sectionId: string, fieldId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragState(p => ({ ...p, overFieldId: fieldId }));
+    };
+    const onFieldDrop = (e: React.DragEvent, targetSectionId: string, targetFieldId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const { type, sectionId: srcSec, fieldId: srcField } = dragPayload.current;
+        if (type !== 'field' || srcField === targetFieldId) {
+            setDragState({});
+            return;
+        }
+        setSections(prev => {
+            const next = prev.map(sec => ({ ...sec, fields: [...sec.fields] }));
+            const srcSecObj = next.find(s => s.id === srcSec);
+            const tgtSecObj = next.find(s => s.id === targetSectionId);
+            if (!srcSecObj || !tgtSecObj || !srcField) return prev;
+            const field = srcSecObj.fields.find(f => f.id === srcField);
+            if (!field) return prev;
+            srcSecObj.fields = srcSecObj.fields.filter(f => f.id !== srcField);
+            const tgtIdx = tgtSecObj.fields.findIndex(f => f.id === targetFieldId);
+            tgtSecObj.fields.splice(tgtIdx, 0, field);
+            return next;
+        });
+        setDragState({});
+    };
+
+    // Section DnD
+    const onSectionDragStart = (e: React.DragEvent, sectionId: string) => {
+        dragPayload.current = { type: 'section', sectionId };
+        setDragState(p => ({ ...p, draggingSectionId: sectionId }));
+    };
+    const onSectionDragOver = (e: React.DragEvent, sectionId: string) => {
+        e.preventDefault();
+        if (dragPayload.current.type === 'section') setDragState(p => ({ ...p, overSectionId: sectionId }));
+    };
+    const onSectionDrop = (e: React.DragEvent, targetId: string) => {
+        e.preventDefault();
+        const { type, sectionId: srcId } = dragPayload.current;
+        if (type !== 'section' || srcId === targetId) {
+            setDragState({});
+            return;
+        }
+        setSections(prev => {
+            const next = [...prev];
+            const srcIdx = next.findIndex(s => s.id === srcId);
+            const tgtIdx = next.findIndex(s => s.id === targetId);
+            const [item] = next.splice(srcIdx, 1);
+            next.splice(tgtIdx, 0, item);
+            return next;
+        });
+        setDragState({});
+    };
+
+    const handleSave = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            const payload = { name: templateName, settings, sections };
+            if (isCreate) {
+                await httpRequest('POST', `${config.workflowService}/api/agent-templates`, payload);
+            } else if (id) {
+                await httpRequest('PATCH', `${config.workflowService}/api/agent-templates/${id}`, payload);
+            }
+            setSaved(true);
+            setTimeout(() => {
+                setSaved(false);
+                navigate('/agent/template/list');
+            }, 1000);
+        } catch (err) {
+            console.error('Failed to save template', err);
+            alert('Failed to save template. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const liveField = selectedField ? (sections.find(s => s.id === selectedField.sectionId)?.fields.find(f => f.id === selectedField.field.id) ?? null) : null;
+    const showingField = !!liveField;
+
+    const totalFields = sections.reduce((a, s) => a + s.fields.length, 0);
+
+    if (isLoadingTemplate) {
         return (
-            <div style={{
-                flex: 1, display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center",
-                color: "#9CA3AF", textAlign: "center", padding: 24, gap: 10,
-            }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: .3 }}>
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-                <p style={{ fontSize: 12 }}>Select a field to edit its properties</p>
+            <div className="flex flex-col items-center justify-center h-full bg-slate-50 gap-3">
+                <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                <span className="text-sm text-gray-500">Loading template...</span>
             </div>
         );
     }
 
-    const inputStyle: React.CSSProperties = {
-        width: "100%", padding: "6px 8px",
-        border: "0.5px solid #E5E7EB", borderRadius: 6,
-        background: "#F9FAFB", color: "#111827",
-        fontSize: 13, fontFamily: "inherit", outline: "none",
-        boxSizing: "border-box",
-    };
-
-    const monoInputStyle: React.CSSProperties = {
-        ...inputStyle, fontFamily: "monospace", fontSize: 11,
-    };
-
-    const labelStyle: React.CSSProperties = {
-        fontSize: 10, fontWeight: 500, textTransform: "uppercase",
-        letterSpacing: ".07em", color: "#9CA3AF", marginBottom: 4, display: "block",
-    };
-
     return (
-        <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {[
-                { label: "Label", key: "label" as keyof Field, mono: false },
-                { label: "Field key", key: "key" as keyof Field, mono: true },
-            ].map(({ label, key, mono }) => (
-                <div key={String(key)}>
-                    <label style={labelStyle}>{label}</label>
-                    <input
-                        type="text"
-                        value={field[key] as string}
-                        onChange={(e) => onUpdate(key, e.target.value)}
-                        style={mono ? monoInputStyle : inputStyle}
-                    />
+        <div className=" flex flex-col bg-slate-50 font-sans w-full">
+            {/* Header */}
+            <header className="bg-white border-b border-gray-200 px-5 flex items-center h-14 gap-3 flex-shrink-0">
+                <button
+                    onClick={() => navigate('/agent/template/list')}
+                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 hover:bg-gray-200 transition-colors cursor-pointer border border-gray-200"
+                    title="Back to templates"
+                >
+                    <ArrowLeft size={15} className="text-gray-600" />
+                </button>
+                <div className="w-8 h-8 rounded-lg bg-blue-900 flex items-center justify-center flex-shrink-0">
+                    <FileText size={15} className="text-white" />
                 </div>
-            ))}
-
-            <div>
-                <label style={labelStyle}>AI instruction</label>
-                <textarea
-                    value={field.instruction}
-                    onChange={(e) => onUpdate("instruction", e.target.value)}
-                    placeholder="Instructions for AI extraction..."
-                    style={{ ...inputStyle, resize: "vertical", minHeight: 60 }}
-                />
-            </div>
-
-            <div>
-                <label style={labelStyle}>Regex pattern</label>
-                <input
-                    type="text"
-                    value={field.regularExpression}
-                    onChange={(e) => onUpdate("regularExpression", e.target.value)}
-                    placeholder="e.g. ^PO-\d+"
-                    style={monoInputStyle}
-                />
-            </div>
-
-            <div style={{ height: "0.5px", background: "#F3F4F6" }} />
-
-            <div>
-                <div style={{ ...labelStyle, display: "block" }}>Options</div>
-                {[
-                    { label: "Required field", key: "required" as keyof Field },
-                    { label: "Multiline (textarea)", key: "isTextarea" as keyof Field },
-                    { label: "Hidden from output", key: "hidden" as keyof Field },
-                    { label: "Exclude from extraction", key: "excludeExtraction" as keyof Field },
-                ].map(({ label, key }) => (
-                    <label key={String(key)} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", padding: "5px 0" }}>
-                        <input
-                            type="checkbox"
-                            checked={field[key] as boolean}
-                            onChange={(e) => onUpdate(key, e.target.checked)}
-                            style={{ width: 13, height: 13, accentColor: "#4F46E5", cursor: "pointer", flexShrink: 0 }}
-                        />
-                        <span style={{ fontSize: 12, color: "#374151" }}>{label}</span>
-                    </label>
-                ))}
-            </div>
-
-            <div style={{ height: "0.5px", background: "#F3F4F6" }} />
-
-            <DeleteButton onClick={() => { onDelete(groupId, field.key); onClose(); }}>
-                <Icon d={["M3 6h18", "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6", "M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"]} size={12} />
-                Remove field
-            </DeleteButton>
-        </div>
-    );
-}
-
-function DeleteButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <button
-            onClick={onClick}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 6, padding: "7px 12px", width: "100%",
-                border: "none", borderRadius: 6,
-                background: hovered ? "#FEE2E2" : "#FEF2F2",
-                color: "#DC2626", fontSize: 12, fontWeight: 500,
-                cursor: "pointer", fontFamily: "inherit",
-                transition: "background .12s",
-            }}
-        >
-            {children}
-        </button>
-    );
-}
-
-// ── Main ───────────────────────────────────────────────────────────────────────
-
-export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
-    const [groups, setGroups] = useState<Group[]>(initialGroups);
-    const [templateName, setTemplateName] = useState("Purchase Order Extraction");
-    const [settings, setSettings] = useState<Settings>({
-        llmProvider: "gemini", llmModel: "gemini-2.5-flash",
-        extractionLimit: 10, disableBoundingBox: false,
-        alignmentCorrection: false, includeOcrTextForExtraction: false,
-    });
-    const [selectedField, setSelectedField] = useState<SelectedField | null>(null);
-    const [dragState, setDragState] = useState<DragState | null>(null);
-    const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
-    const [showSettings, setShowSettings] = useState(false);
-    const { toast, show: showToast } = useToast();
-
-    const rightPanel = useResize(260, 190, 520, "left");
-
-    // ── Helpers ──────────────────────────────────────────────────────────────────
-
-    const updateGroups = (fn: (gs: Group[]) => Group[]) =>
-        setGroups((prev) => fn(prev.map((g) => ({ ...g, fields: [...g.fields] }))));
-
-    const addGroup = (type: GroupType) => {
-        const id = `group_${Date.now()}`;
-        updateGroups((gs) => [...gs, {
-            id, name: type === "table" ? "New Table" : "New Group",
-            type, instruction: "", fields: [],
-        }]);
-        showToast(`${type === "table" ? "Table" : "Basic"} group added`, "✅");
-    };
-
-    const deleteGroup = (id: string) => {
-        if (!confirm("Delete this group and all its fields?")) return;
-        updateGroups((gs) => gs.filter((g) => g.id !== id));
-        if (selectedField?.groupId === id) setSelectedField(null);
-        showToast("Group deleted", "🗑️");
-    };
-
-    const updateGroup = (id: string, changes: Partial<Group>) =>
-        updateGroups((gs) => gs.map((g) => g.id === id ? { ...g, ...changes } : g));
-
-    const addField = (groupId: string) => {
-        const key = `field_${Date.now()}`;
-        updateGroups((gs) => gs.map((g) =>
-            g.id === groupId
-                ? { ...g, fields: [...g.fields, { key, label: "New Field", instruction: "", excludeExtraction: false, hidden: false, isTextarea: false, required: false, regularExpression: "" }] }
-                : g
-        ));
-        setSelectedField({ groupId, fieldKey: key });
-        showToast("Field added", "✅");
-    };
-
-    const deleteField = (groupId: string, fieldKey: string) => {
-        updateGroups((gs) => gs.map((g) =>
-            g.id === groupId ? { ...g, fields: g.fields.filter((f) => f.key !== fieldKey) } : g
-        ));
-        if (selectedField?.groupId === groupId && selectedField?.fieldKey === fieldKey) setSelectedField(null);
-    };
-
-    const duplicateField = (groupId: string, fieldKey: string) => {
-        updateGroups((gs) => gs.map((g) => {
-            if (g.id !== groupId) return g;
-            const fi = g.fields.findIndex((f) => f.key === fieldKey);
-            if (fi === -1) return g;
-            const copy = { ...g.fields[fi], key: `${fieldKey}_copy_${Date.now()}`, label: `${g.fields[fi].label} (Copy)` };
-            const fields = [...g.fields];
-            fields.splice(fi + 1, 0, copy);
-            return { ...g, fields };
-        }));
-        showToast("Field duplicated", "✅");
-    };
-
-    const updateFieldProp = (key: keyof Field, value: Field[keyof Field]) => {
-        if (!selectedField) return;
-        updateGroups((gs) => gs.map((g) => {
-            if (g.id !== selectedField.groupId) return g;
-            return {
-                ...g,
-                fields: g.fields.map((f) => {
-                    if (f.key !== selectedField.fieldKey) return f;
-                    if (key === "key") setSelectedField((s) => s ? { ...s, fieldKey: value as string } : s);
-                    return { ...f, [key]: value };
-                }),
-            };
-        }));
-    };
-
-    // ── Drag & Drop ──────────────────────────────────────────────────────────────
-
-    const onDragStart = useCallback((e: DragEvent<HTMLDivElement>, sourceGroupId: string, sourceIndex: number, fieldKey: string) => {
-        setDragState({ sourceGroupId, sourceIndex, fieldKey });
-        e.dataTransfer.effectAllowed = "move";
-        const ghost = document.createElement("div");
-        ghost.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
-        document.body.appendChild(ghost);
-        e.dataTransfer.setDragImage(ghost, 0, 0);
-        requestAnimationFrame(() => document.body.removeChild(ghost));
-    }, []);
-
-    const onDragOver = useCallback((e: DragEvent<HTMLDivElement>, groupId: string, index: number) => {
-        e.preventDefault();
-        const el = e.currentTarget as HTMLElement;
-        const rect = el.getBoundingClientRect();
-        const insertIndex = e.clientY < rect.top + rect.height / 2 ? index : index + 1;
-        setDropTarget((prev) =>
-            prev?.groupId === groupId && prev?.index === insertIndex ? prev : { groupId, index: insertIndex }
-        );
-    }, []);
-
-    const onDragEnd = useCallback(() => {
-        setDragState(null);
-        setDropTarget(null);
-    }, []);
-
-    const commitDrop = useCallback((targetGroupId: string, insertAt: number) => {
-        if (!dragState) return;
-        const { sourceGroupId, sourceIndex } = dragState;
-        setGroups((prev) => {
-            const gs = prev.map((g) => ({ ...g, fields: [...g.fields] }));
-            const src = gs.find((g) => g.id === sourceGroupId);
-            const tgt = gs.find((g) => g.id === targetGroupId);
-            if (!src || !tgt) return prev;
-            const [field] = src.fields.splice(sourceIndex, 1);
-            let idx = insertAt;
-            if (sourceGroupId === targetGroupId && insertAt > sourceIndex) idx -= 1;
-            idx = Math.max(0, Math.min(idx, tgt.fields.length));
-            tgt.fields.splice(idx, 0, field);
-            return gs;
-        });
-        if (selectedField?.fieldKey === dragState.fieldKey) {
-            setSelectedField((s) => s ? { ...s, groupId: targetGroupId } : s);
-        }
-        setDragState(null);
-        setDropTarget(null);
-        showToast("Field moved", "↕️");
-    }, [dragState, selectedField]);
-
-    const onDropIntoGroup = useCallback((e: DragEvent<HTMLDivElement>, targetGroupId: string) => {
-        e.preventDefault();
-        if (!dragState) return;
-        const idx = dropTarget?.groupId === targetGroupId ? dropTarget.index : Infinity;
-        const tgtGroup = groups.find((g) => g.id === targetGroupId);
-        commitDrop(targetGroupId, tgtGroup ? Math.min(idx, tgtGroup.fields.length) : 0);
-    }, [dragState, dropTarget, groups, commitDrop]);
-
-    // ── Export ───────────────────────────────────────────────────────────────────
-
-    const exportJSON = () => {
-        const fields: Record<string, Record<string, unknown>> = {};
-        groups.forEach((g) => {
-            const instrKey = g.type === "table" ? "table_instruction" : "group_instruction";
-            fields[g.id] = { [instrKey]: g.instruction };
-            g.fields.forEach(({ key, ...rest }) => { fields[g.id][key] = rest; });
-        });
-        const blob = new Blob([JSON.stringify({ name: templateName, settings, fields }, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a"); a.href = url; a.download = "template.json"; a.click();
-        URL.revokeObjectURL(url);
-        showToast("JSON exported!", "📦");
-    };
-
-    const activeField = selectedField
-        ? groups.find((g) => g.id === selectedField.groupId)?.fields.find((f) => f.key === selectedField.fieldKey)
-        : null;
-
-    const topBarButtons = [
-        {
-            label: "Settings",
-            icon: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z",
-            onClick: () => setShowSettings(true),
-            primary: false,
-        },
-        {
-            label: "Save",
-            icon: ["M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z", "M17 21v-8H7v8", "M7 3v5h8"] as IconPath,
-            onClick: () => showToast("Draft saved", "💾"),
-            primary: false,
-        },
-        {
-            label: "Export",
-            icon: ["M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", "M7 10l5 5 5-5", "M12 15V3"] as IconPath,
-            onClick: exportJSON,
-            primary: false,
-        },
-        {
-            label: "Publish",
-            icon: "M20 6L9 17l-4-4",
-            onClick: () => showToast("Template published!", "🚀"),
-            primary: true,
-        },
-    ];
-
-    return (
-        <div style={{
-            fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-            background: "#F5F6F8", color: "#111827",
-            display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden", fontSize: 13,
-        }}>
-            {/* Topbar */}
-            <div style={{
-                background: "white", borderBottom: "0.5px solid #E5E7EB",
-                padding: "0 16px", height: 52,
-                display: "flex", alignItems: "center", gap: 10, flexShrink: 0,
-            }}>
-                <div style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
-                    <Icon d={["M3 3h18v18H3z", "M9 9h6", "M9 12h6", "M9 15h4"]} size={13} fill="none" stroke="white" />
-                </div>
-                <span style={{ fontSize: 14, fontWeight: 500, color: "#111827" }}>Template Builder</span>
-                <span style={{
-                    background: "#EEF2FF", color: "#4338CA", fontSize: 10, fontWeight: 500,
-                    padding: "2px 7px", borderRadius: 20, border: "0.5px solid #C7D2FE",
-                }}>
-                    beta
-                </span>
 
                 <input
                     value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    placeholder="Template name..."
-                    style={{
-                        flex: 1, maxWidth: 280, margin: "0 auto",
-                        textAlign: "center", border: "0.5px solid transparent",
-                        background: "transparent", color: "#111827",
-                        padding: "5px 10px", borderRadius: 6, fontFamily: "inherit",
-                        fontWeight: 500, fontSize: 13, outline: "none",
-                    }}
-                    onFocus={(e) => {
-                        e.currentTarget.style.borderColor = "#4F46E5";
-                        e.currentTarget.style.background = "white";
-                    }}
-                    onBlur={(e) => {
-                        e.currentTarget.style.borderColor = "transparent";
-                        e.currentTarget.style.background = "transparent";
-                    }}
+                    onChange={e => setTemplateName(e.target.value)}
+                    className="flex-1 border-none outline-none text-[15px] font-semibold text-gray-900 bg-transparent max-w-sm"
                 />
 
-                <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
-                    {topBarButtons.map(({ label, icon, onClick, primary }) => (
-                        <TopBarButton key={label} icon={icon} onClick={onClick} primary={primary}>{label}</TopBarButton>
-                    ))}
+                <div className="ml-auto flex items-center gap-2">
+                    <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
+                        {settings.llmProvider} · {settings.llmModel}
+                    </div>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border-none text-[13px] text-white font-medium cursor-pointer transition-colors duration-200 disabled:opacity-60 ${saved ? 'bg-green-600' : 'bg-blue-900 hover:bg-blue-800'}`}
+                    >
+                        {saved ? <Check size={14} /> : <Save size={14} />}
+                        {isSaving ? 'Saving...' : saved ? 'Saved!' : isCreate ? 'Create Template' : 'Save Template'}
+                    </button>
                 </div>
-            </div>
+            </header>
 
             {/* Body */}
-            <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-                {/* Canvas */}
-                <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, marginBottom: 2 }}>
-                        <div>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: "#111827" }}>Template fields</div>
-                            <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>Drag fields to reorder or move between groups</div>
-                        </div>
-                        <div style={{ display: "flex", gap: 6 }}>
-                            {[
-                                {
-                                    type: "basic" as GroupType, label: "Basic group",
-                                    style: { background: "#EEF2FF", color: "#4338CA", borderColor: "#C7D2FE" },
-                                    icon: ["M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z", "M14 2v6h6"] as IconPath,
-                                },
-                                {
-                                    type: "table" as GroupType, label: "Table group",
-                                    style: { background: "#F5F3FF", color: "#6D28D9", borderColor: "#DDD6FE" },
-                                    icon: ["M3 3h18v18H3z", "M3 9h18", "M3 15h18", "M9 3v18"] as IconPath,
-                                },
-                            ].map(({ type, label, style, icon }) => (
-                                <button
-                                    key={type}
-                                    onClick={() => addGroup(type)}
-                                    style={{
-                                        display: "flex", alignItems: "center", gap: 5,
-                                        padding: "4px 10px",
-                                        border: `0.5px solid ${style.borderColor}`,
-                                        background: style.background, color: style.color,
-                                        borderRadius: 6, fontSize: 11, fontWeight: 500,
-                                        cursor: "pointer", fontFamily: "inherit",
-                                    }}
-                                >
-                                    <Icon d={icon} size={11} /> {label}
-                                </button>
-                            ))}
+            <div ref={containerRef} className="flex-1 flex overflow-hidden">
+                {/* Left: Empty Panel */}
+                <div className="flex-shrink-0 flex flex-col bg-white border-r border-gray-200 overflow-hidden" style={{ width: `${panelPcts.left}%` }}>
+                    <div className="p-4 flex-1 overflow-y-auto text-[12px] text-gray-400 flex items-center justify-center font-medium bg-slate-50">Panel 1 (Empty)</div>
+                </div>
+
+                {/* Resize Handle 1 */}
+                <div
+                    onMouseDown={startResizeLeft}
+                    className="w-1 flex-shrink-0 cursor-col-resize bg-transparent hover:bg-blue-200 transition-colors duration-150 z-10 relative after:absolute after:inset-y-0 after:-inset-x-1 after:z-10"
+                />
+
+                {/* Mid: Field List */}
+                <div className="flex-shrink-0 flex flex-col bg-white border-r border-gray-200 overflow-hidden" style={{ width: `${panelPcts.mid}%` }}>
+                    <div className="px-3.5 py-2.5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                        <span className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">
+                            Fields <span className="font-normal text-gray-400 normal-case tracking-normal">{totalFields} total</span>
+                        </span>
+                        <div className="flex gap-1.5">
+                            <button
+                                onClick={() => setSections(p => [...p, DEFAULT_GROUP()])}
+                                className="flex items-center gap-1 px-2.5 py-1 border border-blue-200 rounded-md bg-blue-50 text-[11px] text-blue-600 font-semibold hover:bg-blue-100 transition-colors cursor-pointer"
+                            >
+                                <Plus size={11} />
+                                <Layers size={11} /> Group
+                            </button>
+                            <button
+                                onClick={() => setSections(p => [...p, DEFAULT_TABLE()])}
+                                className="flex items-center gap-1 px-2.5 py-1 border border-violet-200 rounded-md bg-violet-50 text-[11px] text-violet-600 font-semibold hover:bg-violet-100 transition-colors cursor-pointer"
+                            >
+                                <Plus size={11} />
+                                <Table2 size={11} /> Table
+                            </button>
                         </div>
                     </div>
 
-                    {groups.map((g) => (
-                        <GroupCard
-                            key={g.id}
-                            group={g}
-                            selectedField={selectedField}
-                            dropTarget={dropTarget}
-                            dragState={dragState}
-                            onSelectField={(gId, fKey) => setSelectedField({ groupId: gId, fieldKey: fKey })}
-                            onDeleteGroup={deleteGroup}
-                            onUpdateGroup={updateGroup}
-                            onAddField={addField}
-                            onDeleteField={deleteField}
-                            onDuplicateField={duplicateField}
-                            onDragStart={onDragStart}
-                            onDragOver={onDragOver}
-                            onDragEnd={onDragEnd}
-                            onDropIntoGroup={onDropIntoGroup}
-                        />
-                    ))}
-
-                    {groups.length === 0 && (
-                        <div style={{
-                            flex: 1, display: "flex", flexDirection: "column",
-                            alignItems: "center", justifyContent: "center",
-                            padding: 48, color: "#9CA3AF", gap: 10, textAlign: "center",
-                        }}>
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: .3 }}>
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M12 11v6M9 14h6" />
-                            </svg>
-                            <p style={{ fontSize: 12 }}>No groups yet — add a Basic or Table group above.</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Resize handle */}
-                <ResizeHandle onMouseDown={rightPanel.onMouseDown} />
-
-                {/* Right Panel */}
-                <div style={{
-                    flexShrink: 0, background: "white",
-                    display: "flex", flexDirection: "column",
-                    borderLeft: "0.5px solid #E5E7EB", overflow: "hidden",
-                    width: rightPanel.width,
-                }}>
-                    <div style={{
-                        padding: "10px 12px", borderBottom: "0.5px solid #F3F4F6",
-                        display: "flex", alignItems: "center", justifyContent: "space-between",
-                        flexShrink: 0, background: "#F9FAFB",
-                    }}>
-                        <div style={{ fontSize: 12, fontWeight: 500, display: "flex", alignItems: "center", gap: 6, color: "#374151" }}>
-                            <Icon d={["M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7", "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"]} size={12} stroke="#6B7280" />
-                            Field editor
-                        </div>
-                        {selectedField && (
-                            <button
-                                onClick={() => setSelectedField(null)}
-                                style={{
-                                    width: 22, height: 22, border: "none", background: "transparent",
-                                    borderRadius: 4, cursor: "pointer", display: "flex",
-                                    alignItems: "center", justifyContent: "center", color: "#9CA3AF",
-                                }}
-                            >
-                                <Icon d="M18 6L6 18M6 6l12 12" size={11} />
-                            </button>
+                    <div
+                        className="flex-1 overflow-y-auto p-3"
+                        onDragOver={e => e.preventDefault()}
+                        onDrop={e => {
+                            if (dragPayload.current.type === 'section' && sections.length) onSectionDrop(e, sections[sections.length - 1].id);
+                        }}
+                    >
+                        {sections.length === 0 ? (
+                            <div className="text-center py-10 px-4">
+                                <Layers size={28} className="text-gray-300 mx-auto mb-2" />
+                                <div className="text-[13px] font-medium text-gray-500">No sections yet</div>
+                                <div className="text-[12px] text-gray-400">Add a group or table above</div>
+                            </div>
+                        ) : (
+                            sections.map(sec => (
+                                <SectionCard
+                                    key={sec.id}
+                                    section={sec}
+                                    onUpdate={updateSection}
+                                    onDelete={deleteSection}
+                                    onAddField={addField}
+                                    onDeleteField={deleteField}
+                                    onDragStart={onFieldDragStart}
+                                    onDragOver={onFieldDragOver}
+                                    onDrop={onFieldDrop}
+                                    onSectionDragStart={onSectionDragStart}
+                                    onSectionDragOver={onSectionDragOver}
+                                    onSectionDrop={onSectionDrop}
+                                    dragState={dragState}
+                                    isSectionOver={dragState.overSectionId === sec.id}
+                                    isSectionDragging={dragState.draggingSectionId === sec.id}
+                                    selectedFieldId={selectedField?.field.id}
+                                    onSelectField={onSelectField}
+                                />
+                            ))
                         )}
                     </div>
-                    <FieldEditor
-                        field={activeField}
-                        groupId={selectedField?.groupId}
-                        onClose={() => setSelectedField(null)}
-                        onUpdate={updateFieldProp}
-                        onDelete={deleteField}
-                    />
+                </div>
+
+                {/* Resize Handle 2 */}
+                <div
+                    onMouseDown={startResizeMid}
+                    className="w-1 flex-shrink-0 cursor-col-resize bg-transparent hover:bg-blue-200 transition-colors duration-150 z-10 relative after:absolute after:inset-y-0 after:-inset-x-1 after:z-10"
+                />
+
+                {/* Right: Settings Panel */}
+                <div className="flex-1 flex flex-col bg-white overflow-hidden">
+                    <div className="h-11 flex-shrink-0 border-b border-gray-100 flex items-stretch px-1">
+                        <button
+                            onClick={() => setSelectedField(null)}
+                            className={`flex items-center gap-1.5 px-4 border-none bg-transparent cursor-pointer text-[12px] transition-all duration-100 border-b-2
+                ${!showingField ? 'font-bold text-blue-600 border-b-blue-600' : 'font-medium text-gray-400 border-b-transparent hover:text-gray-600'}`}
+                        >
+                            <Zap size={13} /> Template Settings
+                        </button>
+
+                        {showingField && (
+                            <div className="flex items-center gap-1.5 px-4 text-[12px] font-bold text-blue-600 border-b-2 border-b-blue-600">
+                                <Settings size={13} />
+                                <span className="max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap">{liveField!.label}</span>
+                            </div>
+                        )}
+
+                        {!showingField && (
+                            <div className="ml-auto flex items-center gap-1.5 pr-4 text-[11px] text-gray-300">
+                                <MousePointerClick size={12} /> click a field to configure it
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1 overflow-hidden">
+                        {showingField && liveField && selectedField ? (
+                            <FieldSettingsPanel field={liveField} sectionId={selectedField.sectionId} onUpdate={updateField} onClose={() => setSelectedField(null)} />
+                        ) : (
+                            <TemplateSettingsPanel settings={settings} onChange={setSettings} />
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {showSettings && (
-                <SettingsDialog
-                    settings={settings}
-                    onUpdate={(c) => setSettings((s) => ({ ...s, ...c }))}
-                    onClose={() => setShowSettings(false)}
-                />
-            )}
-
-            {toast && (
-                <div style={{
-                    position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
-                    background: "#1E1B4B", color: "#C7D2FE",
-                    padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
-                    display: "flex", alignItems: "center", gap: 7,
-                    zIndex: 9999, whiteSpace: "nowrap",
-                    animation: "fadeInToast .18s ease",
-                }}>
-                    <span style={{ fontSize: 13 }}>{toast.icon}</span> {toast.msg}
-                </div>
-            )}
-
-            <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
-        @keyframes fadeInToast {
-          from { opacity: 0; transform: translateX(-50%) translateY(6px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-      `}</style>
         </div>
-    );
-}
-
-// ── TopBarButton ───────────────────────────────────────────────────────────────
-
-function TopBarButton({
-    children, icon, onClick, primary,
-}: {
-    children: React.ReactNode;
-    icon: IconPath;
-    onClick: () => void;
-    primary?: boolean;
-}) {
-    const [hovered, setHovered] = useState(false);
-    return (
-        <button
-            onClick={onClick}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                display: "flex", alignItems: "center", gap: 5,
-                padding: "5px 10px", borderRadius: 6,
-                border: primary ? "none" : "0.5px solid #E5E7EB",
-                background: primary
-                    ? (hovered ? "#4338CA" : "#4F46E5")
-                    : (hovered ? "#F9FAFB" : "transparent"),
-                color: primary ? "white" : "#374151",
-                fontSize: 12, fontWeight: 500,
-                cursor: "pointer", fontFamily: "inherit",
-                transition: "background .12s, border-color .12s",
-                whiteSpace: "nowrap",
-            }}
-        >
-            <Icon d={icon} size={12} stroke={primary ? "white" : "currentColor"} />
-            {children}
-        </button>
     );
 }
