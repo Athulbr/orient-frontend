@@ -102,6 +102,7 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
     const [pageBlobUrls, setPageBlobUrls] = useState<Record<number, string>>({});
     const pageBlobUrlsRef = useRef<Record<number, string>>({});
     const [pageLoading, setPageLoading] = useState(false);
+    const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
     const cfg = FILE_COLORS[file.type as keyof typeof FILE_COLORS] ?? FILE_COLORS.other;
     const shortName = file.name.replace(/\.[^.]+$/, '');
@@ -215,7 +216,7 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                     <button
                         onClick={e => {
                             e.stopPropagation();
-                            onRemove();
+                            setShowRemoveConfirm(true);
                         }}
                         className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white border border-red-200 shadow-sm cursor-pointer flex items-center justify-center z-10 transition-colors hover:bg-red-50"
                     >
@@ -329,6 +330,36 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                     </div>
                 </div>
             )}
+
+            {onRemove && (
+                <DialogComponent
+                    isOpen={showRemoveConfirm}
+                    closeDialog={() => setShowRemoveConfirm(false)}
+                    name="Remove Document"
+                    className="max-w-[400px]"
+                >
+                    <div className="p-6">
+                        <div className="text-gray-600 mb-6 text-sm">
+                            Are you sure you want to remove <strong className="break-all">{file.name}</strong>?
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <Button outlined onClick={(e) => { e.stopPropagation(); setShowRemoveConfirm(false); }}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onRemove();
+                                    setShowRemoveConfirm(false);
+                                }}
+                                className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                    </div>
+                </DialogComponent>
+            )}
         </>
     );
 };
@@ -369,9 +400,9 @@ const CurrencyMiniCard: React.FC<{ item: CurrencyDetail }> = ({ item }) => (
                 {item.product}
             </span>
         </div>
-        
+
         <div className="h-3 w-[1px] bg-slate-200" />
-        
+
         <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
             <span>{item.quantity.toLocaleString()}</span>
             <span className="text-slate-300">×</span>
@@ -457,12 +488,9 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <span className="text-[22px] font-extrabold text-gray-900 tracking-tight">{order.orderDetails.orderNumber}</span>
                         <span className={`inline-flex items-center gap-1 text-xs font-extrabold ${status.text} ${status.bg} border ${status.border} px-2 py-[3px] rounded-full`}>
                             <span className={`w-[5px] h-[5px] rounded-full ${status.dot} inline-block`} />
-                            {order.orderDetails.orderStatus === 'extracted' ? 'Review Pending' :order.orderDetails.orderStatus === 'pending' ? 'Extraction Pending' : order.orderDetails.orderStatus}
+                            {order.orderDetails.orderStatus === 'extracted' ? 'Review Pending' : order.orderDetails.orderStatus === 'pending' ? 'Extraction Pending' : order.orderDetails.orderStatus}
                         </span>
                         <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.orderType.toUpperCase()}</span>
-                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
-                            Purpose: {order.orderDetails?.purpose?.toUpperCase()}
-                        </span>
                         <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
                             {(Array.isArray(order.orderDetails.productType) ? order.orderDetails.productType.join(', ') : String(order.orderDetails.productType || '')).toUpperCase()}
                         </span>
@@ -515,91 +543,92 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             },
                             ...(order.orderDetails.paymentType
                                 ? [
-                                      {
-                                          icon: null,
-                                          val: (
-                                              <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Payment:</span> <span className="text-gray-600 font-bold">{order.orderDetails.paymentType}</span>
-                                              </>
-                                          )
-                                      }
-                                  ]
+                                    {
+                                        icon: null,
+                                        val: (
+                                            <>
+                                                <span className="text-gray-400 font-medium mr-[3px]">Payment:</span> <span className="text-gray-600 font-bold">{order.orderDetails.paymentType}</span>
+                                            </>
+                                        )
+                                    }
+                                ]
                                 : []),
                             ...(order.orderDetails.deliveryMode
                                 ? [
-                                      {
-                                          icon: null,
-                                          val: (
-                                              <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Delivery:</span>{' '}
-                                                  <span className="text-gray-600 font-bold">{order.orderDetails.deliveryMode}</span>
-                                              </>
-                                          )
-                                      }
-                                  ]
+                                    {
+                                        icon: null,
+                                        val: (
+                                            <>
+                                                <span className="text-gray-400 font-medium mr-[3px]">Delivery:</span>{' '}
+                                                <span className="text-gray-600 font-bold">{order.orderDetails.deliveryMode}</span>
+                                            </>
+                                        )
+                                    }
+                                ]
                                 : []),
                             ...(order.orderDetails.deliveryCharge !== undefined
                                 ? [
-                                      {
-                                          icon: null,
-                                          val: (
-                                              <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Delivery Charge:</span>{' '}
-                                                  <span className="text-gray-600 font-bold">₹{order.orderDetails.deliveryCharge}</span>
-                                              </>
-                                          )
-                                      }
-                                  ]
+                                    {
+                                        icon: null,
+                                        val: (
+                                            <>
+                                                <span className="text-gray-400 font-medium mr-[3px]">Delivery Charge:</span>{' '}
+                                                <span className="text-gray-600 font-bold">₹{order.orderDetails.deliveryCharge}</span>
+                                            </>
+                                        )
+                                    }
+                                ]
                                 : []),
                             ...(order.orderDetails.handlingCharges !== undefined
                                 ? [
-                                      {
-                                          icon: null,
-                                          val: (
-                                              <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Handling:</span>{' '}
-                                                  <span className="text-gray-600 font-bold">₹{order.orderDetails.handlingCharges}</span>
-                                              </>
-                                          )
-                                      }
-                                  ]
+                                    {
+                                        icon: null,
+                                        val: (
+                                            <>
+                                                <span className="text-gray-400 font-medium mr-[3px]">Handling:</span>{' '}
+                                                <span className="text-gray-600 font-bold">₹{order.orderDetails.handlingCharges}</span>
+                                            </>
+                                        )
+                                    }
+                                ]
                                 : []),
                             ...(order.orderDetails.purpose
                                 ? [
-                                      {
-                                          icon: null,
-                                          val: (
-                                              <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Purpose:</span> <span className="text-gray-600 font-bold">{order.orderDetails.purpose}</span>
-                                              </>
-                                          )
-                                      }
-                                  ]
+                                    {
+                                        icon: null,
+                                        val: (
+                                            <>
+                                                <span className="text-gray-400 font-medium mr-[3px]">Purpose:</span> <span className="text-gray-600 font-bold">{order.orderDetails.purpose}</span>
+                                            </>
+                                        )
+                                    }
+                                ]
                                 : []),
                             ...(order.orderDetails.documentUploadTime
                                 ? [
-                                      {
-                                          icon: <Clock size={12} className="text-gray-400" />,
-                                          val: (
-                                              <>
-                                                  <span className="text-gray-400 font-medium mr-[3px]">Uploaded:</span>{' '}
-                                                  <span className="text-gray-600 font-bold">{order.orderDetails.documentUploadTime}</span>
-                                              </>
-                                          )
-                                      }
-                                  ]
+                                    {
+                                        icon: <Clock size={12} className="text-gray-400" />,
+                                        val: (
+                                            <>
+                                                <span className="text-gray-400 font-medium mr-[3px]">Uploaded:</span>{' '}
+                                                <span className="text-gray-600 font-bold">{order.orderDetails.documentUploadTime}</span>
+                                            </>
+                                        )
+                                    }
+                                ]
                                 : [])
-                        ].map(({ icon, val, hide }, idx) =>{
-                            if(hide)return null
-                            
-                            return(
-                            <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
-                                {icon}
-                                {val}
-                            </div>
-                        )})}
-                        
-    
+                        ].map(({ icon, val, hide }, idx) => {
+                            if (hide) return null
+
+                            return (
+                                <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
+                                    {icon}
+                                    {val}
+                                </div>
+                            )
+                        })}
+
+
                     </div>
                 </div>
 

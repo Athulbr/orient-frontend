@@ -8,7 +8,10 @@ import CreateOrderDialog from './CreateOrderDialog';
 import { config } from '../../../../../config/default';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
-import { Search, X } from 'lucide-react';
+import { Search, X, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import Tooltip from '../../../../../components/Tooltip';
+import PageInput from '../../../../../builders/tablebuilder/render-tablebuilder/components/PageInput';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
 
 interface OrientDocsnapUserInterfaceIF {
     agentSettings: any;
@@ -23,8 +26,8 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
     // Filter and Pagination States
-    const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('order_id') || '');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(() => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('order_id') || '');
     const [statusFilter, setStatusFilter] = useState('all');
     const [branchFilter, setBranchFilter] = useState('5');
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
@@ -33,9 +36,15 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
 
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const toast = useToastStore();
 
     // Track whether the fullscreen docsnap dialog is open (owned by any OrderCard)
     const [docsnapOpen, setDocsnapOpen] = useState(false);
+
+    const docsnapOpenRef = React.useRef(docsnapOpen);
+    React.useEffect(() => {
+        docsnapOpenRef.current = docsnapOpen;
+    }, [docsnapOpen]);
 
     // Push sentinel on mount so we always have a state to intercept.
     // On popstate, if the docsnap dialog is NOT open, re-push to keep the user on this page.
@@ -43,16 +52,32 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         window.history.pushState({ page: 'orient-docsnap' }, '');
 
         const handlePopState = () => {
-            if (!docsnapOpen) {
-                // Re-push so back-button doesn't leave the page
-                window.history.pushState({ page: 'orient-docsnap' }, '');
+            if (!docsnapOpenRef.current) {
+                // Browsers often block confirm() inside popstate directly. We defer it to bypass this restriction:
+                setTimeout(() => {
+                    const confirmLeave = window.confirm('Are you sure you want to close this tab?');
+                    if (!confirmLeave) {
+                        // Re-push so back-button doesn't leave the page
+                        window.history.pushState({ page: 'orient-docsnap' }, '');
+                    } else {
+                        // Modern browsers block window.close() unless the script opened the window.
+                        // This trick attempts to bypass it:
+                        window.open('', '_self', '');
+                        window.close();
+
+                        // If the browser still blocks closing the tab, we fallback to navigating to a blank page:
+                        setTimeout(() => {
+                            window.location.href = 'about:blank';
+                        }, 100);
+                    }
+                }, 10);
             }
             // If docsnapOpen, DocsnapComparisonUI's own popstate handler fires first and closes the dialog
         };
 
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
-    }, [docsnapOpen]);
+    }, []);
 
     React.useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
@@ -263,7 +288,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                                 }
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 };
 
                 eventSource.onerror = err => {
@@ -464,7 +489,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                             ]}
                         />
                         <div className="flex flex-col gap-1">
-                            <DateTimePicker onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
+                            <DateTimePicker minDate='2026-01-01' maxDate={new Date().toISOString()} onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
                         </div>
                         <Button startIcon={<X size={16} />} onClick={handleResetFilters} outlined></Button>
                         <Button onClick={() => setShowCreateDialog(true)}>Create Order</Button>
@@ -496,11 +521,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                 )}
             </div>
 
-            <div className="p-4 py-3 flex items-center justify-between border-t border-gray-200 bg-white sticky bottom-0 z-10">
-                <span className="text-sm text-gray-500">
-                    Showing {totalCount === 0 ? 0 : (currentPage - 1) * Number(perPage) + 1} to {Math.min(currentPage * Number(perPage), totalCount)} of {totalCount} orders
-                </span>
-                <div className="flex items-center gap-4">
+            <div className="p-4 py-3 flex items-center justify-end gap-4 border-t border-gray-200 bg-white sticky bottom-0 z-10 w-full">
+                <div className="flex items-center gap-4 text-sm text-gray-500 pl-2">
+
                     <SingleSelect
                         position="top"
                         value={perPage}
@@ -513,17 +536,38 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                         ]}
                         size="sm"
                     />
-                    <span className="text-sm font-medium text-gray-700">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <Button small outlined disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
-                            Prev
-                        </Button>
-                        <Button small outlined disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
-                            Next
-                        </Button>
-                    </div>
+                </div>
+                <div className="relative flex items-center gap-2 pr-4">
+                    <Tooltip text="First Page" position="top">
+                        <PaginationButton onClick={() => setCurrentPage(1)} disabled={currentPage === 1 || totalPages === 0} icon={<ChevronsLeft className="h-4 w-4" />} />
+                    </Tooltip>
+                    <Tooltip text="Prev Page" position="top">
+                        <PaginationButton
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1 || totalPages === 0}
+                            icon={<ChevronLeft className="h-4 w-4" />}
+                        />
+                    </Tooltip>
+
+                    <PageInput
+                        page={currentPage}
+                        totalPages={totalPages === 0 ? 1 : totalPages}
+                        setPage={pageNumber => setCurrentPage(pageNumber)}
+                    />
+                    <Tooltip text="Next Page" position="top">
+                        <PaginationButton
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            icon={<ChevronRight className="h-4 w-4" />}
+                        />
+                    </Tooltip>
+                    <Tooltip text="Last Page" position="top">
+                        <PaginationButton
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            icon={<ChevronsRight className="h-4 w-4" />}
+                        />
+                    </Tooltip>
                 </div>
             </div>
             <DialogComponent
@@ -553,8 +597,10 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                                     const createdOrder = await response.json();
                                     setOrders([createdOrder, ...orders]);
                                     setShowCreateDialog(false);
+                                    toast.success('Order created successfully');
                                 }
                             } catch (err) {
+                                toast.error('Failed to create order');
                                 console.error('Failed to create order', err);
                             }
                         }}
@@ -579,5 +625,21 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         </div>
     );
 };
+
+type PaginationButtonProps = {
+    onClick: () => void;
+    disabled: boolean;
+    icon: React.ReactNode;
+};
+
+const PaginationButton: React.FC<PaginationButtonProps> = ({ onClick, disabled, icon }) => (
+    <button
+        className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50 disabled:hover:cursor-default disabled:hover:bg-white"
+        onClick={onClick}
+        disabled={disabled}
+    >
+        {icon}
+    </button>
+);
 
 export default OrientDocsnapUserInterface;

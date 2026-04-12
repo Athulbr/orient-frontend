@@ -5,6 +5,7 @@ const dynamicUserInterfaces = {
 };
 const getDynamicUserInterface = (agentSettings: any) => {
     const DynamicUI = dynamicUserInterfaces[agentSettings?.uiId as keyof typeof dynamicUserInterfaces] || null;
+    if (!DynamicUI) return null;
     return <DynamicUI agentSettings={agentSettings} />;
 };
 

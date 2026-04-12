@@ -50,11 +50,10 @@ const clientLogger = async (method: string, url: string, data: any = {}) => {
         }
 
         if (!response?.ok) {
-            const errorData = await response?.json();
-            throw new Error(errorData.message || `Request failed with status ${response?.status}`);
+            throw new Error(result?.message || `Request failed with status ${response?.status}`);
         }
 
-        return response?.json();
+        return result;
     } catch (error: any) {
         if (error.status === 401) {
             useToastStore.getState().error('Login Expired, Please login once again');

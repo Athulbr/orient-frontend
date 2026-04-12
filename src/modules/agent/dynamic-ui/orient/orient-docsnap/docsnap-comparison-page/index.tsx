@@ -604,9 +604,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                             <div
                                                 key={b.id}
                                                 id={`bbox-${b.id}`}
-                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${
-                                                    activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
-                                                }`}
+                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
+                                                    }`}
                                                 style={{
                                                     left: `${(b.bbox.x_min - 0.004) * 100}%`,
                                                     top: `${(b.bbox.y_min - 0.003) * 100}%`,
@@ -615,7 +614,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                 }}
                                                 onClick={e => handleBboxClick(b.id, e)}
                                             >
-                                                {/* Draggable edit card for the active bbox */}
                                                 {activeFieldId === b.id && activeFieldInfo && (
                                                     <div
                                                         data-edit-card
@@ -626,7 +624,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         }}
                                                         onClick={e => e.stopPropagation()}
                                                     >
-                                                        {/* Drag handle + label + close */}
                                                         <div className="mb-2 flex items-center justify-between gap-2">
                                                             <div className="flex cursor-grab items-center gap-1.5 active:cursor-grabbing" onMouseDown={startEditCardDrag}>
                                                                 <GripHorizontal size={14} className="text-zinc-400" />
@@ -636,7 +633,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 <X size={14} />
                                                             </button>
                                                         </div>
-                                                        {/* Editable textarea */}
                                                         <textarea
                                                             value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
                                                             onChange={e => {
