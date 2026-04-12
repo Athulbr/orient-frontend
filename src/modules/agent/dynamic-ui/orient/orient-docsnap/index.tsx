@@ -21,7 +21,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
     const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
-    const [proceedingOrderNumber, setProceedingOrderNumber] = useState<number | null>(null);
+    const [proceedingOrders, setProceedingOrders] = useState<Record<number, boolean>>({});
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
@@ -331,7 +331,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
             const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
             if (!order) return;
 
-            setProceedingOrderNumber(orderNumber);
+            setProceedingOrders(prev => ({ ...prev, [orderNumber]: true }));
 
             const linkedEmails = getLinkedEmails(order);
             const actualEmailDocuments = linkedEmails.flatMap(email =>
@@ -346,7 +346,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
             const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + actualEmailDocuments.length > 0;
             if (!hasDocuments) {
                 alert('Please upload files before extracting');
-                setProceedingOrderNumber(null);
+                setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 return;
             }
 
@@ -385,7 +385,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
 
                 if (!response.ok) {
                     console.error('Extraction API response error:', response.status);
-                    setProceedingOrderNumber(null);
+                    setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     return;
                 }
 
@@ -394,7 +394,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
 
                 if (!executionId) {
                     console.error('No executionId found in response');
-                    setProceedingOrderNumber(null);
+                    setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     return;
                 }
 
@@ -411,7 +411,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                         if (parsed.status) {
                             if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
                                 eventSource.close();
-                                setProceedingOrderNumber(null);
+                                setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0];
                                     if (finalData.extractedData) {
@@ -446,11 +446,11 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                 eventSource.onerror = err => {
                     console.error('SSE EventSource error:', err);
                     eventSource.close();
-                    setProceedingOrderNumber(null);
+                    setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 };
             } catch (err) {
                 console.error('Extraction API error:', err);
-                setProceedingOrderNumber(null);
+                setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
             }
         },
         [orders, getLinkedEmails]
@@ -510,7 +510,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                         onProceed={handleProceed}
                         onEdit={order => setEditingOrder(order)}
                         onDelete={handleDeleteOrder}
-                        isProceeding={proceedingOrderNumber === order.orderDetails.orderNumber}
+                        isProceeding={proceedingOrders[order.orderDetails.orderNumber] || false}
                         isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
                         onDocsnapOpen={() => setDocsnapOpen(true)}
                         onDocsnapClose={() => setDocsnapOpen(false)}

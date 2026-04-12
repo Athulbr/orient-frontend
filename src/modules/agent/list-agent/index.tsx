@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Activity, Boxes, Workflow } from 'lucide-react';
 import httpRequest from '../../../global-utils/httpRequest';
@@ -136,9 +136,8 @@ const ListAgentsPage = () => {
                                             <Bot size={24} />
                                         </div>
                                         <span
-                                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${
-                                                agent.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-slate-50 text-zinc-600'
-                                            }`}
+                                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${agent.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-slate-50 text-zinc-600'
+                                                }`}
                                         >
                                             {agent.isActive ? 'Active' : 'Inactive'}
                                         </span>

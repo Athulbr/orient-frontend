@@ -5,11 +5,13 @@ import { useListTemplatePageApi } from '../hooks/useTemplateApi';
 import { useEffect } from 'react';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
+import { useNavigate } from 'react-router-dom';
 
 const PageActionsComponent: React.FC = () => {
     const { state, setState } = useTemplateState();
     const { checkPermission } = usePermissionStore();
-    const { getPredefinedTemplatesApi, getTemplatesApi } = useListTemplatePageApi();
+    const { getPredefinedTemplatesApi } = useListTemplatePageApi();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!state.searchText) return;
@@ -40,7 +42,11 @@ const PageActionsComponent: React.FC = () => {
 
     return (
         <div className="flex w-full justify-end gap-4">
-            {( checkPermission('export:template') && <Button outlined onClick={importTemplate}>
+            {(localStorage.getItem('autologin') === 'true' && <Button outlined onClick={() => navigate('/agent/template/list')}>
+                Agent Templates
+            </Button>
+            )}
+            {(checkPermission('export:template') && <Button outlined onClick={importTemplate}>
                 Import Template
             </Button>
             )}
