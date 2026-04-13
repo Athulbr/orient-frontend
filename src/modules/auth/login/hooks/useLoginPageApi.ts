@@ -136,18 +136,18 @@ export const useLoginPageApi = () => {
     };
 
     // ============================= login With PHP Session ==================================
-    const loginWithPhpSession = async (sessionToken: string, clientId: string, orderId?: string) => {
+    const loginWithPhpSession = async (sessionToken: string, clientId: string, orderNumber?: string) => {
         try {
             setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId, order_id: orderId });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId, order_no: orderNumber });
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                 window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
                 if (res.data?.orientClientId) {
                     window?.sessionStorage?.setItem('orientClientId', res.data.orientClientId);
                 }
-                if (res.data?.order_id) {
-                    window?.sessionStorage?.setItem('order_id', res.data.order_id);
+                if (res.data?.orderNumber) {
+                    window?.sessionStorage?.setItem('order_no', res.data.orderNumber);
                 }
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
@@ -180,11 +180,11 @@ export const useLoginPageApi = () => {
 
         const sessionToken = queryParams.get('token');
         const clientId = queryParams.get('client_id');
-        const orderId = queryParams.get('order_id');
+        const orderNumber = queryParams.get('order_no');
 
         if (sessionToken && clientId) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            loginWithPhpSession(sessionToken, clientId, orderId || undefined);
+            loginWithPhpSession(sessionToken, clientId, orderNumber || undefined);
         } else {
             // No token present — Show login page.
         }
