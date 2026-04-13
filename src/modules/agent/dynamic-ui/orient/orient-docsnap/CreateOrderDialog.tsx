@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import { Order } from './types';
@@ -6,8 +7,8 @@ import { Order } from './types';
 interface CreateOrderDialogProps {
     initialOrder?: Order;
     onClose: () => void;
-    onCreate: (order: Order) => void;
-    onUpdate?: (order: Order) => void;
+    onCreate: (order: Order) => void | Promise<void>;
+    onUpdate?: (order: Order) => void | Promise<void>;
 }
 
 const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onClose, onCreate, onUpdate }) => {
@@ -23,8 +24,9 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
     const [userEmail, setUserEmail] = useState(initialOrder?.userDetails.email || '');
     const [userPhone, setUserPhone] = useState(initialOrder?.userDetails.phone || '');
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const newErrors: { [key: string]: string } = {};
@@ -54,82 +56,88 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             return;
         }
         setErrors({});
+        setIsLoading(true);
 
-        if (isEdit && initialOrder && onUpdate) {
-            const updatedOrder: Order = {
-                ...initialOrder,
+        try {
+            if (isEdit && initialOrder && onUpdate) {
+                const updatedOrder: Order = {
+                    ...initialOrder,
+                    orderDetails: {
+                        ...initialOrder.orderDetails,
+                        orderType,
+                        productType: productType as ('currency' | 'card' | 'tt')[],
+                        purpose,
+                        totalAmount: Number(totalAmount) || 0,
+                        actualAmount: Number(actualAmount) || 0
+                    },
+                    userDetails: {
+                        ...initialOrder.userDetails,
+                        name: userName,
+                        email: userEmail,
+                        phone: userPhone
+                    }
+                };
+                await onUpdate(updatedOrder);
+                return;
+            }
+
+            // generate random 8 digit ID
+            const orderId = Math.floor(10000000 + Math.random() * 90000000);
+            // generate random 6 digit user ID
+            const userId = Math.floor(100000 + Math.random() * 900000);
+
+            // generate orderNumber: year+month+day+timestamp
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const timestamp = now.getTime().toString().slice(-6);
+            const orderNumber = Number(`${year}${month}${day}${timestamp}`);
+
+            const newOrder: Order = {
                 orderDetails: {
-                    ...initialOrder.orderDetails,
+                    orderId,
+                    orderNumber,
                     orderType,
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
+                    branch: 'Bangalore-Basavangudi',
+                    branchId: 5,
                     totalAmount: Number(totalAmount) || 0,
-                    actualAmount: Number(actualAmount) || 0
+                    actualAmount: Number(actualAmount) || 0,
+                    orderStatus: 'pending',
+                    documentSubmitStatus: 'Offline'
                 },
                 userDetails: {
-                    ...initialOrder.userDetails,
+                    userId,
                     name: userName,
                     email: userEmail,
                     phone: userPhone
+                },
+                currencyDetails: [],
+                webDocuments: [],
+                manualDocuments: [],
+                emailDocuments: [],
+                extractionDetails: {
+                    recordId: '',
+                    extractedData: {}
                 }
             };
-            onUpdate(updatedOrder);
-            return;
+
+            await onCreate(newOrder);
+
+        } finally {
+            setIsLoading(false);
         }
-
-        // generate random 8 digit ID
-        const orderId = Math.floor(10000000 + Math.random() * 90000000);
-        // generate random 6 digit user ID
-        const userId = Math.floor(100000 + Math.random() * 900000);
-
-        // generate orderNumber: year+month+day+timestamp
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const timestamp = now.getTime().toString().slice(-6);
-        const orderNumber = Number(`${year}${month}${day}${timestamp}`);
-
-        const newOrder: Order = {
-            orderDetails: {
-                orderId,
-                orderNumber,
-                orderType,
-                productType: productType as ('currency' | 'card' | 'tt')[],
-                purpose,
-                branch: 'Bangalore-Basavangudi',
-                branchId: 5,
-                totalAmount: Number(totalAmount) || 0,
-                actualAmount: Number(actualAmount) || 0,
-                orderStatus: 'pending',
-                documentSubmitStatus: 'Offline'
-            },
-            userDetails: {
-                userId,
-                name: userName,
-                email: userEmail,
-                phone: userPhone
-            },
-            currencyDetails: [],
-            webDocuments: [],
-            manualDocuments: [],
-            emailDocuments: [],
-            extractionDetails: {
-                recordId: '',
-                extractedData: {}
-            }
-        };
-
-        onCreate(newOrder);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="p-8">
             <div className="grid grid-cols-2 gap-8 mb-6 mt-2">
                 <div className="flex flex-col gap-5">
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">User Details</h3>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="pl-1 block text-sm font-medium text-gray-700 mb-1">
                             Full Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -139,13 +147,13 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 setUserName(e.target.value);
                                 if (errors.userName) setErrors(prev => ({ ...prev, userName: '' }));
                             }}
-                            className={`w-full border ${errors.userName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                            className={`w-full border ${errors.userName ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white  px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
                             placeholder="Ritesh Singh"
                         />
                         {errors.userName && <p className="text-red-500 text-xs mt-1">{errors.userName}</p>}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <label className="pl-1 block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                         <input
                             type="email"
                             value={userEmail}
@@ -153,13 +161,13 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 setUserEmail(e.target.value);
                                 if (errors.userEmail) setErrors(prev => ({ ...prev, userEmail: '' }));
                             }}
-                            className={`w-full border ${errors.userEmail ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                            className={`w-full border ${errors.userEmail ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white  px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
                             placeholder="ritesh@example.com"
                         />
                         {errors.userEmail && <p className="text-red-500 text-xs mt-1">{errors.userEmail}</p>}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <label className="pl-1 block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <input
                             type="number"
                             value={userPhone}
@@ -167,7 +175,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 setUserPhone(e.target.value);
                                 if (errors.userPhone) setErrors(prev => ({ ...prev, userPhone: '' }));
                             }}
-                            className={`w-full border ${errors.userPhone ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                            className={`w-full border ${errors.userPhone ? 'border-red-500' : 'border-gray-300'} rounded-md bg-white  px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500`}
                             placeholder="9876543210"
                         />
                         {errors.userPhone && <p className="text-red-500 text-xs mt-1">{errors.userPhone}</p>}
@@ -177,8 +185,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
-                        <div className="flex gap-4 mt-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type <span className="text-red-500">*</span></label>
+                        <div className="pt-2 flex gap-4 mt-2">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
@@ -186,7 +194,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                     value="sell"
                                     checked={orderType === 'sell'}
                                     onChange={e => setOrderType(e.target.value as 'sell' | 'buy')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
                                 />
                                 <span className="text-sm text-gray-700">Sell</span>
                             </label>
@@ -197,44 +205,48 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                     value="buy"
                                     checked={orderType === 'buy'}
                                     onChange={e => setOrderType(e.target.value as 'sell' | 'buy')}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
                                 />
                                 <span className="text-sm text-gray-700">Buy</span>
                             </label>
                         </div>
                     </div>
-                    <div>
+                    <div className='pt-4'>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Product Type <span className="text-red-500">*</span>
                         </label>
-                        <div className="flex gap-4 mt-2">
-                            {['card', 'currency', 'TT'].map(type => (
-                                <label key={type} className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        name="productType"
-                                        value={type}
-                                        checked={productType.includes(type)}
-                                        onChange={e => {
-                                            const newTypes = e.target.checked ? [...productType, type] : productType.filter(t => t !== type);
-                                            setProductType(newTypes);
-                                            if (errors.productType && newTypes.length > 0) {
-                                                setErrors(prev => ({ ...prev, productType: '' }));
-                                            }
-                                        }}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                    />
-                                    <span className="text-sm text-gray-700 capitalize">{type}</span>
-                                </label>
-                            ))}
+                        <div className="flex gap-4 mt-3">
+                            {[{ label: 'Card', value: 'card' }, { label: 'Currency', value: 'currency' }, { label: 'TT', value: 'tt' }, { label: 'TP', value: 'tp' }].map(type => {
+                                if (orderType === 'sell' && type.value === 'tp') return null
+                                return (
+                                    <label key={type.value} className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="productType"
+                                            value={type.value}
+                                            checked={productType.includes(type.value)}
+                                            onChange={e => {
+                                                const newTypes = e.target.checked ? [...productType, type.value] : productType.filter(t => t !== type.value);
+                                                setProductType(newTypes);
+                                                if (errors.productType && newTypes.length > 0) {
+                                                    setErrors(prev => ({ ...prev, productType: '' }));
+                                                }
+                                            }}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                                        />
+                                        <span className="text-sm text-gray-700 capitalize">{type.label}</span>
+                                    </label>
+                                )
+                            })}
                         </div>
                         {errors.productType && <p className="text-red-500 text-xs mt-1">{errors.productType}</p>}
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <div className='pt-3'>
+                        <label className="pl-1 pt-0.5 block text-sm font-medium text-gray-700 mb-1">
                             Purpose <span className="text-red-500">*</span>
                         </label>
                         <SingleSelect
+                            size='lg'
                             value={purpose}
                             onValueChange={val => {
                                 setPurpose(val);
@@ -249,7 +261,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 { value: 'Medical Treatment', label: 'Medical Treatment' }
                             ]}
                             className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
-                            placeholder="Private Visit / Leisure"
+                            placeholder="Select Purpose"
                         />
                         {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                     </div>
@@ -257,11 +269,16 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <Button outlined onClick={onClose} type="button">
+                <Button outlined onClick={onClose} type="button" disabled={isLoading}>
                     Cancel
                 </Button>
-                <Button onClick={handleSubmit} type="submit">
-                    {isEdit ? 'Update Order' : 'Create Order'}
+                <Button
+                    onClick={handleSubmit}
+                    type="submit"
+                    disabled={isLoading}
+                    startIcon={isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : undefined}
+                >
+                    {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Order' : 'Create Order')}
                 </Button>
             </div>
         </form>

@@ -6,6 +6,8 @@ import styles from './scrollbar.module.css';
 import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
 import { Order } from '../types';
+import { useToastStore } from '../../../../../../components/toast/ToastStore';
+
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -61,6 +63,9 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [record, setRecord] = useState<any>({});
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
+    const toast = useToastStore();
+
 
     useEffect(() => {
         const handlePopState = () => {
@@ -97,9 +102,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 const data = await res.json();
                 if (data.success) {
                     setRecord(data.record);
+                    toast.success('Record saved successfully');
                 }
             }
         } catch (error) {
+            toast.error('Failed to save record');
             console.error('Error saving record:', error);
         } finally {
             setIsSaving(false);
@@ -111,6 +118,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         const fetchRecord = async () => {
             try {
                 if (!recordId) return;
+                setIsLoadingRecord(true);
                 const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`);
                 if (res.ok) {
                     const data = await res.json();
@@ -127,6 +135,10 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     // Fallback to sampleRecord for development if database fails
                     setRecord(sampleRecord);
                     setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoadingRecord(false);
                 }
             }
         };
@@ -541,6 +553,17 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         return bboxes;
     }, [extractedData]);
 
+    if (isLoadingRecord) {
+        return (
+            <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-800">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-blue-500"></div>
+                    <span className="text-sm font-medium text-zinc-500">Loading document...</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div ref={containerRef} className="relative flex h-full w-full overflow-hidden bg-white text-zinc-800">
             {/* Left Pane */}
@@ -598,9 +621,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                             <div
                                                 key={b.id}
                                                 id={`bbox-${b.id}`}
-                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${
-                                                    activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
-                                                }`}
+                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
+                                                    }`}
                                                 style={{
                                                     left: `${(b.bbox.x_min - 0.004) * 100}%`,
                                                     top: `${(b.bbox.y_min - 0.003) * 100}%`,
@@ -609,7 +631,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                 }}
                                                 onClick={e => handleBboxClick(b.id, e)}
                                             >
-                                                {/* Draggable edit card for the active bbox */}
                                                 {activeFieldId === b.id && activeFieldInfo && (
                                                     <div
                                                         data-edit-card
@@ -620,7 +641,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         }}
                                                         onClick={e => e.stopPropagation()}
                                                     >
-                                                        {/* Drag handle + label + close */}
                                                         <div className="mb-2 flex items-center justify-between gap-2">
                                                             <div className="flex cursor-grab items-center gap-1.5 active:cursor-grabbing" onMouseDown={startEditCardDrag}>
                                                                 <GripHorizontal size={14} className="text-zinc-400" />
@@ -630,7 +650,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 <X size={14} />
                                                             </button>
                                                         </div>
-                                                        {/* Editable textarea */}
                                                         <textarea
                                                             value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
                                                             onChange={e => {
