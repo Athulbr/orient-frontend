@@ -40,6 +40,8 @@ interface OrderCardProps {
     onUnlinkEmail: (orderNumber: number, emailId: string) => void;
     onUploadFiles: (orderNumber: number, files: File[]) => void;
     onRemoveUploadedFile: (orderNumber: number, fileIndex: number) => void;
+    onRemoveWebDocument?: (orderNumber: number, fileIndex: number) => void;
+    onRemoveEmailDocument?: (emailId: string, fileIndex: number) => void;
     onProceed: (orderNumber: number) => void;
     onEdit?: (order: Order) => void;
     onDelete?: (orderNumber: number) => void;
@@ -422,6 +424,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
     onUnlinkEmail,
     onUploadFiles,
     onRemoveUploadedFile,
+    onRemoveWebDocument,
+    onRemoveEmailDocument,
     onProceed,
     onEdit,
     onDelete,
@@ -444,19 +448,21 @@ const OrderCard: React.FC<OrderCardProps> = ({
         onDocsnapClose?.();
     };
 
-    const orderFiles: FileItem[] = (order.webDocuments || []).map(doc => {
+    const orderFiles: (FileItem & { index: number })[] = (order.webDocuments || []).map((doc, i) => {
         const url = doc.documentPages?.[0] || '';
-        return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [] };
+        return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [], index: i };
     });
-    const emailFiles: FileItem[] = linkedEmails.flatMap(email =>
-        (email.attachments || []).map((att: any) => {
+    const emailFiles: (FileItem & { emailId: string; index: number })[] = linkedEmails.flatMap(email =>
+        (email.attachments || []).map((att: any, idx: number) => {
             const url = att.documentPages?.[0] || att.url || '';
             return {
                 name: att.documentName || att.name || '',
                 url,
                 type: getFileType(url),
                 source: 'email' as const,
-                pages: att.documentPages || att.pages || []
+                pages: att.documentPages || att.pages || [],
+                emailId: email.emailId,
+                index: idx
             };
         })
     );
@@ -682,7 +688,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         {orderFiles.length > 0 ? (
                             <div className="flex flex-wrap gap-[7px]">
                                 {orderFiles.map((f, i) => (
-                                    <DocTile key={i} file={f} />
+                                    <DocTile key={i} file={f} onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined} />
                                 ))}
                             </div>
                         ) : (
@@ -734,7 +740,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     {emailFiles.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px]">
                             {emailFiles.map((f, i) => (
-                                <DocTile key={i} file={f} />
+                                <DocTile key={i} file={f} onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(f.emailId, f.index) : undefined} />
                             ))}
                         </div>
                     ) : (

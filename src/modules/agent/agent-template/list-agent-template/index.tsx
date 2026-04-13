@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Plus, Search, Trash2, Layers, Table2, Zap, Clock, AlertCircle } from 'lucide-react';
+import { FileText, Plus, Search, Trash2, Layers, Table2, Zap, Clock, AlertCircle, Download, Copy } from 'lucide-react';
 import httpRequest from '../../../../global-utils/httpRequest';
 import { config } from '../../../../config/default';
 import Spinner from '../../../../components/Spinner';
+import { useToastStore } from '../../../../components/toast/ToastStore';
+import ImportDialogComponent from './components/ImportDialogComponent';
 
 interface AgentTemplate {
     _id: string;
@@ -36,6 +38,9 @@ const ListAgentTemplatePage = () => {
     const [error, setError] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [exportingId, setExportingId] = useState<string | null>(null);
+    const [showImportDialog, setShowImportDialog] = useState(false);
+    const toast = useToastStore();
 
     const fetchTemplates = useCallback(async () => {
         setIsLoading(true);
@@ -67,10 +72,36 @@ const ListAgentTemplatePage = () => {
         try {
             await httpRequest('DELETE', `${config.workflowService}/api/agent-templates/${id}`);
             setTemplates(prev => prev.filter(t => t._id !== id));
+            toast.success('Template deleted successfully');
         } catch (err) {
             console.error('Failed to delete template', err);
+            toast.error('Failed to delete template');
         } finally {
             setDeletingId(null);
+        }
+    };
+
+    const handleExport = async (e: React.MouseEvent, id: string, name: string) => {
+        e.stopPropagation();
+        setExportingId(id);
+        try {
+            const response: any = await httpRequest('GET', `${config.workflowService}/api/agent-templates/${id}`);
+            if (response?.success && response.template) {
+                const data = {
+                    name: response.template.name,
+                    settings: response.template.settings,
+                    sections: response.template.sections
+                };
+                await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+                toast.success('Template exported to clipboard');
+            } else {
+                toast.error('Failed to fetch template details');
+            }
+        } catch (err) {
+            toast.error('Failed to export template');
+            console.error(err);
+        } finally {
+            setExportingId(null);
         }
     };
 
@@ -110,13 +141,22 @@ const ListAgentTemplatePage = () => {
                         </h1>
                         <p className="text-sm text-zinc-500 mt-1 ml-[52px]">Manage your extraction template configurations</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/agent/template/create')}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-blue-900 text-white rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors shadow-sm cursor-pointer"
-                    >
-                        <Plus size={16} />
-                        Create Template
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowImportDialog(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
+                        >
+                            <Download size={16} />
+                            Import
+                        </button>
+                        <button
+                            onClick={() => navigate('/agent/template/create')}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-blue-900 text-white rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors shadow-sm cursor-pointer"
+                        >
+                            <Plus size={16} />
+                            Create Template
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats */}
@@ -219,13 +259,24 @@ const ListAgentTemplatePage = () => {
                                         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-900/5 text-blue-900 ring-1 ring-blue-900/10">
                                             <FileText size={20} />
                                         </div>
-                                        <button
-                                            onClick={e => handleDelete(e, template._id)}
-                                            disabled={deletingId === template._id}
-                                            className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 cursor-pointer disabled:opacity-50"
-                                        >
-                                            <Trash2 size={15} />
-                                        </button>
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                            <button
+                                                onClick={e => handleExport(e, template._id, template.name)}
+                                                disabled={exportingId === template._id}
+                                                className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-300 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer disabled:opacity-50"
+                                                title="Export Template"
+                                            >
+                                                <Copy size={15} />
+                                            </button>
+                                            <button
+                                                onClick={e => handleDelete(e, template._id)}
+                                                disabled={deletingId === template._id}
+                                                className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50"
+                                                title="Delete Template"
+                                            >
+                                                <Trash2 size={15} />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Name */}
@@ -274,6 +325,14 @@ const ListAgentTemplatePage = () => {
                             </div>
                         ))}
                     </div>
+                )}
+                
+                {showImportDialog && (
+                    <ImportDialogComponent
+                        isOpen={showImportDialog}
+                        onClose={() => setShowImportDialog(false)}
+                        onImportSuccess={fetchTemplates}
+                    />
                 )}
             </main>
         </div>

@@ -8,7 +8,7 @@ import CreateOrderDialog from './CreateOrderDialog';
 import { config } from '../../../../../config/default';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
-import { Search, X, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { Search, X, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Loader2 } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import PageInput from '../../../../../builders/tablebuilder/render-tablebuilder/components/PageInput';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
@@ -24,6 +24,8 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     const [proceedingOrders, setProceedingOrders] = useState<Record<number, boolean>>({});
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+    const [ordersError, setOrdersError] = useState<string | null>(null);
 
     // Filter and Pagination States
     const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('order_id') || '');
@@ -100,6 +102,8 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     }, []);
 
     const fetchData = useCallback(async () => {
+        setIsLoadingOrders(true);
+        setOrdersError(null);
         try {
             const params = new URLSearchParams();
             if (debouncedSearchQuery) params.append('search', debouncedSearchQuery);
@@ -122,9 +126,14 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                     setTotalPages(responseData.pagination.totalPages);
                     setTotalCount(responseData.pagination.totalCount);
                 }
+            } else {
+                setOrdersError(`Failed to fetch orders. Status: ${res.status}`);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to fetch orders', err);
+            setOrdersError(err.message || 'Failed to fetch orders');
+        } finally {
+            setIsLoadingOrders(false);
         }
     }, [debouncedSearchQuery, statusFilter, branchFilter, dateRange, currentPage, perPage]);
 
@@ -326,6 +335,50 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         [orders]
     );
 
+    const handleRemoveWebDocument = useCallback(
+        async (orderNumber: number, fileIndex: number) => {
+            const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
+            if (!order || !order.webDocuments) return;
+
+            const updatedWebDocuments = order.webDocuments.filter((_, i) => i !== fileIndex);
+
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, webDocuments: updatedWebDocuments } : o)));
+
+            try {
+                await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ webDocuments: updatedWebDocuments })
+                });
+            } catch (err) {
+                console.error('Failed to remove web document', err);
+            }
+        },
+        [orders]
+    );
+
+    const handleRemoveEmailDocument = useCallback(
+        async (emailId: string, fileIndex: number) => {
+            const email = emails.find(e => e.emailId === emailId);
+            if (!email || !email.attachments) return;
+
+            const updatedAttachments = email.attachments.filter((_, i) => i !== fileIndex);
+
+            setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, attachments: updatedAttachments } : e)));
+
+            try {
+                await fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ attachments: updatedAttachments })
+                });
+            } catch (err) {
+                console.error('Failed to remove email document', err);
+            }
+        },
+        [emails]
+    );
+
     const handleProceed = useCallback(
         async (orderNumber: number) => {
             const order = orders.find(o => o.orderDetails.orderNumber === orderNumber);
@@ -498,26 +551,43 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
             </div>
 
             <div className="p-4 flex flex-col gap-5 flex-grow">
-                {orders.map(order => (
-                    <OrderCard
-                        key={order.orderDetails.orderNumber}
-                        order={order}
-                        linkedEmails={getLinkedEmails(order)}
-                        onLinkEmail={handleLinkEmail}
-                        onUnlinkEmail={handleUnlinkEmail}
-                        onUploadFiles={handleUploadFiles}
-                        onRemoveUploadedFile={handleRemoveUploadedFile}
-                        onProceed={handleProceed}
-                        onEdit={order => setEditingOrder(order)}
-                        onDelete={handleDeleteOrder}
-                        isProceeding={proceedingOrders[order.orderDetails.orderNumber] || false}
-                        isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
-                        onDocsnapOpen={() => setDocsnapOpen(true)}
-                        onDocsnapClose={() => setDocsnapOpen(false)}
-                    />
-                ))}
-                {orders.length === 0 && (
-                    <div className="flex items-center justify-center p-12 text-gray-500 bg-white border border-gray-200 rounded-lg">No orders match the current filter criteria.</div>
+                {isLoadingOrders ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white border border-gray-200 rounded-lg">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-4" />
+                        <p>Loading orders...</p>
+                    </div>
+                ) : ordersError ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-red-500 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="font-semibold text-lg mb-2">Error loading orders</p>
+                        <p>{ordersError}</p>
+                        <Button onClick={fetchData} className="mt-4">Retry</Button>
+                    </div>
+                ) : (
+                    <>
+                        {orders.map(order => (
+                            <OrderCard
+                                key={order.orderDetails.orderNumber}
+                                order={order}
+                                linkedEmails={getLinkedEmails(order)}
+                                onLinkEmail={handleLinkEmail}
+                                onUnlinkEmail={handleUnlinkEmail}
+                                onUploadFiles={handleUploadFiles}
+                                onRemoveUploadedFile={handleRemoveUploadedFile}
+                                onRemoveWebDocument={handleRemoveWebDocument}
+                                onRemoveEmailDocument={handleRemoveEmailDocument}
+                                onProceed={handleProceed}
+                                onEdit={order => setEditingOrder(order)}
+                                onDelete={handleDeleteOrder}
+                                isProceeding={proceedingOrders[order.orderDetails.orderNumber] || false}
+                                isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
+                                onDocsnapOpen={() => setDocsnapOpen(true)}
+                                onDocsnapClose={() => setDocsnapOpen(false)}
+                            />
+                        ))}
+                        {orders.length === 0 && (
+                            <div className="flex items-center justify-center p-12 text-gray-500 bg-white border border-gray-200 rounded-lg">No orders match the current filter criteria.</div>
+                        )}
+                    </>
                 )}
             </div>
 
