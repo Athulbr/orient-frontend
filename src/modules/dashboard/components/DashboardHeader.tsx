@@ -39,13 +39,23 @@ export const DashboardHeaderComponent: FC = () => {
         try {
             const blob = await httpFileRequest('GET', `${config.nodeApiUrl}/idp/user-guide/download`);
             const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = 'user-guide.pdf';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(blobUrl);
+
+            // Trigger download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            downloadLink.download = 'user-guide.pdf';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // Open in a new tab
+            const newTab = window.open();
+            if (newTab) {
+                newTab.location.href = blobUrl;
+            } else {
+                toast.error('Unable to open new tab. Please check your browser settings.');
+            }
+
             setIsUserGuideMenuOpen(false);
         } catch (error) {
             console.error('Failed to open user guide', error);
