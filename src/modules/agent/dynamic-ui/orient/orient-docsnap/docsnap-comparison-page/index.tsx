@@ -63,6 +63,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [record, setRecord] = useState<any>({});
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
     const toast = useToastStore();
 
 
@@ -117,6 +118,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         const fetchRecord = async () => {
             try {
                 if (!recordId) return;
+                setIsLoadingRecord(true);
                 const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`);
                 if (res.ok) {
                     const data = await res.json();
@@ -133,6 +135,10 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     // Fallback to sampleRecord for development if database fails
                     setRecord(sampleRecord);
                     setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoadingRecord(false);
                 }
             }
         };
@@ -546,6 +552,17 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         });
         return bboxes;
     }, [extractedData]);
+
+    if (isLoadingRecord) {
+        return (
+            <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-800">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-blue-500"></div>
+                    <span className="text-sm font-medium text-zinc-500">Loading document...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div ref={containerRef} className="relative flex h-full w-full overflow-hidden bg-white text-zinc-800">

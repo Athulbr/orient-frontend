@@ -1,37 +1,30 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
     FileText,
     Mail,
     UploadCloud,
-    ExternalLink,
     Link2,
     Unlink,
     ArrowRight,
     Plus,
-    X,
     Zap,
-    Clock,
-    User,
-    Building2,
-    Hash,
     Eye,
-    Phone,
-    Edit,
-    Trash2,
     RefreshCw,
-    ChevronLeft,
-    ChevronRight,
-    Coins
 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
-import { Order, Email, FileItem, CurrencyDetail } from './types';
+import { Order, Email, FileItem } from './types';
 import Spinner from '../../../../../components/Spinner';
-import { config } from '../../../../../config/default';
 import { DocsnapComparisonUI } from './docsnap-comparison-page';
-import { convertToIst } from '../../../../../global-utils/convert-date-format';
+
+// Extracted sub-components
+import DocTile, { getFileType } from './DocTile';
+import { STATUS_CONFIG, GBtn, ColIcon, ColCount, CurrencyMiniCard } from './OrderCardPrimitives';
+import OrderCardHeader from './OrderCardHeader';
+
+// ── Props ─────────────────────────────────────────────────────
 
 interface OrderCardProps {
     order: Order;
@@ -51,371 +44,7 @@ interface OrderCardProps {
     onDocsnapClose?: () => void;
 }
 
-const FILE_COLORS = {
-    pdf: { label: 'PDF', text: 'text-blue-700', bg: 'bg-blue-100' },
-    image: { label: 'IMG', text: 'text-emerald-800', bg: 'bg-emerald-100' },
-    doc: { label: 'DOC', text: 'text-blue-700', bg: 'bg-blue-100' },
-    other: { label: 'FILE', text: 'text-gray-500', bg: 'bg-gray-100' }
-} as const;
-
-const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string; dot: string; stripe: string }> = {
-    PENDING: { text: 'text-amber-800', bg: 'bg-amber-50', border: 'border-amber-200', dot: 'bg-amber-400', stripe: 'from-amber-400' },
-    EXTRACTED: { text: 'text-blue-800', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-400', stripe: 'from-blue-400' },
-    COMPLETED: { text: 'text-emerald-800', bg: 'bg-emerald-50', border: 'border-emerald-200', dot: 'bg-emerald-500', stripe: 'from-emerald-400' },
-    REJECTED: { text: 'text-red-800', bg: 'bg-red-50', border: 'border-red-300', dot: 'bg-red-500', stripe: 'from-red-400' },
-    DEFAULT: { text: 'text-gray-700', bg: 'bg-gray-100', border: 'border-gray-200', dot: 'bg-gray-400', stripe: 'from-gray-400' }
-};
-
-const getFileType = (url: string = ''): FileItem['type'] => {
-    if (!url) return 'other';
-    const lower = url.toLowerCase();
-    if (lower.endsWith('.pdf')) return 'pdf';
-    if (lower.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/)) return 'image';
-    if (lower.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/)) return 'doc';
-    return 'other';
-};
-
-const getPreviewUrl = (url: string) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
-        return url;
-    }
-    let normalizedPath = url.replace(/\\/g, '/');
-    // If it's an absolute path, extract the portion after 'temp/' to get the relative path
-    const tempIdx = normalizedPath.indexOf('/temp/');
-    if (tempIdx !== -1) {
-        normalizedPath = normalizedPath.substring(tempIdx + '/temp/'.length);
-    }
-    // Encode each segment individually to preserve slash structure for the wildcard route
-    const encodedPath = normalizedPath
-        .split('/')
-        .map(seg => encodeURIComponent(seg))
-        .join('/');
-    return `${config.workflowService}/api/temp-storage/preview/${encodedPath}?apiKey=secret1`;
-};
-
-const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void }> = ({ file, onRemove }) => {
-    const [hover, setHover] = useState(false);
-    const [preview, setPreview] = useState(false);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [thumbUrl, setThumbUrl] = useState<string | null>(null);
-    const [thumbLoading, setThumbLoading] = useState(file.type === 'image');
-    const [thumbError, setThumbError] = useState(false);
-    const [pageBlobUrls, setPageBlobUrls] = useState<Record<number, string>>({});
-    const pageBlobUrlsRef = useRef<Record<number, string>>({});
-    const [pageLoading, setPageLoading] = useState(false);
-    const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
-
-    const cfg = FILE_COLORS[file.type as keyof typeof FILE_COLORS] ?? FILE_COLORS.other;
-    const shortName = file.name.replace(/\.[^.]+$/, '');
-
-    const allPages = file.pages && file.pages.length > 0 ? file.pages : file.url ? [file.url] : [];
-    const pageApiUrls = allPages.map(getPreviewUrl);
-    const totalPages = pageApiUrls.length;
-
-    // Fetch thumbnail blob on mount
-    useEffect(() => {
-        if (file.type !== 'image' || !pageApiUrls[0]) return;
-        let objectUrl: string;
-
-        const fetchThumb = async () => {
-            try {
-                const res = await fetch(pageApiUrls[0]);
-                if (!res.ok) throw new Error('Failed to fetch thumbnail');
-                const blob = await res.blob();
-                objectUrl = URL.createObjectURL(blob);
-                setThumbUrl(objectUrl);
-            } catch {
-                setThumbError(true);
-            } finally {
-                setThumbLoading(false);
-            }
-        };
-        fetchThumb();
-
-        return () => {
-            if (objectUrl) URL.revokeObjectURL(objectUrl);
-        };
-    }, [pageApiUrls[0]]);
-
-    // Fetch a specific page blob for the lightbox
-    const fetchPageBlob = async (pageIndex: number) => {
-        if (pageBlobUrlsRef.current[pageIndex]) return;
-        setPageLoading(true);
-        try {
-            const res = await fetch(pageApiUrls[pageIndex]);
-            if (!res.ok) throw new Error('Failed to fetch page');
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            pageBlobUrlsRef.current[pageIndex] = url;
-            setPageBlobUrls(prev => ({ ...prev, [pageIndex]: url }));
-        } catch (err) {
-            console.error('Error fetching page:', err);
-        } finally {
-            setPageLoading(false);
-        }
-    };
-
-    // Cleanup all page blob URLs only on unmount
-    useEffect(() => {
-        return () => {
-            Object.values(pageBlobUrlsRef.current).forEach(url => URL.revokeObjectURL(url));
-        };
-    }, []);
-
-    // When lightbox opens or page changes, fetch that page blob
-    useEffect(() => {
-        if (preview && pageApiUrls[currentPage]) {
-            fetchPageBlob(currentPage);
-        }
-    }, [preview, currentPage]);
-
-    const handleClick = () => {
-        if (file.type === 'image') {
-            setCurrentPage(0);
-            setPreview(true);
-        } else {
-            const apiUrl = pageApiUrls[0];
-            if (apiUrl) {
-                fetch(apiUrl)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        const url = URL.createObjectURL(blob);
-                        window.open(url, '_blank');
-                        setTimeout(() => URL.revokeObjectURL(url), 60000);
-                    })
-                    .catch(err => console.error('Preview error:', err));
-            }
-        }
-    };
-
-    const handleOpenOriginal = () => {
-        const apiUrl = pageApiUrls[currentPage];
-        if (apiUrl) {
-            fetch(apiUrl)
-                .then(res => res.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                    setTimeout(() => URL.revokeObjectURL(url), 60000);
-                })
-                .catch(err => console.error('Open original error:', err));
-        }
-    };
-
-    return (
-        <>
-            <div
-                onMouseEnter={() => setHover(true)}
-                onMouseLeave={() => setHover(false)}
-                onClick={handleClick}
-                title={file.name}
-                className={`relative w-[96px] h-[112px] rounded-2xl flex flex-col items-center justify-center gap-2 px-2 pb-2 pt-3 cursor-pointer overflow-hidden flex-shrink-0 transition-all duration-200 shadow-lg
-                    ${hover ? 'bg-white shadow-xl shadow-gray-800 scale-[1.03] border border-gray-300' : 'bg-gray-50 border border-gray-150 scale-100'}`}
-                style={{ boxShadow: hover ? '0 4px 18px 0 rgba(0,0,0,0.10)' : '0 1px 4px 0 rgba(0,0,0,0.06)' }}
-            >
-                {onRemove && hover && (
-                    <button
-                        onClick={e => {
-                            e.stopPropagation();
-                            setShowRemoveConfirm(true);
-                        }}
-                        className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white border border-red-200 shadow-sm cursor-pointer flex items-center justify-center z-10 transition-colors hover:bg-red-50"
-                    >
-                        <X size={10} className="text-red-500" />
-                    </button>
-                )}
-
-                {totalPages > 1 && <span className="absolute top-1.5 left-1.5 text-[9px] font-extrabold text-white bg-black/50 px-[5px] py-[2px] rounded-md z-10">{totalPages}p</span>}
-
-                {file.type === 'image' ? (
-                    <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                        {thumbLoading ? (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                <Spinner size={16} />
-                            </div>
-                        ) : thumbError || !thumbUrl ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
-                                <FileText size={20} className="mb-1 opacity-50" />
-                                <span className="text-[9px]">No preview</span>
-                            </div>
-                        ) : (
-                            <img src={thumbUrl} alt={file.name} className="w-full h-full object-cover" />
-                        )}
-                        <div
-                            className={`absolute inset-0 flex flex-col items-center justify-center gap-1 transition-opacity duration-150 ${hover ? 'opacity-100' : 'opacity-0'}`}
-                            style={{ background: 'rgba(0,0,0,0.38)' }}
-                        >
-                            <Eye size={18} className="text-white drop-shadow" />
-                            <span className="text-white text-[10px] font-semibold tracking-wide">Preview</span>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <span className={`text-[10px] font-extrabold tracking-widest font-mono ${cfg.text} ${cfg.bg} px-[6px] py-[3px] rounded-md`}>{cfg.label}</span>
-                        <span className="text-[11px] text-gray-600 font-bold text-center leading-[1.3] break-all line-clamp-3 w-full px-0.5">{shortName}</span>
-                        <div
-                            className={`absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-1 transition-opacity duration-150 ${hover ? 'opacity-100' : 'opacity-0'}`}
-                            style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(2px)' }}
-                        >
-                            <ExternalLink size={17} className="text-gray-500" />
-                            <span className="text-gray-500 text-[10px] font-semibold tracking-wide">Open</span>
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* Lightbox preview — supports multiple pages */}
-            {preview && file.type === 'image' && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }} onClick={() => setPreview(false)}>
-                    <div
-                        className="relative max-w-[90vw] max-h-[88vh] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center"
-                        style={{ minWidth: 256, minHeight: 256 }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {pageLoading && !pageBlobUrls[currentPage] ? (
-                            <Spinner size={28} />
-                        ) : pageBlobUrls[currentPage] ? (
-                            <img src={pageBlobUrls[currentPage]} alt={`${file.name} - page ${currentPage + 1}`} className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl" />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center text-gray-400">
-                                <FileText size={32} className="mb-2 opacity-50" />
-                                <span className="text-sm">Preview unavailable</span>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={() => setPreview(false)}
-                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
-                        >
-                            <X size={15} className="text-white" />
-                        </button>
-
-                        {totalPages > 1 && (
-                            <>
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        setCurrentPage(p => Math.max(0, p - 1));
-                                    }}
-                                    disabled={currentPage === 0}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 flex items-center justify-center transition-colors"
-                                >
-                                    <ChevronLeft size={18} className="text-white" />
-                                </button>
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        setCurrentPage(p => Math.min(totalPages - 1, p + 1));
-                                    }}
-                                    disabled={currentPage === totalPages - 1}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 flex items-center justify-center transition-colors"
-                                >
-                                    <ChevronRight size={18} className="text-white" />
-                                </button>
-                            </>
-                        )}
-
-                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-3 items-center">
-                            {totalPages > 1 && (
-                                <span className="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full">
-                                    {currentPage + 1} / {totalPages}
-                                </span>
-                            )}
-                            <button
-                                onClick={handleOpenOriginal}
-                                className="flex items-center gap-1.5 bg-white/90 hover:bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow transition-colors"
-                            >
-                                <ExternalLink size={12} /> Open original
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {onRemove && (
-                <DialogComponent
-                    isOpen={showRemoveConfirm}
-                    closeDialog={() => setShowRemoveConfirm(false)}
-                    name="Remove Document"
-                    className="max-w-[400px]"
-                >
-                    <div className="p-6">
-                        <div className="text-gray-600 mb-6 text-sm">
-                            Are you sure you want to remove <strong className="break-all">{file.name}</strong>?
-                        </div>
-                        <div className="flex justify-end gap-3">
-                            <Button outlined onClick={(e) => { e.stopPropagation(); setShowRemoveConfirm(false); }}>
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRemove();
-                                    setShowRemoveConfirm(false);
-                                }}
-                                className="bg-red-600 hover:bg-red-700 text-white border-red-600"
-                            >
-                                Remove
-                            </Button>
-                        </div>
-                    </div>
-                </DialogComponent>
-            )}
-        </>
-    );
-};
-
-const GBtn: React.FC<{
-    colorClass: string;
-    borderClass: string;
-    hoverClass: string;
-    icon: React.ReactNode;
-    label: string;
-    onClick: () => void;
-}> = ({ colorClass, borderClass, hoverClass, icon, label, onClick }) => (
-    <button
-        onClick={onClick}
-        className={`inline-flex items-center gap-1 px-[12px] py-[6px] rounded-md cursor-pointer text-xs font-bold border bg-transparent font-[inherit] transition-colors duration-150 ${colorClass} ${borderClass} ${hoverClass}`}
-    >
-        {icon}
-        {label}
-    </button>
-);
-
-const ColIcon: React.FC<{ bg: string; border: string; children: React.ReactNode }> = ({ bg, border, children }) => (
-    <div className={`w-7 h-7 rounded-[7px] ${bg} ${border} border flex items-center justify-center flex-shrink-0`}>{children}</div>
-);
-
-const ColCount: React.FC<{ colorClass: string; bgClass: string; borderClass: string; n: number }> = ({ colorClass, bgClass, borderClass, n }) => (
-    <span className={`text-xs font-extrabold ${colorClass} ${bgClass} border ${borderClass} px-[7px] py-[1px] rounded-full leading-[1.8]`}>{n}</span>
-);
-
-const CurrencyMiniCard: React.FC<{ item: CurrencyDetail }> = ({ item }) => (
-    <div className="flex items-center gap-3 bg-slate-50/50 border border-slate-200 rounded-lg px-3 py-1.5 transition-all hover:bg-white hover:shadow-md hover:border-blue-200 group">
-        <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded flex items-center justify-center bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                <Coins size={11} />
-            </div>
-            <span className="text-xs font-extrabold text-slate-700 tracking-tight leading-none group-hover:text-blue-700">{item.currency}</span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded border border-slate-100 group-hover:border-blue-100">
-                {item.product}
-            </span>
-        </div>
-
-        <div className="h-3 w-[1px] bg-slate-200" />
-
-        <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
-            <span>{item.quantity.toLocaleString()}</span>
-            <span className="text-slate-300">×</span>
-            <span>{item.rate.toLocaleString()}</span>
-        </div>
-
-        <div className="text-xs font-black text-slate-900 ml-1">
-            ₹{item.amount.toLocaleString()}
-        </div>
-    </div>
-);
+// ── Component ─────────────────────────────────────────────────
 
 const OrderCard: React.FC<OrderCardProps> = ({
     order,
@@ -448,10 +77,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
         onDocsnapClose?.();
     };
 
+    // ── Derive file lists ─────────────────────────────────────
     const orderFiles: (FileItem & { index: number })[] = (order.webDocuments || []).map((doc, i) => {
         const url = doc.documentPages?.[0] || '';
         return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [], index: i };
     });
+
     const emailFiles: (FileItem & { emailId: string; index: number })[] = linkedEmails.flatMap(email =>
         (email.attachments || []).map((att: any, idx: number) => {
             const url = att.documentPages?.[0] || att.url || '';
@@ -466,239 +97,57 @@ const OrderCard: React.FC<OrderCardProps> = ({
             };
         })
     );
+
     const uploadedFileItems: (FileItem & { index: number })[] = (order.manualDocuments || []).map((f, i) => {
         const url = f.documentPages?.[0] || '';
-        return {
-            name: f.documentName,
-            url,
-            type: getFileType(url),
-            source: 'upload' as const,
-            pages: f.documentPages || [],
-            index: i
-        };
+        return { name: f.documentName, url, type: getFileType(url), source: 'upload' as const, pages: f.documentPages || [], index: i };
     });
-
-    const handleViewExtractedData = () => openRecordDialog();
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
     const hasDocuments = totalDocs > 0;
     const status = STATUS_CONFIG[order.orderDetails.orderStatus.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
+    const isOnline = order.orderDetails.documentSubmitStatus === 'Online';
 
+    // ── Render ────────────────────────────────────────────────
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] bg-white border border-gray-200 rounded-2xl overflow-hidden w-full shadow-lg shadow-gray-200/80">
             <div className={`h-[3px] bg-gradient-to-r ${status.stripe} to-transparent`} />
 
-            <div className="flex items-start justify-between gap-4 px-[22px] pt-[18px] pb-4 border-b border-gray-100">
-                <div>
-                    <div className="flex items-center gap-2 flex-wrap mb-[6px]">
-                        <span className="text-[22px] font-extrabold text-gray-900 tracking-tight">{order.orderDetails.orderNumber}</span>
-                        <span className={`inline-flex items-center gap-1 text-xs font-extrabold ${status.text} ${status.bg} border ${status.border} px-2 py-[3px] rounded-full`}>
-                            <span className={`w-[5px] h-[5px] rounded-full ${status.dot} inline-block`} />
-                            {order.orderDetails.orderStatus === 'extracted' ? 'Review Pending' : order.orderDetails.orderStatus === 'pending' ? 'Extraction Pending' : order.orderDetails.orderStatus}
-                        </span>
-                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{order.orderDetails.orderType.toUpperCase()}</span>
-                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
-                            {(Array.isArray(order.orderDetails.productType) ? order.orderDetails.productType.join(', ') : String(order.orderDetails.productType || '')).toUpperCase()}
-                        </span>
-                    </div>
+            {/* Header */}
+            <OrderCardHeader
+                order={order}
+                status={status}
+                docCounts={{ online: orderFiles.length, email: emailFiles.length, manual: uploadedFileItems.length, total: totalDocs }}
+                showOnline={isOnline}
+                onEdit={onEdit}
+                onDelete={onDelete ? () => setShowDeleteConfirm(true) : undefined}
+            />
 
-                    <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
-                        <Clock size={13} className="text-gray-400" />
-                        {order.createdAt ? convertToIst(order.createdAt) : 'N/A'}
-                        <span className="mx-1.5">•</span>
-                        <Building2 size={13} className="text-gray-400" />
-                        {order.orderDetails.location || order.orderDetails.branch}
-                        <span className="mx-1.5">•</span>
-                        <span className="text-gray-500 font-semibold">{order.orderDetails.documentSubmitStatus} Submission</span>
-                    </div>
-
-                    <div className="flex gap-2 flex-wrap">
-                        {[
-                            { icon: <User size={12} className="text-gray-400" />, val: `${order.userDetails.name}` },
-                            { icon: <Mail size={12} className="text-gray-400" />, val: order.userDetails.email },
-                            { icon: <Phone size={12} className="text-gray-400" />, val: order.userDetails.phone },
-                            ...(order.userDetails.panNumber ? [{ icon: <Hash size={12} className="text-gray-400" />, val: `PAN: ${order.userDetails.panNumber}` }] : []),
-                            { icon: <Building2 size={12} className="text-gray-400" />, val: order.orderDetails.branch },
-                            {
-                                icon: null,
-                                val: (
-                                    <>
-                                        <span className="text-gray-400 font-medium mr-[3px]">Branch ID:</span> <span className="text-gray-600 font-bold">{order.orderDetails.branchId}</span>
-                                    </>
-                                )
-                            },
-                            {
-                                icon: null,
-                                val: (
-                                    <>
-                                        <span className="text-gray-400 font-medium mr-[3px]">Actual:</span>{' '}
-                                        <span className="text-gray-600 font-bold">₹{(order.orderDetails.actualAmount).toLocaleString()}</span>
-                                    </>
-                                ),
-                                hide: !Boolean(order.orderDetails.actualAmount)
-                            },
-                            {
-                                icon: null,
-                                val: (
-                                    <>
-                                        <span className="text-gray-400 font-medium mr-[3px]">Total:</span>{' '}
-                                        <span className="text-gray-600 font-extrabold">₹{order.orderDetails.totalAmount.toLocaleString()}</span>
-                                    </>
-                                ),
-                                hide: !Boolean(order.orderDetails.totalAmount)
-                            },
-                            ...(order.orderDetails.paymentType
-                                ? [
-                                    {
-                                        icon: null,
-                                        val: (
-                                            <>
-                                                <span className="text-gray-400 font-medium mr-[3px]">Payment:</span> <span className="text-gray-600 font-bold">{order.orderDetails.paymentType}</span>
-                                            </>
-                                        )
-                                    }
-                                ]
-                                : []),
-                            ...(order.orderDetails.deliveryMode
-                                ? [
-                                    {
-                                        icon: null,
-                                        val: (
-                                            <>
-                                                <span className="text-gray-400 font-medium mr-[3px]">Delivery:</span>{' '}
-                                                <span className="text-gray-600 font-bold">{order.orderDetails.deliveryMode}</span>
-                                            </>
-                                        )
-                                    }
-                                ]
-                                : []),
-                            ...(order.orderDetails.deliveryCharge !== undefined
-                                ? [
-                                    {
-                                        icon: null,
-                                        val: (
-                                            <>
-                                                <span className="text-gray-400 font-medium mr-[3px]">Delivery Charge:</span>{' '}
-                                                <span className="text-gray-600 font-bold">₹{order.orderDetails.deliveryCharge}</span>
-                                            </>
-                                        )
-                                    }
-                                ]
-                                : []),
-                            ...(order.orderDetails.handlingCharges !== undefined
-                                ? [
-                                    {
-                                        icon: null,
-                                        val: (
-                                            <>
-                                                <span className="text-gray-400 font-medium mr-[3px]">Handling:</span>{' '}
-                                                <span className="text-gray-600 font-bold">₹{order.orderDetails.handlingCharges}</span>
-                                            </>
-                                        )
-                                    }
-                                ]
-                                : []),
-                            ...(order.orderDetails.purpose
-                                ? [
-                                    {
-                                        icon: null,
-                                        val: (
-                                            <>
-                                                <span className="text-gray-400 font-medium mr-[3px]">Purpose:</span> <span className="text-gray-600 font-bold">{order.orderDetails.purpose}</span>
-                                            </>
-                                        )
-                                    }
-                                ]
-                                : []),
-                            ...(order.orderDetails.documentUploadTime
-                                ? [
-                                    {
-                                        icon: <Clock size={12} className="text-gray-400" />,
-                                        val: (
-                                            <>
-                                                <span className="text-gray-400 font-medium mr-[3px]">Uploaded:</span>{' '}
-                                                <span className="text-gray-600 font-bold">{order.orderDetails.documentUploadTime}</span>
-                                            </>
-                                        )
-                                    }
-                                ]
-                                : [])
-                        ].map(({ icon, val, hide }, idx) => {
-                            if (hide) return null
-
-                            return (
-                                <div key={idx} className="inline-flex items-center gap-[5px] bg-gray-50 border border-gray-200 rounded-[7px] px-3 py-2 text-[13px] font-semibold text-gray-600">
-                                    {icon}
-                                    {val}
-                                </div>
-                            )
-                        })}
-
-
-                    </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                        {onEdit && order.orderDetails.orderStatus !== 'submitted' && (
-                            <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
-                        )}
-                        {onDelete && (
-                            <GBtn
-                                colorClass="text-red-600"
-                                borderClass="border-red-200"
-                                hoverClass="hover:bg-red-50"
-                                icon={<Trash2 size={11} />}
-                                label="Delete"
-                                onClick={() => setShowDeleteConfirm(true)}
-                            />
-                        )}
-                    </div>
-                    <div className="flex gap-[7px]">
-                        {[
-                            { n: orderFiles.length, l: 'ONLINE', dark: false, show: order.orderDetails.documentSubmitStatus === 'Online' },
-                            { n: emailFiles.length, l: 'EMAIL', dark: false, show: true },
-                            { n: uploadedFileItems.length, l: 'MANUAL', dark: false, show: true },
-                            { n: totalDocs, l: 'TOTAL', dark: true, show: true }
-                        ].map(({ n, l, dark, show }) => {
-                            if (!show) return null;
-                            return (
-                                <div key={l} className={`rounded-[10px] py-[9px] px-[13px] text-center min-w-[58px] border ${dark ? 'bg-[#012D56] border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
-                                    <div className={`text-2xl font-extrabold leading-none ${dark ? 'text-white' : 'text-gray-900'}`}>{n}</div>
-                                    <div className={`text-[11px] font-bold tracking-[0.07em] mt-0.5 ${dark ? 'text-white/45' : 'text-gray-400'}`}>{l}</div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            <div className={`grid ${order.orderDetails.documentSubmitStatus === 'Online' ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
-                {order.orderDetails.documentSubmitStatus === 'Online' && (
-                    <div className="p-3 border-r border-gray-100 min-w-0">
-                        <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
-                            <div className="flex items-center gap-[8px]">
-                                <ColIcon bg="bg-blue-50" border="border-blue-200">
-                                    <FileText size={15} className="text-blue-500" />
-                                </ColIcon>
-                                <span className="text-[15px] font-bold text-gray-700">Online Documents</span>
-                                <ColCount colorClass="text-blue-700" bgClass="bg-blue-100" borderClass="border-blue-200" n={orderFiles.length} />
-                            </div>
+            {/* Document columns */}
+            <div className={`grid ${isOnline ? 'grid-cols-3' : 'grid-cols-2'} border-b border-gray-100 min-h-[200px]`}>
+                {/* Online Documents */}
+                {isOnline && (
+                    <DocumentColumn
+                        title="Online Documents"
+                        icon={<FileText size={15} className="text-blue-500" />}
+                        iconBg="bg-blue-50"
+                        iconBorder="border-blue-200"
+                        countColor={{ text: 'text-blue-700', bg: 'bg-blue-100', border: 'border-blue-200' }}
+                        count={orderFiles.length}
+                        emptyText="No documents attached"
+                        hasBorderRight
+                    >
+                        <div className="flex flex-wrap gap-[7px]">
+                            {orderFiles.map((f, i) => (
+                                <DocTile key={i} file={f} onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined} />
+                            ))}
                         </div>
-                        {orderFiles.length > 0 ? (
-                            <div className="flex flex-wrap gap-[7px]">
-                                {orderFiles.map((f, i) => (
-                                    <DocTile key={i} file={f} onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined} />
-                                ))}
-                            </div>
-                        ) : (
-                            <span className="text-[13px] text-gray-300 italic">No documents attached</span>
-                        )}
-                    </div>
+                    </DocumentColumn>
                 )}
 
+                {/* Email Documents */}
                 <div className="p-3 border-r border-gray-100 min-w-0">
-                    <div className="flex items-center justify-between mb-[11px]  bg-gray-100 p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
                         <div className="flex items-center gap-[8px]">
                             <ColIcon bg="bg-violet-50" border="border-violet-200">
                                 <Mail size={15} className="text-violet-500" />
@@ -757,6 +206,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     </DialogComponent>
                 </div>
 
+                {/* Manual Documents */}
                 <div className="p-3 min-w-0">
                     <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
                         <div className="flex items-center gap-[8px]">
@@ -803,15 +253,13 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
             </div>
 
+            {/* Footer: currency cards + extract button */}
             <div className="px-[22px] py-[13px] flex items-center justify-between bg-slate-50/30 border-t border-gray-50">
                 <div className="flex flex-wrap gap-2.5">
                     {order.currencyDetails?.map((item, idx) => (
                         <CurrencyMiniCard key={idx} item={item} />
                     ))}
                 </div>
-                {/* <span className="text-sm text-gray-400">
-                    {totalDocs || 'No'} {totalDocs === 1 ? 'document' : 'documents'} ready for extraction
-                </span> */}
                 {!order.extractionDetails?.recordId ? (
                     <Button
                         startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
@@ -832,13 +280,14 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         >
                             {isProceeding ? 'Processing…' : 'Re-Extract'}
                         </Button>
-                        <Button startIcon={<Eye size={15} />} outlined onClick={handleViewExtractedData}>
+                        <Button startIcon={<Eye size={15} />} outlined onClick={openRecordDialog}>
                             View Extracted Data
                         </Button>
                     </div>
                 )}
             </div>
 
+            {/* Delete confirmation dialog */}
             {onDelete && (
                 <DialogComponent isOpen={showDeleteConfirm} closeDialog={() => setShowDeleteConfirm(false)} name="Delete Order?" className="max-w-[600px]">
                     <div className="p-6">
@@ -865,11 +314,39 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </DialogComponent>
             )}
 
+            {/* Fullscreen docsnap comparison dialog */}
             <DialogComponent isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
                 <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
             </DialogComponent>
         </div>
     );
 };
+
+// ── Reusable document column wrapper ──────────────────────────
+
+const DocumentColumn: React.FC<{
+    title: string;
+    icon: React.ReactNode;
+    iconBg: string;
+    iconBorder: string;
+    countColor: { text: string; bg: string; border: string };
+    count: number;
+    emptyText: string;
+    hasBorderRight?: boolean;
+    action?: React.ReactNode;
+    children: React.ReactNode;
+}> = ({ title, icon, iconBg, iconBorder, countColor, count, emptyText, hasBorderRight, action, children }) => (
+    <div className={`p-3 min-w-0 ${hasBorderRight ? 'border-r border-gray-100' : ''}`}>
+        <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
+            <div className="flex items-center gap-[8px]">
+                <ColIcon bg={iconBg} border={iconBorder}>{icon}</ColIcon>
+                <span className="text-[15px] font-bold text-gray-700">{title}</span>
+                <ColCount colorClass={countColor.text} bgClass={countColor.bg} borderClass={countColor.border} n={count} />
+            </div>
+            {action}
+        </div>
+        {count > 0 ? children : <span className="text-[13px] text-gray-300 italic">{emptyText}</span>}
+    </div>
+);
 
 export default OrderCard;
