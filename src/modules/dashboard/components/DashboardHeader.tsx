@@ -21,7 +21,6 @@ export const DashboardHeaderComponent: FC = () => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const isContentCreationModule = sessionStorage.getItem('module') === 'content-creation';
-    const isSuperAdmin = user?.role?.name === 'superadmin';
 
     const handleUserGuideClick = async () => {
         if (isUserGuideDownloading) {
@@ -89,16 +88,11 @@ export const DashboardHeaderComponent: FC = () => {
         }
     };
 
-    const handleUserGuideButtonClick = () => {
+    const handleUserGuideMenuToggle = () => {
         if (isUserGuideDownloading || isUserGuideUploading) {
             return;
         }
-
-        if (isSuperAdmin) {
-            setIsUserGuideMenuOpen(prev => !prev);
-            return;
-        }
-        handleUserGuideClick();
+        setIsUserGuideMenuOpen(prev => !prev);
     };
 
     return (
@@ -108,9 +102,9 @@ export const DashboardHeaderComponent: FC = () => {
             </div>
             <div className="flex items-center gap-2">
                 {isContentCreationModule && (
-                    isSuperAdmin ? (
+                    <>
                         <div className="relative">
-                            <Button permission="view:userGuide" outlined onClick={handleUserGuideButtonClick} disabled={isUserGuideDownloading || isUserGuideUploading}>
+                            <Button permission="viewEdit:userGuide" outlined onClick={handleUserGuideMenuToggle} disabled={isUserGuideDownloading || isUserGuideUploading}>
                                 User Guide
                                 {(isUserGuideDownloading || isUserGuideUploading) && <Spinner className="text-gray-500" size={16} />}
                             </Button>
@@ -132,12 +126,11 @@ export const DashboardHeaderComponent: FC = () => {
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        <Button permission="view:userGuide" outlined onClick={handleUserGuideButtonClick} disabled={isUserGuideDownloading}>
+                        <Button permission="view:userGuide" outlined onClick={handleUserGuideClick} disabled={isUserGuideDownloading}>
                             User Guide
                             {isUserGuideDownloading && <Spinner className="text-gray-500" size={16} />}
                         </Button>
-                    )
+                    </>
                 )}
                 <Button outlined onClick={() => navigate('/agent/list')}>
                     Makez Agents
