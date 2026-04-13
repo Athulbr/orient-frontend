@@ -21,6 +21,15 @@ export const DashboardHeaderComponent: FC = () => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const isContentCreationModule = sessionStorage.getItem('module') === 'content-creation';
+    const sessionUser = sessionStorage.getItem('user');
+    let sessionUserRoleName: string | undefined;
+    if (sessionUser) {
+        try {
+            sessionUserRoleName = JSON.parse(sessionUser)?.role?.name;
+        } catch (error) {
+            console.error('Failed to parse session user', error);
+        }
+    }
 
     const handleUserGuideClick = async () => {
         if (isUserGuideDownloading) {
@@ -126,10 +135,12 @@ export const DashboardHeaderComponent: FC = () => {
                                 </div>
                             )}
                         </div>
-                        <Button permission="view:userGuide" outlined onClick={handleUserGuideClick} disabled={isUserGuideDownloading}>
-                            User Guide
-                            {isUserGuideDownloading && <Spinner className="text-gray-500" size={16} />}
-                        </Button>
+                        {sessionUserRoleName !== 'superadmin' && (
+                            <Button permission="view:userGuide" outlined onClick={handleUserGuideClick} disabled={isUserGuideDownloading}>
+                                User Guide
+                                {isUserGuideDownloading && <Spinner className="text-gray-500" size={16} />}
+                            </Button>
+                        )}
                     </>
                 )}
                 <Button outlined onClick={() => navigate('/agent/list')}>
