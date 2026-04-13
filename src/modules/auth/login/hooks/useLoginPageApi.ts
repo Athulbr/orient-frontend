@@ -146,6 +146,9 @@ export const useLoginPageApi = () => {
                 if (res.data?.orientClientId) {
                     window?.sessionStorage?.setItem('orientClientId', res.data.orientClientId);
                 }
+                if (res.data?.order_id) {
+                    window?.sessionStorage?.setItem('order_id', res.data.order_id);
+                }
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                 window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
