@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
@@ -7,7 +7,6 @@ import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
-
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -65,7 +64,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [isSaving, setIsSaving] = useState(false);
     const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
     const toast = useToastStore();
-
 
     useEffect(() => {
         const handlePopState = () => {
@@ -341,11 +339,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             scrollToBbox(id);
             updateConnectionLine();
 
-            // Keep line connected during smooth scroll
+            // Keep line connected during smooth scroll (1500ms covers long cross-page scrolls)
             const start = performance.now();
             const tick = () => {
                 updateConnectionLine();
-                if (performance.now() - start < 500) {
+                if (performance.now() - start < 1500) {
                     requestAnimationFrame(tick);
                 }
             };
@@ -524,7 +522,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 canvas.removeEventListener('wheel', handleWheel);
             }
         };
-    }, [updateTransform]);
+    }, [updateTransform, isLoadingRecord]);
 
     // Update connection line on scroll
     useEffect(() => {
@@ -533,7 +531,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         const handleScroll = () => requestAnimationFrame(updateConnectionLine);
         canvas.addEventListener('scroll', handleScroll);
         return () => canvas.removeEventListener('scroll', handleScroll);
-    }, [updateConnectionLine]);
+    }, [updateConnectionLine, isLoadingRecord]);
 
     // Only collect bboxes from non-array groups
     const allBboxes = useMemo(() => {
@@ -621,8 +619,9 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                             <div
                                                 key={b.id}
                                                 id={`bbox-${b.id}`}
-                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
-                                                    }`}
+                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${
+                                                    activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
+                                                }`}
                                                 style={{
                                                     left: `${(b.bbox.x_min - 0.004) * 100}%`,
                                                     top: `${(b.bbox.y_min - 0.003) * 100}%`,
@@ -695,6 +694,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 {/* Scrollable Fields List */}
                 <div ref={rightPaneRef} onScroll={updateConnectionLine} className={`flex-1 overflow-y-auto px-6 py-6 ${styles.track}`}>
                     <div className="mx-auto max-w-3xl space-y-6">
+                        <div className="flex items-start gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50/80 p-4 shadow-sm ring-1 ring-amber-500/20">
+                            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                            <div className="flex flex-col">
+                                <h4 className="text-sm font-semibold tracking-wide text-amber-800">Action Required</h4>
+                                <p className="mt-1 text-xs leading-relaxed text-amber-700">
+                                    Please review all fields without fail. You must verify and confirm all extracted information before submitting the order.
+                                </p>
+                            </div>
+                        </div>
                         {Object.entries(extractedData).map(([groupKey, groupValue]) => {
                             // Skip array groups (e.g. line_items)
                             if (Array.isArray(groupValue)) return null;

@@ -3,6 +3,7 @@ import { X, CheckCircle, AlertCircle, GripHorizontal, Loader2 } from 'lucide-rea
 import { config } from '../../../../../../config/default';
 import { Order } from '../types';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
+import { validateMaraekatPayload } from './utils/validateMaraekatPayload';
 
 type ResultMessage = {
     type: 'success' | 'error';
@@ -113,10 +114,18 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
     const handleSubmit = async () => {
         setIsSubmitting(true);
         setResultMessage(null);
-        const payload = getMaraekatPayload(order, extractedData);
+        const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
+        const validationResult = validateMaraekatPayload(payload);
+
+        const allErrors = [...dateErrors, ...validationResult.errors];
+        if (allErrors.length > 0) {
+            setResultMessage({ type: 'error', messages: allErrors });
+            setIsSubmitting(false);
+            return;
+        }
 
         try {
-            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order`, {
+            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order-2`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -156,7 +165,18 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
                         setIsSubmitting(false);
 
                         if (parsed.status === 'completed') {
-                            setResultMessage({ type: 'success', messages: ['Successfully submitted to Maraekat'] });
+                            const result = parsed.finalData?.[0] || {};
+                            if (result && result.success === false) {
+                                const errorMessages = Array.isArray(result.messages)
+                                    ? result.messages.map((m: any) => (typeof m === 'string' ? m : m.message || JSON.stringify(m)))
+                                    : ['Validation failed'];
+                                setResultMessage({ type: 'error', messages: errorMessages });
+                            } else {
+                                const successMessages = Array.isArray(result?.messages)
+                                    ? result.messages.map((m: any) => (typeof m === 'string' ? m : m.message || 'Validated Successfully'))
+                                    : ['Successfully submitted to Maraekat'];
+                                setResultMessage({ type: 'success', messages: successMessages });
+                            }
                         } else {
                             const errorMsg = parsed.error || `Submission ended with status: ${parsed.status}`;
                             setResultMessage({ type: 'error', messages: [errorMsg] });

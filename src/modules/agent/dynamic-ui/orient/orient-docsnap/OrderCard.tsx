@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import {
-    FileText,
-    Mail,
-    UploadCloud,
-    Link2,
-    Unlink,
-    ArrowRight,
-    Plus,
-    Zap,
-    Eye,
-    RefreshCw,
-} from 'lucide-react';
+import { FileText, Mail, UploadCloud, Link2, Unlink, ArrowRight, Plus, Zap, Eye, RefreshCw } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -315,7 +304,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
             )}
 
             {/* Fullscreen docsnap comparison dialog */}
-            <DialogComponent isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
+            <DialogComponent disableBlurCloseDialog isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
                 <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
             </DialogComponent>
         </div>
@@ -339,7 +328,9 @@ const DocumentColumn: React.FC<{
     <div className={`p-3 min-w-0 ${hasBorderRight ? 'border-r border-gray-100' : ''}`}>
         <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
             <div className="flex items-center gap-[8px]">
-                <ColIcon bg={iconBg} border={iconBorder}>{icon}</ColIcon>
+                <ColIcon bg={iconBg} border={iconBorder}>
+                    {icon}
+                </ColIcon>
                 <span className="text-[15px] font-bold text-gray-700">{title}</span>
                 <ColCount colorClass={countColor.text} bgClass={countColor.bg} borderClass={countColor.border} n={count} />
             </div>
