@@ -135,9 +135,9 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const getLinkedEmails = useCallback(
         (order: Order): Email[] => {
             if (!order.linkedEmailIds || order.linkedEmailIds.length === 0) return [];
-            return emailsRef.current.filter(e => order.linkedEmailIds!.includes(e.emailId));
+            return emails.filter(e => order.linkedEmailIds!.includes(e.emailId));
         },
-        [] // uses ref — no deps needed
+        [emails]
     );
 
     // ── Delete order (#7 — now checks response) (#17 — toast on error) ──
@@ -184,13 +184,25 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         fetch(`${config.workflowService}/api/emails/${emailId}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ orderNumber: String(orderNumber) })
+                            body: JSON.stringify({ orderNumber })
                         })
                     ]);
 
                     if (!orderRes.ok || !emailRes.ok) {
                         throw new Error('API returned non-OK status');
                     }
+
+                    // Ensure the linked email is in our local cache so getLinkedEmails can find it
+                    if (!emailsRef.current.some(e => e.emailId === emailId)) {
+                        try {
+                            const emailDetailRes = await fetch(`${config.workflowService}/api/emails/${emailId}`);
+                            if (emailDetailRes.ok) {
+                                const emailDetail = await emailDetailRes.json();
+                                setEmails(prev => [...prev, emailDetail]);
+                            }
+                        } catch { /* non-critical — email will load on next page refresh */ }
+                    }
+
                     toast.success('Email linked successfully');
                 }
             } catch (err) {
@@ -244,13 +256,19 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     fetch(`${config.workflowService}/api/emails/${emailId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderNumber: '' })
+                        body: JSON.stringify({ orderNumber: null })
                     })
                 ]);
 
                 if (!orderRes.ok || !emailRes.ok) {
                     throw new Error('API returned non-OK status');
                 }
+
+                // Update local email cache to clear orderNumber so it shows as unlinked
+                setEmails(prev =>
+                    prev.map(e => e.emailId === emailId ? { ...e, orderNumber: undefined } : e)
+                );
+
                 toast.success('Email unlinked');
             } catch (err) {
                 console.error('Failed to unlink email', err);

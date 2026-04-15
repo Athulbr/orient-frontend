@@ -72,7 +72,7 @@ const DraggableResultCard: React.FC<DraggableResultCardProps> = ({ result, onClo
                 <div className="flex items-center gap-2 font-semibold">
                     <GripHorizontal size={18} className={isSuccess ? 'text-green-500/50' : 'text-red-500/50'} />
                     {isSuccess ? <CheckCircle size={18} className="text-green-600" /> : <AlertCircle size={18} className="text-red-600" />}
-                    <span>{isSuccess ? 'Success' : 'Validation Failed'}</span>
+                    <span>{isSuccess ? 'Success' : 'Submission Failed'}</span>
                 </div>
                 <button
                     onClick={e => {
@@ -345,7 +345,7 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
         if (token) return token;
         try {
             // const workflowServiceUrl = import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL || 'http://localhost:6007';
-            const workflowServiceUrl = config.workflowService
+            const workflowServiceUrl = config.workflowService;
             const response = await fetch(`${workflowServiceUrl}/api/orient/login`, {
                 method: 'POST'
             });
