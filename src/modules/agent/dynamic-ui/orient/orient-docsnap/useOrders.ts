@@ -324,6 +324,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0] || {};
+                                    console.log('parsed', parsed);
                                     const newDocs: DocumentDetail[] = [];
 
                                     finalData.manualDocuments.forEach((doc: string[]) => {
