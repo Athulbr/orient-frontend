@@ -17,10 +17,7 @@ interface OrientDocsnapUserInterfaceIF {
 }
 
 // ── Helper: parse initial search from URL once (#9) ───────────
-const getInitialSearch = (): string =>
-    typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('order_id') || ''
-        : '';
+const getInitialSearch = (): string => (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('order_id') || '' : '');
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     // ── Filter & Pagination state ─────────────────────────────
@@ -28,7 +25,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
     const [statusFilter, setStatusFilter] = useState('all');
-    const [branchFilter, setBranchFilter] = useState('5');
+    const [branchFilter, setBranchFilter] = useState('');
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
     const [perPage, setPerPage] = useState('10');
     const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +37,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     // Track fullscreen docsnap dialog for back-button handling
     const [docsnapOpen, setDocsnapOpen] = useState(false);
     const docsnapOpenRef = React.useRef(docsnapOpen);
-    useEffect(() => { docsnapOpenRef.current = docsnapOpen; }, [docsnapOpen]);
+    useEffect(() => {
+        docsnapOpenRef.current = docsnapOpen;
+    }, [docsnapOpen]);
 
     // ── Back-button guard (#21 — removed dead window.close hack) ──
     useEffect(() => {
@@ -94,30 +93,30 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         handleCreateOrder,
         handleUpdateOrder,
         getLinkedEmails,
-        setOrders,
-    } = useOrders(
-        { searchQuery, debouncedSearchQuery, statusFilter, branchFilter, dateRange, perPage, currentPage },
-        agentSettings
-    );
+        setOrders
+    } = useOrders({ searchQuery, debouncedSearchQuery, statusFilter, branchFilter, dateRange, perPage, currentPage }, agentSettings);
 
     // ── Handle inline order updates (e.g. eonBookingNumber from docsnap) ──
-    const handleInlineOrderUpdate = useCallback((updatedOrder: Order) => {
-        setOrders(prev =>
-            prev.map(o =>
-                o.orderDetails.orderNumber === updatedOrder.orderDetails.orderNumber ? updatedOrder : o
-            )
-        );
-    }, [setOrders]);
+    const handleInlineOrderUpdate = useCallback(
+        (updatedOrder: Order) => {
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === updatedOrder.orderDetails.orderNumber ? updatedOrder : o)));
+        },
+        [setOrders]
+    );
 
     // Trigger fetch whenever the memoised fetchData changes
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     // ── Filter reset ──────────────────────────────────────────
+    const user = sessionStorage.getItem('user');
+    const parsedUser = JSON.parse(user || '');
     const handleResetFilters = useCallback(() => {
         setSearchQuery('');
         setDebouncedSearchQuery('');
         setStatusFilter('all');
-        setBranchFilter('5');
+        setBranchFilter(parsedUser.lastName);
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);
@@ -151,7 +150,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                     <div className="flex flex-col items-center justify-center py-20 text-red-500 bg-red-50 border border-red-200 rounded-lg">
                         <p className="font-semibold text-lg mb-2">Error loading orders</p>
                         <p>{ordersError}</p>
-                        <Button onClick={fetchData} className="mt-4">Retry</Button>
+                        <Button onClick={fetchData} className="mt-4">
+                            Retry
+                        </Button>
                     </div>
                 ) : (
                     <>
@@ -204,18 +205,10 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                         <PaginationButton onClick={() => setCurrentPage(1)} disabled={currentPage === 1 || totalPages === 0} icon={<ChevronsLeft className="h-4 w-4" />} />
                     </Tooltip>
                     <Tooltip text="Prev Page" position="top">
-                        <PaginationButton
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1 || totalPages === 0}
-                            icon={<ChevronLeft className="h-4 w-4" />}
-                        />
+                        <PaginationButton onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1 || totalPages === 0} icon={<ChevronLeft className="h-4 w-4" />} />
                     </Tooltip>
 
-                    <PageInput
-                        page={currentPage}
-                        totalPages={totalPages === 0 ? 1 : totalPages}
-                        setPage={pageNumber => setCurrentPage(pageNumber)}
-                    />
+                    <PageInput page={currentPage} totalPages={totalPages === 0 ? 1 : totalPages} setPage={pageNumber => setCurrentPage(pageNumber)} />
                     <Tooltip text="Next Page" position="top">
                         <PaginationButton
                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
@@ -224,11 +217,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                         />
                     </Tooltip>
                     <Tooltip text="Last Page" position="top">
-                        <PaginationButton
-                            onClick={() => setCurrentPage(totalPages)}
-                            disabled={currentPage === totalPages || totalPages === 0}
-                            icon={<ChevronsRight className="h-4 w-4" />}
-                        />
+                        <PaginationButton onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages || totalPages === 0} icon={<ChevronsRight className="h-4 w-4" />} />
                     </Tooltip>
                 </div>
             </div>
@@ -273,11 +262,7 @@ type PaginationButtonProps = {
 };
 
 const PaginationButton: React.FC<PaginationButtonProps> = ({ onClick, disabled, icon }) => (
-    <button
-        className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50 disabled:hover:cursor-default disabled:hover:bg-white"
-        onClick={onClick}
-        disabled={disabled}
-    >
+    <button className="cursor-pointer rounded-lg border p-2 hover:bg-gray-200 disabled:opacity-50 disabled:hover:cursor-default disabled:hover:bg-white" onClick={onClick} disabled={disabled}>
         {icon}
     </button>
 );
