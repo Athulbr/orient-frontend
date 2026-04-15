@@ -70,14 +70,21 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const toast = useToastStore();
 
-    const handleOrderUpdate = useCallback((updatedOrder: Order) => {
-        setCurrentOrder(updatedOrder);
-        onOrderUpdate?.(updatedOrder);
-    }, [onOrderUpdate]);
+    const handleOrderUpdate = useCallback(
+        (updatedOrder: Order) => {
+            setCurrentOrder(updatedOrder);
+            onOrderUpdate?.(updatedOrder);
+        },
+        [onOrderUpdate]
+    );
 
-    const handleExchange = async () => {
-        const eonBookingNo = currentOrder.maraekatDetails?.eonBookingNumber;
-        if (!eonBookingNo) return;
+    const handleExchange = async (item: any) => {
+        const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
+        const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
+        console.log('bookingNo=>', bookingNo);
+        if (!eonBookingNumber || !bookingNo) return;
+
+        console.log(item);
 
         setIsExchanging(true);
         setExchangeResult(null);
@@ -86,7 +93,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             // Step 1: Login to get auth token
             const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' }
             });
 
             if (!loginRes.ok) {
@@ -106,6 +113,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
 
             // Step 2: Get payload data for exchange
             const { payload } = getMaraekatPayload(currentOrder, extractedData);
+            const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
 
             // Step 3: Call PUSHFXBOOKINGEX via backend proxy
             const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
@@ -114,15 +122,16 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${authToken}`
                 },
+
                 body: JSON.stringify({
                     BRANCHCODE: payload.BRANCHCODE || '',
                     BOOKINGTYPE: payload.BOOKINGTYPE || '',
-                    BOOKINGNO: payload.BOOKINGNO || '',
-                    EONBOOKINGNO: eonBookingNo,
-                    CURRENCY: 'CAD',
-                    EXCHTYPE: 'CN',
-                    FCNAMOUNT: '1000',
-                    BOOKINGRATE: '65.6565'
+                    BOOKINGNO: bookingNo || '',
+                    EONBOOKINGNO: eonBookingNumber,
+                    CURRENCY: item.currency || '',
+                    EXCHTYPE: exchangeType || '',
+                    FCNAMOUNT: item.quantity || '',
+                    BOOKINGRATE: item.rate || ''
                 })
             });
 
@@ -838,28 +847,69 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         })}
                         {/* EON Booking Number display */}
                         {currentOrder.maraekatDetails?.eonBookingNumber && (
-                            <div className="overflow-hidden rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 shadow-sm">
-                                <div className="flex items-center justify-between px-5 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
-                                            <ArrowLeftRight size={18} className="text-indigo-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-medium tracking-wider text-indigo-500 uppercase">EON Booking Number</p>
-                                            <p className="text-lg font-bold text-indigo-900">{currentOrder.maraekatDetails.eonBookingNumber}</p>
+                            <div className="space-y-3">
+                                {/* EON Booking Number */}
+                                <div className="overflow-hidden rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 shadow-sm">
+                                    <div className="flex items-center justify-between px-5 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100">
+                                                <ArrowLeftRight size={18} className="text-green-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-medium tracking-wider text-green-600 uppercase">EON Booking Number</p>
+                                                <p className="text-lg font-bold text-green-900">{currentOrder.maraekatDetails.eonBookingNumber}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Currency Details List */}
+                                {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
+                                    <div className="overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-sm">
+                                        <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3">
+                                            <p className="text-xs font-semibold tracking-wider text-indigo-700 uppercase">Currency Details</p>
+                                        </div>
+                                        <div className="divide-y divide-indigo-50">
+                                            {currentOrder.currencyDetails.map((item, idx) => (
+                                                <div key={idx} className="flex items-center justify-between px-5 py-3 hover:bg-indigo-50/40 transition-colors">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-700">
+                                                            {item.currency?.slice(0, 3) || '—'}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-semibold text-zinc-800">
+                                                                {item.currency} <span className="text-zinc-400 font-normal">·</span> {item.product}
+                                                            </span>
+                                                            <span className="text-xs text-zinc-500">
+                                                                Qty: <span className="font-medium text-zinc-700">{item.quantity}</span>
+                                                                &nbsp;·&nbsp; Rate: <span className="font-medium text-zinc-700">{item.rate}</span>
+                                                                &nbsp;·&nbsp; Amt: <span className="font-medium text-zinc-700">{item.amount}</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleExchange(item)}
+                                                        disabled={isExchanging}
+                                                        className="flex items-center gap-1.5 rounded-md border border-indigo-400 bg-white px-3 py-1 text-xs font-medium text-indigo-600 transition-all duration-200 hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
                         {/* Exchange result message */}
                         {exchangeResult && (
-                            <div className={`rounded-xl border px-5 py-3 text-sm font-medium ${
-                                exchangeResult.type === 'success'
-                                    ? 'border-green-200 bg-green-50 text-green-700'
-                                    : 'border-red-200 bg-red-50 text-red-700'
-                            }`}>
+                            <div
+                                className={`rounded-xl border px-5 py-3 text-sm font-medium ${
+                                    exchangeResult.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'
+                                }`}
+                            >
                                 {exchangeResult.message}
                             </div>
                         )}
@@ -884,18 +934,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     </button>
 
                     <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />
-
-                    {/* Exchange Button — only visible when eonBookingNumber exists */}
-                    {currentOrder.maraekatDetails?.eonBookingNumber && (
-                        <button
-                            onClick={handleExchange}
-                            disabled={isExchanging}
-                            className="flex items-center justify-center gap-2 rounded-md border border-indigo-400 bg-white px-3 py-1 text-base font-light text-indigo-600 transition-all duration-200 ease-in-out hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                            {isExchanging ? <Loader2 size={16} className="animate-spin" /> : <ArrowLeftRight size={16} />}
-                            Exchange
-                        </button>
-                    )}
                 </div>
             </div>
 

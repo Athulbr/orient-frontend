@@ -107,8 +107,8 @@ const orderType = order.orderDetails?.orderType;
     const payload = {
         BRANCHCODE: 'BANH',
         BOOKINGTYPE: orderType === "sell" ? "PURCHASE" : orderType === "buy" ? "SALE" : orderType,
-        // BOOKINGNO: String(generateRandomBookingNumber()),
-        BOOKINGNO: String(order.orderDetails?.orderNumber),
+        BOOKINGNO: String(generateRandomBookingNumber()),
+        // BOOKINGNO: String(order.orderDetails?.orderNumber),
         BOOKINGDATE: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase(),
         SOURCEFROM: order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE',
         HANDLEDBY: 'SAJI',

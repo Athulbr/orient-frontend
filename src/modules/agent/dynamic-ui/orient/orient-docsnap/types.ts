@@ -75,6 +75,7 @@ export interface Order {
     };
     maraekatDetails: {
         eonBookingNumber?: string;
+        bookingNumber?: string;
     };
     createdAt?: string;
 }

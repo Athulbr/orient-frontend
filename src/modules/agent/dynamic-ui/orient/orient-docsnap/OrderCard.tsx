@@ -251,10 +251,10 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <CurrencyMiniCard key={idx} item={item} />
                     ))}
                     {order.maraekatDetails?.eonBookingNumber && (
-                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
-                            <ArrowLeftRight size={13} className="text-indigo-500" />
-                            <span className="text-[11px] font-bold tracking-wide text-indigo-400 uppercase">EON</span>
-                            <span className="text-[13px] font-extrabold text-indigo-700">{order.maraekatDetails.eonBookingNumber}</span>
+                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-3 py-1.5">
+                            <ArrowLeftRight size={13} className="text-green-500" />
+                            <span className="text-[11px] font-bold tracking-wide text-green-400 uppercase">EON</span>
+                            <span className="text-[13px] font-extrabold text-green-700">{order.maraekatDetails.eonBookingNumber}</span>
                         </div>
                     )}
                 </div>

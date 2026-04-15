@@ -174,13 +174,16 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                                 setResultMessage({ type: 'error', messages: errorMessages });
                             } else {
                                 const eonBookingNo = result.EONBOOKINGNO;
+                                const bookingNo = result.BOOKINGNO;
                                 console.log('EONBOOKINGNO: ', eonBookingNo);
+                                console.log('BOOKINGNO: ', bookingNo);
 
                                 // Update the order with EONBOOKINGNO in the database
                                 if (eonBookingNo) {
                                     const updatePayload = {
                                         maraekatDetails: {
-                                            eonBookingNumber: eonBookingNo
+                                            eonBookingNumber: eonBookingNo,
+                                            bookingNumber: bookingNo
                                         }
                                     };
                                     fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
@@ -194,7 +197,8 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                                                     ...order,
                                                     maraekatDetails: {
                                                         ...order.maraekatDetails,
-                                                        eonBookingNumber: eonBookingNo
+                                                        eonBookingNumber: eonBookingNo,
+                                                        bookingNumber: bookingNo
                                                     }
                                                 };
                                                 onOrderUpdate(updatedOrder);
