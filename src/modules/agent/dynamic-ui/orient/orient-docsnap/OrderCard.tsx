@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Mail, UploadCloud, Link2, Unlink, ArrowRight, Plus, Zap, Eye, RefreshCw } from 'lucide-react';
+import { FileText, Mail, UploadCloud, Link2, Unlink, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -31,6 +31,7 @@ interface OrderCardProps {
     isUploading?: boolean;
     onDocsnapOpen?: () => void;
     onDocsnapClose?: () => void;
+    onOrderUpdate?: (updatedOrder: Order) => void;
 }
 
 // ── Component ─────────────────────────────────────────────────
@@ -50,7 +51,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
     isProceeding,
     isUploading,
     onDocsnapOpen,
-    onDocsnapClose
+    onDocsnapClose,
+    onOrderUpdate
 }) => {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showUploader, setShowUploader] = useState(false);
@@ -244,10 +246,17 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
             {/* Footer: currency cards + extract button */}
             <div className="px-[22px] py-[13px] flex items-center justify-between bg-slate-50/30 border-t border-gray-50">
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
                     {order.currencyDetails?.map((item, idx) => (
                         <CurrencyMiniCard key={idx} item={item} />
                     ))}
+                    {order.maraekatDetails?.eonBookingNumber && (
+                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
+                            <ArrowLeftRight size={13} className="text-indigo-500" />
+                            <span className="text-[11px] font-bold tracking-wide text-indigo-400 uppercase">EON</span>
+                            <span className="text-[13px] font-extrabold text-indigo-700">{order.maraekatDetails.eonBookingNumber}</span>
+                        </div>
+                    )}
                 </div>
                 {!order.extractionDetails?.recordId ? (
                     <Button
@@ -305,7 +314,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
             {/* Fullscreen docsnap comparison dialog */}
             <DialogComponent disableBlurCloseDialog isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
-                <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} />
+                <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} onOrderUpdate={onOrderUpdate} />
             </DialogComponent>
         </div>
     );

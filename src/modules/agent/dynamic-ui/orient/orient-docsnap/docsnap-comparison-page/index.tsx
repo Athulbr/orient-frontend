@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight } from 'lucide-react';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
@@ -7,6 +7,7 @@ import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
+import { getMaraekatPayload } from './utils/getMaraekatPayload';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -48,11 +49,12 @@ interface DocsnapComparisonUIProps {
     recordId: string;
     onClose?: () => void;
     order: Order;
+    onOrderUpdate?: (updatedOrder: Order) => void;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order, onOrderUpdate }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,100 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
     const [isSaving, setIsSaving] = useState(false);
     const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
+    const [currentOrder, setCurrentOrder] = useState<Order>(order);
+    const [isExchanging, setIsExchanging] = useState(false);
+    const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const toast = useToastStore();
+
+    const handleOrderUpdate = useCallback((updatedOrder: Order) => {
+        setCurrentOrder(updatedOrder);
+        onOrderUpdate?.(updatedOrder);
+    }, [onOrderUpdate]);
+
+    const handleExchange = async () => {
+        const eonBookingNo = currentOrder.maraekatDetails?.eonBookingNumber;
+        if (!eonBookingNo) return;
+
+        setIsExchanging(true);
+        setExchangeResult(null);
+
+        try {
+            // Step 1: Login to get auth token
+            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!loginRes.ok) {
+                setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
+                setIsExchanging(false);
+                return;
+            }
+
+            const loginData = await loginRes.json();
+            const authToken = loginData?.Result;
+
+            if (!authToken) {
+                setExchangeResult({ type: 'error', message: 'No auth token received from login' });
+                setIsExchanging(false);
+                return;
+            }
+
+            // Step 2: Get payload data for exchange
+            const { payload } = getMaraekatPayload(currentOrder, extractedData);
+
+            // Step 3: Call PUSHFXBOOKINGEX via backend proxy
+            const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    BRANCHCODE: payload.BRANCHCODE || '',
+                    BOOKINGTYPE: payload.BOOKINGTYPE || '',
+                    BOOKINGNO: payload.BOOKINGNO || '',
+                    EONBOOKINGNO: eonBookingNo,
+                    CURRENCY: 'CAD',
+                    EXCHTYPE: 'CN',
+                    FCNAMOUNT: '1000',
+                    BOOKINGRATE: '65.6565'
+                })
+            });
+
+            if (!exchangeRes.ok) {
+                setExchangeResult({ type: 'error', message: `Exchange API failed: ${exchangeRes.status}` });
+                setIsExchanging(false);
+                return;
+            }
+
+            const exchangeData = await exchangeRes.json();
+            const resultItem = exchangeData?.Result?.[0];
+
+            if (resultItem?.APISTATUS === 'FAILED') {
+                setExchangeResult({
+                    type: 'error',
+                    message: `Exchange failed: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`
+                });
+            } else if (resultItem?.BOOKINGNO) {
+                setExchangeResult({
+                    type: 'success',
+                    message: `Exchange successful! Booking No: ${resultItem.BOOKINGNO}. ${resultItem.BOOKINGSTATUS || ''}`
+                });
+                toast.success(`Exchange successful! Booking No: ${resultItem.BOOKINGNO}`);
+            } else {
+                setExchangeResult({
+                    type: 'error',
+                    message: exchangeData?.Error || 'Exchange failed — no booking number returned'
+                });
+            }
+        } catch (err: any) {
+            console.error('Exchange error:', err);
+            setExchangeResult({ type: 'error', message: err.message || 'Exchange request failed' });
+        } finally {
+            setIsExchanging(false);
+        }
+    };
 
     useEffect(() => {
         const handlePopState = () => {
@@ -741,6 +836,33 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                 </div>
                             );
                         })}
+                        {/* EON Booking Number display */}
+                        {currentOrder.maraekatDetails?.eonBookingNumber && (
+                            <div className="overflow-hidden rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 shadow-sm">
+                                <div className="flex items-center justify-between px-5 py-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100">
+                                            <ArrowLeftRight size={18} className="text-indigo-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-medium tracking-wider text-indigo-500 uppercase">EON Booking Number</p>
+                                            <p className="text-lg font-bold text-indigo-900">{currentOrder.maraekatDetails.eonBookingNumber}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Exchange result message */}
+                        {exchangeResult && (
+                            <div className={`rounded-xl border px-5 py-3 text-sm font-medium ${
+                                exchangeResult.type === 'success'
+                                    ? 'border-green-200 bg-green-50 text-green-700'
+                                    : 'border-red-200 bg-red-50 text-red-700'
+                            }`}>
+                                {exchangeResult.message}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -761,7 +883,19 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         {isSaving ? 'Saving...' : 'Save'}
                     </button>
 
-                    <SubmitToMaraekat order={order} extractedData={extractedData} />
+                    <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />
+
+                    {/* Exchange Button — only visible when eonBookingNumber exists */}
+                    {currentOrder.maraekatDetails?.eonBookingNumber && (
+                        <button
+                            onClick={handleExchange}
+                            disabled={isExchanging}
+                            className="flex items-center justify-center gap-2 rounded-md border border-indigo-400 bg-white px-3 py-1 text-base font-light text-indigo-600 transition-all duration-200 ease-in-out hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            {isExchanging ? <Loader2 size={16} className="animate-spin" /> : <ArrowLeftRight size={16} />}
+                            Exchange
+                        </button>
+                    )}
                 </div>
             </div>
 

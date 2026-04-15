@@ -94,10 +94,20 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
             dateValues[field.key] = '';
         }
     }
+    function generateRandomBookingNumber() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const unique = String(Math.floor(100000 + Math.random() * 900000));
+  
+  return `${year}${month}${day}${unique}`;
+}
 const orderType = order.orderDetails?.orderType;
     const payload = {
         BRANCHCODE: 'BANH',
-        BOOKINGTYPE: orderType === "sell" ? "SALE" : orderType === "buy" ? "PURCHASE" : orderType,
+        BOOKINGTYPE: orderType === "sell" ? "PURCHASE" : orderType === "buy" ? "SALE" : orderType,
+        // BOOKINGNO: String(generateRandomBookingNumber()),
         BOOKINGNO: String(order.orderDetails?.orderNumber),
         BOOKINGDATE: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase(),
         SOURCEFROM: order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE',
