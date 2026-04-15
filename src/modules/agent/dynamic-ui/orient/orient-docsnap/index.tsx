@@ -116,7 +116,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         setSearchQuery('');
         setDebouncedSearchQuery('');
         setStatusFilter('all');
-        setBranchFilter(parsedUser.lastName);
+        setBranchFilter('43');
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);
