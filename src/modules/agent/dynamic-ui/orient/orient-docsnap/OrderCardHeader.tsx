@@ -14,8 +14,7 @@ interface InfoChip {
 
 const LabelValue: React.FC<{ label: string; value: React.ReactNode; bold?: boolean }> = ({ label, value, bold }) => (
     <>
-        <span className="text-gray-400 font-medium mr-[3px]">{label}:</span>{' '}
-        <span className={`text-gray-600 ${bold ? 'font-extrabold' : 'font-bold'}`}>{value}</span>
+        <span className="text-gray-400 font-medium mr-[3px]">{label}:</span> <span className={`text-gray-600 ${bold ? 'font-extrabold' : 'font-bold'}`}>{value}</span>
     </>
 );
 
@@ -26,7 +25,7 @@ function buildInfoChips(order: Order): InfoChip[] {
     const chips: InfoChip[] = [
         { icon: <User size={12} className="text-gray-400" />, val: ud.name },
         { icon: <Mail size={12} className="text-gray-400" />, val: ud.email },
-        { icon: <Phone size={12} className="text-gray-400" />, val: ud.phone },
+        { icon: <Phone size={12} className="text-gray-400" />, val: ud.phone }
     ];
 
     if (ud.panNumber) {
@@ -86,9 +85,11 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                         {getStatusLabel(od.orderStatus)}
                     </span>
                     <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">{od.orderType.toUpperCase()}</span>
-                    <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
-                        {(Array.isArray(od.productType) ? od.productType.join(', ') : String(od.productType || '')).toUpperCase()}
-                    </span>
+                    {Array.isArray(od.productType) && od.productType.length > 0 && (
+                        <span className="text-xs font-extrabold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-[3px] rounded-full">
+                            {(Array.isArray(od.productType) ? od.productType.join(', ') : String(od.productType || '')).toUpperCase()}
+                        </span>
+                    )}
                 </div>
 
                 {/* Meta row */}
@@ -122,9 +123,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                     {onEdit && od.orderStatus !== 'submitted' && (
                         <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
                     )}
-                    {onDelete && (
-                        <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />
-                    )}
+                    {onDelete && <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />}
                 </div>
                 <div className="flex gap-[7px]">
                     {[

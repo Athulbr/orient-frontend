@@ -3,6 +3,7 @@ import { X, CheckCircle, AlertCircle, GripHorizontal, Loader2 } from 'lucide-rea
 import { config } from '../../../../../../config/default';
 import { Order } from '../types';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
+import { validateMaraekatPayload } from './utils/validateMaraekatPayload';
 
 type ResultMessage = {
     type: 'success' | 'error';
@@ -104,19 +105,28 @@ const DraggableResultCard: React.FC<DraggableResultCardProps> = ({ result, onClo
 interface SubmitToMaraekatIF {
     order: Order;
     extractedData: any;
+    onOrderUpdate?: (updatedOrder: Order) => void;
 }
 
-const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }) => {
+const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, onOrderUpdate }) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
         setResultMessage(null);
-        const payload = getMaraekatPayload(order, extractedData);
+        const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
+        const validationResult = validateMaraekatPayload(payload);
+
+        const allErrors = [...dateErrors, ...validationResult.errors];
+        if (allErrors.length > 0) {
+            setResultMessage({ type: 'error', messages: allErrors });
+            setIsSubmitting(false);
+            return;
+        }
 
         try {
-            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order`, {
+            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order-3`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -156,7 +166,55 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData }
                         setIsSubmitting(false);
 
                         if (parsed.status === 'completed') {
-                            setResultMessage({ type: 'success', messages: ['Successfully submitted to Maraekat'] });
+                            const result = parsed.finalData?.[0] || {};
+                            if (result && result.success === false) {
+                                const errorMessages = Array.isArray(result.messages)
+                                    ? result.messages.map((m: any) => (typeof m === 'string' ? m : m.message || JSON.stringify(m)))
+                                    : ['Validation failed'];
+                                setResultMessage({ type: 'error', messages: errorMessages });
+                            } else {
+                                const eonBookingNo = result.EONBOOKINGNO;
+                                const bookingNo = result.BOOKINGNO;
+                                console.log('EONBOOKINGNO: ', eonBookingNo);
+                                console.log('BOOKINGNO: ', bookingNo);
+
+                                // Update the order with EONBOOKINGNO in the database
+                                if (eonBookingNo) {
+                                    const updatePayload = {
+                                        maraekatDetails: {
+                                            eonBookingNumber: eonBookingNo,
+                                            bookingNumber: bookingNo
+                                        }
+                                    };
+                                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(updatePayload)
+                                    })
+                                        .then(res => {
+                                            if (res.ok && onOrderUpdate) {
+                                                const updatedOrder: Order = {
+                                                    ...order,
+                                                    maraekatDetails: {
+                                                        ...order.maraekatDetails,
+                                                        eonBookingNumber: eonBookingNo,
+                                                        bookingNumber: bookingNo
+                                                    }
+                                                };
+                                                onOrderUpdate(updatedOrder);
+                                            }
+                                        })
+                                        .catch(err => console.error('Failed to update order with EONBOOKINGNO:', err));
+                                }
+
+                                const successMessages = Array.isArray(result?.messages)
+                                    ? result.messages.map((m: any) => (typeof m === 'string' ? m : m.message || 'Validated Successfully'))
+                                    : ['Successfully submitted to Maraekat'];
+                                if (eonBookingNo) {
+                                    successMessages.push(`EON Booking No: ${eonBookingNo}`);
+                                }
+                                setResultMessage({ type: 'success', messages: successMessages });
+                            }
                         } else {
                             const errorMsg = parsed.error || `Submission ended with status: ${parsed.status}`;
                             setResultMessage({ type: 'error', messages: [errorMsg] });

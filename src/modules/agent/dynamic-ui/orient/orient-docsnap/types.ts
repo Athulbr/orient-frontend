@@ -73,5 +73,9 @@ export interface Order {
         recordId?: string;
         extractedData?: Record<string, unknown>;
     };
+    maraekatDetails: {
+        eonBookingNumber?: string;
+        bookingNumber?: string;
+    };
     createdAt?: string;
 }

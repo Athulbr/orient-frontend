@@ -92,8 +92,17 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         handleProceed,
         handleCreateOrder,
         handleUpdateOrder,
-        getLinkedEmails
+        getLinkedEmails,
+        setOrders
     } = useOrders({ searchQuery, debouncedSearchQuery, statusFilter, branchFilter, dateRange, perPage, currentPage }, agentSettings);
+
+    // ── Handle inline order updates (e.g. eonBookingNumber from docsnap) ──
+    const handleInlineOrderUpdate = useCallback(
+        (updatedOrder: Order) => {
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === updatedOrder.orderDetails.orderNumber ? updatedOrder : o)));
+        },
+        [setOrders]
+    );
 
     // Trigger fetch whenever the memoised fetchData changes
     useEffect(() => {
@@ -163,6 +172,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                                 isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
                                 onDocsnapOpen={() => setDocsnapOpen(true)}
                                 onDocsnapClose={() => setDocsnapOpen(false)}
+                                onOrderUpdate={handleInlineOrderUpdate}
                             />
                         ))}
                         {orders.length === 0 && (
