@@ -97,7 +97,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
     const hasDocuments = totalDocs > 0;
     const status = STATUS_CONFIG[order.orderDetails.orderStatus.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
-    const isOnline = order.orderDetails.documentSubmitStatus === 'Online';
+    const isOnline = order.orderDetails.documentSubmitStatus === 'online';
 
     // ── Render ────────────────────────────────────────────────
     return (

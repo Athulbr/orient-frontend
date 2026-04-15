@@ -17,7 +17,7 @@ interface OrientDocsnapUserInterfaceIF {
 }
 
 // ── Helper: parse initial search from URL once (#9) ───────────
-const getInitialSearch = (): string => (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('order_id') || '' : '');
+const getInitialSearch = (): string => (typeof window !== 'undefined' ? sessionStorage.getItem('order_no') || '' : '');
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     // ── Filter & Pagination state ─────────────────────────────
