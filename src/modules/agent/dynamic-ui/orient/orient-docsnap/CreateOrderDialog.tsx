@@ -94,6 +94,9 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             const timestamp = now.getTime().toString().slice(-6);
             const orderNumber = Number(`${year}${month}${day}${timestamp}`);
 
+            const user = sessionStorage.getItem('user');
+            const parsedUser = JSON.parse(user || '');
+
             const newOrder: Order = {
                 orderDetails: {
                     orderId,
@@ -101,8 +104,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     orderType,
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
-                    branch: 'Bangalore-Basavangudi',
-                    branchId: 5,
+                    branch: parsedUser.lastName,
+                    branchId: 0,
                     totalAmount: Number(totalAmount) || 0,
                     actualAmount: Number(actualAmount) || 0,
                     orderStatus: 'pending',
@@ -121,11 +124,11 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 extractionDetails: {
                     recordId: '',
                     extractedData: {}
-                }
+                },
+                maraekatDetails: {}
             };
 
             await onCreate(newOrder);
-
         } finally {
             setIsLoading(false);
         }
@@ -185,7 +188,9 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2">Order Details</h3>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Order Type <span className="text-red-500">*</span>
+                        </label>
                         <div className="pt-2 flex gap-4 mt-2">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -211,13 +216,18 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             </label>
                         </div>
                     </div>
-                    <div className='pt-4'>
+                    <div className="pt-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Product Type <span className="text-red-500">*</span>
                         </label>
                         <div className="flex gap-4 mt-3">
-                            {[{ label: 'Card', value: 'card' }, { label: 'Currency', value: 'currency' }, { label: 'TT', value: 'tt' }, { label: 'TP', value: 'tp' }].map(type => {
-                                if (orderType === 'sell' && type.value === 'tp') return null
+                            {[
+                                { label: 'Card', value: 'card' },
+                                { label: 'Currency', value: 'currency' },
+                                { label: 'TT', value: 'tt' },
+                                { label: 'TP', value: 'tp' }
+                            ].map(type => {
+                                if (orderType === 'sell' && type.value === 'tp') return null;
                                 return (
                                     <label key={type.value} className="flex items-center gap-2 cursor-pointer">
                                         <input
@@ -236,17 +246,17 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                         />
                                         <span className="text-sm text-gray-700 capitalize">{type.label}</span>
                                     </label>
-                                )
+                                );
                             })}
                         </div>
                         {errors.productType && <p className="text-red-500 text-xs mt-1">{errors.productType}</p>}
                     </div>
-                    <div className='pt-3'>
+                    <div className="pt-3">
                         <label className="pl-1 pt-0.5 block text-sm font-medium text-gray-700 mb-1">
                             Purpose <span className="text-red-500">*</span>
                         </label>
                         <SingleSelect
-                            size='lg'
+                            size="lg"
                             value={purpose}
                             onValueChange={val => {
                                 setPurpose(val);
@@ -272,13 +282,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 <Button outlined onClick={onClose} type="button" disabled={isLoading}>
                     Cancel
                 </Button>
-                <Button
-                    onClick={handleSubmit}
-                    type="submit"
-                    disabled={isLoading}
-                    startIcon={isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : undefined}
-                >
-                    {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Order' : 'Create Order')}
+                <Button onClick={handleSubmit} type="submit" disabled={isLoading} startIcon={isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : undefined}>
+                    {isLoading ? (isEdit ? 'Updating...' : 'Creating...') : isEdit ? 'Update Order' : 'Create Order'}
                 </Button>
             </div>
         </form>

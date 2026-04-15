@@ -25,7 +25,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
     const [statusFilter, setStatusFilter] = useState('all');
-    const [branchFilter, setBranchFilter] = useState('5');
+    const [branchFilter, setBranchFilter] = useState('');
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
     const [perPage, setPerPage] = useState('10');
     const [currentPage, setCurrentPage] = useState(1);
@@ -110,11 +110,13 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     }, [fetchData]);
 
     // ── Filter reset ──────────────────────────────────────────
+    const user = sessionStorage.getItem('user');
+    const parsedUser = JSON.parse(user || '');
     const handleResetFilters = useCallback(() => {
         setSearchQuery('');
         setDebouncedSearchQuery('');
         setStatusFilter('all');
-        setBranchFilter('5');
+        setBranchFilter(parsedUser.lastName);
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);
