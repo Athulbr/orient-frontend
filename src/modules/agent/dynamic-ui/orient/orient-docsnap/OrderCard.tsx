@@ -5,6 +5,7 @@ import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
 import { Order, Email, FileItem } from './types';
+import { config } from '../../../../../config/default';
 import Spinner from '../../../../../components/Spinner';
 import { DocsnapComparisonUI } from './docsnap-comparison-page';
 
@@ -112,6 +113,31 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 showOnline={isOnline}
                 onEdit={onEdit}
                 onDelete={onDelete ? () => setShowDeleteConfirm(true) : undefined}
+                onUploadComplete={newDocs => {
+                    if (newDocs.length > 0) {
+                        const updatedReceipts = [...(order.receipts || []), ...newDocs];
+                        const updatedOrder = { ...order, receipts: updatedReceipts };
+                        onOrderUpdate?.(updatedOrder);
+                        // Persist to backend
+                        fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ receipts: updatedReceipts })
+                        }).catch(err => console.error('Failed to persist receipt upload', err));
+                    }
+                }}
+                onRemoveReceipt={idx => {
+                    const updatedReceipts = [...(order.receipts || [])];
+                    updatedReceipts.splice(idx, 1);
+                    const updatedOrder = { ...order, receipts: updatedReceipts };
+                    onOrderUpdate?.(updatedOrder);
+                    // Persist to backend
+                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ receipts: updatedReceipts })
+                    }).catch(err => console.error('Failed to persist receipt removal', err));
+                }}
             />
 
             {/* Document columns */}

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Clock, User, Mail, Phone, Hash, Building2, Edit, Trash2 } from 'lucide-react';
+import { Clock, User, Mail, Phone, Hash, Building2, Edit, Trash2, FileText, Image as ImageIcon, File, Zap } from 'lucide-react';
 import { Order } from './types';
 import { GBtn } from './OrderCardPrimitives';
 import { convertToIst } from '../../../../../global-utils/convert-date-format';
+import { Button } from '../../../../../components/Button';
+import UploadReceipt from './upload-receipt';
 
 // ── Info chip helper ──────────────────────────────────────────
 
@@ -65,11 +67,15 @@ interface OrderCardHeaderProps {
     showOnline: boolean;
     onEdit?: (order: Order) => void;
     onDelete?: () => void;
+    onUploadComplete?: (docs: { documentName: string; documentPages: string[] }[]) => void;
+    onRemoveReceipt?: (index: number) => void;
 }
+
+import DocTile, { getFileType } from './DocTile';
 
 // ── Component ─────────────────────────────────────────────────
 
-const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCounts, showOnline, onEdit, onDelete }) => {
+const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCounts, showOnline, onEdit, onDelete, onUploadComplete, onRemoveReceipt }) => {
     const od = order.orderDetails;
     const chips = buildInfoChips(order);
 
@@ -139,6 +145,36 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                             </div>
                         );
                     })}
+                </div>
+                
+                <div className="flex flex-col items-end w-full gap-2">
+                    <div className="flex gap-2 items-center justify-end w-full">
+                        <UploadReceipt orderNumber={order.orderDetails.orderNumber} onUploadComplete={onUploadComplete} />
+                        {order.receipts && order.receipts.length > 0 && (
+                            <Button outlined onClick={() => {}} startIcon={<Zap size={14} className="text-amber-500" />}>
+                                Extract Receipt
+                            </Button>
+                        )}
+                    </div>
+                    
+                    {order.receipts && order.receipts.length > 0 && (
+                        <div className="flex flex-wrap gap-[7px] justify-end w-full mt-2">
+                            {order.receipts.map((receipt, idx) => {
+                                const url = receipt.documentPages?.[0] || '';
+                                return <DocTile 
+                                    key={idx} 
+                                    file={{
+                                        name: receipt.documentName,
+                                        url: url,
+                                        type: getFileType(url || receipt.documentName),
+                                        source: 'upload',
+                                        pages: receipt.documentPages
+                                    }} 
+                                    onRemove={() => onRemoveReceipt?.(idx)}
+                                />;
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
