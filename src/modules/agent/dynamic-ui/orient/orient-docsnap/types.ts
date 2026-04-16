@@ -36,6 +36,7 @@ export interface OrderDetails {
     handlingCharges?: number;
     purpose?: string;
     documentUploadTime?: string;
+    orderCreatedDate?: string;
 }
 
 export interface UserDetails {

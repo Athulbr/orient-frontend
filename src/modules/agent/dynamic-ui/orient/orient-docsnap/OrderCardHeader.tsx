@@ -33,7 +33,6 @@ function buildInfoChips(order: Order): InfoChip[] {
     }
 
     chips.push({ icon: <Building2 size={12} className="text-gray-400" />, val: od.branch });
-    chips.push({ icon: null, val: <LabelValue label="Branch ID" value={od.branchId} /> });
     chips.push({ icon: null, val: <LabelValue label="Actual" value={`₹${od.actualAmount.toLocaleString()}`} />, hide: !od.actualAmount });
     chips.push({ icon: null, val: <LabelValue label="Total" value={`₹${od.totalAmount.toLocaleString()}`} bold />, hide: !od.totalAmount });
 
@@ -95,7 +94,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                 {/* Meta row */}
                 <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
                     <Clock size={13} className="text-gray-400" />
-                    {order.createdAt ? convertToIst(order.createdAt) : 'N/A'}
+                    {order.orderDetails.orderCreatedDate ? convertToIst(order.orderDetails.orderCreatedDate) : 'N/A'}
                     <span className="mx-1.5">•</span>
                     <Building2 size={13} className="text-gray-400" />
                     {od.location || od.branch}
