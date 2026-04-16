@@ -138,6 +138,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         body: JSON.stringify({ receipts: updatedReceipts })
                     }).catch(err => console.error('Failed to persist receipt removal', err));
                 }}
+                onOrderUpdate={onOrderUpdate}
             />
 
             {/* Document columns */}

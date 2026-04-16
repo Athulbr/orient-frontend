@@ -1,10 +1,16 @@
-import React from 'react';
-import { Clock, User, Mail, Phone, Hash, Building2, Edit, Trash2, FileText, Image as ImageIcon, File, Zap } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Clock, User, Mail, Phone, Hash, Building2, Edit, Trash2, FileText, Image as ImageIcon, File, Zap, Eye, Loader2 } from 'lucide-react';
 import { Order } from './types';
 import { GBtn } from './OrderCardPrimitives';
 import { convertToIst } from '../../../../../global-utils/convert-date-format';
 import { Button } from '../../../../../components/Button';
 import UploadReceipt from './upload-receipt';
+import { config } from '../../../../../config/default';
+import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { DialogComponent } from '../../../../../components/DialogComponent';
+import { DocsnapComparisonUI } from './docsnap-comparison-page';
+
+const API_KEY = import.meta.env.VITE_WORKFLOW_API_KEY || 'secret1';
 
 // ── Info chip helper ──────────────────────────────────────────
 
@@ -69,17 +75,150 @@ interface OrderCardHeaderProps {
     onDelete?: () => void;
     onUploadComplete?: (docs: { documentName: string; documentPages: string[] }[]) => void;
     onRemoveReceipt?: (index: number) => void;
+    onOrderUpdate?: (updatedOrder: Order) => void;
 }
 
 import DocTile, { getFileType } from './DocTile';
 
 // ── Component ─────────────────────────────────────────────────
 
-const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCounts, showOnline, onEdit, onDelete, onUploadComplete, onRemoveReceipt }) => {
+const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCounts, showOnline, onEdit, onDelete, onUploadComplete, onRemoveReceipt, onOrderUpdate }) => {
     const od = order.orderDetails;
     const chips = buildInfoChips(order);
+    const toast = useToastStore();
+
+    // ── Receipt extraction state ──────────────────────────────
+    const [isExtracting, setIsExtracting] = useState(false);
+    const [extractionProgress, setExtractionProgress] = useState('');
+    const [showReceiptComparison, setShowReceiptComparison] = useState(false);
+
+    const hasReceipts = (order.receipts?.length || 0) > 0;
+    const hasReceiptExtraction = !!order.receiptExtractionDetails?.recordId;
+
+    // ── Extract Receipt handler (webhook + SSE) ───────────────
+    const handleExtractReceipt = useCallback(async () => {
+        if (!hasReceipts || isExtracting) return;
+
+        setIsExtracting(true);
+        setExtractionProgress('Sending...');
+
+        // Build documents payload from receipts
+        const payloadDocuments = (order.receipts || []).flatMap(doc => {
+            const pages = doc.documentPages || [];
+            if (pages.length === 0) return [];
+
+            const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'receipt';
+
+            if (pages.length === 1) {
+                return [{ documentName: baseName, documentUrl: pages[0] }];
+            } else {
+                return pages.map((pageUrl: string, index: number) => ({
+                    documentName: `${baseName}_page_${index + 1}`,
+                    documentUrl: pageUrl
+                }));
+            }
+        });
+
+        try {
+            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/extract-receipt`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderNumber: order.orderDetails.orderNumber,
+                    templateId: '69e048bb8d2bf5fffe64ab75',
+                    documents: payloadDocuments
+                })
+            });
+
+            if (!response.ok) {
+                console.error('Receipt extraction API response error:', response.status);
+                toast.error(`Receipt extraction failed. Status: ${response.status}`);
+                setIsExtracting(false);
+                setExtractionProgress('');
+                return;
+            }
+
+            const responseData = await response.json();
+            const executionId = responseData?.data?.executionId;
+
+            if (!executionId) {
+                console.error('No executionId found in response');
+                toast.error('Receipt extraction failed — no execution ID returned');
+                setIsExtracting(false);
+                setExtractionProgress('');
+                return;
+            }
+
+            setExtractionProgress('Processing...');
+
+            // Listen for SSE events
+            const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+            const eventSource = new EventSource(streamUrl);
+
+            eventSource.onmessage = async event => {
+                try {
+                    const jsonString = event.data;
+                    if (!jsonString || jsonString.trim() === '' || jsonString === '{}') return;
+
+                    const parsed = JSON.parse(jsonString);
+                    if (parsed.status) {
+                        if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
+                            eventSource.close();
+
+                            if (parsed.status === 'completed') {
+                                const finalData = parsed.finalData?.[0] || {};
+
+                                if (finalData.extractedData || finalData.recordId) {
+                                    const receiptExtractionDetails = {
+                                        extractedData: finalData.extractedData,
+                                        recordId: finalData.recordId
+                                    };
+
+                                    // Update local order state
+                                    const updatedOrder = { ...order, receiptExtractionDetails };
+                                    onOrderUpdate?.(updatedOrder);
+
+                                    // Persist to backend
+                                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ receiptExtractionDetails })
+                                    }).catch(err => console.error('Failed to save receipt extraction details', err));
+
+                                    toast.success('Receipt extraction completed');
+                                } else {
+                                    toast.success('Receipt extraction completed');
+                                }
+                            } else {
+                                toast.error(`Receipt extraction ${parsed.status}`);
+                            }
+
+                            setIsExtracting(false);
+                            setExtractionProgress('');
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error processing receipt extraction SSE message:', e);
+                }
+            };
+
+            eventSource.onerror = err => {
+                console.error('SSE EventSource error:', err);
+                eventSource.close();
+                setIsExtracting(false);
+                setExtractionProgress('');
+                toast.error('Receipt extraction stream disconnected');
+            };
+        } catch (err) {
+            console.error('Receipt extraction API error:', err);
+            setIsExtracting(false);
+            setExtractionProgress('');
+            toast.error('Receipt extraction failed');
+        }
+    }, [order, hasReceipts, isExtracting, toast, onOrderUpdate]);
 
     return (
+        <>
         <div className="flex items-start justify-between gap-4 px-[22px] pt-[18px] pb-4 border-b border-gray-100">
             <div>
                 {/* Title row */}
@@ -150,10 +289,25 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                 <div className="flex flex-col items-end w-full gap-2">
                     <div className="flex gap-2 items-center justify-end w-full">
                         <UploadReceipt orderNumber={order.orderDetails.orderNumber} onUploadComplete={onUploadComplete} />
-                        {order.receipts && order.receipts.length > 0 && (
-                            <Button outlined onClick={() => {}} startIcon={<Zap size={14} className="text-amber-500" />}>
-                                Extract Receipt
-                            </Button>
+                        {hasReceipts && (
+                            hasReceiptExtraction ? (
+                                <Button
+                                    outlined
+                                    onClick={() => setShowReceiptComparison(true)}
+                                    startIcon={<Eye size={14} className="text-blue-500" />}
+                                >
+                                    View Receipt Data
+                                </Button>
+                            ) : (
+                                <Button
+                                    outlined
+                                    onClick={handleExtractReceipt}
+                                    disabled={isExtracting}
+                                    startIcon={isExtracting ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} className="text-amber-500" />}
+                                >
+                                    {isExtracting ? extractionProgress : 'Extract Receipt'}
+                                </Button>
+                            )
                         )}
                     </div>
                     
@@ -178,6 +332,17 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                 </div>
             </div>
         </div>
+
+        {/* Fullscreen receipt comparison dialog */}
+        <DialogComponent disableBlurCloseDialog isOpen={showReceiptComparison} closeDialog={() => setShowReceiptComparison(false)} fullScreen>
+            <DocsnapComparisonUI
+                order={order}
+                recordId={`${order.receiptExtractionDetails?.recordId || ''}`}
+                onClose={() => setShowReceiptComparison(false)}
+                onOrderUpdate={onOrderUpdate}
+            />
+        </DialogComponent>
+        </>
     );
 };
 
