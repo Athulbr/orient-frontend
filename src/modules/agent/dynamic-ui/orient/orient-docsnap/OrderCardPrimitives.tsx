@@ -6,6 +6,7 @@ import { CurrencyDetail } from './types';
 
 export const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string; dot: string; stripe: string }> = {
     PENDING: { text: 'text-amber-800', bg: 'bg-amber-50', border: 'border-amber-200', dot: 'bg-amber-400', stripe: 'from-amber-400' },
+    SUBMITTED: { text: 'text-green-800', bg: 'bg-green-50', border: 'border-green-200', dot: 'bg-green-400', stripe: 'from-green-400' },
     EXTRACTED: { text: 'text-blue-800', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-400', stripe: 'from-blue-400' },
     COMPLETED: { text: 'text-emerald-800', bg: 'bg-emerald-50', border: 'border-emerald-200', dot: 'bg-emerald-500', stripe: 'from-emerald-400' },
     REJECTED: { text: 'text-red-800', bg: 'bg-red-50', border: 'border-red-300', dot: 'bg-red-500', stripe: 'from-red-400' },
@@ -52,9 +53,7 @@ export const CurrencyMiniCard: React.FC<{ item: CurrencyDetail }> = ({ item }) =
                 <Coins size={11} />
             </div>
             <span className="text-xs font-extrabold text-slate-700 tracking-tight leading-none group-hover:text-blue-700">{item.currency}</span>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded border border-slate-100 group-hover:border-blue-100">
-                {item.product}
-            </span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-white px-1.5 py-0.5 rounded border border-slate-100 group-hover:border-blue-100">{item.product}</span>
         </div>
 
         <div className="h-3 w-[1px] bg-slate-200" />
@@ -65,8 +64,6 @@ export const CurrencyMiniCard: React.FC<{ item: CurrencyDetail }> = ({ item }) =
             <span>{item.rate.toLocaleString()}</span>
         </div>
 
-        <div className="text-xs font-black text-slate-900 ml-1">
-            ₹{item.amount.toLocaleString()}
-        </div>
+        <div className="text-xs font-black text-slate-900 ml-1">₹{item.amount.toLocaleString()}</div>
     </div>
 );

@@ -61,6 +61,7 @@ function buildInfoChips(order: Order): InfoChip[] {
 function getStatusLabel(status: string): string {
     if (status === 'extracted') return 'Review Pending';
     if (status === 'pending') return 'Extraction Pending';
+    if (status === 'submitted') return 'Maraekat Submitted';
     return status;
 }
 
@@ -332,7 +333,13 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
 
             {/* Fullscreen receipt comparison dialog */}
             <DialogComponent disableBlurCloseDialog isOpen={showReceiptComparison} closeDialog={() => setShowReceiptComparison(false)} fullScreen>
-                <DocsnapComparisonUI order={order} recordId={`${order.receiptExtractionDetails?.recordId || ''}`} onClose={() => setShowReceiptComparison(false)} onOrderUpdate={onOrderUpdate} />
+                <DocsnapComparisonUI
+                    viewReceipt
+                    order={order}
+                    recordId={`${order.receiptExtractionDetails?.recordId || ''}`}
+                    onClose={() => setShowReceiptComparison(false)}
+                    onOrderUpdate={onOrderUpdate}
+                />
             </DialogComponent>
         </>
     );

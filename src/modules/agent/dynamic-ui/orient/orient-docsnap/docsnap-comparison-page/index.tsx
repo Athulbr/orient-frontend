@@ -5,6 +5,7 @@ import { config } from '../../../../../../config/default';
 import styles from './scrollbar.module.css';
 import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
+import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
@@ -50,11 +51,12 @@ interface DocsnapComparisonUIProps {
     onClose?: () => void;
     order: Order;
     onOrderUpdate?: (updatedOrder: Order) => void;
+    viewReceipt?: boolean;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order, onOrderUpdate }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewReceipt, recordId, onClose, order, onOrderUpdate }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -933,7 +935,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         {isSaving ? 'Saving...' : 'Save'}
                     </button>
 
-                    <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />
+                    {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />}
+                    {viewReceipt && <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />}
                 </div>
             </div>
 
