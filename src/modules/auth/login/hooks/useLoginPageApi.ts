@@ -136,7 +136,7 @@ export const useLoginPageApi = () => {
     };
 
     // ============================= login With PHP Session ==================================
-    const loginWithPhpSession = async (sessionToken: string, clientId: string, orderNumber?: string) => {
+    const loginWithPhpSession = async (sessionToken: string, clientId: string, orderNumber?: string, orderType?: string) => {
         try {
             setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
             const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId, order_no: orderNumber });
@@ -148,6 +148,7 @@ export const useLoginPageApi = () => {
                 }
                 if (res.data?.orderNumber) {
                     window?.sessionStorage?.setItem('order_no', res.data.orderNumber);
+                    window?.sessionStorage?.setItem('order_type', res.data.orderType);
                 }
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
@@ -181,10 +182,11 @@ export const useLoginPageApi = () => {
         const sessionToken = queryParams.get('token');
         const clientId = queryParams.get('client_id');
         const orderNumber = queryParams.get('order_no');
+        const orderType = queryParams.get('order_type');
 
         if (sessionToken && clientId) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            loginWithPhpSession(sessionToken, clientId, orderNumber || undefined);
+            loginWithPhpSession(sessionToken, clientId, orderNumber || undefined, orderType || undefined);
         } else {
             // No token present — Show login page.
         }

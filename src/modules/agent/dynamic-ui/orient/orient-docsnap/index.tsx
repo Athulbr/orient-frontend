@@ -18,14 +18,17 @@ interface OrientDocsnapUserInterfaceIF {
 
 // ── Helper: parse initial search from URL once (#9) ───────────
 const getInitialSearch = (): string => (typeof window !== 'undefined' ? sessionStorage.getItem('order_no') || '' : '');
+const getInitialOrderType = (): string => (typeof window !== 'undefined' ? sessionStorage.getItem('order_type') || '' : '');
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     // ── Filter & Pagination state ─────────────────────────────
     const initialSearch = React.useMemo(getInitialSearch, []);
+    const initialOrderType = React.useMemo(getInitialOrderType, []);
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
     const [statusFilter, setStatusFilter] = useState('all');
     const [branchFilter, setBranchFilter] = useState('43');
+    const [orderTypeFilter, setOrderTypeFilter] = useState(initialOrderType || 'all');
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
     const [perPage, setPerPage] = useState('10');
     const [currentPage, setCurrentPage] = useState(1);
@@ -71,7 +74,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     // ── #11 & #20 — Reset page to 1 when filters or perPage change ──
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchQuery, statusFilter, branchFilter, dateRange, perPage]);
+    }, [debouncedSearchQuery, statusFilter, branchFilter, orderTypeFilter, dateRange, perPage]);
 
     // ── Custom hook for all order data & API logic (#14) ──────
     const {
@@ -94,7 +97,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         handleUpdateOrder,
         getLinkedEmails,
         setOrders
-    } = useOrders({ searchQuery, debouncedSearchQuery, statusFilter, branchFilter, dateRange, perPage, currentPage }, agentSettings);
+    } = useOrders({ searchQuery, debouncedSearchQuery, statusFilter, branchFilter, orderTypeFilter, dateRange, perPage, currentPage }, agentSettings);
 
     // ── Handle inline order updates (e.g. eonBookingNumber from docsnap) ──
     const handleInlineOrderUpdate = useCallback(
@@ -110,17 +113,17 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     }, [fetchData]);
 
     // ── Filter reset ──────────────────────────────────────────
-    const user = sessionStorage.getItem('user');
-    const parsedUser = JSON.parse(user || '');
+
     const handleResetFilters = useCallback(() => {
         setSearchQuery('');
         setDebouncedSearchQuery('');
         setStatusFilter('all');
         setBranchFilter('43');
+        setOrderTypeFilter(initialOrderType || 'all');
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);
-    }, []);
+    }, [initialOrderType]);
 
     // ── Render ────────────────────────────────────────────────
     return (
