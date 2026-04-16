@@ -74,7 +74,7 @@ const DraggableResultCard: React.FC<DraggableResultCardProps> = ({ result, onClo
                 <div className="flex items-center gap-2 font-semibold">
                     <GripHorizontal size={18} className={isSuccess ? 'text-green-500/50' : 'text-red-500/50'} />
                     {isSuccess ? <CheckCircle size={18} className="text-green-600" /> : <AlertCircle size={18} className="text-red-600" />}
-                    <span>{isSuccess ? 'Success' : 'Validation Failed'}</span>
+                    <span>{isSuccess ? 'Success' : 'Submission Failed'}</span>
                 </div>
                 <button
                     onClick={e => {
@@ -181,6 +181,7 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                                 // Update the order with EONBOOKINGNO in the database
                                 if (eonBookingNo) {
                                     const updatePayload = {
+                                        'orderDetails.orderStatus': 'submitted',
                                         maraekatDetails: {
                                             eonBookingNumber: eonBookingNo,
                                             bookingNumber: bookingNo
@@ -195,6 +196,10 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                                             if (res.ok && onOrderUpdate) {
                                                 const updatedOrder: Order = {
                                                     ...order,
+                                                    orderDetails: {
+                                                        ...order.orderDetails,
+                                                        orderStatus: 'submitted'
+                                                    },
                                                     maraekatDetails: {
                                                         ...order.maraekatDetails,
                                                         eonBookingNumber: eonBookingNo,

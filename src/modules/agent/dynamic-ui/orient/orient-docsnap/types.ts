@@ -36,6 +36,7 @@ export interface OrderDetails {
     handlingCharges?: number;
     purpose?: string;
     documentUploadTime?: string;
+    orderCreatedDate?: string;
 }
 
 export interface UserDetails {
@@ -68,8 +69,13 @@ export interface Order {
     webDocuments: DocumentDetail[];
     manualDocuments?: DocumentDetail[];
     emailDocuments?: DocumentDetail[];
+    receipts?: DocumentDetail[];
     linkedEmailIds?: string[];
     extractionDetails: {
+        recordId?: string;
+        extractedData?: Record<string, unknown>;
+    };
+    receiptExtractionDetails?: {
         recordId?: string;
         extractedData?: Record<string, unknown>;
     };
