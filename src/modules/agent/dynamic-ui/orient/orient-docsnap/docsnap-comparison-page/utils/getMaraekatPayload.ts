@@ -106,7 +106,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
 const orderType = order.orderDetails?.orderType;
     const payload = {
         BRANCHCODE: 'BANH',
-        BOOKINGTYPE: orderType === "sell" ? "PURCHASE" : orderType === "buy" ? "SALE" : orderType,
+        BOOKINGTYPE: orderType === "sell" ? "SALE" : orderType === "buy" ? "PURCHASE" : orderType,
         BOOKINGNO: String(generateRandomBookingNumber()),
         // BOOKINGNO: String(order.orderDetails?.orderNumber),
         BOOKINGDATE: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase(),
