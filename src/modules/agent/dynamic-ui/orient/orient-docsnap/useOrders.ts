@@ -16,6 +16,7 @@ export interface OrderFilters {
     debouncedSearchQuery: string;
     statusFilter: string;
     branchFilter: string;
+    orderTypeFilter: string;
     dateRange: { startDate: string; endDate: string };
     perPage: string;
     currentPage: number;
@@ -103,6 +104,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             if (filters.debouncedSearchQuery) params.append('search', filters.debouncedSearchQuery);
             if (filters.statusFilter !== 'all') params.append('status', filters.statusFilter);
             if (filters.branchFilter !== 'all') params.append('branch', filters.branchFilter);
+            if (filters.orderTypeFilter && filters.orderTypeFilter !== 'all') params.append('orderType', filters.orderTypeFilter);
             if (filters.dateRange.startDate && filters.dateRange.endDate) {
                 params.append('startDate', filters.dateRange.startDate);
                 params.append('endDate', filters.dateRange.endDate);
@@ -129,7 +131,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         } finally {
             setIsLoadingOrders(false);
         }
-    }, [filters.debouncedSearchQuery, filters.statusFilter, filters.branchFilter, filters.dateRange, filters.currentPage, filters.perPage]);
+    }, [filters.debouncedSearchQuery, filters.statusFilter, filters.branchFilter, filters.orderTypeFilter, filters.dateRange, filters.currentPage, filters.perPage]);
 
     // ── Linked emails helper ──
     const getLinkedEmails = useCallback(
@@ -342,6 +344,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0] || {};
+                                    console.log('parsed', parsed);
                                     const newDocs: DocumentDetail[] = [];
 
                                     finalData.manualDocuments.forEach((doc: string[]) => {
