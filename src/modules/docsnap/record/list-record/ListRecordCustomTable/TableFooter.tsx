@@ -35,7 +35,7 @@ const TableFooter: React.FC<TableFooterIF> = () => {
                 <Tooltip text="Prev Page" position="top">
                     <PaginationButton
                         onClick={() => handleSetPage(state.page - 1)}
-                        disabled={false}
+                        disabled={state.page === 1}
                         icon={<ChevronLeft className="h-4 w-4" />}
                     />
                 </Tooltip>
