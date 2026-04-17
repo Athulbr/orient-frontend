@@ -288,7 +288,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                     </div>
 
                     <div className="flex flex-col items-end w-full gap-2">
-                        <div className="flex gap-2 items-center justify-end w-full">
+                        {/* <div className="flex gap-2 items-center justify-end w-full">
                             <UploadReceipt orderNumber={order.orderDetails.orderNumber} onUploadComplete={onUploadComplete} />
                             {hasReceipts &&
                                 (hasReceiptExtraction ? (
@@ -305,7 +305,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                         {isExtracting ? extractionProgress : 'Extract Receipt'}
                                     </Button>
                                 ))}
-                        </div>
+                        </div> */}
 
                         {order.receipts && order.receipts.length > 0 && (
                             <div className="flex flex-wrap gap-[7px] justify-end w-full mt-2">
