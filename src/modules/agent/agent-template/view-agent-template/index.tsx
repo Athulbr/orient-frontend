@@ -24,8 +24,10 @@ import {
     Hash,
     List,
     X,
-    ArrowLeft
+    ArrowLeft,
+    Copy
 } from 'lucide-react';
+import { useToastStore } from '../../../../components/toast/ToastStore';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -713,6 +715,8 @@ function SectionCard({
         ? { icon: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-200', ring: 'border-violet-400' }
         : { icon: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', ring: 'border-blue-400' };
 
+    const hasActiveField = section.fields.some(f => f.id === selectedFieldId);
+
     return (
         <div
             draggable
@@ -720,7 +724,7 @@ function SectionCard({
             onDragOver={e => onSectionDragOver(e, section.id)}
             onDrop={e => onSectionDrop(e, section.id)}
             className={`rounded-xl bg-white mb-2.5 border transition-all duration-150
-        ${isSectionOver ? `${accentClasses.ring} shadow-[0_0_0_3px_rgba(191,219,254,0.3)]` : 'border-gray-200'}
+        ${isSectionOver ? `${accentClasses.ring} shadow-[0_0_0_3px_rgba(191,219,254,0.3)]` : hasActiveField ? accentClasses.ring : 'border-gray-200'}
         ${isSectionDragging ? 'opacity-40 shadow-xl' : 'shadow-sm'}
       `}
         >
@@ -816,6 +820,7 @@ function SectionCard({
 export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const toast = useToastStore();
 
     const [templateName, setTemplateName] = useState('New Template');
     const [settings, setSettings] = useState<TemplateSettings>(DEFAULT_SETTINGS);
@@ -842,6 +847,7 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
         }
     }, [id, isCreate]);
     const [selectedField, setSelectedField] = useState<SelectedField | null>(null);
+    const [showTemplateSettings, setShowTemplateSettings] = useState(false);
 
     const [dragState, setDragState] = useState<DragState>({});
     const dragPayload = useRef<DragPayload>({});
@@ -926,7 +932,10 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
         if (selectedField?.field.id === fieldId) setSelectedField(prev => (prev ? { ...prev, field: { ...prev.field, ...patch } } : null));
     };
 
-    const onSelectField = (field: Field, sectionId: string) => setSelectedField(prev => (prev?.field.id === field.id ? null : { field, sectionId }));
+    const onSelectField = (field: Field, sectionId: string) => {
+        setSelectedField(prev => (prev?.field.id === field.id ? null : { field, sectionId }));
+        setShowTemplateSettings(false);
+    };
 
     // Field DnD
     const onFieldDragStart = (e: React.DragEvent, sectionId: string, fieldId: string) => {
@@ -1002,7 +1011,6 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
             setSaved(true);
             setTimeout(() => {
                 setSaved(false);
-                navigate('/agent/template/list');
             }, 1000);
         } catch (err) {
             console.error('Failed to save template', err);
@@ -1019,7 +1027,7 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
 
     if (isLoadingTemplate) {
         return (
-            <div className="flex flex-col items-center justify-center h-full bg-slate-50 gap-3">
+            <div className="w-full h-full flex flex-col items-center justify-center h-full bg-slate-50 gap-3">
                 <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
                 <span className="text-sm text-gray-500">Loading template...</span>
             </div>
@@ -1029,7 +1037,7 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
     return (
         <div className=" flex flex-col bg-slate-50 font-sans w-full">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 px-5 flex items-center h-14 gap-3 flex-shrink-0">
+            <header className="bg-white border-b border-gray-200 px-5 flex items-center h-16 gap-3 flex-shrink-0">
                 <button
                     onClick={() => navigate('/agent/template/list')}
                     className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 hover:bg-gray-200 transition-colors cursor-pointer border border-gray-200"
@@ -1051,6 +1059,21 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
                     <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
                         {settings.llmProvider} · {settings.llmModel}
                     </div>
+                    <button
+                        onClick={() => {
+                            const data = {
+                                name: templateName,
+                                settings,
+                                sections
+                            };
+                            navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+                            toast.success('Template exported to clipboard');
+                        }}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-gray-200 bg-white text-[13px] text-gray-700 font-medium cursor-pointer transition-colors duration-200 hover:bg-gray-50"
+                    >
+                        <Copy size={14} />
+                        Export Template
+                    </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
@@ -1146,34 +1169,47 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
 
                 {/* Right: Settings Panel */}
                 <div className="flex-1 flex flex-col bg-white overflow-hidden">
-                    <div className="h-11 flex-shrink-0 border-b border-gray-100 flex items-stretch px-1">
-                        <button
-                            onClick={() => setSelectedField(null)}
-                            className={`flex items-center gap-1.5 px-4 border-none bg-transparent cursor-pointer text-[12px] transition-all duration-100 border-b-2
-                ${!showingField ? 'font-bold text-blue-600 border-b-blue-600' : 'font-medium text-gray-400 border-b-transparent hover:text-gray-600'}`}
-                        >
-                            <Zap size={13} /> Template Settings
-                        </button>
-
-                        {showingField && (
-                            <div className="flex items-center gap-1.5 px-4 text-[12px] font-bold text-blue-600 border-b-2 border-b-blue-600">
+                    <div className="h-11 flex-shrink-0 border-b border-gray-100 flex items-center px-1">
+                        {showingField ? (
+                            <div className="flex items-center gap-1.5 px-4 text-[12px] font-bold text-gray-800">
                                 <Settings size={13} />
-                                <span className="max-w-[140px] overflow-hidden text-ellipsis whitespace-nowrap">{liveField!.label}</span>
+                                <span className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{liveField!.label}</span>
+                            </div>
+                        ) : showTemplateSettings ? (
+                            <div className="flex items-center gap-1.5 px-4 text-[12px] font-bold text-gray-800">
+                                <Zap size={13} />
+                                <span>Template Settings</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1.5 px-4 text-[12px] font-bold text-gray-500">
+                                <span>Settings</span>
                             </div>
                         )}
 
-                        {!showingField && (
-                            <div className="ml-auto flex items-center gap-1.5 pr-4 text-[11px] text-gray-300">
-                                <MousePointerClick size={12} /> click a field to configure it
-                            </div>
+                        {(!showTemplateSettings || showingField) && (
+                            <button
+                                onClick={() => {
+                                    setSelectedField(null);
+                                    setShowTemplateSettings(true);
+                                }}
+                                className="ml-auto flex items-center gap-1.5 px-4 border-none bg-transparent cursor-pointer text-[12px] transition-all duration-100 font-medium text-gray-500 hover:text-gray-700"
+                            >
+                                <Zap size={13} /> Template Settings
+                            </button>
                         )}
                     </div>
 
                     <div className="flex-1 overflow-hidden">
                         {showingField && liveField && selectedField ? (
                             <FieldSettingsPanel field={liveField} sectionId={selectedField.sectionId} onUpdate={updateField} onClose={() => setSelectedField(null)} />
-                        ) : (
+                        ) : showTemplateSettings ? (
                             <TemplateSettingsPanel settings={settings} onChange={setSettings} />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                <MousePointerClick size={32} className="mb-3 text-gray-300" />
+                                <p className="text-[13px] font-medium text-gray-500">No item selected</p>
+                                <p className="text-[12px] mt-1 text-gray-400">Select a field or open template settings</p>
+                            </div>
                         )}
                     </div>
                 </div>

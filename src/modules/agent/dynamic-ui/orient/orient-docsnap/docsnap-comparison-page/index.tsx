@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link } from 'lucide-react';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
@@ -9,6 +9,7 @@ import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
+import { sampleFinalData } from './sampleFinalData';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -70,6 +71,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
     const [currentOrder, setCurrentOrder] = useState<Order>(order);
     const [isExchanging, setIsExchanging] = useState(false);
     const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
     const toast = useToastStore();
 
     const handleOrderUpdate = useCallback(
@@ -228,7 +230,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                     const data = await res.json();
                     if (isMounted && data.success && data.record) {
                         setRecord(data.record);
-                        setExtractedData(data.record.finalOutput as unknown as ExtractedData);
+                        setExtractedData(sampleFinalData as unknown as ExtractedData);
+                        // setExtractedData(data.record.finalOutput as unknown as ExtractedData);
                         return;
                     }
                 }
@@ -285,18 +288,34 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
             const inputRect = inputEl.getBoundingClientRect();
             const bboxRect = bboxEl.getBoundingClientRect();
 
-            // Start: left edge of the input field
-            const startX = inputRect.left - containerRect.left;
-            const startY = inputRect.top + inputRect.height / 2 - containerRect.top;
-            // End: right edge of the bbox
-            const endX = bboxRect.right - containerRect.left;
-            const endY = bboxRect.top + bboxRect.height / 2 - containerRect.top;
+            const isFloating = inputEl.closest('[data-floating-card]') !== null;
 
-            // Fixed length of each horizontal arm (start stub & end stub)
-            const armLen = 60;
+            let pathD = '';
+            let startX, startY, endX, endY;
 
-            // Build the straight-cross-straight path: short H arm → diagonal cross → short H arm
-            const pathD = `M ${startX} ${startY} H ${startX - armLen} L ${endX + armLen} ${endY} H ${endX}`;
+            if (isFloating) {
+                // start from field top (middle)
+                startX = inputRect.left + inputRect.width / 2 - containerRect.left;
+                startY = inputRect.top - containerRect.top;
+                // end at bbox bottom (middle)
+                endX = bboxRect.left + bboxRect.width / 2 - containerRect.left;
+                endY = bboxRect.bottom - containerRect.top;
+
+                pathD = `M ${startX} ${startY} L ${endX} ${endY}`;
+            } else {
+                // Start: left edge of the input field
+                startX = inputRect.left - containerRect.left;
+                startY = inputRect.top + inputRect.height / 2 - containerRect.top;
+                // End: right edge of the bbox
+                endX = bboxRect.right - containerRect.left;
+                endY = bboxRect.top + bboxRect.height / 2 - containerRect.top;
+
+                // Fixed length of each horizontal arm (start stub & end stub)
+                const armLen = 60;
+
+                // Build the straight-cross-straight path: short H arm → diagonal cross → short H arm
+                pathD = `M ${startX} ${startY} H ${startX - armLen} L ${endX + armLen} ${endY} H ${endX}`;
+            }
 
             const svg = lineRef.current;
             const path = svg.querySelector('path') as SVGPathElement | null;
@@ -522,12 +541,31 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
     // Get the field info (groupKey, fieldKey, value) for the active field
     const activeFieldInfo = useMemo(() => {
         if (!activeFieldId) return null;
-        const [groupKey, fieldKey] = activeFieldId.split('-');
+        const firstDashIdx = activeFieldId.indexOf('-');
+        if (firstDashIdx === -1) return null;
+        const groupKey = activeFieldId.substring(0, firstDashIdx);
+        const rest = activeFieldId.substring(firstDashIdx + 1);
+
         const group = extractedData[groupKey];
-        if (!group || Array.isArray(group)) return null;
-        const field = group[fieldKey];
-        if (!field) return null;
-        return { groupKey, fieldKey, field };
+        if (!group) return null;
+
+        if (Array.isArray(group)) {
+            const secondDashIdx = rest.indexOf('-');
+            if (secondDashIdx === -1) return null;
+            const rowIndex = parseInt(rest.substring(0, secondDashIdx), 10);
+            const fieldKey = rest.substring(secondDashIdx + 1);
+
+            const row = group[rowIndex];
+            if (!row) return null;
+            const field = row[fieldKey];
+            if (!field) return null;
+            return { groupKey, rowIndex, fieldKey, field };
+        } else {
+            const fieldKey = rest;
+            const field = group[fieldKey];
+            if (!field) return null;
+            return { groupKey, fieldKey, field };
+        }
     }, [activeFieldId, extractedData]);
 
     const handleZoomIn = () => {
@@ -639,23 +677,129 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         return () => canvas.removeEventListener('scroll', handleScroll);
     }, [updateConnectionLine, isLoadingRecord]);
 
-    // Only collect bboxes from non-array groups
     const allBboxes = useMemo(() => {
         const bboxes: { id: string; bbox: Pick<BBox, 'x_min' | 'y_min' | 'x_max' | 'y_max'>; page: number }[] = [];
         Object.entries(extractedData).forEach(([groupKey, groupValue]) => {
-            if (Array.isArray(groupValue)) return; // skip arrays
-            Object.entries(groupValue).forEach(([fieldKey, fieldValue]: [string, any]) => {
-                if (fieldValue?.bbox && fieldValue?.page !== null) {
-                    bboxes.push({
-                        id: `${groupKey}-${fieldKey}`,
-                        bbox: fieldValue.bbox,
-                        page: fieldValue.page
+            if (Array.isArray(groupValue)) {
+                groupValue.forEach((row, rowIndex) => {
+                    Object.entries(row).forEach(([fieldKey, fieldValue]: [string, any]) => {
+                        if (fieldValue?.bbox && fieldValue?.page !== null && fieldValue?.page !== undefined) {
+                            bboxes.push({
+                                id: `${groupKey}-${rowIndex}-${fieldKey}`,
+                                bbox: fieldValue.bbox,
+                                page: fieldValue.page
+                            });
+                        }
                     });
-                }
-            });
+                });
+            } else {
+                Object.entries(groupValue).forEach(([fieldKey, fieldValue]: [string, any]) => {
+                    if (fieldValue?.bbox && fieldValue?.page !== null && fieldValue?.page !== undefined) {
+                        bboxes.push({
+                            id: `${groupKey}-${fieldKey}`,
+                            bbox: fieldValue.bbox,
+                            page: fieldValue.page
+                        });
+                    }
+                });
+            }
         });
         return bboxes;
     }, [extractedData]);
+
+    const handleAddRow = useCallback(
+        (groupKey: string) => {
+            const newData = { ...extractedData };
+            const newGroup = [...(newData[groupKey] as any[])];
+            if (newGroup.length === 0) return;
+            const allKeys = Array.from(new Set(newGroup.flatMap(row => Object.keys(row))));
+            const emptyRow: any = {};
+            allKeys.forEach(k => {
+                const lastRowValue = newGroup[newGroup.length - 1]?.[k];
+                emptyRow[k] = {
+                    value: '',
+                    page: lastRowValue?.page || null,
+                    confidence: 1,
+                    bbox: null
+                };
+            });
+            newGroup.push(emptyRow);
+            newData[groupKey] = newGroup;
+            setExtractedData(newData);
+        },
+        [extractedData, setExtractedData]
+    );
+
+    const renderArrayTable = (groupKey: string, groupValue: any[]) => {
+        if (groupValue.length === 0) return null;
+        const allKeys = Array.from(new Set(groupValue.flatMap(row => Object.keys(row))));
+
+        return (
+            <div className="p-0 overflow-x-auto">
+                <table className="w-full min-w-min text-left text-sm text-zinc-600">
+                    <thead className="border-b border-zinc-200 bg-zinc-50/50 text-xs uppercase text-zinc-500">
+                        <tr>
+                            {allKeys.map(key => (
+                                <th key={key} className="whitespace-nowrap px-4 py-3 font-semibold tracking-wider">
+                                    {key.replace(/_/g, ' ')}
+                                </th>
+                            ))}
+                            <th className="w-12 px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200">
+                        {groupValue.map((row, rowIndex) => (
+                            <tr key={rowIndex} className="hover:bg-zinc-50/50">
+                                {allKeys.map(key => {
+                                    const fieldValue = row[key];
+                                    const fieldId = `${groupKey}-${rowIndex}-${key}`;
+                                    return (
+                                        <td key={key} className="p-4 align-top">
+                                            <input
+                                                type="text"
+                                                id={`input-${fieldId}`}
+                                                onFocus={() => handleFocus(fieldId)}
+                                                onBlur={handleBlur}
+                                                value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                onChange={e => {
+                                                    const newData = { ...extractedData };
+                                                    const newGroup = [...(newData[groupKey] as any[])];
+                                                    newGroup[rowIndex] = {
+                                                        ...newGroup[rowIndex],
+                                                        [key]: { ...(fieldValue || {}), value: e.target.value }
+                                                    };
+                                                    newData[groupKey] = newGroup;
+                                                    setExtractedData(newData);
+                                                }}
+                                                placeholder="Not available"
+                                                className="w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                            />
+                                        </td>
+                                    );
+                                })}
+                                <td className="p-4 align-top w-12 text-center">
+                                    <button
+                                        disabled={groupValue.length === 1}
+                                        onClick={() => {
+                                            const newData = { ...extractedData };
+                                            const newGroup = [...(newData[groupKey] as any[])];
+                                            newGroup.splice(rowIndex, 1);
+                                            newData[groupKey] = newGroup;
+                                            setExtractedData(newData);
+                                        }}
+                                        className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        title="Delete Row"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
 
     if (isLoadingRecord) {
         return (
@@ -759,13 +903,25 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                             value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
                                                             onChange={e => {
                                                                 const newData = { ...extractedData };
-                                                                newData[activeFieldInfo.groupKey] = {
-                                                                    ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                    [activeFieldInfo.fieldKey]: {
-                                                                        ...(activeFieldInfo.field || {}),
-                                                                        value: e.target.value
-                                                                    }
-                                                                };
+                                                                if (activeFieldInfo.rowIndex !== undefined) {
+                                                                    const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
+                                                                    newGroup[activeFieldInfo.rowIndex] = {
+                                                                        ...newGroup[activeFieldInfo.rowIndex],
+                                                                        [activeFieldInfo.fieldKey]: {
+                                                                            ...(activeFieldInfo.field || {}),
+                                                                            value: e.target.value
+                                                                        }
+                                                                    };
+                                                                    newData[activeFieldInfo.groupKey] = newGroup;
+                                                                } else {
+                                                                    newData[activeFieldInfo.groupKey] = {
+                                                                        ...(newData[activeFieldInfo.groupKey] as FieldGroup),
+                                                                        [activeFieldInfo.fieldKey]: {
+                                                                            ...(activeFieldInfo.field || {}),
+                                                                            value: e.target.value
+                                                                        }
+                                                                    };
+                                                                }
                                                                 setExtractedData(newData);
                                                             }}
                                                             rows={1}
@@ -810,8 +966,30 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                             </div>
                         </div>
                         {Object.entries(extractedData).map(([groupKey, groupValue]) => {
-                            // Skip array groups (e.g. line_items)
-                            if (Array.isArray(groupValue)) return null;
+                            if (Array.isArray(groupValue)) {
+                                if (groupValue.length === 0) return null;
+                                const allKeys = Array.from(new Set(groupValue.flatMap(row => Object.keys(row))));
+
+                                return (
+                                    <div key={groupKey} className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+                                        <div className="flex justify-between border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100/50 px-5 py-3.5">
+                                            <h3 className=" flex items-center gap-3 text-sm font-semibold tracking-wide text-zinc-800 capitalize">
+                                                {groupKey.replace(/_/g, ' ')}
+                                                <Expand size={15} onClick={() => setExpandedTableGroup(groupKey)} className="text-zinc-500 cursor-pointer hover:text-blue-600 transition-colors" />
+                                            </h3>
+                                            <button
+                                                tabIndex={1}
+                                                onClick={() => handleAddRow(groupKey)}
+                                                className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 hover:text-blue-600"
+                                            >
+                                                <Plus size={14} />
+                                                Add Row
+                                            </button>
+                                        </div>
+                                        {expandedTableGroup !== groupKey && renderArrayTable(groupKey, groupValue)}
+                                    </div>
+                                );
+                            }
 
                             return (
                                 <div key={groupKey} className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
@@ -940,12 +1118,44 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                 </div>
             </div>
 
-            {/* Connection line overlay — zig-zag (straight → cross → straight) */}
-            <svg ref={lineRef} className="pointer-events-none absolute inset-0 z-[100] h-full w-full opacity-0 transition-opacity duration-150" xmlns="http://www.w3.org/2000/svg">
+            {/* Connection line overlay — variable (straight vs zig-zag) */}
+            <svg ref={lineRef} className="pointer-events-none absolute inset-0 z-[250] h-full w-full opacity-0 transition-opacity duration-150" xmlns="http://www.w3.org/2000/svg">
                 <path fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="" />
                 <circle className="dot-start" r="3" fill="#3b82f6" cx="0" cy="0" />
                 <circle className="dot-end" r="3" fill="#3b82f6" cx="0" cy="0" />
             </svg>
+
+            {/* Expanded Table Floating Card */}
+            {expandedTableGroup &&
+                Array.isArray(extractedData[expandedTableGroup]) &&
+                (() => {
+                    const groupKey = expandedTableGroup;
+                    const groupValue = extractedData[groupKey] as any[];
+                    return (
+                        <div
+                            data-floating-card
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[200] w-11/12 max-w-[1200px] bg-white rounded-xl shadow-[0_4px_40px_rgba(0,0,0,0.15)] border border-zinc-300 flex flex-col max-h-[60vh] overflow-hidden"
+                        >
+                            <div className="flex justify-between items-center bg-zinc-50 px-5 py-3 border-b border-zinc-200">
+                                <h3 className="font-semibold text-zinc-800 capitalize flex items-center gap-3">{groupKey.replace(/_/g, ' ')}</h3>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleAddRow(groupKey)}
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 hover:text-blue-600"
+                                        title="Add new row"
+                                    >
+                                        <Plus size={14} />
+                                        Add Row
+                                    </button>
+                                    <button onClick={() => setExpandedTableGroup(null)} className="text-zinc-500 hover:text-zinc-800 rounded-md p-1.5 hover:bg-zinc-200 transition-colors">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="overflow-auto flex-1 bg-white">{renderArrayTable(groupKey, groupValue)}</div>
+                        </div>
+                    );
+                })()}
         </div>
     );
 };

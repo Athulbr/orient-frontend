@@ -142,6 +142,16 @@ const ListAgentTemplatePage = () => {
                         <p className="text-sm text-zinc-500 mt-1 ml-[52px]">Manage your extraction template configurations</p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <div className="relative max-w-md">
+                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input
+                                type="text"
+                                placeholder="Search templates..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2.5 border border-zinc-200 rounded-xl text-sm text-zinc-900 bg-white outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors"
+                            />
+                        </div>
                         <button
                             onClick={() => setShowImportDialog(true)}
                             className="flex items-center gap-2 px-4 py-2.5 border border-zinc-200 bg-white text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
@@ -197,7 +207,7 @@ const ListAgentTemplatePage = () => {
                 </div>
 
                 {/* Search */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                     <div className="relative max-w-md">
                         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                         <input
@@ -208,7 +218,7 @@ const ListAgentTemplatePage = () => {
                             className="w-full pl-9 pr-4 py-2.5 border border-zinc-200 rounded-xl text-sm text-zinc-900 bg-white outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors"
                         />
                     </div>
-                </div>
+                </div> */}
 
                 {/* Content */}
                 {isLoading ? (
@@ -326,14 +336,8 @@ const ListAgentTemplatePage = () => {
                         ))}
                     </div>
                 )}
-                
-                {showImportDialog && (
-                    <ImportDialogComponent
-                        isOpen={showImportDialog}
-                        onClose={() => setShowImportDialog(false)}
-                        onImportSuccess={fetchTemplates}
-                    />
-                )}
+
+                {showImportDialog && <ImportDialogComponent isOpen={showImportDialog} onClose={() => setShowImportDialog(false)} onImportSuccess={fetchTemplates} />}
             </main>
         </div>
     );
