@@ -8,6 +8,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 export interface AgentSettings {
     webhookUrl?: string;
     defaultTemplateId?: string;
+    templates?: {name: string, description: string}[];
     [key: string]: unknown;
 }
 
@@ -562,7 +563,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             });
 
             // #2 — use agentSettings?.webhookUrl instead of hardcoding
-            const webhookSlug = agentSettings?.webhookUrl || 'docsnap-v2';
+            const webhookSlug = agentSettings?.webhookEndpoint || 'orient-document-extractor';
 
             try {
                 const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookSlug}`, {
@@ -571,6 +572,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     body: JSON.stringify({
                         orderNumber: orderNumber,
                         templateId: agentSettings?.defaultTemplateId || '',
+                        templateName: agentSettings?.templates?.[0].name,
                         documents: payloadDocuments
                     })
                 });
@@ -613,7 +615,12 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                         const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
                                         const updateDetails = {
                                             orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
-                                            extractionDetails: { extractedData: finalData.extractedData, recordId: finalData.recordId }
+                                            extractionDetails: { 
+                                                extractedData: finalData.extractedData, 
+                                                recordId: finalData.recordId,
+                                                templateId: agentSettings?.defaultTemplateId || '',
+                                                templateName: agentSettings?.templates?.[0]?.name
+                                            }
                                         };
 
                                         fetch(`${config.workflowService}/api/orders/${orderNumber}`, {

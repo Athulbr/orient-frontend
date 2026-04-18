@@ -230,8 +230,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                     const data = await res.json();
                     if (isMounted && data.success && data.record) {
                         setRecord(data.record);
-                        setExtractedData(sampleFinalData as unknown as ExtractedData);
-                        // setExtractedData(data.record.finalOutput as unknown as ExtractedData);
+                        // setExtractedData(sampleFinalData as unknown as ExtractedData);
+                        setExtractedData(data.record.finalOutput as unknown as ExtractedData);
                         return;
                     }
                 }
