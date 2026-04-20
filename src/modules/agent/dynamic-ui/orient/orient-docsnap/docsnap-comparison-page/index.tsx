@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link, Printer, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
 import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
+import { SearchableSelect } from './SearchableSelect';
 import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
-import { sampleFinalData } from './sampleFinalData';
+import Spinner from '../../../../../../components/Spinner';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -72,6 +74,26 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
     const [isExchanging, setIsExchanging] = useState(false);
     const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
+    const [agentTemplate, setAgentTemplate] = useState<any>(null);
+    const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+    // console.log('record====>>', record);
+
+    // Build a lookup map: fieldKey -> enums[] from the agent template
+    const enumsLookup = useMemo(() => {
+        const lookup: Record<string, string[]> = {};
+        if (!agentTemplate?.sections) return lookup;
+        for (const section of agentTemplate.sections) {
+            if (!section.fields) continue;
+            for (const field of section.fields) {
+                if (field.key && Array.isArray(field.enums) && field.enums.length > 0) {
+                    lookup[field.key] = field.enums;
+                }
+            }
+        }
+        return lookup;
+    }, [agentTemplate]);
+
     const toast = useToastStore();
 
     const handleOrderUpdate = useCallback(
@@ -232,6 +254,21 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                         setRecord(data.record);
                         // setExtractedData(sampleFinalData as unknown as ExtractedData);
                         setExtractedData(data.record.finalOutput as unknown as ExtractedData);
+
+                        if (data.record.templateId) {
+                            try {
+                                const templateRes = await fetch(`${config.workflowService}/api/agent-templates/${data.record.templateId}?apiKey=secret1`);
+                                if (templateRes.ok) {
+                                    const templateData = await templateRes.json();
+                                    if (templateData?.success && templateData?.template) {
+                                        setAgentTemplate(templateData.template);
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error fetching agent template:', err);
+                            }
+                        }
+
                         return;
                     }
                 }
@@ -584,6 +621,102 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         }
     };
 
+    const generatePDF = async () => {
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = doc.internal.pageSize.getHeight();
+
+        let i = 0;
+        for (const url of imageUrls) {
+            if (!url) continue;
+
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                const blob = await response.blob();
+                img.src = URL.createObjectURL(blob);
+            } catch (e) {
+                img.src = url;
+            }
+
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
+
+            if (i > 0) {
+                doc.addPage();
+            }
+
+            const imgRatio = img.width / img.height;
+
+            let finalWidth = pdfWidth;
+            let finalHeight = pdfWidth / imgRatio;
+
+            if (finalHeight > pdfHeight) {
+                finalHeight = pdfHeight;
+                finalWidth = pdfHeight * imgRatio;
+            }
+
+            const x = (pdfWidth - finalWidth) / 2;
+            const y = (pdfHeight - finalHeight) / 2;
+
+            doc.addImage(img, 'JPEG', x, y, finalWidth, finalHeight);
+            i++;
+        }
+
+        return doc;
+    };
+
+    const handleDownloadPDF = async () => {
+        setIsDownloadingPdf(true);
+        try {
+            const pdf = await generatePDF();
+            pdf.save(`${record?.name || 'document'}.pdf`);
+            toast.success('PDF downloaded successfully!');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error('Failed to generate PDF.');
+        } finally {
+            setIsDownloadingPdf(false);
+        }
+    };
+
+    const handlePrint = async () => {
+        // Open the window synchronously (before any await) so Chrome
+        // considers it a direct user-gesture and won't block the popup.
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            toast.error('Popup blocked. Please allow popups for this site and try again.');
+            return;
+        }
+        // Show a loading message while we generate the PDF
+        printWindow.document.write(
+            '<html><head><title>Preparing print…</title></head><body style="display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:system-ui"><p>Generating PDF…</p></body></html>'
+        );
+
+        toast.info('Preparing print...');
+        try {
+            const pdf = await generatePDF();
+            // autoPrint embeds a JavaScript print action inside the PDF so
+            // Chrome's PDF viewer triggers the print dialog automatically
+            pdf.autoPrint();
+            const blob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Navigate the already-open window to the PDF blob URL
+            printWindow.location.href = blobUrl;
+
+            toast.success('Print dialog will open in the new window!');
+        } catch (error) {
+            console.error('Error printing PDF:', error);
+            printWindow.close();
+            toast.error('Failed to prepare print.');
+        }
+    };
+
     const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
         isDraggingRef.current = true;
@@ -753,27 +886,50 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                 {allKeys.map(key => {
                                     const fieldValue = row[key];
                                     const fieldId = `${groupKey}-${rowIndex}-${key}`;
+                                    const fieldEnums = enumsLookup[key];
                                     return (
                                         <td key={key} className="p-4 align-top">
-                                            <input
-                                                type="text"
-                                                id={`input-${fieldId}`}
-                                                onFocus={() => handleFocus(fieldId)}
-                                                onBlur={handleBlur}
-                                                value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
-                                                onChange={e => {
-                                                    const newData = { ...extractedData };
-                                                    const newGroup = [...(newData[groupKey] as any[])];
-                                                    newGroup[rowIndex] = {
-                                                        ...newGroup[rowIndex],
-                                                        [key]: { ...(fieldValue || {}), value: e.target.value }
-                                                    };
-                                                    newData[groupKey] = newGroup;
-                                                    setExtractedData(newData);
-                                                }}
-                                                placeholder="Not available"
-                                                className="w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
-                                            />
+                                            {fieldEnums ? (
+                                                <SearchableSelect
+                                                    id={`input-${fieldId}`}
+                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                    options={fieldEnums}
+                                                    onFocus={() => handleFocus(fieldId)}
+                                                    onBlur={handleBlur}
+                                                    onChange={val => {
+                                                        const newData = { ...extractedData };
+                                                        const newGroup = [...(newData[groupKey] as any[])];
+                                                        newGroup[rowIndex] = {
+                                                            ...newGroup[rowIndex],
+                                                            [key]: { ...(fieldValue || {}), value: val }
+                                                        };
+                                                        newData[groupKey] = newGroup;
+                                                        setExtractedData(newData);
+                                                    }}
+                                                    placeholder="Not available"
+                                                    className="min-w-[120px]"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    id={`input-${fieldId}`}
+                                                    onFocus={() => handleFocus(fieldId)}
+                                                    onBlur={handleBlur}
+                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                    onChange={e => {
+                                                        const newData = { ...extractedData };
+                                                        const newGroup = [...(newData[groupKey] as any[])];
+                                                        newGroup[rowIndex] = {
+                                                            ...newGroup[rowIndex],
+                                                            [key]: { ...(fieldValue || {}), value: e.target.value }
+                                                        };
+                                                        newData[groupKey] = newGroup;
+                                                        setExtractedData(newData);
+                                                    }}
+                                                    placeholder="Not available"
+                                                    className="w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                />
+                                            )}
                                         </td>
                                     );
                                 })}
@@ -822,7 +978,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                         <button onClick={handleClose} className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900" title="Back">
                             <ArrowLeft size={18} />
                         </button>
-                        <span className="max-w-[200px] truncate text-sm font-medium text-zinc-600">Document Viewer</span>
+                        <span className="max-w-[200px] truncate text-sm font-medium text-zinc-600">{(record?.name || '').split('_').join(' ').toUpperCase()}</span>
                     </div>
                     <div className="flex items-center space-x-1 rounded-md border border-zinc-200 bg-zinc-100 p-1">
                         <button onClick={handleZoomOut} className="rounded p-1.5 text-zinc-600 transition-all hover:bg-white hover:shadow-sm" title="Zoom Out">
@@ -839,7 +995,23 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                             <RotateCcw size={16} />
                         </button>
                     </div>
-                    <div className="w-[88px]" />
+                    <div className="flex items-center space-x-3">
+                        <button
+                            onClick={handlePrint}
+                            className="rounded-md border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                            title="Print Document"
+                        >
+                            <Printer size={14} className="text-gray-500" />
+                        </button>
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={isDownloadingPdf}
+                            className="rounded-md border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Download PDF"
+                        >
+                            {isDownloadingPdf ? <Spinner size={15} className="animate-spin text-gray-500" /> : <Download size={15} className="text-gray-500" />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Canvas Area */}
@@ -899,40 +1071,71 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                                 <X size={14} />
                                                             </button>
                                                         </div>
-                                                        <textarea
-                                                            value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
-                                                            onChange={e => {
-                                                                const newData = { ...extractedData };
-                                                                if (activeFieldInfo.rowIndex !== undefined) {
-                                                                    const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
-                                                                    newGroup[activeFieldInfo.rowIndex] = {
-                                                                        ...newGroup[activeFieldInfo.rowIndex],
-                                                                        [activeFieldInfo.fieldKey]: {
-                                                                            ...(activeFieldInfo.field || {}),
-                                                                            value: e.target.value
-                                                                        }
-                                                                    };
-                                                                    newData[activeFieldInfo.groupKey] = newGroup;
-                                                                } else {
-                                                                    newData[activeFieldInfo.groupKey] = {
-                                                                        ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                        [activeFieldInfo.fieldKey]: {
-                                                                            ...(activeFieldInfo.field || {}),
-                                                                            value: e.target.value
-                                                                        }
-                                                                    };
-                                                                }
-                                                                setExtractedData(newData);
-                                                            }}
-                                                            rows={1}
-                                                            className="w-full resize-none rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                                            style={{ minHeight: '32px' }}
-                                                            onInput={e => {
-                                                                const target = e.target as HTMLTextAreaElement;
-                                                                target.style.height = 'auto';
-                                                                target.style.height = `${target.scrollHeight}px`;
-                                                            }}
-                                                        />
+                                                        {enumsLookup[activeFieldInfo.fieldKey] ? (
+                                                            <SearchableSelect
+                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                                options={enumsLookup[activeFieldInfo.fieldKey]}
+                                                                onChange={val => {
+                                                                    const newData = { ...extractedData };
+                                                                    if (activeFieldInfo.rowIndex !== undefined) {
+                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
+                                                                        newGroup[activeFieldInfo.rowIndex] = {
+                                                                            ...newGroup[activeFieldInfo.rowIndex],
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: val
+                                                                            }
+                                                                        };
+                                                                        newData[activeFieldInfo.groupKey] = newGroup;
+                                                                    } else {
+                                                                        newData[activeFieldInfo.groupKey] = {
+                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: val
+                                                                            }
+                                                                        };
+                                                                    }
+                                                                    setExtractedData(newData);
+                                                                }}
+                                                                placeholder="Select value"
+                                                            />
+                                                        ) : (
+                                                            <textarea
+                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                                onChange={e => {
+                                                                    const newData = { ...extractedData };
+                                                                    if (activeFieldInfo.rowIndex !== undefined) {
+                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
+                                                                        newGroup[activeFieldInfo.rowIndex] = {
+                                                                            ...newGroup[activeFieldInfo.rowIndex],
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: e.target.value
+                                                                            }
+                                                                        };
+                                                                        newData[activeFieldInfo.groupKey] = newGroup;
+                                                                    } else {
+                                                                        newData[activeFieldInfo.groupKey] = {
+                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: e.target.value
+                                                                            }
+                                                                        };
+                                                                    }
+                                                                    setExtractedData(newData);
+                                                                }}
+                                                                rows={1}
+                                                                className="w-full resize-none rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                                                style={{ minHeight: '32px' }}
+                                                                onInput={e => {
+                                                                    const target = e.target as HTMLTextAreaElement;
+                                                                    target.style.height = 'auto';
+                                                                    target.style.height = `${target.scrollHeight}px`;
+                                                                }}
+                                                            />
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -997,30 +1200,52 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                         <h3 className="text-sm font-semibold tracking-wide text-zinc-800 capitalize">{groupKey.replace(/_/g, ' ')}</h3>
                                     </div>
                                     <div className="flex flex-col gap-5 p-5">
-                                        {Object.entries(groupValue).map(([fieldKey, fieldValue]: [string, any]) => (
-                                            <div key={fieldKey} className="flex flex-col space-y-2">
-                                                <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
-                                                    {fieldKey.replace(/_/g, ' ')}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id={`input-${groupKey}-${fieldKey}`}
-                                                    onFocus={() => handleFocus(`${groupKey}-${fieldKey}`)}
-                                                    onBlur={e => handleBlur(e)}
-                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
-                                                    onChange={e => {
-                                                        const newData = { ...extractedData };
-                                                        newData[groupKey] = {
-                                                            ...(newData[groupKey] as FieldGroup),
-                                                            [fieldKey]: { ...(fieldValue || {}), value: e.target.value }
-                                                        };
-                                                        setExtractedData(newData);
-                                                    }}
-                                                    placeholder="Not available"
-                                                    className="w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
-                                                />
-                                            </div>
-                                        ))}
+                                        {Object.entries(groupValue).map(([fieldKey, fieldValue]: [string, any]) => {
+                                            const fieldEnums = enumsLookup[fieldKey];
+                                            return (
+                                                <div key={fieldKey} className="flex flex-col space-y-2">
+                                                    <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
+                                                        {fieldKey.replace(/_/g, ' ')}
+                                                    </label>
+                                                    {fieldEnums ? (
+                                                        <SearchableSelect
+                                                            id={`input-${groupKey}-${fieldKey}`}
+                                                            value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                            options={fieldEnums}
+                                                            onFocus={() => handleFocus(`${groupKey}-${fieldKey}`)}
+                                                            onBlur={e => handleBlur(e)}
+                                                            onChange={val => {
+                                                                const newData = { ...extractedData };
+                                                                newData[groupKey] = {
+                                                                    ...(newData[groupKey] as FieldGroup),
+                                                                    [fieldKey]: { ...(fieldValue || {}), value: val }
+                                                                };
+                                                                setExtractedData(newData);
+                                                            }}
+                                                            placeholder="Not available"
+                                                        />
+                                                    ) : (
+                                                        <input
+                                                            type="text"
+                                                            id={`input-${groupKey}-${fieldKey}`}
+                                                            onFocus={() => handleFocus(`${groupKey}-${fieldKey}`)}
+                                                            onBlur={e => handleBlur(e)}
+                                                            value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                            onChange={e => {
+                                                                const newData = { ...extractedData };
+                                                                newData[groupKey] = {
+                                                                    ...(newData[groupKey] as FieldGroup),
+                                                                    [fieldKey]: { ...(fieldValue || {}), value: e.target.value }
+                                                                };
+                                                                setExtractedData(newData);
+                                                            }}
+                                                            placeholder="Not available"
+                                                            className="w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );

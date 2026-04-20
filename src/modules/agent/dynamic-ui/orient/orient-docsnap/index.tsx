@@ -10,6 +10,7 @@ import Tooltip from '../../../../../components/Tooltip';
 import PageInput from '../../../../../builders/tablebuilder/render-tablebuilder/components/PageInput';
 import OrderFiltersBar from './OrderFilters';
 import { useOrders, AgentSettings } from './useOrders';
+import FullScreenLoader from '../../../../../components/FullScreenLoader';
 
 // ── Props (#19 — properly typed instead of `any`) ─────────────
 interface OrientDocsnapUserInterfaceIF {
@@ -145,10 +146,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
             {/* Order list */}
             <div className="p-4 flex flex-col gap-5 flex-grow">
                 {isLoadingOrders ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 bg-white border border-gray-200 rounded-lg">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-4" />
-                        <p>Loading orders...</p>
-                    </div>
+                    <FullScreenLoader className="relative bottom-1" />
                 ) : ordersError ? (
                     <div className="flex flex-col items-center justify-center py-20 text-red-500 bg-red-50 border border-red-200 rounded-lg">
                         <p className="font-semibold text-lg mb-2">Error loading orders</p>

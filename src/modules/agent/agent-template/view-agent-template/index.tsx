@@ -451,6 +451,10 @@ function FieldSettingsPanel({ field, sectionId, onUpdate, onClose }: FieldSettin
         );
     };
 
+    const handleRemoveAllEnums = () => {
+        set('enums', []);
+    };
+
     return (
         <div className="flex flex-col h-full overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
@@ -502,7 +506,14 @@ function FieldSettingsPanel({ field, sectionId, onUpdate, onClose }: FieldSettin
                 </PanelSection>
                 <Divider />
                 <PanelSection title="Enums" icon={List}>
-                    <FieldLabel>Allowed Values</FieldLabel>
+                    <div className="flex items-center justify-between">
+                        <FieldLabel>Allowed Values</FieldLabel>
+                        {field.enums && field.enums.length > 0 && (
+                            <button onClick={handleRemoveAllEnums} className="text-[11px] text-red-500 hover:text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 mb-1.5 transition-colors font-medium">
+                                Remove All
+                            </button>
+                        )}
+                    </div>
                     <div className="flex gap-2">
                         <TextInput
                             value={newEnum}
