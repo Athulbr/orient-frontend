@@ -18,8 +18,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
         initialOrder?.orderDetails.productType ? (Array.isArray(initialOrder.orderDetails.productType) ? initialOrder.orderDetails.productType : [initialOrder.orderDetails.productType as string]) : []
     );
     const [purpose, setPurpose] = useState(initialOrder?.orderDetails.purpose || '');
-    const [totalAmount, setTotalAmount] = useState(initialOrder ? String(initialOrder.orderDetails.totalAmount) : '');
-    const [actualAmount, setActualAmount] = useState(initialOrder ? String(initialOrder.orderDetails.actualAmount) : '');
+    const [residentialStatus, setResidentialStatus] = useState(initialOrder?.orderDetails.residentialStatus || 'resident');
     const [userName, setUserName] = useState(initialOrder?.userDetails.name || '');
     const [userEmail, setUserEmail] = useState(initialOrder?.userDetails.email || '');
     const [userPhone, setUserPhone] = useState(initialOrder?.userDetails.phone || '');
@@ -44,8 +43,11 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             if (userPhone.length < 10) newErrors.userPhone = 'Phone number must be at least 10 digits';
             if (userPhone.length > 15) newErrors.userPhone = 'Phone number is too long';
         }
-        if (!purpose.trim()) {
+        if (orderType === 'sell' && !purpose.trim()) {
             newErrors.purpose = 'Purpose is required';
+        }
+        if (orderType === 'buy' && !residentialStatus.trim()) {
+            newErrors.residentialStatus = 'Residential Status is required';
         }
         if (productType.length === 0) {
             newErrors.productType = 'At least one product type must be selected';
@@ -67,8 +69,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         orderType,
                         productType: productType as ('currency' | 'card' | 'tt')[],
                         purpose,
-                        totalAmount: Number(totalAmount) || 0,
-                        actualAmount: Number(actualAmount) || 0
+                        residentialStatus
                     },
                     userDetails: {
                         ...initialOrder.userDetails,
@@ -94,9 +95,6 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             const timestamp = now.getTime().toString().slice(-6);
             const orderNumber = Number(`${year}${month}${day}${timestamp}`);
 
-            const user = sessionStorage.getItem('user');
-            const parsedUser = JSON.parse(user || '');
-
             const newOrder: Order = {
                 orderDetails: {
                     orderId,
@@ -104,10 +102,11 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     orderType,
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
+                    residentialStatus,
                     branch: 'Bangalore-Whitefield',
                     branchId: 43,
-                    totalAmount: Number(totalAmount) || 0,
-                    actualAmount: Number(actualAmount) || 0,
+                    totalAmount: 0,
+                    actualAmount: 0,
                     orderStatus: 'pending',
                     documentSubmitStatus: 'Offline'
                 },
@@ -251,6 +250,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         </div>
                         {errors.productType && <p className="text-red-500 text-xs mt-1">{errors.productType}</p>}
                     </div>
+
                     <div className="pt-3">
                         <label className="pl-1 pt-0.5 block text-sm font-medium text-gray-700 mb-1">
                             Purpose <span className="text-red-500">*</span>
@@ -275,6 +275,29 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         />
                         {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                     </div>
+
+                    {orderType === 'buy' && (
+                        <div className="pt-3">
+                            <label className="pl-1 pt-0.5 block text-sm font-medium text-gray-700 mb-1">
+                                Residential Status <span className="text-red-500">*</span>
+                            </label>
+                            <SingleSelect
+                                size="lg"
+                                value={residentialStatus}
+                                onValueChange={val => {
+                                    setResidentialStatus(val);
+                                    if (errors.residentialStatus) setErrors(prev => ({ ...prev, residentialStatus: '' }));
+                                }}
+                                options={[
+                                    { value: 'resident', label: 'Resident' },
+                                    { value: 'non-resident', label: 'Non-Resident' }
+                                ]}
+                                className={`w-full ${errors.residentialStatus ? '[&>button]:border-red-500' : ''}`}
+                                placeholder="Select Residential Status"
+                            />
+                            {errors.residentialStatus && <p className="text-red-500 text-xs mt-1">{errors.residentialStatus}</p>}
+                        </div>
+                    )}
                 </div>
             </div>
 

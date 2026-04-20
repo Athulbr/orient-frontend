@@ -35,8 +35,11 @@ export interface OrderDetails {
     deliveryCharge?: number;
     handlingCharges?: number;
     purpose?: string;
+    residentialStatus?: string;
     documentUploadTime?: string;
     orderCreatedDate?: string;
+    gst?: string;
+    tcs?: string;
 }
 
 export interface UserDetails {
