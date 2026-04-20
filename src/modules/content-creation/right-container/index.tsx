@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Button } from '../../../components/Button';
-import { Pencil, SkipForward, Plus, Check, X, Sparkles } from 'lucide-react';
+import { Pencil, SkipForward, Plus, Check, X, Sparkles, Palette } from 'lucide-react';
 import { useContentCreationEditorState } from '../hooks/DocumentCreationEditorContext';
 import EditableField from '../components/EditableField';
 import SummaryImageField from '../components/SummaryImageField';
 import KeywordsSection from '../components/KeywordsSection';
 import EditPromptDialog from '../components/EditPromptDialog';
 import GenerateTitlesDialog from '../components/GenerateTitlesDialog';
+import StyleEditor from '../components/StyleEditor';
+import { useBlogTheme } from '../hooks/useBlogTheme';
 import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
 import Spinner from '../../../components/Spinner';
@@ -16,6 +18,8 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 import { config } from '../../../config/default';
 import Tooltip from '../../../components/Tooltip';
 
+type RightTab = 'content' | 'styles';
+
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
     const { regenerateBlog, updateRecordApi } = useContentCreationApi();
@@ -24,8 +28,16 @@ export default function RightContainer() {
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerateTitlesOpen, setIsGenerateTitlesOpen] = useState(false);
     const [originalCustomTitle, setOriginalCustomTitle] = useState('');
+    const [activeTab, setActiveTab] = useState<RightTab>('content');
     const toast = useToastStore();
     const { id } = useParams();
+
+    // Always mounted — keeps the injected <style> tag alive across tab switches
+    const { merged: mergedTheme, overrides: themeOverrides, updateStyle, resetTheme } = useBlogTheme(
+        id,
+        state.record?.theme,
+        state.record?.themeOverrides
+    );
 
     const handleGenerateMoreTitles = async (data: any) => {
         setIsGenerateTitlesOpen(false);
@@ -248,14 +260,47 @@ ${state.content}
 
     return (
         <div className="flex flex-col h-full min-h-0 gap-2 overflow-y-auto px-4">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-2">
-                <p className="text-xl font-semibold">Content Details</p>
-                {/* <Button outlined startIcon={<Pencil size={14} />} onClick={() => setPromptDialogOpen(true)}>
-                    Edit Prompt
-                </Button> */}
+            <div className="sticky top-0 z-10 border-b bg-white">
+                <div className="flex items-center justify-between p-2">
+                    <p className="text-xl font-semibold">
+                        {activeTab === 'content' ? 'Content Details' : 'Style Editor'}
+                    </p>
+                </div>
+                <div className="flex border-b">
+                    <button
+                        onClick={() => setActiveTab('content')}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'content'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        Content
+                    </button>
+                    {/* <button
+                        onClick={() => setActiveTab('styles')}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'styles'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        <Palette size={14} />
+                        Styles
+                    </button> */}
+                </div>
             </div>
 
-            <div className="flex flex-col gap-3 border-b pb-4 mb-2">
+            {activeTab === 'styles' && (
+                <StyleEditor
+                    merged={mergedTheme}
+                    overrides={themeOverrides}
+                    updateStyle={updateStyle}
+                    resetTheme={resetTheme}
+                />
+            )}
+
+            {activeTab === 'content' && <div className="flex flex-col gap-3 border-b pb-4 mb-2">
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">Title</label>
                     <textarea
@@ -348,9 +393,9 @@ ${state.content}
                         />
                     )}
                 </div>
-            </div>
+            </div>}
 
-            {state.keywords && state.keywords.length > 0 && (
+            {activeTab === 'content' && state.keywords && state.keywords.length > 0 && (
                 <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} onSelectAll={handleSelectAll} />
             )}
 
