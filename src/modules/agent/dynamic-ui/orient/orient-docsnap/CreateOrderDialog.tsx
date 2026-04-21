@@ -227,6 +227,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 { label: 'TP', value: 'tp' }
                             ].map(type => {
                                 if (orderType === 'sell' && type.value === 'tp') return null;
+                                if (orderType === 'buy' && type.value === 'tt') return null;
                                 return (
                                     <label key={type.value} className="flex items-center gap-2 cursor-pointer">
                                         <input

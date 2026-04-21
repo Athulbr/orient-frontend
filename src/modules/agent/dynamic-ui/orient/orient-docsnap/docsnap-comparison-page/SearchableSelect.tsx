@@ -176,6 +176,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
         [onBlur]
     );
 
+    const isInvalidValue = value !== '' && !options.includes(value);
+
     return (
         <div ref={containerRef} className={`relative ${className || ''}`} onBlur={handleContainerBlur} onKeyDown={handleKeyDown}>
             {/* Trigger button */}
@@ -190,10 +192,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
                     if (!isOpen) onFocus?.();
                 }}
                 className={`flex w-full items-center justify-between rounded-md border px-4 py-2.5 text-left text-sm transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${
-                    value ? 'border-gray-400 text-zinc-800' : 'border-gray-400 text-zinc-400'
+                    isInvalidValue ? 'border-red-400' : value ? 'border-gray-400 text-zinc-800' : 'border-gray-400 text-zinc-400'
                 } ${isOpen ? 'border-blue-400 ring-2 ring-blue-100' : ''}`}
             >
-                <span className={`truncate ${!value ? 'font-normal' : ''}`}>{value || placeholder}</span>
+                <span className={`truncate ${!value ? 'font-normal' : ''} ${isInvalidValue ? 'text-red-500 font-medium' : ''}`}>{value || placeholder}</span>
                 <div className="flex items-center gap-1 ml-2">
                     {value && (
                         <span onClick={handleClear} className="rounded p-0.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors cursor-pointer">

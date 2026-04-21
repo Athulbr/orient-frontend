@@ -12,6 +12,7 @@ import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
 import Spinner from '../../../../../../components/Spinner';
+import FullScreenLoader from '../../../../../../components/FullScreenLoader';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -958,14 +959,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
     };
 
     if (isLoadingRecord) {
-        return (
-            <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-800">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-blue-500"></div>
-                    <span className="text-sm font-medium text-zinc-500">Loading document...</span>
-                </div>
-            </div>
-        );
+        return <FullScreenLoader text="Loading Document..." />;
     }
 
     return (
