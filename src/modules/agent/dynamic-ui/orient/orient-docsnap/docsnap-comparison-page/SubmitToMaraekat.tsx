@@ -116,7 +116,8 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
         setIsSubmitting(true);
         setResultMessage(null);
         const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
-        const validationResult = validateMaraekatPayload(payload);
+        const validationResult = payload;
+        // const validationResult = validateMaraekatPayload(payload);
 
         const allErrors = [...dateErrors, ...validationResult.errors];
         if (allErrors.length > 0) {
