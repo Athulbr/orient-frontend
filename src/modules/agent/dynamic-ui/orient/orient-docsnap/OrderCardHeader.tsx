@@ -80,6 +80,7 @@ interface OrderCardHeaderProps {
 }
 
 import DocTile, { getFileType } from './DocTile';
+import { formatDate } from '../../../../../builders/tablebuilder/render-tablebuilder/utils/formatDate';
 
 // ── Component ─────────────────────────────────────────────────
 
@@ -240,7 +241,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                     {/* Meta row */}
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
                         <Clock size={13} className="text-gray-400" />
-                        {order.orderDetails.orderCreatedDate ? convertToIst(order.orderDetails.orderCreatedDate) : 'N/A'}
+                        {order.orderDetails.orderCreatedDate ? convertToIst(order.orderDetails.orderCreatedDate) : formatDate(order.createdAt || '')}
                         <span className="mx-1.5">•</span>
                         <Building2 size={13} className="text-gray-400" />
                         {od.location || od.branch}
