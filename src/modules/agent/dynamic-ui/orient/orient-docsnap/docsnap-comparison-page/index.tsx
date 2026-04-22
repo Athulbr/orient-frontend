@@ -73,6 +73,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
     const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
     const [currentOrder, setCurrentOrder] = useState<Order>(order);
     const [isExchanging, setIsExchanging] = useState(false);
+    const [isExchangingAll, setIsExchangingAll] = useState(false);
     const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
     const [agentTemplate, setAgentTemplate] = useState<any>(null);
@@ -194,6 +195,121 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         } finally {
             setIsExchanging(false);
         }
+    };
+
+    const handleExchangeAll = async () => {
+        const items = currentOrder.currencyDetails;
+        if (!items || items.length === 0) return;
+
+        const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
+        const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
+        if (!eonBookingNumber || !bookingNo) return;
+
+        setIsExchangingAll(true);
+        setExchangeResult(null);
+
+        // Step 1: Login once to get auth token
+        let authToken: string | null = null;
+        try {
+            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!loginRes.ok) {
+                setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
+                setIsExchangingAll(false);
+                return;
+            }
+            const loginData = await loginRes.json();
+            authToken = loginData?.Result;
+            if (!authToken) {
+                setExchangeResult({ type: 'error', message: 'No auth token received from login' });
+                setIsExchangingAll(false);
+                return;
+            }
+        } catch (err: any) {
+            setExchangeResult({ type: 'error', message: err.message || 'Login request failed' });
+            setIsExchangingAll(false);
+            return;
+        }
+
+        // Step 2: Fire all exchange requests in parallel
+        const { payload } = getMaraekatPayload(currentOrder, extractedData);
+
+        const results = await Promise.allSettled(
+            items.map(async (item: any) => {
+                const exchangeType =
+                    item.product === 'cash'
+                        ? 'CN'
+                        : payload.BOOKINGTYPE === 'PURCHASE'
+                        ? 'EM'
+                        : payload.BOOKINGTYPE === 'SALE'
+                        ? 'CM'
+                        : item.product;
+
+                const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        BRANCHCODE: payload.BRANCHCODE || '',
+                        BOOKINGTYPE: payload.BOOKINGTYPE || '',
+                        BOOKINGNO: bookingNo || '',
+                        EONBOOKINGNO: eonBookingNumber,
+                        CURRENCY: item.currency || '',
+                        EXCHTYPE: exchangeType || '',
+                        FCNAMOUNT: item.quantity || '',
+                        BOOKINGRATE: item.rate || ''
+                    })
+                });
+
+                if (!exchangeRes.ok) {
+                    throw new Error(`${item.currency}: API failed (${exchangeRes.status})`);
+                }
+
+                const exchangeData = await exchangeRes.json();
+                const resultItem = exchangeData?.Result?.[0];
+
+                if (resultItem?.APISTATUS === 'FAILED') {
+                    throw new Error(`${item.currency}: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`);
+                } else if (resultItem?.BOOKINGNO) {
+                    return `${item.currency}: Booking No ${resultItem.BOOKINGNO}`;
+                } else {
+                    throw new Error(`${item.currency}: ${exchangeData?.Error || 'No booking number returned'}`);
+                }
+            })
+        );
+
+        // Step 3: Aggregate results
+        const successes: string[] = [];
+        const failures: string[] = [];
+        results.forEach(r => {
+            if (r.status === 'fulfilled') {
+                successes.push(r.value);
+            } else {
+                failures.push((r as PromiseRejectedResult).reason?.message || 'Unknown error');
+            }
+        });
+
+        if (failures.length === 0) {
+            setExchangeResult({
+                type: 'success',
+                message: `All ${successes.length} exchange(s) successful! ${successes.join(' · ')}`
+            });
+            toast.success(`All ${successes.length} exchange(s) completed successfully!`);
+        } else {
+            setExchangeResult({
+                type: 'error',
+                message: `${failures.length} exchange(s) failed: ${failures.join(' | ')}${
+                    successes.length > 0 ? ` (${successes.length} succeeded: ${successes.join(' · ')})` : ''
+                }`
+            });
+            toast.error(`${failures.length} exchange(s) failed.`);
+        }
+
+        setIsExchangingAll(false);
     };
 
     useEffect(() => {
@@ -1265,8 +1381,16 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                 {/* Currency Details List */}
                                 {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
                                     <div className="overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-sm">
-                                        <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3">
+                                        <div className="flex items-center justify-between border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3">
                                             <p className="text-xs font-semibold tracking-wider text-indigo-700 uppercase">Currency Details</p>
+                                            <button
+                                                onClick={handleExchangeAll}
+                                                disabled={isExchangingAll || isExchanging}
+                                                className="flex items-center gap-1.5 rounded-md border border-indigo-500 bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-indigo-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                {isExchangingAll ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
+                                                {isExchangingAll ? 'Adding All...' : 'Add All'}
+                                            </button>
                                         </div>
                                         <div className="divide-y divide-indigo-50">
                                             {currentOrder.currencyDetails.map((item, idx) => (
@@ -1288,7 +1412,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                     </div>
                                                     <button
                                                         onClick={() => handleExchange(item)}
-                                                        disabled={isExchanging}
+                                                        disabled={isExchanging || isExchangingAll}
                                                         className="flex items-center gap-1.5 rounded-md border border-indigo-400 bg-white px-3 py-1 text-xs font-medium text-indigo-600 transition-all duration-200 hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
                                                     >
                                                         {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
