@@ -266,7 +266,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             options={[
                                 { value: 'Education', label: 'Education' },
                                 { value: 'Medical', label: 'Medical Treatment' },
-                                { value: 'Leisure/Holiday', label: 'Private Visit / Leisure' },
+                                { value: 'Leisure/Holiday', label: 'Private Visit / Leisure / Holiday' },
                                 { value: 'Business Trip', label: 'Business Trip' },
                                 { value: 'Emigration', label: 'Emigration' },
                                 { value: 'Employment', label: 'Employment' }
