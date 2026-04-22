@@ -264,12 +264,12 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 if (errors.purpose) setErrors(prev => ({ ...prev, purpose: '' }));
                             }}
                             options={[
-                                { value: 'Private Visit / Leisure', label: 'Private Visit / Leisure' },
                                 { value: 'Education', label: 'Education' },
-                                { value: 'Business Visit', label: 'Business Visit' },
-                                { value: 'Employment', label: 'Employment' },
+                                { value: 'Medical', label: 'Medical Treatment' },
+                                { value: 'Leisure/Holiday', label: 'Private Visit / Leisure' },
+                                { value: 'Business Trip', label: 'Business Trip' },
                                 { value: 'Emigration', label: 'Emigration' },
-                                { value: 'Medical Treatment', label: 'Medical Treatment' }
+                                { value: 'Employment', label: 'Employment' }
                             ]}
                             className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
                             placeholder="Select Purpose"
@@ -315,3 +315,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
 };
 
 export default CreateOrderDialog;
+
+{
+    /* Education,Medical,Leisure/Holiday,Business Trip,Emigration,Employment,Immigration */
+}
