@@ -223,9 +223,9 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                                 const successMessages = Array.isArray(result?.messages)
                                     ? result.messages.map((m: any) => (typeof m === 'string' ? m : m.message || 'Validated Successfully'))
                                     : ['Successfully submitted to Maraekat'];
-                                if (eonBookingNo) {
-                                    successMessages.push(`EON Booking No: ${eonBookingNo}`);
-                                }
+                                // if (eonBookingNo) {
+                                //     successMessages.push(`EON Booking No: ${eonBookingNo}`);
+                                // }
                                 setResultMessage({ type: 'success', messages: successMessages });
                             }
                         } else {

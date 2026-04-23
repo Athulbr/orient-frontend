@@ -49,6 +49,8 @@ function buildInfoChips(order: Order): InfoChip[] {
     if (od.deliveryCharge !== undefined) chips.push({ icon: null, val: <LabelValue label="Delivery Charge" value={`₹${od.deliveryCharge}`} /> });
     if (od.handlingCharges !== undefined) chips.push({ icon: null, val: <LabelValue label="Handling" value={`₹${od.handlingCharges}`} /> });
     if (od.purpose) chips.push({ icon: null, val: <LabelValue label="Purpose" value={od.purpose} /> });
+    if (od.gst) chips.push({ icon: null, val: <LabelValue label="GST" value={od.gst} /> });
+    if (od.tcs) chips.push({ icon: null, val: <LabelValue label="TCS" value={od.tcs} /> });
     if (od.documentUploadTime) {
         chips.push({ icon: <Clock size={12} className="text-gray-400" />, val: <LabelValue label="Uploaded" value={od.documentUploadTime} /> });
     }
