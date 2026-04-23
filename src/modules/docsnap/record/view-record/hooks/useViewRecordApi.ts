@@ -256,6 +256,14 @@ export const useViewRecordApi = () => {
     const processArrayFields = () => {
         const updatedData = { ...state?.objectFields };
 
+        const shipping = updatedData?.shipping;
+        if (shipping && !shipping?.validation?.value) {
+            updatedData.shipping = {
+                ...shipping,
+                validation: { value: 'not verified' }
+            };
+        }
+
         // Get table names (could be ['line_items', 'specifications'] or other combinations)
         const tableNames = state?.tableNames || [];
 
