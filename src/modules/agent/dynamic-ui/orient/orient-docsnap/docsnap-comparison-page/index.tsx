@@ -106,96 +106,96 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         [onOrderUpdate]
     );
 
-    const handleExchange = async (item: any) => {
-        const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
-        const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
-        console.log('bookingNo=>', bookingNo);
-        if (!eonBookingNumber || !bookingNo) return;
+    // const handleExchange = async (item: any) => {
+    //     const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
+    //     const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
+    //     console.log('bookingNo=>', bookingNo);
+    //     if (!eonBookingNumber || !bookingNo) return;
 
-        console.log(item);
+    //     console.log(item);
 
-        setIsExchanging(true);
-        setExchangeResult(null);
+    //     setIsExchanging(true);
+    //     setExchangeResult(null);
 
-        try {
-            // Step 1: Login to get auth token
-            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
+    //     try {
+    //         // Step 1: Login to get auth token
+    //         const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' }
+    //         });
 
-            if (!loginRes.ok) {
-                setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
-                setIsExchanging(false);
-                return;
-            }
+    //         if (!loginRes.ok) {
+    //             setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
+    //             setIsExchanging(false);
+    //             return;
+    //         }
 
-            const loginData = await loginRes.json();
-            const authToken = loginData?.Result;
+    //         const loginData = await loginRes.json();
+    //         const authToken = loginData?.Result;
 
-            if (!authToken) {
-                setExchangeResult({ type: 'error', message: 'No auth token received from login' });
-                setIsExchanging(false);
-                return;
-            }
+    //         if (!authToken) {
+    //             setExchangeResult({ type: 'error', message: 'No auth token received from login' });
+    //             setIsExchanging(false);
+    //             return;
+    //         }
 
-            // Step 2: Get payload data for exchange
-            const { payload } = getMaraekatPayload(currentOrder, extractedData);
-            const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
+    //         // Step 2: Get payload data for exchange
+    //         const { payload } = getMaraekatPayload(currentOrder, extractedData);
+    //         const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
 
-            // Step 3: Call PUSHFXBOOKINGEX via backend proxy
-            const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authToken}`
-                },
+    //         // Step 3: Call PUSHFXBOOKINGEX via backend proxy
+    //         const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 Authorization: `Bearer ${authToken}`
+    //             },
 
-                body: JSON.stringify({
-                    BRANCHCODE: payload.BRANCHCODE || '',
-                    BOOKINGTYPE: payload.BOOKINGTYPE || '',
-                    BOOKINGNO: bookingNo || '',
-                    EONBOOKINGNO: eonBookingNumber,
-                    CURRENCY: item.currency || '',
-                    EXCHTYPE: exchangeType || '',
-                    FCNAMOUNT: item.quantity || '',
-                    BOOKINGRATE: item.rate || ''
-                })
-            });
+    //             body: JSON.stringify({
+    //                 BRANCHCODE: payload.BRANCHCODE || '',
+    //                 BOOKINGTYPE: payload.BOOKINGTYPE || '',
+    //                 BOOKINGNO: bookingNo || '',
+    //                 EONBOOKINGNO: eonBookingNumber,
+    //                 CURRENCY: item.currency || '',
+    //                 EXCHTYPE: exchangeType || '',
+    //                 FCNAMOUNT: item.quantity || '',
+    //                 BOOKINGRATE: item.rate || ''
+    //             })
+    //         });
 
-            if (!exchangeRes.ok) {
-                setExchangeResult({ type: 'error', message: `Exchange API failed: ${exchangeRes.status}` });
-                setIsExchanging(false);
-                return;
-            }
+    //         if (!exchangeRes.ok) {
+    //             setExchangeResult({ type: 'error', message: `Exchange API failed: ${exchangeRes.status}` });
+    //             setIsExchanging(false);
+    //             return;
+    //         }
 
-            const exchangeData = await exchangeRes.json();
-            const resultItem = exchangeData?.Result?.[0];
+    //         const exchangeData = await exchangeRes.json();
+    //         const resultItem = exchangeData?.Result?.[0];
 
-            if (resultItem?.APISTATUS === 'FAILED') {
-                setExchangeResult({
-                    type: 'error',
-                    message: `Exchange failed: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`
-                });
-            } else if (resultItem?.BOOKINGNO) {
-                setExchangeResult({
-                    type: 'success',
-                    message: `Exchange successful! Booking No: ${resultItem.BOOKINGNO}. ${resultItem.BOOKINGSTATUS || ''}`
-                });
-                toast.success(`Exchange successful! Booking No: ${resultItem.BOOKINGNO}`);
-            } else {
-                setExchangeResult({
-                    type: 'error',
-                    message: exchangeData?.Error || 'Exchange failed — no booking number returned'
-                });
-            }
-        } catch (err: any) {
-            console.error('Exchange error:', err);
-            setExchangeResult({ type: 'error', message: err.message || 'Exchange request failed' });
-        } finally {
-            setIsExchanging(false);
-        }
-    };
+    //         if (resultItem?.APISTATUS === 'FAILED') {
+    //             setExchangeResult({
+    //                 type: 'error',
+    //                 message: `Exchange failed: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`
+    //             });
+    //         } else if (resultItem?.BOOKINGNO) {
+    //             setExchangeResult({
+    //                 type: 'success',
+    //                 message: `Exchange successful! Booking No: ${resultItem.BOOKINGNO}. ${resultItem.BOOKINGSTATUS || ''}`
+    //             });
+    //             toast.success(`Exchange successful! Booking No: ${resultItem.BOOKINGNO}`);
+    //         } else {
+    //             setExchangeResult({
+    //                 type: 'error',
+    //                 message: exchangeData?.Error || 'Exchange failed — no booking number returned'
+    //             });
+    //         }
+    //     } catch (err: any) {
+    //         console.error('Exchange error:', err);
+    //         setExchangeResult({ type: 'error', message: err.message || 'Exchange request failed' });
+    //     } finally {
+    //         setIsExchanging(false);
+    //     }
+    // };
 
     const handleExchangeAll = async () => {
         const items = currentOrder.currencyDetails;
@@ -238,14 +238,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
 
         const results = await Promise.allSettled(
             items.map(async (item: any) => {
-                const exchangeType =
-                    item.product === 'cash'
-                        ? 'CN'
-                        : payload.BOOKINGTYPE === 'PURCHASE'
-                        ? 'EM'
-                        : payload.BOOKINGTYPE === 'SALE'
-                        ? 'CM'
-                        : item.product;
+                const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
 
                 const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
                     method: 'POST',
@@ -302,9 +295,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         } else {
             setExchangeResult({
                 type: 'error',
-                message: `${failures.length} exchange(s) failed: ${failures.join(' | ')}${
-                    successes.length > 0 ? ` (${successes.length} succeeded: ${successes.join(' · ')})` : ''
-                }`
+                message: `${failures.length} exchange(s) failed: ${failures.join(' | ')}${successes.length > 0 ? ` (${successes.length} succeeded: ${successes.join(' · ')})` : ''}`
             });
             toast.error(`${failures.length} exchange(s) failed.`);
         }
@@ -1380,23 +1371,23 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
 
                                 {/* Currency Details List */}
                                 {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
-                                    <div className="overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-sm">
-                                        <div className="flex items-center justify-between border-b border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3">
-                                            <p className="text-xs font-semibold tracking-wider text-indigo-700 uppercase">Currency Details</p>
+                                    <div className={`overflow-hidden rounded-xl border shadow-sm ${exchangeResult?.type === 'success' ? 'border-green-300 bg-green-50/30' : 'border-indigo-200 bg-white'}`}>
+                                        <div className={`flex items-center justify-between border-b px-5 py-3 ${exchangeResult?.type === 'success' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50'}`}>
+                                            <p className={`text-xs font-semibold tracking-wider uppercase ${exchangeResult?.type === 'success' ? 'text-green-700' : 'text-indigo-700'}`}>Currency Details</p>
                                             <button
                                                 onClick={handleExchangeAll}
-                                                disabled={isExchangingAll || isExchanging}
-                                                className="flex items-center gap-1.5 rounded-md border border-indigo-500 bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-indigo-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                                disabled={isExchangingAll || isExchanging || exchangeResult?.type === 'success'}
+                                                className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${exchangeResult?.type === 'success' ? 'border-green-500 bg-green-600 hover:bg-green-700' : 'border-indigo-500 bg-indigo-600 hover:bg-indigo-700'}`}
                                             >
                                                 {isExchangingAll ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
-                                                {isExchangingAll ? 'Adding All...' : 'Add All'}
+                                                {isExchangingAll ? 'Adding All...' : exchangeResult?.type === 'success' ? 'Added' : 'Add All'}
                                             </button>
                                         </div>
-                                        <div className="divide-y divide-indigo-50">
+                                        <div className={`divide-y ${exchangeResult?.type === 'success' ? 'divide-green-100' : 'divide-indigo-50'}`}>
                                             {currentOrder.currencyDetails.map((item, idx) => (
-                                                <div key={idx} className="flex items-center justify-between px-5 py-3 hover:bg-indigo-50/40 transition-colors">
+                                                <div key={idx} className={`flex items-center justify-between px-5 py-3 transition-colors ${exchangeResult?.type === 'success' ? 'hover:bg-green-50/50' : 'hover:bg-indigo-50/40'}`}>
                                                     <div className="flex items-center gap-4">
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-700">
+                                                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${exchangeResult?.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>
                                                             {item.currency?.slice(0, 3) || '—'}
                                                         </div>
                                                         <div className="flex flex-col">
@@ -1410,14 +1401,14 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <button
+                                                    {/* <button
                                                         onClick={() => handleExchange(item)}
                                                         disabled={isExchanging || isExchangingAll}
                                                         className="flex items-center gap-1.5 rounded-md border border-indigo-400 bg-white px-3 py-1 text-xs font-medium text-indigo-600 transition-all duration-200 hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
                                                     >
                                                         {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
                                                         Add
-                                                    </button>
+                                                    </button> */}
                                                 </div>
                                             ))}
                                         </div>
