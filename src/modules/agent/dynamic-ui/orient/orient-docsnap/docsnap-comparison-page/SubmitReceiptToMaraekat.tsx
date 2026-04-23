@@ -78,34 +78,34 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
             const bookingNo = order?.maraekatDetails?.bookingNumber;
             const orderType = order?.orderDetails?.orderType;
 
-            // if (!eonBookingNumber || !bookingNo) {
-            //     toast.error('Booking Number or EON Booking Number is missing');
-            //     setIsSubmitting(false);
-            //     return;
-            // }
+            if (!eonBookingNumber || !bookingNo) {
+                toast.error('Booking Number or EON Booking Number is missing');
+                setIsSubmitting(false);
+                return;
+            }
 
             const receipts = extractedData?.receipts || [];
 
             // // Step 1: Login to get auth token
-            // const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' }
-            // });
+            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
 
-            // if (!loginRes.ok) {
-            //     toast.error(`Login failed: ${loginRes.status}`);
-            //     setIsSubmitting(false);
-            //     return;
-            // }
+            if (!loginRes.ok) {
+                toast.error(`Login failed: ${loginRes.status}`);
+                setIsSubmitting(false);
+                return;
+            }
 
-            // const loginData = await loginRes.json();
-            // const authToken = loginData?.Result;
+            const loginData = await loginRes.json();
+            const authToken = loginData?.Result;
 
-            // if (!authToken) {
-            //     toast.error('No auth token received from login');
-            //     setIsSubmitting(false);
-            //     return;
-            // }
+            if (!authToken) {
+                toast.error('No auth token received from login');
+                setIsSubmitting(false);
+                return;
+            }
 
             // Helper to format date
             const formatForMaraekat = (dateStr: string) => {
