@@ -1371,9 +1371,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
 
                                 {/* Currency Details List */}
                                 {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
-                                    <div className={`overflow-hidden rounded-xl border shadow-sm ${exchangeResult?.type === 'success' ? 'border-green-300 bg-green-50/30' : 'border-indigo-200 bg-white'}`}>
-                                        <div className={`flex items-center justify-between border-b px-5 py-3 ${exchangeResult?.type === 'success' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50'}`}>
-                                            <p className={`text-xs font-semibold tracking-wider uppercase ${exchangeResult?.type === 'success' ? 'text-green-700' : 'text-indigo-700'}`}>Currency Details</p>
+                                    <div
+                                        className={`overflow-hidden rounded-xl border shadow-sm ${exchangeResult?.type === 'success' ? 'border-green-300 bg-green-50/30' : 'border-indigo-200 bg-white'}`}
+                                    >
+                                        <div
+                                            className={`flex items-center justify-between border-b px-5 py-3 ${exchangeResult?.type === 'success' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50'}`}
+                                        >
+                                            <p className={`text-xs font-semibold tracking-wider uppercase ${exchangeResult?.type === 'success' ? 'text-green-700' : 'text-indigo-700'}`}>
+                                                Currency Details
+                                            </p>
                                             <button
                                                 onClick={handleExchangeAll}
                                                 disabled={isExchangingAll || isExchanging || exchangeResult?.type === 'success'}
@@ -1385,9 +1391,14 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                         </div>
                                         <div className={`divide-y ${exchangeResult?.type === 'success' ? 'divide-green-100' : 'divide-indigo-50'}`}>
                                             {currentOrder.currencyDetails.map((item, idx) => (
-                                                <div key={idx} className={`flex items-center justify-between px-5 py-3 transition-colors ${exchangeResult?.type === 'success' ? 'hover:bg-green-50/50' : 'hover:bg-indigo-50/40'}`}>
+                                                <div
+                                                    key={idx}
+                                                    className={`flex items-center justify-between px-5 py-3 transition-colors ${exchangeResult?.type === 'success' ? 'hover:bg-green-50/50' : 'hover:bg-indigo-50/40'}`}
+                                                >
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${exchangeResult?.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                                                        <div
+                                                            className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${exchangeResult?.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}
+                                                        >
                                                             {item.currency?.slice(0, 3) || '—'}
                                                         </div>
                                                         <div className="flex flex-col">
@@ -1447,8 +1458,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                         {isSaving ? 'Saving...' : 'Save'}
                     </button>
 
+                    <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />
                     {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />}
-                    {viewReceipt && <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />}
                 </div>
             </div>
 

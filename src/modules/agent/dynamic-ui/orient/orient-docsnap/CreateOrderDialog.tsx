@@ -221,8 +221,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         </label>
                         <div className="flex gap-4 mt-3">
                             {[
-                                { label: 'Card', value: 'card' },
                                 { label: 'Currency', value: 'currency' },
+                                { label: 'Card', value: 'card' },
                                 { label: 'TT', value: 'tt' },
                                 { label: 'TP', value: 'tp' }
                             ].map(type => {
@@ -273,6 +273,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             ]}
                             className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
                             placeholder="Select Purpose"
+                            position="top"
                         />
                         {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
                     </div>
@@ -295,6 +296,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 ]}
                                 className={`w-full ${errors.residentialStatus ? '[&>button]:border-red-500' : ''}`}
                                 placeholder="Select Residential Status"
+                                position="top"
                             />
                             {errors.residentialStatus && <p className="text-red-500 text-xs mt-1">{errors.residentialStatus}</p>}
                         </div>
