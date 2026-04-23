@@ -102,6 +102,13 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                 }
                 return user.firstName;
             };
+            const getBranchId = () => {
+                const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
+                if (user.lastName === 'superadmin') {
+                    return 43;
+                }
+                return Number(user.lastName);
+            };
 
             const newOrder: Order = {
                 orderDetails: {
@@ -112,7 +119,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     purpose,
                     residentialStatus,
                     branch: getBranchName(),
-                    branchId: 43,
+                    branchId: getBranchId(),
                     totalAmount: 0,
                     actualAmount: 0,
                     orderStatus: 'pending',
