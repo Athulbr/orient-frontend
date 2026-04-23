@@ -517,7 +517,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     body: JSON.stringify({
                         orderNumber: orderNumber,
                         templateId: agentSettings?.defaultTemplateId || '',
-                        templateName: agentSettings?.templates?.[0].name,
+                        templateName: agentSettings?.templates?.[0]?.name,
                         documents: payloadDocuments
                     })
                 });
