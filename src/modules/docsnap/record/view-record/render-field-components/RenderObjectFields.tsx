@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react';
+import { FC, useState } from 'react';
 import { InputField } from '../components/InputField';
 import { useViewRecordState } from '../hooks/viewRecordContext';
 import { formatFieldLabel } from '../utils';
@@ -36,6 +36,16 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                     };
                                 }
 
+                                const fields = state.record?.templateId?.fields;
+                                const field = fields?.find((item: any) => item.jsonKey === key);
+                                const subField = field?.subFields?.find((item: any) => item.jsonKey === subKey);
+
+                                const label = subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey);
+                                const showRegenButton = subField?.regenerateFieldValueWithAI || false;
+                                const validationUrl = subField?.validationUrl || '';
+                                const showTextarea = subField?.showTextarea || false;
+                                const isRequired = subField?.required || false;
+
                                 const onChange = (e: any) => {
                                     const newValue = e.target.value;
 
@@ -67,21 +77,6 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                 };
 
                                 // console.log('state.templateFields:===========', state.templateFields);
-
-                                const { label, showRegenButton, validationUrl, showTextarea, isRequired } = useMemo(() => {
-                                    const fields = state.record?.templateId?.fields;
-                                    let field = fields?.find((item: any) => item.jsonKey === key);
-
-                                    const subField = field?.subFields?.find((item: any) => item.jsonKey === subKey);
-
-                                    return {
-                                        label: subField?.name ? formatFieldLabel(subField.name) : formatFieldLabel(subKey),
-                                        showRegenButton: subField?.regenerateFieldValueWithAI || false,
-                                        validationUrl: subField?.validationUrl || '',
-                                        showTextarea: subField?.showTextarea || false,
-                                        isRequired: subField?.required || false
-                                    };
-                                }, [key, subKey]);
 
                                 // Check if this is the first field to render
                                 const currentIsFirstField = isFirstField;
