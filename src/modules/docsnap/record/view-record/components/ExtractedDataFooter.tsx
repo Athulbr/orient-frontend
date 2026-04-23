@@ -8,6 +8,8 @@ import { convertJSON } from '../../list-record/utils/convertJSON';
 import httpRequest from '../../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { config } from '../../../../../config/default';
+import { DialogComponent } from '../../../../../components/DialogComponent';
+import { useState } from 'react';
 interface ExtractedDataFooterIF {
     test?: string;
 }
@@ -17,6 +19,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
     const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument } = useViewRecordApi();
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
 
     // Validate that all required object sub-fields have a value before save/submit
     const validateRequiredFields = (): boolean => {
@@ -181,7 +184,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     </Button>
                 </Tooltip>
             )}
-            <Button disabled={reExtracting} onClick={() => navigate('/docsnap/record/list')} outlined small>
+            <Button disabled={reExtracting} onClick={() => setShowCancelDialog(true)} outlined small>
                 Cancel
             </Button>
             <Tooltip text="Save Updated Data">
@@ -201,6 +204,19 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             <Button data-tour-id="submit-button" disabled={reExtracting} onClick={handleSubmit} outlined small>
                 Submit
             </Button>
+            <DialogComponent
+                name="Discard changes?"
+                isOpen={showCancelDialog}
+                closeDialog={() => setShowCancelDialog(false)}
+                primaryButtonText="Leave"
+                secondaryButtonText="Stay"
+                onPrimaryAction={() => navigate('/docsnap/record/list')}
+                onSecondaryAction={() => setShowCancelDialog(false)}
+            >
+                <div className="px-8 py-6 text-sm text-gray-700">
+                    Your changes won&apos;t be saved.
+                </div>
+            </DialogComponent>
         </div>
     );
 };
