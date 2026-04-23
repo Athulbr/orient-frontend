@@ -119,9 +119,9 @@ export default function ImagesTab() {
                                         {/* <button className="flex items-center gap-1 px-2.5 py-1.5 border border-blue-200 rounded text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors bg-white">
                                             <Download size={13} /> Drag
                                         </button> */}
-                                        <button className="flex items-center gap-1 px-2.5 py-1.5 border border-blue-200 rounded text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors bg-white">
+                                        {/* <button className="flex items-center gap-1 px-2.5 py-1.5 border border-blue-200 rounded text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors bg-white">
                                             <Copy size={13} /> Copy
-                                        </button>
+                                        </button> */}
                                         <button 
                                             onClick={() => {
                                                 setSelectedImage(img);

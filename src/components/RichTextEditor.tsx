@@ -238,6 +238,45 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             editorEl.addEventListener('mouseover', showTooltip);
             editorEl.addEventListener('mousemove', moveTooltip);
             editorEl.addEventListener('mouseleave', hideTooltip);
+
+            // ── Drag and Drop replacement for dummy images ────────────────────
+            // Utilizing Jodit's native event hooks so we can return false to cancel its own internal dom pasting entirely
+            if (joditInstance.events && typeof joditInstance.events.on === 'function') {
+                joditInstance.events.on('drop', (e: DragEvent) => {
+                    const target = e.target as Element;
+                    if (target && target.tagName === 'IMG') {
+                        const currentSrc = target.getAttribute('src') || '';
+                        if (currentSrc.includes('placehold.co')) {
+                            const html = e.dataTransfer?.getData('text/html');
+                            if (html) {
+                                const tmp = document.createElement('div');
+                                tmp.innerHTML = html;
+                                const img = tmp.querySelector('img');
+                                if (img && img.src) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    
+                                    target.setAttribute('src', img.src);
+                                    
+                                    target.removeAttribute('width');
+                                    target.removeAttribute('height');
+                                    (target as HTMLElement).style.width = '100%';
+                                    (target as HTMLElement).style.minHeight = '';
+                                    
+                                    if (typeof joditInstance.setEditorValue === 'function') {
+                                        joditInstance.setEditorValue();
+                                    } else {
+                                        joditInstance.value = editorEl.innerHTML;
+                                    }
+                                    
+                                    // Kill Jodit's default insertion logic by explicitly returning false 
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         };
 
         if (joditInstance.isReady) {
