@@ -6,14 +6,14 @@ import { config } from '../../../config/default';
 import FullScreenLoader from '../../../components/FullScreenLoader';
 
 const RunAgentPage: React.FC = () => {
-    const { id } = useParams();
+    const { name } = useParams();
     const [workflow, setWorkflow] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchWorkflow = async () => {
             try {
-                const data = await httpRequest('GET', `${config.workflowService}/api/workflows/${id}`);
+                const data = await httpRequest('GET', `${config.workflowService}/api/workflows/name/${name}`);
                 setWorkflow(data.data);
             } catch (error) {
                 console.error('Error fetching workflow:', error);
@@ -22,12 +22,12 @@ const RunAgentPage: React.FC = () => {
             }
         };
 
-        if (id) {
+        if (name) {
             fetchWorkflow();
         } else {
             setLoading(false);
         }
-    }, [id]);
+    }, [name]);
 
     // console.log('workflow:===========', workflow);
 

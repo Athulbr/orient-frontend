@@ -163,7 +163,7 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                 window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
-                window?.location?.replace('/agent/run/69d8a4a44b70be3183199d42');
+                window?.location?.replace('/agent/run/Orient Document Extractor V1');
             } else {
                 setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.', oAuthLoading: false }));
             }

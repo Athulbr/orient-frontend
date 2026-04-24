@@ -96,6 +96,13 @@ interface DragState {
 
 // ── Defaults ───────────────────────────────────────────────────────────────
 
+const generateId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 const DEFAULT_SETTINGS: TemplateSettings = {
     llmProvider: 'gemini',
     llmModel: 'gemini-2.5-flash',
@@ -106,7 +113,7 @@ const DEFAULT_SETTINGS: TemplateSettings = {
 };
 
 const DEFAULT_FIELD = (): Field => ({
-    id: crypto.randomUUID(),
+    id: generateId(),
     key: 'new_field',
     instruction: '',
     label: 'New Field',
@@ -120,7 +127,7 @@ const DEFAULT_FIELD = (): Field => ({
 });
 
 const DEFAULT_GROUP = (): Section => ({
-    id: crypto.randomUUID(),
+    id: generateId(),
     type: 'group',
     key: 'new_group',
     label: 'New Group',
@@ -129,7 +136,7 @@ const DEFAULT_GROUP = (): Section => ({
 });
 
 const DEFAULT_TABLE = (): Section => ({
-    id: crypto.randomUUID(),
+    id: generateId(),
     type: 'table',
     key: 'new_table',
     label: 'New Table',
@@ -509,7 +516,10 @@ function FieldSettingsPanel({ field, sectionId, onUpdate, onClose }: FieldSettin
                     <div className="flex items-center justify-between">
                         <FieldLabel>Allowed Values</FieldLabel>
                         {field.enums && field.enums.length > 0 && (
-                            <button onClick={handleRemoveAllEnums} className="text-[11px] text-red-500 hover:text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 mb-1.5 transition-colors font-medium">
+                            <button
+                                onClick={handleRemoveAllEnums}
+                                className="text-[11px] text-red-500 hover:text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 mb-1.5 transition-colors font-medium"
+                            >
                                 Remove All
                             </button>
                         )}

@@ -12,7 +12,7 @@ const AgentRoutes = () => {
     return (
         <Routes>
             <Route path="list" element={<ListAgentPage />} />
-            <Route path="run/:id" element={<RunAgentPage />} />
+            <Route path="run/:name" element={<RunAgentPage />} />
             <Route path="/:id" element={<ViewAgentPage />} />
             <Route path="template/list" element={<ListAgentTemplatePage />} />
             <Route path="template/create" element={<ViewAgentTemplatePage isCreate={true} />} />
