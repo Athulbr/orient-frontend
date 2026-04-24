@@ -95,6 +95,21 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             const timestamp = now.getTime().toString().slice(-6);
             const orderNumber = Number(`${year}${month}${day}${timestamp}`);
 
+            const getBranchName = () => {
+                const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
+                if (user.firstName === 'sam') {
+                    return 'Makez';
+                }
+                return user.firstName;
+            };
+            const getBranchId = () => {
+                const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
+                if (user.lastName === 'superadmin') {
+                    return 43;
+                }
+                return Number(user.lastName);
+            };
+
             const newOrder: Order = {
                 orderDetails: {
                     orderId,
@@ -103,8 +118,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
                     residentialStatus,
-                    branch: 'Bangalore-Whitefield',
-                    branchId: 43,
+                    branch: getBranchName(),
+                    branchId: getBranchId(),
                     totalAmount: 0,
                     actualAmount: 0,
                     orderStatus: 'pending',

@@ -8,7 +8,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 export interface AgentSettings {
     webhookUrl?: string;
     defaultTemplateId?: string;
-    templates?: {name: string, description: string}[];
+    templates?: { name: string; description: string }[];
     [key: string]: unknown;
 }
 
@@ -75,10 +75,14 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
     // ── Refs for SSE callbacks (avoid stale closures — #1, #16) ──
     const ordersRef = useRef(orders);
-    useEffect(() => { ordersRef.current = orders; }, [orders]);
+    useEffect(() => {
+        ordersRef.current = orders;
+    }, [orders]);
 
     const emailsRef = useRef(emails);
-    useEffect(() => { emailsRef.current = emails; }, [emails]);
+    useEffect(() => {
+        emailsRef.current = emails;
+    }, [emails]);
 
     // ── Fetch emails once ──
     useEffect(() => {
@@ -144,20 +148,23 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     );
 
     // ── Delete order (#7 — now checks response) (#17 — toast on error) ──
-    const handleDeleteOrder = useCallback(async (orderNumber: number) => {
-        try {
-            const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, { method: 'DELETE' });
-            if (!res.ok) {
-                toast.error(`Failed to delete order. Status: ${res.status}`);
-                return;
+    const handleDeleteOrder = useCallback(
+        async (orderNumber: number) => {
+            try {
+                const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    toast.error(`Failed to delete order. Status: ${res.status}`);
+                    return;
+                }
+                setOrders(prev => prev.filter(o => o.orderDetails.orderNumber !== orderNumber));
+                toast.success('Order deleted successfully');
+            } catch (err) {
+                console.error('Failed to delete order', err);
+                toast.error('Failed to delete order');
             }
-            setOrders(prev => prev.filter(o => o.orderDetails.orderNumber !== orderNumber));
-            toast.success('Order deleted successfully');
-        } catch (err) {
-            console.error('Failed to delete order', err);
-            toast.error('Failed to delete order');
-        }
-    }, [toast]);
+        },
+        [toast]
+    );
 
     // ── Link email (#1 — functional updater, #18 — loading, #23 — rollback) ──
     const handleLinkEmail = useCallback(
@@ -166,13 +173,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             setLinkingEmails(prev => ({ ...prev, [linkKey]: true }));
 
             // Optimistic update
-            setOrders(prev =>
-                prev.map(o =>
-                    o.orderDetails.orderNumber === orderNumber
-                        ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] }
-                        : o
-                )
-            );
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] } : o)));
 
             try {
                 const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
@@ -203,7 +204,9 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                 const emailDetail = await emailDetailRes.json();
                                 setEmails(prev => [...prev, emailDetail]);
                             }
-                        } catch { /* non-critical — email will load on next page refresh */ }
+                        } catch {
+                            /* non-critical — email will load on next page refresh */
+                        }
                     }
 
                     toast.success('Email linked successfully');
@@ -212,13 +215,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 console.error('Failed to link email', err);
                 toast.error('Failed to link email');
                 // Rollback (#23)
-                setOrders(prev =>
-                    prev.map(o =>
-                        o.orderDetails.orderNumber === orderNumber
-                            ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) }
-                            : o
-                    )
-                );
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
             } finally {
                 setLinkingEmails(prev => {
                     const next = { ...prev };
@@ -240,13 +237,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const prevLinkedIds = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber)?.linkedEmailIds || [];
 
             // Optimistic update
-            setOrders(prev =>
-                prev.map(o =>
-                    o.orderDetails.orderNumber === orderNumber
-                        ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) }
-                        : o
-                )
-            );
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
 
             try {
                 const linkedEmailIds = prevLinkedIds.filter(id => id !== emailId);
@@ -268,22 +259,14 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 }
 
                 // Update local email cache to clear orderNumber so it shows as unlinked
-                setEmails(prev =>
-                    prev.map(e => e.emailId === emailId ? { ...e, orderNumber: undefined } : e)
-                );
+                setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, orderNumber: undefined } : e)));
 
                 toast.success('Email unlinked');
             } catch (err) {
                 console.error('Failed to unlink email', err);
                 toast.error('Failed to unlink email');
                 // Rollback (#23)
-                setOrders(prev =>
-                    prev.map(o =>
-                        o.orderDetails.orderNumber === orderNumber
-                            ? { ...o, linkedEmailIds: prevLinkedIds }
-                            : o
-                    )
-                );
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: prevLinkedIds } : o)));
             } finally {
                 setLinkingEmails(prev => {
                     const next = { ...prev };
@@ -362,13 +345,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                         const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
                                         const updatedManualDocuments = [...(currentOrder?.manualDocuments || []), ...newDocs];
 
-                                        setOrders(prev =>
-                                            prev.map(o =>
-                                                o.orderDetails.orderNumber === orderNumber
-                                                    ? { ...o, manualDocuments: updatedManualDocuments }
-                                                    : o
-                                            )
-                                        );
+                                        setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
 
                                         await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                                             method: 'PUT',
@@ -413,13 +390,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const prevDocs = order.manualDocuments;
             const updatedManualDocuments = order.manualDocuments.filter((_, i) => i !== fileIndex);
 
-            setOrders(prev =>
-                prev.map(o =>
-                    o.orderDetails.orderNumber === orderNumber
-                        ? { ...o, manualDocuments: updatedManualDocuments }
-                        : o
-                )
-            );
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
 
             try {
                 const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
@@ -432,13 +403,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 console.error('Failed to remove manual document', err);
                 toast.error('Failed to remove document');
                 // Rollback
-                setOrders(prev =>
-                    prev.map(o =>
-                        o.orderDetails.orderNumber === orderNumber
-                            ? { ...o, manualDocuments: prevDocs }
-                            : o
-                    )
-                );
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: prevDocs } : o)));
             }
         },
         [toast]
@@ -453,13 +418,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const prevDocs = order.webDocuments;
             const updatedWebDocuments = order.webDocuments.filter((_, i) => i !== fileIndex);
 
-            setOrders(prev =>
-                prev.map(o =>
-                    o.orderDetails.orderNumber === orderNumber
-                        ? { ...o, webDocuments: updatedWebDocuments }
-                        : o
-                )
-            );
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, webDocuments: updatedWebDocuments } : o)));
 
             try {
                 const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
@@ -472,13 +431,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 console.error('Failed to remove web document', err);
                 toast.error('Failed to remove document');
                 // Rollback
-                setOrders(prev =>
-                    prev.map(o =>
-                        o.orderDetails.orderNumber === orderNumber
-                            ? { ...o, webDocuments: prevDocs }
-                            : o
-                    )
-                );
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, webDocuments: prevDocs } : o)));
             }
         },
         [toast]
@@ -493,11 +446,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const prevAttachments = email.attachments;
             const updatedAttachments = email.attachments.filter((_, i) => i !== fileIndex);
 
-            setEmails(prev =>
-                prev.map(e =>
-                    e.emailId === emailId ? { ...e, attachments: updatedAttachments } : e
-                )
-            );
+            setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, attachments: updatedAttachments } : e)));
 
             try {
                 const res = await fetch(`${config.workflowService}/api/emails/${emailId}`, {
@@ -510,11 +459,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 console.error('Failed to remove email document', err);
                 toast.error('Failed to remove email document');
                 // Rollback
-                setEmails(prev =>
-                    prev.map(e =>
-                        e.emailId === emailId ? { ...e, attachments: prevAttachments } : e
-                    )
-                );
+                setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, attachments: prevAttachments } : e)));
             }
         },
         [toast]
@@ -531,8 +476,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const linkedEmails = getLinkedEmails(order);
             const actualEmailDocuments = linkedEmails.flatMap(email =>
                 (email.attachments || []).map((att: any) => ({
-                    documentName: att.documentName || att.name || '',
-                    documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
+                    documentName: att.documentName || att?.name || '',
+                    documentPages: att.documentPages || att?.pages || (att.url ? [att.url] : [])
                 }))
             );
 
@@ -572,7 +517,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     body: JSON.stringify({
                         orderNumber: orderNumber,
                         templateId: agentSettings?.defaultTemplateId || '',
-                        templateName: agentSettings?.templates?.[0].name,
+                        templateName: agentSettings?.templates?.[0]?.name,
                         documents: payloadDocuments
                     })
                 });
@@ -615,8 +560,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                         const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
                                         const updateDetails = {
                                             orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
-                                            extractionDetails: { 
-                                                extractedData: finalData.extractedData, 
+                                            extractionDetails: {
+                                                extractedData: finalData.extractedData,
                                                 recordId: finalData.recordId,
                                                 templateId: agentSettings?.defaultTemplateId || '',
                                                 templateName: agentSettings?.templates?.[0]?.name
@@ -701,11 +646,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 });
                 if (response.ok) {
                     // #4 — functional updater
-                    setOrders(prev =>
-                        prev.map(o =>
-                            o.orderDetails.orderNumber === updatedOrder.orderDetails.orderNumber ? updatedOrder : o
-                        )
-                    );
+                    setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === updatedOrder.orderDetails.orderNumber ? updatedOrder : o)));
                     toast.success('Order updated successfully');
                 } else {
                     toast.error(`Failed to update order. Status: ${response.status}`);
@@ -742,6 +683,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         getLinkedEmails,
         setOrders,
         setTotalPages,
-        setTotalCount,
+        setTotalCount
     };
 }
