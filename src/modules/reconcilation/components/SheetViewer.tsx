@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import '../styles/SheetViewer.css';
+import styles from '../styles/SheetViewer.module.css';
+import { cx } from '../utils/cx';
 
 interface SheetMetadata {
   [sheetName: string]: {
@@ -21,8 +22,8 @@ const SheetViewer: React.FC<SheetViewerProps> = ({ fileName, sheets }) => {
 
   if (!selectedSheet || !sheets[selectedSheet]) {
     return (
-      <div className="sheet-viewer">
-        <p className="sheet-empty">No sheets available</p>
+      <div className={styles['sheet-viewer']}>
+        <p className={styles['sheet-empty']}>No sheets available</p>
       </div>
     );
   }
@@ -31,38 +32,38 @@ const SheetViewer: React.FC<SheetViewerProps> = ({ fileName, sheets }) => {
   const sheetNames = Object.keys(sheets);
 
   return (
-    <div className="sheet-viewer">
-      <div className="sheet-viewer-header">
-        <span className="sheet-file-name">{fileName}</span>
-        <div className="sheet-meta">
+    <div className={styles['sheet-viewer']}>
+      <div className={styles['sheet-viewer-header']}>
+        <span className={styles['sheet-file-name']}>{fileName}</span>
+        <div className={styles['sheet-meta']}>
           <span>{sheetData.rows} rows</span>
-          <span className="sheet-meta-sep">·</span>
+          <span className={styles['sheet-meta-sep']}>·</span>
           <span>{sheetData.columns} columns</span>
         </div>
       </div>
 
-      <div className="sheet-tabs">
+      <div className={styles['sheet-tabs']}>
         {sheetNames.map((name) => (
           <button
             key={name}
-            className={`sheet-tab${selectedSheet === name ? ' active' : ''}`}
+            className={cx(styles['sheet-tab'], selectedSheet === name && styles['active'])}
             onClick={() => setSelectedSheet(name)}
           >
-            <span className="sheet-tab-name">{name}</span>
-            <span className="sheet-tab-count">
+            <span className={styles['sheet-tab-name']}>{name}</span>
+            <span className={styles['sheet-tab-count']}>
               {sheets[name].rows} × {sheets[name].columns}
             </span>
           </button>
         ))}
       </div>
 
-      <div className="sheet-columns">
-        <div className="sheet-columns-title">Columns</div>
-        <div className="sheet-columns-grid">
+      <div className={styles['sheet-columns']}>
+        <div className={styles['sheet-columns-title']}>Columns</div>
+        <div className={styles['sheet-columns-grid']}>
           {sheetData.column_names.map((col, idx) => (
-            <div key={idx} className="sheet-column-item">
-              <span className="sheet-column-index">{idx + 1}</span>
-              <span className="sheet-column-name">{col}</span>
+            <div key={idx} className={styles['sheet-column-item']}>
+              <span className={styles['sheet-column-index']}>{idx + 1}</span>
+              <span className={styles['sheet-column-name']}>{col}</span>
             </div>
           ))}
         </div>

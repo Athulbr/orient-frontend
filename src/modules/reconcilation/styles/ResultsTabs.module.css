@@ -17,9 +17,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.tabs-list::-webkit-scrollbar { height: 3px; }
-.tabs-list::-webkit-scrollbar-track { background: #f0f0f0; }
-.tabs-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
 
 .tab-button {
   flex: 1;

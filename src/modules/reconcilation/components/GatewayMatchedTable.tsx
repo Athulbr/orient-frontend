@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import '../styles/DataTable.css';
-import '../styles/GatewayTable.css';
+import dtStyles from '../styles/DataTable.module.css';
+import gwStyles from '../styles/GatewayTable.module.css';
+import { cx } from '../utils/cx';
+
+// Merge both module style objects so we can reference all classes via `s`
+const s = { ...dtStyles, ...gwStyles };
 
 interface GatewayMatchedRecord {
   'Match Method': string;
@@ -31,9 +35,9 @@ const GatewayMatchedTable: React.FC<GatewayMatchedTableProps> = ({ data }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="table-empty">
+      <div className={s['table-empty']}>
         <p>No gateway matched records found</p>
-        <p className="subtitle">Matched gateway UTR entries will appear here after reconciliation</p>
+        <p className={s['subtitle']}>Matched gateway UTR entries will appear here after reconciliation</p>
       </div>
     );
   }
@@ -49,9 +53,9 @@ const GatewayMatchedTable: React.FC<GatewayMatchedTableProps> = ({ data }) => {
 
   const gateways = Array.from(new Set(data.map(r => r['Gateway'] || r['Match Method'])));
   const counts: Record<string, number> = {
-    all:     data.length,
-    match:   data.filter(r => r['Name Match'] === 'Match').length,
-    mismatch:data.filter(r => r['Name Match'] !== 'Match').length,
+    all:      data.length,
+    match:    data.filter(r => r['Name Match'] === 'Match').length,
+    mismatch: data.filter(r => r['Name Match'] !== 'Match').length,
     ...Object.fromEntries(gateways.map(g => [g, data.filter(r => (r['Gateway'] || r['Match Method']) === g).length])),
   };
 
@@ -72,25 +76,28 @@ const GatewayMatchedTable: React.FC<GatewayMatchedTableProps> = ({ data }) => {
 
   // Group totals for header
   const gwTotals = gateways.map(g => ({
-    name:    g,
-    count:   data.filter(r => (r['Gateway'] || r['Match Method']) === g).length,
-    net:     data.filter(r => (r['Gateway'] || r['Match Method']) === g)
-               .reduce((s, r) => s + (r['Book Amt (Rs)'] || 0), 0),
-    bank:    data.filter(r => (r['Gateway'] || r['Match Method']) === g)
-               .reduce((s, r) => s + (r['Bank Amt (Rs)'] || 0), 0),
+    name:  g,
+    count: data.filter(r => (r['Gateway'] || r['Match Method']) === g).length,
+    net:   data.filter(r => (r['Gateway'] || r['Match Method']) === g)
+               .reduce((sum, r) => sum + (r['Book Amt (Rs)'] || 0), 0),
+    bank:  data.filter(r => (r['Gateway'] || r['Match Method']) === g)
+               .reduce((sum, r) => sum + (r['Bank Amt (Rs)'] || 0), 0),
   }));
 
   return (
-    <div className="table-container">
+    <div className={s['table-container']}>
       {/* Gateway totals strip */}
-      <div className="gw-totals-strip">
+      <div className={s['gw-totals-strip']}>
         {gwTotals.map(gw => (
-          <div key={gw.name} className="gw-total-card"
-            style={{ borderLeftColor: GW_COLORS[gw.name] || '#e5e7eb' }}>
-            <span className="gw-total-name">{gw.name}</span>
-            <span className="gw-total-count">{gw.count} UTRs</span>
-            <span className="gw-total-amt">Net ₹{fmtAmt(gw.net)}</span>
-            <span className={`gw-total-diff ${Math.abs(gw.net - gw.bank) < 1 ? 'gw-ok' : 'gw-err'}`}>
+          <div
+            key={gw.name}
+            className={s['gw-total-card']}
+            style={{ borderLeftColor: GW_COLORS[gw.name] || '#e5e7eb' }}
+          >
+            <span className={s['gw-total-name']}>{gw.name}</span>
+            <span className={s['gw-total-count']}>{gw.count} UTRs</span>
+            <span className={s['gw-total-amt']}>Net ₹{fmtAmt(gw.net)}</span>
+            <span className={cx(s['gw-total-diff'], Math.abs(gw.net - gw.bank) < 1 ? s['gw-ok'] : s['gw-err'])}>
               {Math.abs(gw.net - gw.bank) < 1 ? '✓ Match' : `Diff ₹${fmtAmt(Math.abs(gw.net - gw.bank))}`}
             </span>
           </div>
@@ -98,23 +105,25 @@ const GatewayMatchedTable: React.FC<GatewayMatchedTableProps> = ({ data }) => {
       </div>
 
       {/* Filter bar */}
-      <div className="filter-bar">
+      <div className={s['filter-bar']}>
         {[
-          { key:'all',      label:`All (${counts.all})` },
-          { key:'match',    label:`Match (${counts.match})` },
-          { key:'mismatch', label:`Mismatch (${counts.mismatch})` },
-          ...gateways.map(g => ({ key:g, label:`${g} (${counts[g] || 0})` })),
+          { key: 'all',      label: `All (${counts.all})` },
+          { key: 'match',    label: `Match (${counts.match})` },
+          { key: 'mismatch', label: `Mismatch (${counts.mismatch})` },
+          ...gateways.map(g => ({ key: g, label: `${g} (${counts[g] || 0})` })),
         ].map(f => (
-          <button key={f.key}
-            className={`filter-btn${filter === f.key ? ' active' : ''}`}
-            onClick={() => handleFilter(f.key)}>
+          <button
+            key={f.key}
+            className={cx(s['filter-btn'], filter === f.key && s['active'])}
+            onClick={() => handleFilter(f.key)}
+          >
             {f.label}
           </button>
         ))}
       </div>
 
-      <div className="table-scroll">
-        <table className="data-table">
+      <div className={s['table-scroll']}>
+        <table className={s['data-table']}>
           <thead>
             <tr>
               <th>Gateway</th>
@@ -136,26 +145,28 @@ const GatewayMatchedTable: React.FC<GatewayMatchedTableProps> = ({ data }) => {
               const isMatch = record['Name Match'] === 'Match';
               const diff    = record['Difference (Rs)'];
               return (
-                <tr key={idx}
-                  className={`data-row ${isMatch ? 'row-pending' : 'row-unrecorded'}`}
-                  style={{ '--gw-color': gwColor } as React.CSSProperties}>
+                <tr
+                  key={idx}
+                  className={cx(s['data-row'], isMatch ? s['row-pending'] : s['row-unrecorded'])}
+                  style={{ '--gw-color': gwColor } as React.CSSProperties}
+                >
                   <td>
-                    <span className="gw-badge" style={{ background: gwColor }}>
+                    <span className={s['gw-badge']} style={{ background: gwColor }}>
                       {gwName}
                     </span>
                   </td>
-                  <td className="cell-mono gw-utr">{record['UTR'] || record['Bank Party']}</td>
-                  <td className="cell-method">{record['Credit Type']}</td>
-                  <td className="cell-amount">{fmtAmt(record['Book Amt (Rs)'])}</td>
-                  <td className="cell-amount">{fmtAmt(record['Gross'] || 0)}</td>
-                  <td className="cell-amount gw-fees">{fmtAmt(record['Fees'] || 0)}</td>
-                  <td className="cell-amount gw-tax">{fmtAmt(record['Tax'] || 0)}</td>
-                  <td className="cell-amount">{fmtAmt(record['Bank Amt (Rs)'])}</td>
-                  <td className={`cell-amount ${Math.abs(diff) < 1 ? 'diff-zero' : 'diff-nonzero'}`}>
+                  <td className={cx(s['cell-mono'], s['gw-utr'])}>{record['UTR'] || record['Bank Party']}</td>
+                  <td className={s['cell-method']}>{record['Credit Type']}</td>
+                  <td className={s['cell-amount']}>{fmtAmt(record['Book Amt (Rs)'])}</td>
+                  <td className={s['cell-amount']}>{fmtAmt(record['Gross'] || 0)}</td>
+                  <td className={cx(s['cell-amount'], s['gw-fees'])}>{fmtAmt(record['Fees'] || 0)}</td>
+                  <td className={cx(s['cell-amount'], s['gw-tax'])}>{fmtAmt(record['Tax'] || 0)}</td>
+                  <td className={s['cell-amount']}>{fmtAmt(record['Bank Amt (Rs)'])}</td>
+                  <td className={cx(s['cell-amount'], Math.abs(diff) < 1 ? s['diff-zero'] : s['diff-nonzero'])}>
                     {Math.abs(diff) < 1 ? '—' : Number(diff).toLocaleString('en-IN', { minimumFractionDigits: 2, signDisplay: 'always' })}
                   </td>
                   <td>
-                    <span className={`badge ${isMatch ? 'badge-success' : 'badge-danger'}`}>
+                    <span className={cx(s['badge'], isMatch ? s['badge-success'] : s['badge-danger'])}>
                       {isMatch ? 'Match' : record['Flags'] || 'Mismatch'}
                     </span>
                   </td>
@@ -166,15 +177,15 @@ const GatewayMatchedTable: React.FC<GatewayMatchedTableProps> = ({ data }) => {
         </table>
       </div>
 
-      <div className="table-footer">
-        <span className="table-count">
+      <div className={s['table-footer']}>
+        <span className={s['table-count']}>
           Showing {page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, filtered.length)} of {filtered.length} records
         </span>
         {totalPages > 1 && (
-          <div className="pagination">
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
-            <span className="page-info">Page {page + 1} of {totalPages}</span>
-            <button className="page-btn" disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
+          <div className={s['pagination']}>
+            <button className={s['page-btn']} disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
+            <span className={s['page-info']}>Page {page + 1} of {totalPages}</span>
+            <button className={s['page-btn']} disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
           </div>
         )}
       </div>

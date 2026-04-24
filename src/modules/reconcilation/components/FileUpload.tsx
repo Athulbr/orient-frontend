@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import '../styles/FileUpload.css';
+import styles from '../styles/FileUpload.module.css';
+import { cx } from '../utils/cx';
 
 export type ReconType = 'bank' | 'qr' | 'gateway';
 
@@ -10,7 +11,6 @@ interface FileUploadProps {
     prevBrsFile: File | null,
     reconType: ReconType,
     hotBookFile?: File | null,
-    // gateway extras
     payuOdFiles?: File[],
     cashfreeFile?: File | null,
     easebuzzFile?: File | null,
@@ -19,10 +19,9 @@ interface FileUploadProps {
   isLoading: boolean;
 }
 
-const VALID_EXT      = ['.xlsx', '.xls', '.csv'];
-const VALID_EXT_PDF  = ['.xlsx', '.xls', '.csv', '.pdf'];
+const VALID_EXT     = ['.xlsx', '.xls', '.csv'];
+const VALID_EXT_PDF = ['.xlsx', '.xls', '.csv', '.pdf'];
 
-// ── Slot renderer helper types ────────────────────────────────────────────────
 interface SlotConfig {
   id: string;
   label: string;
@@ -37,22 +36,29 @@ interface SlotConfig {
   icon?: string;
 }
 
+const TYPE_META: Record<ReconType, { icon: string; label: string; desc: string; files: string }> = {
+  bank:    { icon: '', label: 'Bank Reconciliation',       desc: 'Standard bank statement — HDFC, Axis, SBI, ICICI, IndusInd, etc.', files: '3 required' },
+  qr:      { icon: '', label: 'QR Gateway Reconciliation', desc: 'HDFC QR gateway transaction report — SaleSuccess UPI transactions.', files: '4 required' },
+  gateway: { icon: '', label: 'Gateway YES Bank',          desc: 'PayU / CashFree / EaseBuzz settlements vs YES Bank statement.',     files: '8 required' },
+};
+
 const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
   const [reconType,    setReconType]   = useState<ReconType | null>(null);
+  // step1Open = true means type-selector is expanded; false = collapsed (showing summary)
+  const [step1Open,    setStep1Open]   = useState(true);
+
   const [bookFile,     setBookFile]    = useState<File | null>(null);
   const [hotBookFile,  setHotBookFile] = useState<File | null>(null);
   const [statFile,     setStatFile]    = useState<File | null>(null);
   const [prevBrsFile,  setPrevFile]    = useState<File | null>(null);
-  // Gateway extras
   const [payuFile,     setPayuFile]    = useState<File | null>(null);
   const [payuOdFiles,  setPayuOdFiles] = useState<File[]>([]);
   const [cashfreeFile, setCashfree]    = useState<File | null>(null);
   const [easebuzzFile, setEasebuzz]    = useState<File | null>(null);
 
-  const [errors,    setErrors]    = useState<string[]>([]);
-  const [dragOver,  setDragOver]  = useState<string | null>(null);
+  const [errors,   setErrors]   = useState<string[]>([]);
+  const [dragOver, setDragOver] = useState<string | null>(null);
 
-  // Refs
   const bookRef     = useRef<HTMLInputElement>(null);
   const hotBookRef  = useRef<HTMLInputElement>(null);
   const stmtRef     = useRef<HTMLInputElement>(null);
@@ -78,6 +84,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     setBookFile(null); setHotBookFile(null); setStatFile(null); setPrevFile(null);
     setPayuFile(null); setPayuOdFiles([]); setCashfree(null); setEasebuzz(null);
     setErrors([]);
+    // collapse step 1, open step 2
+    setStep1Open(false);
   };
 
   const handleDrop = (e: React.DragEvent, slot: string) => {
@@ -99,29 +107,21 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
       if (!bookFile) errs.push('Book Report is required.');
       if (!statFile) errs.push('Bank Statement is required.');
     } else if (reconType === 'qr') {
-      if (!bookFile)   errs.push('All-Branches Book Report is required.');
+      if (!bookFile)    errs.push('All-Branches Book Report is required.');
       if (!hotBookFile) errs.push('HOT Book Report is required.');
-      if (!statFile)   errs.push('QR Statement is required.');
+      if (!statFile)    errs.push('QR Statement is required.');
     } else if (reconType === 'gateway') {
-      if (!bookFile)  errs.push('All-Branches Book is required.');
+      if (!bookFile)    errs.push('All-Branches Book is required.');
       if (!hotBookFile) errs.push('HOT Book is required.');
-      if (!statFile)  errs.push('YES Bank Statement (PDF) is required.');
-      if (!payuFile)  errs.push('PayU Regular report is required.');
+      if (!statFile)    errs.push('YES Bank Statement (PDF) is required.');
+      if (!payuFile)    errs.push('PayU Regular report is required.');
     }
     if (errs.length) { setErrors(errs); return; }
     setErrors([]);
-    onUpload(
-      bookFile!, statFile!, prevBrsFile, reconType!,
-      hotBookFile,
-      payuOdFiles.length > 0 ? payuOdFiles : [],
-      cashfreeFile,
-      easebuzzFile,
-      payuFile,
-    );
+    onUpload(bookFile!, statFile!, prevBrsFile, reconType!, hotBookFile,
+      payuOdFiles.length > 0 ? payuOdFiles : [], cashfreeFile, easebuzzFile, payuFile);
   };
 
-  const isQR      = reconType === 'qr';
-  const isGateway = reconType === 'gateway';
   const canSubmit = reconType && !isLoading && (() => {
     if (reconType === 'bank')    return !!bookFile && !!statFile;
     if (reconType === 'qr')     return !!bookFile && !!hotBookFile && !!statFile;
@@ -129,50 +129,47 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     return false;
   })();
 
-  // ── Slot renderer ─────────────────────────────────────────────────────────
+  // ── Slot renderer ──────────────────────────────────────────────────────────
   const renderSlot = (cfg: SlotConfig) => {
     const { id, label, sublabel, ref, file, onFile, onClear,
-            required = true, accent, accept = '.xlsx,.xls,.csv', icon = '📄' } = cfg;
+            required = true, accent, accept = '.xlsx,.xls,.csv' } = cfg;
     const isDragging = dragOver === id;
     return (
       <div
         key={id}
-        className={[
-          'upload-slot',
-          isDragging         ? 'upload-slot--drag'    : '',
-          file               ? 'upload-slot--filled'  : '',
-          accent && file     ? `upload-slot--${accent}` : '',
-        ].filter(Boolean).join(' ')}
+        className={cx(
+          styles['upload-slot'],
+          isDragging     && styles['upload-slot--drag'],
+          file           && styles['upload-slot--filled'],
+          accent && file && styles[`upload-slot--${accent}`],
+        )}
         onDragOver={e => { e.preventDefault(); setDragOver(id); }}
         onDragLeave={() => setDragOver(null)}
         onDrop={e => handleDrop(e, id)}
         onClick={() => !isLoading && !file && ref.current?.click()}
       >
-        <input ref={ref} type="file" accept={accept} className="file-input"
+        <input ref={ref} type="file" accept={accept} className={styles['file-input']}
           disabled={isLoading}
-          onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ''; }}
-        />
+          onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ''; }} />
         {!file ? (
-          <div className="slot-empty">
-            <div className="slot-icon">{icon}</div>
-            <div className="slot-text">
-              <p className="slot-label">
+          <div className={styles['slot-empty']}>
+            <div className={styles['slot-text']}>
+              <p className={styles['slot-label']}>
                 {label}
-                {!required && <span className="slot-optional">Optional</span>}
               </p>
-              <p className="slot-sub">{sublabel}</p>
-              <p className="slot-formats">{accept.split(',').join(' · ')}</p>
+              <p className={styles['slot-sub']}>{sublabel}</p>
+              <p className={styles['slot-formats']}>{accept.split(',').join(' · ')}</p>
             </div>
-            <div className="slot-cta">Click or drag file here</div>
+            <div className={styles['slot-cta']}>Click or drag file here</div>
           </div>
         ) : (
-          <div className="slot-filled" onClick={e => e.stopPropagation()}>
-            <div className="slot-filled-icon">✓</div>
-            <div className="slot-filled-info">
-              <p className="slot-filled-label">{label}</p>
-              <p className="slot-filled-name" title={file.name}>{file.name}</p>
+          <div className={styles['slot-filled']} onClick={e => e.stopPropagation()}>
+            <div className={styles['slot-filled-icon']}></div>
+            <div className={styles['slot-filled-info']}>
+              <p className={styles['slot-filled-label']}>{label}</p>
+              <p className={styles['slot-filled-name']} title={file.name}>{file.name}</p>
             </div>
-            <button className="slot-remove" disabled={isLoading}
+            <button className={styles['slot-remove']} disabled={isLoading}
               onClick={e => { e.stopPropagation(); onClear(); }} aria-label="Remove file">✕</button>
           </div>
         )}
@@ -180,287 +177,277 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     );
   };
 
-  // ── PayU OD multi-file — same card shape as other slots ─────────────────
+  // ── PayU OD multi-file slot ────────────────────────────────────────────────
   const renderPayuOdSlot = () => {
-    const hasFIles = payuOdFiles.length > 0;
-    return (
-      <div
-        className={`upload-slot${hasFIles ? ' upload-slot--filled upload-slot--gateway' : ''}`}
-        style={{ height: 'auto', minHeight: '160px' }}
-        onClick={() => !isLoading && payuOdRef.current?.click()}
-      >
-        <input ref={payuOdRef} type="file" accept=".xlsx,.xls,.csv" className="file-input"
-          multiple disabled={isLoading}
-          onChange={e => {
-            const files = Array.from(e.target.files || []);
-            const valid = files.filter(f => validate(f));
-            if (valid.length) setPayuOdFiles(prev => [...prev, ...valid]);
-            e.target.value = '';
-          }}
-        />
+  const hasFiles = payuOdFiles.length > 0;
 
-        {!hasFIles ? (
-          /* ── Empty state — identical structure to other slots ── */
-          <div className="slot-empty">
-            <div className="slot-icon">📂</div>
-            <div className="slot-text">
-              <p className="slot-label">
-                PayU On-Demand
-                <span className="slot-optional">Optional</span>
-              </p>
-              <p className="slot-sub">Multiple files allowed (.xlsx)</p>
-              <p className="slot-formats">.xlsx · .xls · .csv</p>
-            </div>
-            <div className="slot-cta">Click or drag file(s) here</div>
+  return (
+    <div
+      className={cx(styles['upload-slot'], hasFiles && styles['upload-slot--filled'])}
+      onClick={() => !isLoading && payuOdRef.current?.click()}
+    >
+      <input
+        ref={payuOdRef}
+        type="file"
+        accept=".xlsx,.xls,.csv"
+        className={styles['file-input']}
+        multiple
+        disabled={isLoading}
+        onChange={e => {
+          const files = Array.from(e.target.files || []);
+          const valid = files.filter(f => validate(f));
+          if (valid.length) setPayuOdFiles(prev => [...prev, ...valid]);
+          e.target.value = '';
+        }}
+      />
+
+      {!hasFiles ? (
+        // ✅ EMPTY STATE (same as others)
+        <div className={styles['slot-empty']}>
+          <div className={styles['slot-text']}>
+            <p className={styles['slot-label']}>PayU On-Demand</p>
+            <p className={styles['slot-sub']}>Multiple files allowed</p>
+            <p className={styles['slot-formats']}>.xlsx · .xls · .csv</p>
           </div>
-        ) : (
-          /* ── Filled state — file list + add more ── */
-          <div className="slot-od-filled" onClick={e => e.stopPropagation()}>
-            <div className="slot-od-header">
-              <div className="slot-filled-icon">✓</div>
-              <div className="slot-od-title">
-                <p className="slot-filled-label">PayU On-Demand</p>
-                <p className="slot-od-count">{payuOdFiles.length} file{payuOdFiles.length > 1 ? 's' : ''} added</p>
+          <div className={styles['slot-cta']}>Click or drag file(s) here</div>
+        </div>
+      ) : (
+        // ✅ FILLED STATE (fixed UI)
+        <div
+          className={styles['slot-filled']}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className={styles['slot-filled-icon']} />
+
+          <div className={styles['slot-filled-info']}>
+            <p className={styles['slot-filled-label']}>PayU On-Demand</p>
+
+            {/* 🔥 FILE LIST */}
+            {payuOdFiles.map((file, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '8px'
+                }}
+              >
+                <p
+                  className={styles['slot-filled-name']}
+                  title={file.name}
+                  style={{ margin: 0 }}
+                >
+                  {file.name}
+                </p>
+
+                {/* ❌ REMOVE SINGLE FILE */}
+                <button
+                  className={styles['slot-remove']}
+                  disabled={isLoading}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPayuOdFiles(prev =>
+                      prev.filter((_, i) => i !== idx)
+                    );
+                  }}
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                className="slot-od-add"
-                disabled={isLoading}
-                onClick={e => { e.stopPropagation(); payuOdRef.current?.click(); }}
-              >+ Add more</button>
-            </div>
-            <div className="slot-od-list">
-              {payuOdFiles.map((f, i) => (
-                <div key={i} className="slot-od-item">
-                  <span className="slot-od-name" title={f.name}>{f.name}</span>
-                  <button
-                    className="slot-remove"
-                    disabled={isLoading}
-                    onClick={e => { e.stopPropagation(); setPayuOdFiles(prev => prev.filter((_, j) => j !== i)); }}
-                  >✕</button>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
-        )}
-      </div>
-    );
-  };
 
-  // ── Grid layout per type ──────────────────────────────────────────────────
+          {/* ➕ ADD MORE FILES (secondary action, not primary) */}
+          <button
+            className={styles['slot-add-more']}
+            disabled={isLoading}
+            onClick={(e) => {
+              e.stopPropagation();
+              payuOdRef.current?.click();
+            }}
+          >
+            + Add
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+  // ── Slot grids ─────────────────────────────────────────────────────────────
   const renderSlots = () => {
     if (!reconType) return null;
-
     if (reconType === 'bank') return (
-      <div className="upload-slots upload-slots--bank">
-        {renderSlot({ id:'book', label:'Book Report', sublabel:'Company ledger / book entries',
-          ref:bookRef, file:bookFile, icon:'📗',
-          onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
-        {renderSlot({ id:'stmt', label:'Bank Statement', sublabel:'Bank transaction statement',
-          ref:stmtRef, file:statFile, icon:'🏦',
-          onFile:f=>{if(validate(f))setStatFile(f);}, onClear:()=>setStatFile(null) })}
-        {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching',
-          ref:prevRef, file:prevBrsFile, icon:'🗂️', required:false,
-          onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
+      <div className={cx(styles['upload-slots'], styles['upload-slots--bank'])}>
+        {renderSlot({ id:'book', label:'Book Report', sublabel:'Company ledger / book entries', ref:bookRef, file:bookFile, onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
+        {renderSlot({ id:'stmt', label:'Bank Statement', sublabel:'Bank transaction statement', ref:stmtRef, file:statFile, onFile:f=>{if(validate(f))setStatFile(f);}, onClear:()=>setStatFile(null) })}
+        {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching', ref:prevRef, file:prevBrsFile, onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
       </div>
     );
-
     if (reconType === 'qr') return (
-      <div className="upload-slots upload-slots--qr">
-        {renderSlot({ id:'book', label:'All-Branches Book Report', sublabel:'All-branches consolidated ledger',
-          ref:bookRef, file:bookFile, icon:'📗',
-          onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
-        {renderSlot({ id:'hotbook', label:'HOT Book Report', sublabel:'HOT QRHDFC book entries',
-          ref:hotBookRef, file:hotBookFile, icon:'📒', accent:'qr',
-          onFile:f=>{if(validate(f))setHotBookFile(f);}, onClear:()=>setHotBookFile(null) })}
-        {renderSlot({ id:'stmt', label:'QR Gateway Statement', sublabel:'HDFC QR transaction report',
-          ref:stmtRef, file:statFile, icon:'📲', accent:'qr',
-          onFile:f=>{if(validate(f))setStatFile(f);}, onClear:()=>setStatFile(null) })}
-        {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching',
-          ref:prevRef, file:prevBrsFile, icon:'🗂️', required:false,
-          onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
+      <div className={cx(styles['upload-slots'], styles['upload-slots--qr'])}>
+        {renderSlot({ id:'book', label:'All-Branches Book Report', sublabel:'All-branches consolidated ledger', ref:bookRef, file:bookFile, onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
+        {renderSlot({ id:'hotbook', label:'HOT Book Report', sublabel:'HOT QRHDFC book entries', ref:hotBookRef, file:hotBookFile, accent:'qr', onFile:f=>{if(validate(f))setHotBookFile(f);}, onClear:()=>setHotBookFile(null) })}
+        {renderSlot({ id:'stmt', label:'QR Gateway Statement', sublabel:'HDFC QR transaction report', ref:stmtRef, file:statFile, accent:'qr', onFile:f=>{if(validate(f))setStatFile(f);}, onClear:()=>setStatFile(null) })}
+        {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching', ref:prevRef, file:prevBrsFile, onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
       </div>
     );
-
     if (reconType === 'gateway') return (
-      <div className="upload-slots upload-slots--gateway">
-        {/* Row 1: Required book + statement files */}
-        {renderSlot({ id:'book', label:'All-Branches Book', sublabel:'All-branches Gateway book (.xls)',
-          ref:bookRef, file:bookFile, icon:'📗', accent:'gateway',
-          onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
-        {renderSlot({ id:'hotbook', label:'HOT Book', sublabel:'HOT Gateway book report (.xls)',
-          ref:hotBookRef, file:hotBookFile, icon:'📒', accent:'gateway',
-          onFile:f=>{if(validate(f))setHotBookFile(f);}, onClear:()=>setHotBookFile(null) })}
-        {renderSlot({ id:'stmt', label:'YES Bank Statement', sublabel:'YES Bank statement PDF',
-          ref:stmtRef, file:statFile, icon:'🏦', accent:'gateway',
-          accept:'.pdf,.xlsx,.xls',
-          onFile:f=>{if(validate(f,true))setStatFile(f);}, onClear:()=>setStatFile(null) })}
-        {renderSlot({ id:'payu', label:'PayU Regular', sublabel:'PayU transaction report (.xlsx)',
-          ref:payuRef, file:payuFile, icon:'💳', accent:'gateway',
-          onFile:f=>{if(validate(f))setPayuFile(f);}, onClear:()=>setPayuFile(null) })}
-        {/* Row 2: Optional gateway files */}
+      <div className={cx(styles['upload-slots'], styles['upload-slots--gateway'])}>
+        {renderSlot({ id:'book', label:'All-Branches Book', sublabel:'All-branches Gateway book (.xls)', ref:bookRef, file:bookFile, accent:'gateway', onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
+        {renderSlot({ id:'hotbook', label:'HOT Book', sublabel:'HOT Gateway book report (.xls)', ref:hotBookRef, file:hotBookFile, accent:'gateway', onFile:f=>{if(validate(f))setHotBookFile(f);}, onClear:()=>setHotBookFile(null) })}
+        {renderSlot({ id:'stmt', label:'YES Bank Statement', sublabel:'YES Bank statement PDF', ref:stmtRef, file:statFile, accent:'gateway', accept:'.pdf,.xlsx,.xls', onFile:f=>{if(validate(f,true))setStatFile(f);}, onClear:()=>setStatFile(null) })}
+        {renderSlot({ id:'payu', label:'PayU Regular', sublabel:'PayU transaction report (.xlsx)', ref:payuRef, file:payuFile, accent:'gateway', onFile:f=>{if(validate(f))setPayuFile(f);}, onClear:()=>setPayuFile(null) })}
         {renderPayuOdSlot()}
-        {renderSlot({ id:'cashfree', label:'CashFree', sublabel:'CashFree settlement report (.xlsx)',
-          ref:cashfreeRef, file:cashfreeFile, icon:'💰', required:false,
-          onFile:f=>{if(validate(f))setCashfree(f);}, onClear:()=>setCashfree(null) })}
-        {renderSlot({ id:'easebuzz', label:'EaseBuzz', sublabel:'EaseBuzz settlement report (.csv)',
-          ref:easebuzzRef, file:easebuzzFile, icon:'⚡', required:false,
-          accept:'.csv,.xlsx,.xls',
-          onFile:f=>{if(validate(f,true))setEasebuzz(f);}, onClear:()=>setEasebuzz(null) })}
-        {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching',
-          ref:prevRef, file:prevBrsFile, icon:'🗂️', required:false,
-          onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
+        {renderSlot({ id:'cashfree', label:'CashFree', sublabel:'CashFree settlement report (.xlsx)', ref:cashfreeRef, file:cashfreeFile, onFile:f=>{if(validate(f))setCashfree(f);}, onClear:()=>setCashfree(null) })}
+        {renderSlot({ id:'easebuzz', label:'EaseBuzz', sublabel:'EaseBuzz settlement report (.csv)', ref:easebuzzRef, file:easebuzzFile, accept:'.csv,.xlsx,.xls', onFile:f=>{if(validate(f,true))setEasebuzz(f);}, onClear:()=>setEasebuzz(null) })}
+        {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching', ref:prevRef, file:prevBrsFile, onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
       </div>
     );
   };
 
-  // ── Progress indicator ────────────────────────────────────────────────────
+  // ── Progress dots ──────────────────────────────────────────────────────────
   const progressItems = () => {
-    if (!reconType) return [];
     if (reconType === 'bank') return [
-      { label:'Book Report',   done:!!bookFile,    required:true  },
-      { label:'Bank Statement',done:!!statFile,    required:true  },
-      { label:'Previous BRS',  done:!!prevBrsFile, required:false },
+      { label:'Book Report',       done:!!bookFile,             required:true  },
+      { label:'Bank Statement',    done:!!statFile,             required:true  },
+      { label:'Previous BRS',      done:!!prevBrsFile,          required:true },
     ];
     if (reconType === 'qr') return [
-      { label:'All-Branches Book', done:!!bookFile,    required:true  },
-      { label:'HOT Book',          done:!!hotBookFile, required:true  },
-      { label:'QR Statement',      done:!!statFile,    required:true  },
-      { label:'Previous BRS',      done:!!prevBrsFile, required:false },
+      { label:'All-Branches Book', done:!!bookFile,             required:true  },
+      { label:'HOT Book',          done:!!hotBookFile,          required:true  },
+      { label:'QR Statement',      done:!!statFile,             required:true  },
+      { label:'Previous BRS',      done:!!prevBrsFile,          required:true },
     ];
     if (reconType === 'gateway') return [
-      { label:'All-Branches Book', done:!!bookFile,    required:true  },
-      { label:'HOT Book',          done:!!hotBookFile, required:true  },
-      { label:'YES Bank PDF',      done:!!statFile,    required:true  },
-      { label:'PayU Regular',      done:!!payuFile,    required:true  },
-      { label:'PayU On-Demand',    done:payuOdFiles.length>0, required:false },
-      { label:'CashFree',          done:!!cashfreeFile,required:false },
-      { label:'EaseBuzz',          done:!!easebuzzFile,required:false },
-      { label:'Previous BRS',      done:!!prevBrsFile, required:false },
+      { label:'All-Branches Book', done:!!bookFile,             required:true  },
+      { label:'HOT Book',          done:!!hotBookFile,          required:true  },
+      { label:'YES Bank PDF',      done:!!statFile,             required:true  },
+      { label:'PayU Regular',      done:!!payuFile,             required:true  },
+      { label:'PayU On-Demand',    done:payuOdFiles.length > 0, required:true },
+      { label:'CashFree',          done:!!cashfreeFile,         required:true },
+      { label:'EaseBuzz',          done:!!easebuzzFile,         required:true },
+      { label:'Previous BRS',      done:!!prevBrsFile,          required:true },
     ];
     return [];
   };
 
-  const TYPE_LABELS: Record<ReconType, string> = {
-    bank:    '🏦 Bank Statement Reconciliation',
-    qr:      '📲 QR Gateway Reconciliation',
-    gateway: '🌐 Gateway YES Bank Reconciliation',
-  };
+  const selectedMeta = reconType ? TYPE_META[reconType] : null;
 
   return (
-    <div className="file-upload-container">
-      {/* Step 1 */}
-      <div className="upload-header">
-        <h2>Bank Reconciliation</h2>
-        <p>Start by selecting the reconciliation type, then upload your files</p>
-      </div>
+    <div className={styles['stepper-container']}>
 
-      <div className="type-step">
-        <div className="type-step-label">
-          <span className="step-badge">1</span>
-          Select Reconciliation Type
-        </div>
+      {/* ── Step 1: Select Type ───────────────────────────────────────────── */}
+      <div className={cx(styles['stepper-card'], !step1Open && reconType && styles['stepper-card--done'])}>
 
-        <div className="type-cards type-cards--three">
-          {/* Bank */}
-          <button
-            className={`type-card ${reconType === 'bank' ? 'type-card--active type-card--bank' : ''}`}
-            onClick={() => handleSelectType('bank')} disabled={isLoading}>
-            <span className="type-card-icon">🏦</span>
-            <span className="type-card-body">
-              <span className="type-card-title">Bank Reconciliation</span>
-              <span className="type-card-desc">Standard bank statement — HDFC, Axis, SBI, ICICI, IndusInd, etc.</span>
-              <span className="type-card-files">2 required · 1 optional</span>
-            </span>
-            {reconType === 'bank' && <span className="type-card-check">✓</span>}
-          </button>
+        {/* Card header — always visible, clickable to toggle */}
+        <button
+          className={styles['stepper-header']}
+          onClick={() => {
+            if (reconType) setStep1Open(o => !o); // only toggle if a type was ever chosen
+          }}
+          disabled={isLoading}
+          aria-expanded={step1Open}
+        >
+          <span className={cx(styles['stepper-badge'], !step1Open && reconType && styles['stepper-badge--done'])}>
+            {!step1Open && reconType ? '✓' : '1'}
+          </span>
+          <span className={styles['stepper-title']}>
+            {!step1Open && selectedMeta
+              ? <>{selectedMeta.label}</>
+              : 'Select Reconciliation Type'
+            }
+          </span>
+          {!step1Open && reconType && (
+            <span className={styles['stepper-change']}>Change</span>
+          )}
+        </button>
 
-          {/* QR */}
-          <button
-            className={`type-card ${reconType === 'qr' ? 'type-card--active type-card--bank' : ''}`}
-            onClick={() => handleSelectType('qr')} disabled={isLoading}>
-            <span className="type-card-icon">📲</span>
-            <span className="type-card-body">
-              <span className="type-card-title">QR Gateway Reconciliation</span>
-              <span className="type-card-desc">HDFC QR gateway transaction report — SaleSuccess UPI transactions.</span>
-              <span className="type-card-files">3 required · 1 optional</span>
-            </span>
-            {reconType === 'qr' && <span className="type-card-check">✓</span>}
-          </button>
-
-          {/* Gateway */}
-          <button
-            className={`type-card ${reconType === 'gateway' ? 'type-card--active type-card--bank' : ''}`}
-            onClick={() => handleSelectType('gateway')} disabled={isLoading}>
-            <span className="type-card-icon">🌐</span>
-            <span className="type-card-body">
-              <span className="type-card-title">Gateway YES Bank</span>
-              <span className="type-card-desc">PayU / CashFree / EaseBuzz settlements vs YES Bank statement.</span>
-              <span className="type-card-files">4 required · 4 optional</span>
-            </span>
-            {reconType === 'gateway' && <span className="type-card-check">✓</span>}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 2 */}
-      {reconType && (
-        <div className="files-step">
-          <div className="type-step-label">
-            <span className="step-badge">2</span>
-            Upload Files
-            <span className="files-step-badge files-step-badge--bank">
-              {TYPE_LABELS[reconType]}
-            </span>
+        {/* Expandable body */}
+        {step1Open && (
+          <div className={styles['stepper-body']}>
+            <div className={cx(styles['type-cards'], styles['type-cards--three'])}>
+              {(['bank', 'qr', 'gateway'] as ReconType[]).map(type => {
+                const m = TYPE_META[type];
+                const isActive = reconType === type;
+                return (
+                  <button
+                    key={type}
+                    className={cx(styles['type-card'], isActive && styles['type-card--active'], isActive && styles[`type-card--${type === 'bank' ? 'bank' : type === 'qr' ? 'bank' : 'bank'}`])}
+                    onClick={() => handleSelectType(type)}
+                    disabled={isLoading}
+                  >
+                    <span className={styles['type-card-body']}>
+                      <span className={styles['type-card-title']}>{m.label}</span>
+                      <span className={styles['type-card-desc']}>{m.desc}</span>
+                      <span className={styles['type-card-files']}>{m.files}</span>
+                    </span>
+                    {isActive && <span className={styles['type-card-check']}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-
-          {renderSlots()}
-
-          {/* Progress */}
-          <div className="upload-progress">
-            {progressItems().map((item, i) => (
-              <div key={i} className={`progress-item ${item.done ? 'progress-item--done' : ''}`}>
-                <span className="progress-dot">{item.done ? '✓' : item.required ? '○' : '◌'}</span>
-                <span className="progress-label">{item.label}</span>
-                {!item.required && <span className="progress-opt">optional</span>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Errors */}
-      {errors.length > 0 && (
-        <div className="upload-errors">
-          {errors.map((err, i) => <p key={i} className="upload-error-item">⚠ {err}</p>)}
-        </div>
-      )}
-
-      {/* Submit */}
-      {reconType && (
-        <div className="upload-actions">
-          <button onClick={handleSubmit} disabled={!canSubmit} className="btn btn-primary">
-            {isLoading
-              ? <><span className="spinner" />Processing…</>
-              : `Run ${reconType === 'bank' ? '' : reconType === 'qr' ? 'QR ' : 'Gateway '}Reconciliation →`}
-          </button>
-          <button className="btn-ghost" onClick={() => { setReconType(null); setErrors([]); }} disabled={isLoading}>
-            ← Change type
-          </button>
-        </div>
-      )}
-
-      <div className="upload-notes">
-        {reconType === 'gateway' ? (
-          <p>All-Branches Book, HOT Book, YES Bank PDF, and PayU Regular are required. CashFree, EaseBuzz, PayU On-Demand and Previous BRS are optional.</p>
-        ) : reconType === 'qr' ? (
-          <p>All-Branches Book, HOT Book, and QR Statement are required. Previous BRS enables carry-forward matching.</p>
-        ) : reconType === 'bank' ? (
-          <p>Book Report and Bank Statement are required. Previous BRS enables carry-forward matching from the prior period.</p>
-        ) : (
-          <p>Select a reconciliation type above to get started.</p>
         )}
-        <p>Files are processed locally and not stored on any server.</p>
       </div>
+
+      {/* ── Step 2: Upload Files ──────────────────────────────────────────── */}
+      <div className={cx(styles['stepper-card'], !reconType && styles['stepper-card--locked'])}>
+
+        {/* Card header */}
+        <button
+          className={styles['stepper-header']}
+          onClick={() => { if (reconType) setStep1Open(false); }}
+          disabled={!reconType || isLoading}
+          aria-expanded={!!reconType && !step1Open}
+        >
+          <span className={cx(styles['stepper-badge'], !reconType && styles['stepper-badge--locked'])}>2</span>
+          <span className={styles['stepper-title']}>Upload Files</span>
+          {selectedMeta && !step1Open && (
+            <span className={cx(styles['files-step-badge'], styles['files-step-badge--bank'])}>
+              {selectedMeta.label}
+            </span>
+          )}
+        </button>
+
+        {/* Expandable body — only when type chosen and step 1 collapsed */}
+        {reconType && !step1Open && (
+          <div className={styles['stepper-body']}>
+            {renderSlots()}
+
+            {/* Progress tracker */}
+            <div className={styles['upload-progress']}>
+              {progressItems().map((item, i) => (
+                <div key={i} className={cx(styles['progress-item'], item.done && styles['progress-item--done'])}>
+                  <span className={styles['progress-dot']}>{item.done ? '✓' : '○'}</span>
+                  <span className={styles['progress-label']}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Errors */}
+            {errors.length > 0 && (
+              <div className={styles['upload-errors']}>
+                {errors.map((err, i) => <p key={i} className={styles['upload-error-item']}>{err}</p>)}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className={styles['upload-actions']}>
+              <button onClick={handleSubmit} disabled={!canSubmit}
+                className={cx(styles['btn'], styles['btn-primary'])}>
+                {isLoading
+                  ? <><span className={styles['spinner']} />Processing…</>
+                  : `Run ${reconType === 'bank' ? '' : reconType === 'qr' ? 'QR ' : 'Gateway '}Reconciliation`}
+              </button>
+            </div>
+
+
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

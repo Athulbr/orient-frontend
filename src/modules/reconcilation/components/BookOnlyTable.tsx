@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import '../styles/DataTable.css';
+import styles from '../styles/DataTable.module.css';
+import { cx } from '../utils/cx';
 
 interface BookOnlyRecord {
   'Txn Type': string;
@@ -24,7 +25,7 @@ const BookOnlyTable: React.FC<BookOnlyTableProps> = ({ data }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="table-empty table-empty-success">
+      <div className={cx(styles['table-empty'], styles['table-empty-success'])}>
         <p>All book entries have been matched with the bank statement.</p>
       </div>
     );
@@ -36,14 +37,14 @@ const BookOnlyTable: React.FC<BookOnlyTableProps> = ({ data }) => {
     Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="table-container">
-      <div className="notice-bar notice-warning">
+    <div className={styles['table-container']}>
+      <div className={cx(styles['notice-bar'], styles['notice-warning'])}>
         {data.length} entries recorded in the book but not found in the bank statement.
         These are typically cheques not yet cleared or timing differences.
       </div>
 
-      <div className="table-scroll">
-        <table className="data-table">
+      <div className={styles['table-scroll']}>
+        <table className={styles['data-table']}>
           <thead>
             <tr>
               <th>Type</th>
@@ -60,22 +61,28 @@ const BookOnlyTable: React.FC<BookOnlyTableProps> = ({ data }) => {
             {slice.map((record, idx) => {
               const isCF = record['Issue']?.includes('Carried Forward');
               return (
-                <tr key={idx} className={`data-row${isCF ? ' row-cf' : ' row-pending'}`}>
+                <tr
+                  key={idx}
+                  className={cx(
+                    styles['data-row'],
+                    isCF ? styles['row-cf'] : styles['row-pending'],
+                  )}
+                >
                   <td>{record['Txn Type']}</td>
-                  <td className="cell-mono">{record['Bill No'] || '—'}</td>
-                  <td className="cell-mono">{record['Chq No'] || '—'}</td>
-                  <td className="cell-party">{record['Party']}</td>
+                  <td className={styles['cell-mono']}>{record['Bill No'] || '—'}</td>
+                  <td className={styles['cell-mono']}>{record['Chq No'] || '—'}</td>
+                  <td className={styles['cell-party']}>{record['Party']}</td>
                   <td>
-                    <span className={`dir-badge dir-${record['Direction']?.toLowerCase()}`}>
+                    <span className={cx(styles['dir-badge'], styles[`dir-${record['Direction']?.toLowerCase()}`])}>
                       {record['Direction']}
                     </span>
                   </td>
-                  <td className="cell-amount">{fmtAmt(record['Book Amt (Rs)'])}</td>
-                  <td className="cell-narration">{record['Narration'] || '—'}</td>
+                  <td className={styles['cell-amount']}>{fmtAmt(record['Book Amt (Rs)'])}</td>
+                  <td className={styles['cell-narration']}>{record['Narration'] || '—'}</td>
                   <td>
                     {isCF
-                      ? <span className="badge badge-info">Carried Forward</span>
-                      : <span className="badge badge-warning">Pending Clearance</span>
+                      ? <span className={cx(styles['badge'], styles['badge-info'])}>Carried Forward</span>
+                      : <span className={cx(styles['badge'], styles['badge-warning'])}>Pending Clearance</span>
                     }
                   </td>
                 </tr>
@@ -85,15 +92,15 @@ const BookOnlyTable: React.FC<BookOnlyTableProps> = ({ data }) => {
         </table>
       </div>
 
-      <div className="table-footer">
-        <span className="table-count">
+      <div className={styles['table-footer']}>
+        <span className={styles['table-count']}>
           Showing {page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, data.length)} of {data.length} records
         </span>
         {totalPages > 1 && (
-          <div className="pagination">
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
-            <span className="page-info">Page {page + 1} of {totalPages}</span>
-            <button className="page-btn" disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
+          <div className={styles['pagination']}>
+            <button className={styles['page-btn']} disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
+            <span className={styles['page-info']}>Page {page + 1} of {totalPages}</span>
+            <button className={styles['page-btn']} disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
           </div>
         )}
       </div>

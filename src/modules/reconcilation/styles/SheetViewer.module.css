@@ -48,8 +48,6 @@
   background: #f9fafb;
 }
 
-.sheet-tabs::-webkit-scrollbar { height: 3px; }
-.sheet-tabs::-webkit-scrollbar-thumb { background: #d1d5db; }
 
 .sheet-tab {
   display: flex;

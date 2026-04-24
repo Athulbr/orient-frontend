@@ -6,7 +6,7 @@ import BookOnlyTable from './BookOnlyTable';
 import BankOnlyTable from './BankOnlyTable';
 import BRSStatement from './BRSStatement';
 import GatewayMatchedTable from './GatewayMatchedTable';
-import '../styles/Results.css';
+import styles from '../styles/Results.module.css';
 
 interface SheetMetadata {
   [sheetName: string]: {
@@ -120,7 +120,7 @@ const Results: React.FC<ResultsProps> = ({ data, onDownload, isDownloading }) =>
       case 'brs':
         if (!hasBRS) {
           return (
-            <div className="brs-unavailable">
+            <div className={styles['brs-unavailable']}>
               <p>BRS data not available. Please re-run reconciliation with all three files.</p>
             </div>
           );
@@ -142,31 +142,24 @@ const Results: React.FC<ResultsProps> = ({ data, onDownload, isDownloading }) =>
     }
   };
 
-  const reconLabel = isGateway
-    ? 'Gateway Reconciliation Results'
-    : 'Reconciliation Results';
 
   return (
-    <div className="results-container">
-      <div className="results-header">
-        <div className="header-content">
-          <h1>{reconLabel}</h1>
-          <p className="subtitle">
-            {data.summary.book_entries} book{' '}
-            {data.summary.book_entries === 1 ? 'entry' : 'entries'} vs{' '}
-            {data.summary.bank_entries} bank{' '}
-            {data.summary.bank_entries === 1 ? 'entry' : 'entries'}
-          </p>
-        </div>
+    <div className={styles['results-container']}>
+      {/* Entry count + download — compact bar above tabs */}
+      <div className={styles['results-meta-bar']}>
+        <span className={styles['results-entry-count']}>
+          {data.summary.book_entries} book {data.summary.book_entries === 1 ? 'entry' : 'entries'} vs{' '}
+          {data.summary.bank_entries} bank {data.summary.bank_entries === 1 ? 'entry' : 'entries'}
+        </span>
         <button
           onClick={onDownload}
           disabled={isDownloading}
-          className="btn btn-download"
+          className={`${styles['btn']} ${styles['btn-download']}`}
         >
           {isDownloading ? (
-            <><span className="spinner-small" /> Downloading...</>
+            <><span className={styles['spinner-small']} /> Downloading...</>
           ) : (
-            'Download Excel Report'
+            'Download Report'
           )}
         </button>
       </div>

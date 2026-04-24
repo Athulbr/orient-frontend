@@ -1,48 +1,125 @@
 /* ══════════════════════════════════════════════════════════════
-   FILE UPLOAD — Type-first flow
+   FILE UPLOAD — Stepper / accordion layout
 ══════════════════════════════════════════════════════════════ */
 
-.file-upload-container {
-  max-width: 1050px;
-  margin: 0 auto;
-  padding: 48px 0 64px;
+/* ── Stepper container ── */
+.stepper-container {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 12px;
+  max-width: 1050px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-/* ── Header ── */
-.upload-header {
-  text-align: center;
+/* ── Stepper card ── */
+.stepper-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s;
 }
 
-.upload-header h2 {
-  font-size: 26px;
-  font-weight: 700;
-  color: #111827;
-  letter-spacing: -0.4px;
-  margin: 0 0 6px;
+.stepper-card--done {
+  border-color: #e5e7eb;
 }
 
-.upload-header p {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0;
+.stepper-card--locked {
+  opacity: 0.55;
+  pointer-events: none;
 }
 
-/* ── Step label ── */
-.type-step-label {
+/* ── Stepper header (always-visible clickable row) ── */
+.stepper-header {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #374151;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin-bottom: 14px;
+  gap: 12px;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.12s;
 }
 
+.stepper-header:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.stepper-header:disabled {
+  cursor: default;
+}
+
+/* ── Step number badge ── */
+.stepper-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #1e3a5f;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.stepper-badge--done {
+  background: #16a34a;
+}
+
+.stepper-badge--locked {
+  background: #d1d5db;
+  color: #6b7280;
+}
+
+/* ── Step title ── */
+.stepper-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+}
+
+/* ── "Change" link shown in collapsed summary ── */
+.stepper-change {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #2563eb;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.stepper-header:hover .stepper-change {
+  background: #dbeafe;
+}
+
+
+/* ── Stepper body (expandable) ── */
+.stepper-body {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid #f3f4f6;
+  animation: stepperOpen 0.18s ease;
+}
+
+@keyframes stepperOpen {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Legacy aliases (kept so slot/progress/button styles still work) ── */
 .step-badge {
   display: inline-flex;
   align-items: center;
@@ -108,11 +185,6 @@
   cursor: not-allowed;
 }
 
-.type-card-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-  line-height: 1;
-}
 
 .type-card-body {
   display: flex;
@@ -168,15 +240,6 @@
 .type-card--bank .type-card-check { background: #2563eb; color: #fff; }
 .type-card--qr  .type-card-check { background: #2563eb; color: #fff; }
 
-/* ── Files step ── */
-.files-step {
-  animation: slideDown 0.22s ease;
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 .files-step-badge {
   margin-left: auto;
@@ -234,7 +297,8 @@
   border-radius: 10px;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
   cursor: pointer;
-  height: 160px;
+  min-height: 110px;
+  height: auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -259,10 +323,7 @@
   cursor: default;
 }
 
-.upload-slot--qr.upload-slot--filled {
-  border-color: #2563eb;
-  background: #eff6ff;
-}
+
 
 .file-input { display: none; }
 
@@ -278,11 +339,6 @@
   gap: 8px;
 }
 
-.slot-icon {
-  font-size: 24px;
-  line-height: 1;
-  opacity: 0.7;
-}
 
 .slot-text { width: 100%; }
 
@@ -341,29 +397,25 @@
 /* ── Filled slot ── */
 .slot-filled {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 16px;
   flex: 1;
 }
 
 .slot-filled-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #16a34a;
-  color: #fff;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
+  color: #16a34a;
   flex-shrink: 0;
 }
 
-.upload-slot--qr .slot-filled-icon {
-  background: #2563eb;
-}
+
 
 .slot-filled-info {
   flex: 1;
@@ -379,8 +431,8 @@
   margin: 0 0 3px;
 }
 
-.upload-slot--filled:not(.upload-slot--qr) .slot-filled-label { color: #15803d; }
-.upload-slot--qr .slot-filled-label { color: #1d4ed8; }
+.upload-slot--filled .slot-filled-label { color: #15803d; }
+
 
 .slot-filled-name {
   font-size: 12.5px;
@@ -390,6 +442,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 140px; 
 }
 
 .slot-remove {
@@ -556,3 +609,48 @@
 .upload-grid,
 .upload-box,
 .recon-type-bar { display: none; }
+
+
+.slot-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  max-height: 90px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.slot-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.slot-add-more {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px dashed #d1d5db;
+  color: #6b7280;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.slot-add-more:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.slot-file-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.slot-file-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}

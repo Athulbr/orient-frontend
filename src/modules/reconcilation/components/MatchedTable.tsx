@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import '../styles/DataTable.css';
+import styles from '../styles/DataTable.module.css';
+import { cx } from '../utils/cx';
 
 interface MatchedRecord {
   'Match Method': string;
@@ -35,15 +36,15 @@ interface MatchedTableProps {
 }
 
 const nameMatchVariant = (v: string): string => {
-  if (v === 'Match')    return 'badge-success';
-  if (v === 'Partial')  return 'badge-warning';
+  if (v === 'Match')   return 'badge-success';
+  if (v === 'Partial') return 'badge-warning';
   return 'badge-danger';
 };
 
 const amtMatchVariant = (v: string | undefined): string => {
-  if (!v)                      return 'badge-warning';
-  if (v === 'Exact')           return 'badge-success';
-  if (v.includes('Minor') || v.startsWith('Split')) return 'badge-warning';
+  if (!v)                                               return 'badge-warning';
+  if (v === 'Exact')                                    return 'badge-success';
+  if (v.includes('Minor') || v.startsWith('Split'))    return 'badge-warning';
   return 'badge-danger';
 };
 
@@ -55,19 +56,19 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="table-empty">
+      <div className={styles['table-empty']}>
         <p>No matched records found</p>
-        <p className="subtitle">Matched entries will appear here after reconciliation</p>
+        <p className={styles['subtitle']}>Matched entries will appear here after reconciliation</p>
       </div>
     );
   }
 
   const filtered = data.filter((r) => {
-    if (filter === 'all')       return true;
-    if (filter === 'perfect')   return r['Name Match'] === 'Match';
-    if (filter === 'partial')   return r['Name Match'] === 'Partial';
-    if (filter === 'mismatch')  return r['Name Match'] === 'Mismatch';
-    if (filter === 'flagged')   return r['Flags'] && r['Flags'].trim().length > 0;
+    if (filter === 'all')      return true;
+    if (filter === 'perfect')  return r['Name Match'] === 'Match';
+    if (filter === 'partial')  return r['Name Match'] === 'Partial';
+    if (filter === 'mismatch') return r['Name Match'] === 'Mismatch';
+    if (filter === 'flagged')  return r['Flags'] && r['Flags'].trim().length > 0;
     return true;
   });
 
@@ -75,7 +76,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
   const slice = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
 
   const counts = {
-    all: data.length,
+    all:      data.length,
     perfect:  data.filter(r => r['Name Match'] === 'Match').length,
     partial:  data.filter(r => r['Name Match'] === 'Partial').length,
     mismatch: data.filter(r => r['Name Match'] === 'Mismatch').length,
@@ -92,9 +93,9 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
     Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="table-container">
+    <div className={styles['table-container']}>
       {/* Filter bar */}
-      <div className="filter-bar">
+      <div className={styles['filter-bar']}>
         {[
           { key: 'all',      label: `All (${counts.all})` },
           { key: 'perfect',  label: `Perfect Match (${counts.perfect})` },
@@ -104,7 +105,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
         ].map((f) => (
           <button
             key={f.key}
-            className={`filter-btn${filter === f.key ? ' active' : ''}`}
+            className={cx(styles['filter-btn'], filter === f.key && styles['active'])}
             onClick={() => handleFilterChange(f.key)}
           >
             {f.label}
@@ -112,11 +113,11 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
         ))}
       </div>
 
-      <div className="table-scroll">
-        <table className="data-table">
+      <div className={styles['table-scroll']}>
+        <table className={styles['data-table']}>
           <thead>
             <tr>
-              <th className="col-expand" />
+              <th className={styles['col-expand']} />
               <th>Method</th>
               <th>Name Match</th>
               <th>Score</th>
@@ -139,93 +140,94 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
               return (
                 <React.Fragment key={globalIdx}>
                   <tr
-                    className={`data-row${isExpanded ? ' row-expanded' : ''}${hasFlags ? ' row-flagged' : ''}`}
+                    className={cx(
+                      styles['data-row'],
+                      isExpanded && styles['row-expanded'],
+                      hasFlags && styles['row-flagged'],
+                    )}
                     onClick={() => setExpandedRow(isExpanded ? null : globalIdx)}
                   >
-                    <td className="col-expand">
-                      <button className="expand-btn" tabIndex={-1}>
+                    <td className={styles['col-expand']}>
+                      <button className={styles['expand-btn']} tabIndex={-1}>
                         {isExpanded ? '▾' : '▸'}
                       </button>
                     </td>
-                    <td className="cell-method">{record['Match Method']}</td>
+                    <td className={styles['cell-method']}>{record['Match Method']}</td>
                     <td>
-                      <span className={`badge ${nameMatchVariant(record['Name Match'])}`}>
+                      <span className={cx(styles['badge'], styles[nameMatchVariant(record['Name Match'])])}>
                         {record['Name Match']}
                       </span>
                     </td>
-                    <td className="cell-score">{record['Fuzzy Score %']}%</td>
+                    <td className={styles['cell-score']}>{record['Fuzzy Score %']}%</td>
                     <td>
-                      <span className={`badge ${amtMatchVariant(record['Amount Match'])}`}>
-                        {/* {record['Amount Match'] === 'Exact' ? 'Exact' : record['Amount Match'].substring(0, 18)} */}
+                      <span className={cx(styles['badge'], styles[amtMatchVariant(record['Amount Match'])])}>
                         {record['Amount Match'] === 'Exact' ? 'Exact' : (record['Amount Match'] ?? '').substring(0, 18)}
                       </span>
                     </td>
                     <td>
-                      <span className={`dir-badge dir-${record['Book Direction']?.toLowerCase()}`}>
+                      <span className={cx(styles['dir-badge'], styles[`dir-${record['Book Direction']?.toLowerCase()}`])}>
                         {record['Book Direction']}
                       </span>
                     </td>
-                    <td className="cell-party">{record['Book Party']}</td>
-                    <td className="cell-amount">{fmtAmt(record['Book Amt (Rs)'])}</td>
-                    <td className="cell-amount">{fmtAmt(record['Bank Amt (Rs)'])}</td>
-                    <td className={`cell-amount ${Math.abs(diff) < 0.01 ? 'diff-zero' : 'diff-nonzero'}`}>
+                    <td className={styles['cell-party']}>{record['Book Party']}</td>
+                    <td className={styles['cell-amount']}>{fmtAmt(record['Book Amt (Rs)'])}</td>
+                    <td className={styles['cell-amount']}>{fmtAmt(record['Bank Amt (Rs)'])}</td>
+                    <td className={cx(styles['cell-amount'], Math.abs(diff) < 0.01 ? styles['diff-zero'] : styles['diff-nonzero'])}>
                       {Math.abs(diff) < 0.01 ? '—' : Number(diff).toLocaleString('en-IN', { minimumFractionDigits: 2, signDisplay: 'always' })}
                     </td>
-                    <td className="cell-flags">
-                      {hasFlags ? <span className="flag-tag">Review</span> : null}
+                    <td className={styles['cell-flags']}>
+                      {hasFlags ? <span className={styles['flag-tag']}>Review</span> : null}
                     </td>
                   </tr>
 
                   {isExpanded && (
-                    <tr className="expanded-row">
+                    <tr className={styles['expanded-row']}>
                       <td colSpan={11}>
-                        <div className="expanded-details">
-                          <div className="detail-panel">
-                            <div className="detail-panel-title">Book Entry</div>
+                        <div className={styles['expanded-details']}>
+                          <div className={styles['detail-panel']}>
+                            <div className={styles['detail-panel-title']}>Book Entry</div>
                             {([
                               ['Transaction Type', record['Book Txn']],
-                              ['Bill No', record['Book Bill No'] || '—'],
-                              ['Cheque No', record['Book Chq'] || '—'],
-                              ['Party', record['Book Party']],
-                              ['Direction', record['Book Direction']],
-                              ['Sender', record['Book Sender']],
-                              ['Recipient', record['Book Recipient']],
-                              ['Amount', fmtAmt(record['Book Amt (Rs)'])],
+                              ['Bill No',          record['Book Bill No'] || '—'],
+                              ['Cheque No',        record['Book Chq'] || '—'],
+                              ['Party',            record['Book Party']],
+                              ['Direction',        record['Book Direction']],
+                              ['Sender',           record['Book Sender']],
+                              ['Recipient',        record['Book Recipient']],
+                              ['Amount',           fmtAmt(record['Book Amt (Rs)'])],
                             ] as [string, string][]).map(([label, value]) => (
-                              <div className="detail-row" key={label}>
-                                <span className="detail-label">{label}</span>
-                                <span className="detail-value">{value}</span>
+                              <div className={styles['detail-row']} key={label}>
+                                <span className={styles['detail-label']}>{label}</span>
+                                <span className={styles['detail-value']}>{value}</span>
                               </div>
                             ))}
                           </div>
 
-                          <div className="detail-panel">
-                            <div className="detail-panel-title">Bank Entry</div>
+                          <div className={styles['detail-panel']}>
+                            <div className={styles['detail-panel-title']}>Bank Entry</div>
                             {([
-                              ['Date', record['Bank Date']],
-                              // ['Cheque No', record['Bank Chq'] || '—'],
-                              // ['Description', record['Bank Description']],
-                              ['Cheque No / RRN', record['Bank Chq'] ?? record['Bank RRN'] ?? '—'],
-                              ['Description / Payer', record['Bank Description'] ?? record['Bank Payer'] ?? '—'],
-                              ['Party', record['Bank Party']],
-                              ['Direction', record['Bank Direction']],
-                              ['Sender', record['Bank Sender']],
-                              ['Recipient', record['Bank Recipient']],
-                              ['Debit', record['Debit (Rs)'] ? fmtAmt(Number(record['Debit (Rs)'])) : '—'],
+                              ['Date',                    record['Bank Date']],
+                              ['Cheque No / RRN',         record['Bank Chq'] ?? record['Bank RRN'] ?? '—'],
+                              ['Description / Payer',     record['Bank Description'] ?? record['Bank Payer'] ?? '—'],
+                              ['Party',                   record['Bank Party']],
+                              ['Direction',               record['Bank Direction']],
+                              ['Sender',                  record['Bank Sender']],
+                              ['Recipient',               record['Bank Recipient']],
+                              ['Debit',  record['Debit (Rs)']  ? fmtAmt(Number(record['Debit (Rs)']))  : '—'],
                               ['Credit', record['Credit (Rs)'] ? fmtAmt(Number(record['Credit (Rs)'])) : '—'],
                             ] as [string, string][]).map(([label, value]) => (
-                              <div className="detail-row" key={label}>
-                                <span className="detail-label">{label}</span>
-                                <span className="detail-value">{value}</span>
+                              <div className={styles['detail-row']} key={label}>
+                                <span className={styles['detail-label']}>{label}</span>
+                                <span className={styles['detail-value']}>{value}</span>
                               </div>
                             ))}
                           </div>
 
                           {hasFlags && (
-                            <div className="detail-panel detail-panel-flags">
-                              <div className="detail-panel-title">Review Notes</div>
+                            <div className={cx(styles['detail-panel'], styles['detail-panel-flags'])}>
+                              <div className={styles['detail-panel-title']}>Review Notes</div>
                               {record['Flags'].split('|').map((flag, i) => (
-                                <div key={i} className="flag-note">{flag.trim()}</div>
+                                <div key={i} className={styles['flag-note']}>{flag.trim()}</div>
                               ))}
                             </div>
                           )}
@@ -240,22 +242,22 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
         </table>
       </div>
 
-      <div className="table-footer">
-        <span className="table-count">
+      <div className={styles['table-footer']}>
+        <span className={styles['table-count']}>
           Showing {page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, filtered.length)} of {filtered.length} records
         </span>
         {totalPages > 1 && (
-          <div className="pagination">
+          <div className={styles['pagination']}>
             <button
-              className="page-btn"
+              className={styles['page-btn']}
               disabled={page === 0}
               onClick={() => { setPage(p => p - 1); setExpandedRow(null); }}
             >
               Previous
             </button>
-            <span className="page-info">Page {page + 1} of {totalPages}</span>
+            <span className={styles['page-info']}>Page {page + 1} of {totalPages}</span>
             <button
-              className="page-btn"
+              className={styles['page-btn']}
               disabled={page === totalPages - 1}
               onClick={() => { setPage(p => p + 1); setExpandedRow(null); }}
             >

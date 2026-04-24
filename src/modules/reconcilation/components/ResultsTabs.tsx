@@ -1,5 +1,6 @@
 import React from 'react';
-import '../styles/ResultsTabs.css';
+import styles from '../styles/ResultsTabs.module.css';
+import { cx } from '../utils/cx';
 
 interface Tab {
   id: string;
@@ -17,24 +18,30 @@ interface ResultsTabsProps {
 
 const ResultsTabs: React.FC<ResultsTabsProps> = ({ tabs, activeTab, onTabChange, children }) => {
   return (
-    <div className="results-tabs-container">
-      <div className="tabs-header">
-        <div className="tabs-list">
+    <div className={styles['results-tabs-container']}>
+      <div className={styles['tabs-header']}>
+        <div className={styles['tabs-list']}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`tab-button${activeTab === tab.id ? ' active' : ''}${tab.alert ? ' alert' : ''}`}
+              className={cx(
+                styles['tab-button'],
+                activeTab === tab.id && styles['active'],
+                tab.alert && styles['alert'],
+              )}
               onClick={() => onTabChange(tab.id)}
             >
-              <span className="tab-label">{tab.label}</span>
+              <span className={styles['tab-label']}>{tab.label}</span>
               {tab.count !== undefined && (
-                <span className={`tab-count${tab.alert ? ' alert' : ''}`}>{tab.count}</span>
+                <span className={cx(styles['tab-count'], tab.alert && styles['alert'])}>
+                  {tab.count}
+                </span>
               )}
             </button>
           ))}
         </div>
       </div>
-      <div className="tab-content">{children}</div>
+      <div className={styles['tab-content']}>{children}</div>
     </div>
   );
 };

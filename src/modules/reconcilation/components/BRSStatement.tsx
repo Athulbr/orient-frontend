@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import '../styles/BRSStatement.css';
+import styles from '../styles/BRSStatement.module.css';
+import { cx } from '../utils/cx';
 
 interface BRSData {
   book_closing_bal:   number;
@@ -27,7 +28,7 @@ interface BRSStatementProps {
   brs:           BRSData;
   book_only:     any[];
   bank_only:     any[];
-  matched?:      any[];          // ← new: for discrepancies section
+  matched?:      any[];
   company_name?: string;
   account_info?: string;
   brs_date?:     string;
@@ -36,7 +37,7 @@ interface BRSStatementProps {
 const fmtAmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
-// ── Discrepancy helpers ───────────────────────────────────────────────────────
+// ── Discrepancy helpers ────────────────────────────────────────────────────────
 const isDiscrepancy = (row: any): boolean => {
   const nameMatch  = row['Name Match']   || '';
   const amtMatch   = row['Amount Match'] || '';
@@ -53,9 +54,9 @@ const discrepancyType = (row: any): 'name-mismatch' | 'partial' | 'amount' | 'na
   const nameMatch = row['Name Match'] || '';
   const amtMatch  = row['Amount Match'] || '';
   const isPartial = row['Partial Payment'] === true || row['Partial Payment'] === 'YES — verify';
-  if (nameMatch === 'Mismatch')                    return 'name-mismatch';
-  if (isPartial)                                   return 'partial';
-  if (String(amtMatch).startsWith('Diff'))         return 'amount';
+  if (nameMatch === 'Mismatch')               return 'name-mismatch';
+  if (isPartial)                              return 'partial';
+  if (String(amtMatch).startsWith('Diff'))    return 'amount';
   return 'name-partial';
 };
 
@@ -68,54 +69,59 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
   const isReconciled = Math.abs(brs.brs_difference) < 0.01;
   const [discExpanded, setDiscExpanded] = useState(true);
 
-  // ── Four BRS sections ───────────────────────────────────────────────────────
+  // ── Four BRS sections ────────────────────────────────────────────────────────
   const issued     = book_only.filter(r => r['Direction'] === 'OUTFLOW');
   const deposited  = book_only.filter(r => r['Direction'] === 'INFLOW');
   const debitedNB  = bank_only.filter(r => r['Direction'] === 'OUTFLOW');
   const creditedNB = bank_only.filter(r => r['Direction'] === 'INFLOW');
 
-  // ── Map raw rows to BRSItem ─────────────────────────────────────────────────
-  const mapBook = (r: any): BRSItem => ({
-    date:      r['Date']          || '',
-    txn_type:  r['Txn Type']      || '',
-    bill_no:   r['Bill No']       || '',
-    chq_no:    r['Chq No']        || '',
-    party:     r['Party']         || '',
-    amount:    Number(r['Book Amt (Rs)']) || 0,
-    narration: (r['Narration'] || '')
+  // ── Map raw rows to BRSItem ──────────────────────────────────────────────────
+  const mapBook = (r: any): BRSItem => {
+    const rawNarr = r['Narration'] || '';
+    const cleanNarr = rawNarr
       .replace('[CF from prev BRS]', '')
       .trim()
-      .replace(/\s*\|\s*$/, ''),
-    is_cf: String(r['Narration'] || '').includes('[CF from prev BRS]'),
-  });
+      .replace(/\s*\|\s*$/, '');
+    // Fall back to Issue field if Narration is empty (some rows only have Issue text)
+    const narration = cleanNarr || r['Issue'] || '';
+    return {
+      date:      r['Date']     || '',
+      txn_type:  r['Txn Type'] || '',
+      bill_no:   r['Bill No']  || '',
+      chq_no:    r['Chq No']   || '',
+      party:     r['Party']    || '',
+      amount:    Number(r['Book Amt (Rs)']) || 0,
+      narration,
+      is_cf: rawNarr.includes('[CF from prev BRS]'),
+    };
+  };
 
   const mapBank = (r: any): BRSItem => ({
-    date:      r['Date']          || '',
-    chq_no:    r['Chq No']        || '',
-    party:     r['Party']         || r['Description'] || '',
+    date:      r['Date']   || '',
+    chq_no:    r['Chq No'] || '',
+    party:     r['Party']  || r['Description'] || '',
     amount:    Number(r['Bank Amt (Rs)']) || 0,
-    narration: r['Description']   || '',
+    narration: r['Narration'] || r['Description'] || r['Issue'] || '',
     is_cf:     Number(r['Balance (Rs)']) === 0,
   });
 
-  // ── Running balance steps ───────────────────────────────────────────────────
+  // ── Running balance steps ────────────────────────────────────────────────────
   const step1 = brs.book_closing_bal + brs.add_issued;
   const step2 = step1 - brs.less_deposited;
   const step3 = step2 - brs.less_debited_nb;
 
-  // ── Discrepancies ───────────────────────────────────────────────────────────
+  // ── Discrepancies ────────────────────────────────────────────────────────────
   const discrepancies = matched.filter(isDiscrepancy);
-  const nPartial  = discrepancies.filter(r => discrepancyType(r) === 'partial').length;
-  const nMismatch = discrepancies.filter(r => discrepancyType(r) === 'name-mismatch').length;
-  const nAmtDiff  = discrepancies.filter(r => discrepancyType(r) === 'amount').length;
-  const nNamePart = discrepancies.filter(r => discrepancyType(r) === 'name-partial').length;
+  const nPartial   = discrepancies.filter(r => discrepancyType(r) === 'partial').length;
+  const nMismatch  = discrepancies.filter(r => discrepancyType(r) === 'name-mismatch').length;
+  const nAmtDiff   = discrepancies.filter(r => discrepancyType(r) === 'amount').length;
+  const nNamePart  = discrepancies.filter(r => discrepancyType(r) === 'name-partial').length;
   const typeParts: string[] = [];
   if (nMismatch) typeParts.push(`${nMismatch} name mismatch${nMismatch > 1 ? 'es' : ''}`);
   if (nNamePart) typeParts.push(`${nNamePart} partial name match${nNamePart > 1 ? 'es' : ''}`);
   if (nPartial)  typeParts.push(`${nPartial} partial payment${nPartial > 1 ? 's' : ''}`);
   if (nAmtDiff)  typeParts.push(`${nAmtDiff} amount difference${nAmtDiff > 1 ? 's' : ''}`);
 
-  // Build a concise flag text for each discrepancy row
   const buildFlagText = (row: any): string => {
     const flags: string[] = [];
     const nameMatch = row['Name Match']   || '';
@@ -142,7 +148,6 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
     if (String(amtMatch).startsWith('Diff')) {
       flags.push(`AMOUNT DIFFERENCE: Rs${Number(diff) >= 0 ? '+' : ''}${fmtAmt(Math.abs(diff))} — Book ₹${fmtAmt(bookAmt)} vs Bank ₹${fmtAmt(bankAmt)}`);
     }
-    // Extra flags (date gap, direction, etc.) from raw Flags field
     String(rawFlags).split(' | ').forEach(seg => {
       if (
         seg &&
@@ -159,7 +164,7 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
     return [...new Set(flags.filter(Boolean))].join(' | ');
   };
 
-  // ── Section component ───────────────────────────────────────────────────────
+  // ── Section component ────────────────────────────────────────────────────────
   const Section: React.FC<{
     title:    string;
     sign:     'add' | 'less';
@@ -167,80 +172,87 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
     subtotal: number;
     running:  number;
   }> = ({ title, sign, items, subtotal, running }) => (
-    <div className="brs-section">
-      <div className={`brs-section-title brs-section-title--${sign}`}>
-        <span className="brs-sign-badge">{sign === 'add' ? 'Add' : 'Less'}</span>
+    <div className={styles['brs-section']}>
+      <div className={cx(styles['brs-section-title'], styles[`brs-section-title--${sign}`])}>
+        <span className={styles['brs-sign-badge']}>{sign === 'add' ? 'Add' : 'Less'}</span>
         {title}
       </div>
 
-      <div className="brs-col-header">
-        <span>Date</span>
-        <span>Type</span>
-        <span>Bill No</span>
-        <span>Chq No</span>
-        <span>Party / Description</span>
-        <span className="col-right">Amount (Rs)</span>
-        <span className="col-right">Narration</span>
+      <div className={styles['brs-scroll-wrap']}>
+        <div className={styles['brs-col-header']}>
+          <span>Date</span>
+          <span>Type</span>
+          <span>Bill No</span>
+          <span>Chq No</span>
+          <span>Party / Description</span>
+          <span className={styles['col-right']}>Amount (Rs)</span>
+          <span>Narration</span>
+        </div>
+
+        {items.length === 0 ? (
+          <div className={styles['brs-nil-row']}>— Nil —</div>
+        ) : (
+          items.map((item, i) => (
+            <div key={i} className={cx(styles['brs-item-row'], item.is_cf && styles['brs-item-row--cf'])}>
+              <span className={cx(styles['brs-cell'], styles['brs-cell--mono'])}>{item.date || ''}</span>
+              <span className={styles['brs-cell']}>{item.txn_type || ''}</span>
+              <span className={cx(styles['brs-cell'], styles['brs-cell--mono'])}>{item.bill_no || ''}</span>
+              <span className={cx(styles['brs-cell'], styles['brs-cell--mono'])}>{item.chq_no || ''}</span>
+              <span className={cx(styles['brs-cell'], styles['brs-cell--party'])}>
+                <span className={styles['brs-cell--party-text']}>{item.party}</span>
+                {item.is_cf && <span className={styles['brs-cf-badge']}>CF</span>}
+              </span>
+              <span className={cx(styles['brs-cell'], styles['brs-cell--amt'])}>{fmtAmt(item.amount)}</span>
+              <span className={cx(styles['brs-cell'], styles['brs-cell--narr'])}>{item.narration || ''}</span>
+            </div>
+          ))
+        )}
       </div>
 
-      {items.length === 0 ? (
-        <div className="brs-nil-row">— Nil —</div>
-      ) : (
-        items.map((item, i) => (
-          <div key={i} className={`brs-item-row${item.is_cf ? ' brs-item-row--cf' : ''}`}>
-            <span className="brs-cell brs-cell--mono brs-cell--date">{item.date || ''}</span>
-            <span className="brs-cell brs-cell--type">{item.txn_type || ''}</span>
-            <span className="brs-cell brs-cell--mono">{item.bill_no || ''}</span>
-            <span className="brs-cell brs-cell--mono">{item.chq_no || ''}</span>
-            <span className="brs-cell brs-cell--party">
-              {item.party}
-              {item.is_cf && <span className="brs-cf-badge">CF</span>}
-            </span>
-            <span className="brs-cell brs-cell--amt">{fmtAmt(item.amount)}</span>
-            <span className="brs-cell brs-cell--narr">{item.narration || ''}</span>
-          </div>
-        ))
-      )}
-
-      <div className="brs-subtotal-row">
-        <span className={`brs-subtotal-amt brs-subtotal-amt--${sign}`}>{fmtAmt(subtotal)}</span>
+      <div className={styles['brs-subtotal-row']}>
+        <span className={cx(styles['brs-subtotal-amt'], styles[`brs-subtotal-amt--${sign}`])}>
+          {fmtAmt(subtotal)}
+        </span>
       </div>
-      <div className="brs-running-row">
+      <div className={styles['brs-running-row']}>
         <span>Running Balance</span>
-        <span className="brs-running-amt">{fmtAmt(running)}</span>
+        <span className={styles['brs-running-amt']}>{fmtAmt(running)}</span>
       </div>
     </div>
   );
 
-  // ── Discrepancy row colour class ────────────────────────────────────────────
-  const discRowClass = (row: any) => {
+  // ── Discrepancy row colour class ─────────────────────────────────────────────
+  const discRowClass = (row: any): string => {
     const t = discrepancyType(row);
-    if (t === 'name-mismatch') return 'disc-row disc-row--mismatch';
-    if (t === 'partial')       return 'disc-row disc-row--partial';
-    if (t === 'amount')        return 'disc-row disc-row--amount';
-    return 'disc-row disc-row--name-partial';
+    return cx(
+      styles['disc-row'],
+      t === 'name-mismatch' && styles['disc-row--mismatch'],
+      t === 'partial'       && styles['disc-row--partial'],
+      t === 'amount'        && styles['disc-row--amount'],
+      t === 'name-partial'  && styles['disc-row--name-partial'],
+    );
   };
 
   return (
-    <div className="brs-statement">
+    <div className={styles['brs-statement']}>
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="brs-header">
-        {company_name && <div className="brs-header-company">{company_name}</div>}
-        {account_info && <div className="brs-header-account">{account_info}</div>}
-        <div className="brs-header-title">
+      {/* Header */}
+      <div className={styles['brs-header']}>
+        {company_name && <div className={styles['brs-header-company']}>{company_name}</div>}
+        {account_info && <div className={styles['brs-header-account']}>{account_info}</div>}
+        <div className={styles['brs-header-title']}>
           Bank Reconciliation Statement
-          {brs_date && <span className="brs-header-date"> As On {brs_date}</span>}
+          {brs_date && <span className={styles['brs-header-date']}> As On {brs_date}</span>}
         </div>
       </div>
 
-      {/* ── Opening balance ─────────────────────────────────────────────────── */}
-      <div className="brs-opening-row">
-        <span className="brs-opening-label">Closing Balance as per Company Books</span>
-        <span className="brs-opening-amt">{fmtAmt(brs.book_closing_bal)}</span>
+      {/* Opening balance */}
+      <div className={styles['brs-opening-row']}>
+        <span className={styles['brs-opening-label']}>Closing Balance as per Company Books</span>
+        <span className={styles['brs-opening-amt']}>{fmtAmt(brs.book_closing_bal)}</span>
       </div>
 
-      {/* ── Four BRS sections ───────────────────────────────────────────────── */}
+      {/* Four BRS sections */}
       <Section
         title="Cheques issued but not debited in Bank"
         sign="add"
@@ -270,52 +282,48 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
         running={brs.reconciled_balance}
       />
 
-      {/* ── Bank closing balance ─────────────────────────────────────────────── */}
-      <div className="brs-bank-row">
+      {/* Bank closing balance */}
+      <div className={styles['brs-bank-row']}>
         <span>Closing Balance as per Bank</span>
         <span>{fmtAmt(brs.bank_closing_bal)}</span>
       </div>
 
-      {/* ── Difference ──────────────────────────────────────────────────────── */}
-      <div className={`brs-diff-row ${isReconciled ? 'brs-diff-row--ok' : 'brs-diff-row--err'}`}>
+      {/* Difference */}
+      <div className={cx(styles['brs-diff-row'], isReconciled ? styles['brs-diff-row--ok'] : styles['brs-diff-row--err'])}>
         <span>
-          {isReconciled
-            ? 'Difference  —  Fully Reconciled'
-            : 'Difference  —  Investigate'}
+          {isReconciled ? 'Difference  —  Fully Reconciled' : 'Difference  —  Investigate'}
         </span>
         <span>{isReconciled ? '—' : fmtAmt(brs.brs_difference)}</span>
       </div>
 
-      {/* ── Matched Transactions with Discrepancies ──────────────────────────── */}
+      {/* Matched Transactions with Discrepancies */}
       {discrepancies.length > 0 && (
-        <div className="brs-disc-section">
-          {/* Section header — collapsible */}
+        <div className={styles['brs-disc-section']}>
           <button
-            className="brs-disc-header"
+            className={styles['brs-disc-header']}
             onClick={() => setDiscExpanded(e => !e)}
             aria-expanded={discExpanded}
           >
-            <span className="brs-disc-header__title">
+            <span className={styles['brs-disc-header__title']}>
               Matched Transactions with Discrepancies — Requires Verification
             </span>
-            <span className="brs-disc-header__meta">
+            <span className={styles['brs-disc-header__meta']}>
               {discrepancies.length} item{discrepancies.length > 1 ? 's' : ''}
               {typeParts.length > 0 && ` · ${typeParts.join(', ')}`}
             </span>
-            <span className="brs-disc-header__chevron">{discExpanded ? '▲' : '▼'}</span>
+            <span className={styles['brs-disc-header__chevron']}>{discExpanded ? 'Hide' : 'Show'}</span>
           </button>
 
           {discExpanded && (
             <>
-              {/* Column headers */}
-              <div className="brs-disc-col-header">
+              <div className={styles['brs-disc-col-header']}>
                 <span>Book Date</span>
                 <span>Book Party</span>
                 <span>Book Chq</span>
-                <span className="col-right">Book Amt (Rs)</span>
+                <span className={styles['col-right']}>Book Amt (Rs)</span>
                 <span>Bank Date</span>
                 <span>Bank Party</span>
-                <span className="col-right">Bank Amt (Rs)</span>
+                <span className={styles['col-right']}>Bank Amt (Rs)</span>
                 <span>Flags / Action Required</span>
               </div>
 
@@ -323,15 +331,15 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
                 const t = discrepancyType(row);
                 return (
                   <div key={i} className={discRowClass(row)}>
-                    <span className="disc-cell disc-cell--mono">{row['Book Date'] || ''}</span>
-                    <span className="disc-cell disc-cell--party">{row['Book Party'] || ''}</span>
-                    <span className="disc-cell disc-cell--mono">{row['Book Chq'] || ''}</span>
-                    <span className="disc-cell disc-cell--amt">{fmtAmt(Number(row['Book Amt (Rs)']) || 0)}</span>
-                    <span className="disc-cell disc-cell--mono">{row['Bank Date'] || ''}</span>
-                    <span className="disc-cell disc-cell--party">{row['Bank Party'] || ''}</span>
-                    <span className="disc-cell disc-cell--amt">{fmtAmt(Number(row['Bank Amt (Rs)']) || 0)}</span>
-                    <span className="disc-cell disc-cell--flag">
-                      <span className={`disc-type-badge disc-type-badge--${t}`}>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--mono'])}>{row['Book Date'] || ''}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--party'])}>{row['Book Party'] || ''}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--mono'])}>{row['Book Chq'] || ''}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--amt'])}>{fmtAmt(Number(row['Book Amt (Rs)']) || 0)}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--mono'])}>{row['Bank Date'] || ''}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--party'])}>{row['Bank Party'] || ''}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--amt'])}>{fmtAmt(Number(row['Bank Amt (Rs)']) || 0)}</span>
+                    <span className={cx(styles['disc-cell'], styles['disc-cell--flag'])}>
+                      <span className={cx(styles['disc-type-badge'], styles[`disc-type-badge--${t}`])}>
                         {t === 'name-mismatch'  ? 'Name Mismatch'   :
                          t === 'name-partial'   ? 'Partial Name'    :
                          t === 'partial'        ? 'Partial Payment' :
@@ -344,20 +352,20 @@ const BRSStatement: React.FC<BRSStatementProps> = ({
               })}
 
               {/* Legend */}
-              <div className="brs-disc-legend">
-                <span className="legend-item legend-item--mismatch">🔴 Name Mismatch — verify party before sign-off</span>
-                <span className="legend-item legend-item--partial">🟠 Partial/Split Payment — confirm all parts recorded</span>
-                <span className="legend-item legend-item--amount">🟡 Amount Difference — review and confirm</span>
-                <span className="legend-item legend-item--name-partial">🔵 Partial Name — confirm same party</span>
+              <div className={styles['brs-disc-legend']}>
+                <span className={cx(styles['legend-item'], styles['legend-item--mismatch'])}>Name Mismatch — verify party before sign-off</span>
+                <span className={cx(styles['legend-item'], styles['legend-item--partial'])}>Partial/Split Payment — confirm all parts recorded</span>
+                <span className={cx(styles['legend-item'], styles['legend-item--amount'])}>Amount Difference — review and confirm</span>
+                <span className={cx(styles['legend-item'], styles['legend-item--name-partial'])}>Partial Name — confirm same party</span>
               </div>
             </>
           )}
         </div>
       )}
 
-      {/* ── CF footnote ─────────────────────────────────────────────────────── */}
-      <div className="brs-footnote">
-        <span className="brs-cf-badge">CF</span>
+      {/* CF footnote */}
+      <div className={styles['brs-footnote']}>
+        <span className={styles['brs-cf-badge']}>CF</span>
         Carried Forward from Previous BRS — outstanding items not yet cleared in bank
       </div>
 

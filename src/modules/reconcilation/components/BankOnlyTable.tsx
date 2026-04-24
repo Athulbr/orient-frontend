@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import '../styles/DataTable.css';
+import styles from '../styles/DataTable.module.css';
+import { cx } from '../utils/cx';
 
 interface BankOnlyRecord {
   'Date': string;
@@ -25,7 +26,7 @@ const BankOnlyTable: React.FC<BankOnlyTableProps> = ({ data }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="table-empty table-empty-success">
+      <div className={cx(styles['table-empty'], styles['table-empty-success'])}>
         <p>All bank entries have been matched with book records.</p>
       </div>
     );
@@ -39,14 +40,14 @@ const BankOnlyTable: React.FC<BankOnlyTableProps> = ({ data }) => {
   };
 
   return (
-    <div className="table-container">
-      <div className="notice-bar notice-danger">
+    <div className={styles['table-container']}>
+      <div className={cx(styles['notice-bar'], styles['notice-danger'])}>
         <strong>{data.length} transactions</strong> found in the bank statement with no corresponding book entry.
         These must be investigated and recorded immediately.
       </div>
 
-      <div className="table-scroll">
-        <table className="data-table">
+      <div className={styles['table-scroll']}>
+        <table className={styles['data-table']}>
           <thead>
             <tr>
               <th>Date</th>
@@ -64,23 +65,29 @@ const BankOnlyTable: React.FC<BankOnlyTableProps> = ({ data }) => {
             {slice.map((record, idx) => {
               const isCF = record['Issue']?.includes('Carried Forward');
               return (
-                <tr key={idx} className={`data-row${isCF ? ' row-cf' : ' row-unrecorded'}`}>
-                  <td className="cell-mono">{record['Date']}</td>
-                  <td className="cell-mono">{record['Chq No'] || '—'}</td>
-                  <td className="cell-description">{record['Description']}</td>
-                  <td className="cell-party">{record['Party']}</td>
+                <tr
+                  key={idx}
+                  className={cx(
+                    styles['data-row'],
+                    isCF ? styles['row-cf'] : styles['row-unrecorded'],
+                  )}
+                >
+                  <td className={styles['cell-mono']}>{record['Date']}</td>
+                  <td className={styles['cell-mono']}>{record['Chq No'] || '—'}</td>
+                  <td className={styles['cell-description']}>{record['Description']}</td>
+                  <td className={styles['cell-party']}>{record['Party']}</td>
                   <td>
-                    <span className={`dir-badge dir-${record['Direction']?.toLowerCase()}`}>
+                    <span className={cx(styles['dir-badge'], styles[`dir-${record['Direction']?.toLowerCase()}`])}>
                       {record['Direction']}
                     </span>
                   </td>
-                  <td className="cell-amount cell-debit">{fmtAmt(record['Debit (Rs)'])}</td>
-                  <td className="cell-amount cell-credit">{fmtAmt(record['Credit (Rs)'])}</td>
-                  <td className="cell-amount cell-amount-bold">{fmtAmt(record['Bank Amt (Rs)'])}</td>
+                  <td className={cx(styles['cell-amount'], styles['cell-debit'])}>{fmtAmt(record['Debit (Rs)'])}</td>
+                  <td className={cx(styles['cell-amount'], styles['cell-credit'])}>{fmtAmt(record['Credit (Rs)'])}</td>
+                  <td className={cx(styles['cell-amount'], styles['cell-amount-bold'])}>{fmtAmt(record['Bank Amt (Rs)'])}</td>
                   <td>
                     {isCF
-                      ? <span className="badge badge-info">Carried Forward</span>
-                      : <span className="badge badge-danger">Unrecorded</span>
+                      ? <span className={cx(styles['badge'], styles['badge-info'])}>Carried Forward</span>
+                      : <span className={cx(styles['badge'], styles['badge-danger'])}>Unrecorded</span>
                     }
                   </td>
                 </tr>
@@ -90,15 +97,15 @@ const BankOnlyTable: React.FC<BankOnlyTableProps> = ({ data }) => {
         </table>
       </div>
 
-      <div className="table-footer">
-        <span className="table-count">
+      <div className={styles['table-footer']}>
+        <span className={styles['table-count']}>
           Showing {page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, data.length)} of {data.length} records
         </span>
         {totalPages > 1 && (
-          <div className="pagination">
-            <button className="page-btn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
-            <span className="page-info">Page {page + 1} of {totalPages}</span>
-            <button className="page-btn" disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
+          <div className={styles['pagination']}>
+            <button className={styles['page-btn']} disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
+            <span className={styles['page-info']}>Page {page + 1} of {totalPages}</span>
+            <button className={styles['page-btn']} disabled={page === totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
           </div>
         )}
       </div>

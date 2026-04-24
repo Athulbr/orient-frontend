@@ -91,9 +91,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.table-scroll::-webkit-scrollbar { height: 4px; }
-.table-scroll::-webkit-scrollbar-track { background: #f3f4f6; }
-.table-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 
 /* ── Table ── */
 .data-table {
