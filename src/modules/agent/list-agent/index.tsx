@@ -136,8 +136,9 @@ const ListAgentsPage = () => {
                                             <Bot size={24} />
                                         </div>
                                         <span
-                                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${agent.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-slate-50 text-zinc-600'
-                                                }`}
+                                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm ${
+                                                agent.isActive ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-slate-50 text-zinc-600'
+                                            }`}
                                         >
                                             {agent.isActive ? 'Active' : 'Inactive'}
                                         </span>
@@ -155,7 +156,7 @@ const ListAgentsPage = () => {
 
                                 <div className="relative z-10 mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
                                     <div className="text-right text-xs text-zinc-500">Updated {new Date(agent.updatedAt).toLocaleDateString()}</div>
-                                    <Button outlined small onClick={() => navigate(`/agent/run/${agent._id}`)}>
+                                    <Button outlined small onClick={() => navigate(`/agent/run/${agent.name}`)}>
                                         Run Agent
                                     </Button>
                                 </div>
