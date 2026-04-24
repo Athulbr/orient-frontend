@@ -5,6 +5,7 @@ import { Button } from '../../../components/Button';
 import Spinner from '../../../components/Spinner';
 import { useDashboardState } from '../hooks/dashboardContext';
 import { usePermissionStore } from '../../../zustand-store/PermissionStore';
+import { SingleSelect } from '../../../components/SingleSelect';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import httpUploadRequest from '../../../global-utils/httpUploadRequest';
 import httpFileRequest from '../../../global-utils/httpFileRequest';
@@ -12,52 +13,45 @@ import { config } from '../../../config/default';
 
 export const DashboardHeaderComponent: FC = () => {
     const { state, setState } = useDashboardState();
-    const { user } = usePermissionStore();
+    const { user, checkPermission } = usePermissionStore();
     const toast = useToastStore();
     const navigate = useNavigate();
-    const [isUserGuideMenuOpen, setIsUserGuideMenuOpen] = useState(false);
     const [isUserGuideDownloading, setIsUserGuideDownloading] = useState(false);
     const [isUserGuideUploading, setIsUserGuideUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const isContentCreationModule = sessionStorage.getItem('module') === 'content-creation';
-    const sessionUser = sessionStorage.getItem('user');
-    let sessionUserRoleName: string | undefined;
-    if (sessionUser) {
+
+    const getSessionUserRoleName = (): string | undefined => {
         try {
-            sessionUserRoleName = JSON.parse(sessionUser)?.role?.name;
-        } catch (error) {
-            console.error('Failed to parse session user', error);
+            const sessionUser = sessionStorage.getItem('user');
+            return sessionUser ? JSON.parse(sessionUser)?.role?.name : undefined;
+        } catch {
+            return undefined;
         }
-    }
+    };
+
+    const sessionUserRoleName = getSessionUserRoleName();
 
     const handleUserGuideClick = async () => {
         if (isUserGuideDownloading) {
             return;
         }
+        const newTab = window.open('', '_blank');
+        if (!newTab) {
+            toast.error('Unable to open new tab. Please check your browser settings.');
+            return;
+        }
+        newTab.document.body.style.cssText = 'margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#555';
+        newTab.document.body.innerText = 'Loading user guide...';
+
         setIsUserGuideDownloading(true);
         try {
             const blob = await httpFileRequest('GET', `${config.nodeApiUrl}/idp/user-guide/download`);
             const blobUrl = URL.createObjectURL(blob);
-
-            // Trigger download
-            const downloadLink = document.createElement('a');
-            downloadLink.href = blobUrl;
-            downloadLink.download = 'user-guide.pdf';
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-
-            // Open in a new tab
-            const newTab = window.open();
-            if (newTab) {
-                newTab.location.href = blobUrl;
-            } else {
-                toast.error('Unable to open new tab. Please check your browser settings.');
-            }
-
-            setIsUserGuideMenuOpen(false);
+            newTab.location.href = blobUrl;
         } catch (error) {
+            newTab.close();
             console.error('Failed to open user guide', error);
             toast.error('Unable to open user guide');
         } finally {
@@ -98,20 +92,12 @@ export const DashboardHeaderComponent: FC = () => {
         try {
             setIsUserGuideUploading(true);
             await httpUploadRequest(`${config.nodeApiUrl}/idp/user-guide/upload`, selectedFile);
-            setIsUserGuideMenuOpen(false);
         } catch (error) {
             console.error('Failed to upload user guide', error);
             toast.error('Unable to upload user guide');
         } finally {
             setIsUserGuideUploading(false);
         }
-    };
-
-    const handleUserGuideMenuToggle = () => {
-        if (isUserGuideDownloading || isUserGuideUploading) {
-            return;
-        }
-        setIsUserGuideMenuOpen(prev => !prev);
     };
 
     return (
@@ -122,29 +108,24 @@ export const DashboardHeaderComponent: FC = () => {
             <div className="flex items-center gap-2">
                 {isContentCreationModule && (
                     <>
-                        <div className="relative">
-                            <Button permission="viewEdit:userGuide" outlined onClick={handleUserGuideMenuToggle} disabled={isUserGuideDownloading || isUserGuideUploading}>
-                                User Guide
-                                {(isUserGuideDownloading || isUserGuideUploading) && <Spinner className="text-gray-500" size={16} />}
-                            </Button>
-                            <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden" onChange={handleUserGuideFileChange} />
-                            {isUserGuideMenuOpen && (
-                                <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg">
-                                    <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60" onClick={handleUserGuideClick} disabled={isUserGuideDownloading || isUserGuideUploading}>
-                                        <span className="inline-flex items-center gap-2">
-                                            View
-                                            {isUserGuideDownloading && <Spinner className="text-gray-500" size={14} />}
-                                        </span>
-                                    </button>
-                                    <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60" onClick={handleEditClick} disabled={isUserGuideDownloading || isUserGuideUploading}>
-                                        <span className="inline-flex items-center gap-2">
-                                            Edit
-                                            {isUserGuideUploading && <Spinner className="text-gray-500" size={14} />}
-                                        </span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        {checkPermission('viewEdit:userGuide') && (
+                            <>
+                                <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden" onChange={handleUserGuideFileChange} />
+                                <SingleSelect
+                                    placeholder="User Guide"
+                                    value=""
+                                    options={[
+                                        { value: 'view', label: 'View' },
+                                        { value: 'edit', label: 'Edit' },
+                                    ]}
+                                    onValueChange={value => {
+                                        if (value === 'view') handleUserGuideClick();
+                                        else if (value === 'edit') handleEditClick();
+                                    }}
+                                    disabled={isUserGuideDownloading || isUserGuideUploading}
+                                />
+                            </>
+                        )}
                         {sessionUserRoleName !== 'superadmin' && (
                             <Button permission="view:userGuide" outlined onClick={handleUserGuideClick} disabled={isUserGuideDownloading}>
                                 User Guide
