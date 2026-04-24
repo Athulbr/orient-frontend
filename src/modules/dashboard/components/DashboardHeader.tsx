@@ -116,7 +116,7 @@ export const DashboardHeaderComponent: FC = () => {
                                     value=""
                                     options={[
                                         { value: 'view', label: 'View' },
-                                        { value: 'edit', label: 'Edit' },
+                                        { value: 'edit', label: 'Edit' }
                                     ]}
                                     onValueChange={value => {
                                         if (value === 'view') handleUserGuideClick();
@@ -134,6 +134,9 @@ export const DashboardHeaderComponent: FC = () => {
                         )}
                     </>
                 )}
+                <Button outlined onClick={() => navigate('/reconcilation/list')}>
+                    Reconcilation
+                </Button>
                 <Button outlined onClick={() => navigate('/agent/list')}>
                     Makez Agents
                 </Button>
