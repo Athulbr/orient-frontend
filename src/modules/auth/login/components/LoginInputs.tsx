@@ -24,7 +24,7 @@ export const LoginInputs: React.FC<LoginInputsIF> = () => {
     };
 
     useEffect(() => {
-        if (window?.localStorage?.getItem('autologin') === 'true') {
+        if (window?.localStorage?.getItem('auto_login') === 'true') {
             loginWithEmailAndPassword();
         }
     }, []);

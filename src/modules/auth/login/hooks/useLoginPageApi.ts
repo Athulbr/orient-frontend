@@ -28,7 +28,7 @@ export const useLoginPageApi = () => {
     // ============================= login With Email And Password ==================================
     const loginWithEmailAndPassword = async () => {
         //===== only for developers ======
-        const autoLoginCredential = window?.localStorage?.getItem('autologin') === 'true' ? { email: 'sam@demo.com', password: 'welcome' } : null;
+        const autoLoginCredential = window?.localStorage?.getItem('auto_login') === 'true' ? { email: 'sam@demo.com', password: 'welcome' } : null;
         //===== only for developers ======
         if (!autoLoginCredential) {
             setState(prev => ({ ...prev, isSubmitClicked: true }));
