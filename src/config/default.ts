@@ -37,14 +37,20 @@ const globalEnv: any = {
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_REHAB,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_REHAB
     },
-    orient: {
-        baseUrl: import.meta.env.VITE_BASE_URL_ORIENT,
-        nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT
+    orientInternal: {
+        baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_INTERNAL,
+        nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_INTERNAL,
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_INTERNAL,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_INTERNAL
+    },
+    orientExternal: {
+        baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_EXTERNAL,
+        nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_EXTERNAL,
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_EXTERNAL,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_EXTERNAL
     }
 };
-const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || 'local'];
+const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || ''];
 
 export const config = {
     baseUrl: envConfig.baseUrl,
@@ -61,6 +67,6 @@ export const config = {
         clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID
     },
     usePhpSessionApi: true, // Toggle to true to use check-session.php endpoint, false to use local strict timer
-    sessionTTLSeconds: 60, // Global timeout sync natively matching the Orient backend configs
+    sessionTTLSeconds: 1800, // Global timeout sync natively matching the Orient backend configs (30 mins)
     orientSessionApi: import.meta.env.VITE_ORIENT_SESSION_API
 };

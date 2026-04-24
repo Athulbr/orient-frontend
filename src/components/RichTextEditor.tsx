@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import JoditEditor from 'jodit-react';
 
 export interface SelectionData {
@@ -12,6 +12,40 @@ export interface RichTextEditorHandle {
     replaceSelection: (html: string) => void;
 }
 
+interface CssRule {
+    selector: string;
+    props: Record<string, string>;
+}
+
+/** Parse a flat CSS string into an array of { selector, props } entries.
+ *  Splits comma-grouped selectors and skips @-rules. */
+const parseCssRules = (css: string): CssRule[] => {
+    const rules: CssRule[] = [];
+    if (!css?.trim()) return rules;
+    const ruleRe = /([^{@][^{]*)\{([^}]*)\}/g;
+    let m: RegExpExecArray | null;
+    while ((m = ruleRe.exec(css)) !== null) {
+        const selectorGroup = m[1].trim();
+        if (!selectorGroup || selectorGroup.startsWith('@')) continue;
+        const props: Record<string, string> = {};
+        m[2].split(';').forEach(decl => {
+            const idx = decl.indexOf(':');
+            if (idx === -1) return;
+            const p = decl.slice(0, idx).trim();
+            const v = decl.slice(idx + 1).trim();
+            if (p && v) props[p] = v;
+        });
+        if (Object.keys(props).length === 0) continue;
+        selectorGroup.split(',').forEach(sel => {
+            const s = sel.trim();
+            if (s) rules.push({ selector: s, props });
+        });
+    }
+    return rules;
+};
+
+const TOOLTIP_ID = 'blog-css-hover-tooltip';
+
 interface RichTextEditorProps {
     value: string;
     onChange: (content: string) => void;
@@ -19,6 +53,8 @@ interface RichTextEditorProps {
     height?: string;
     onSelectionChange?: (data: SelectionData | null) => void;
     editorHandle?: React.RefObject<RichTextEditorHandle | null>;
+    /** When provided, hovering over content elements shows matching CSS class names and styles. */
+    blogCss?: string;
 }
 
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -27,7 +63,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     placeholder = 'Start typing...',
     height = '400px',
     onSelectionChange,
-    editorHandle
+    editorHandle,
+    blogCss,
 }) => {
     // Keep latest callbacks in refs so stable callbacks below don't go stale
     const onSelectionChangeRef = useRef(onSelectionChange);
@@ -35,6 +72,23 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     const editorHandleRef = useRef(editorHandle);
     editorHandleRef.current = editorHandle;
+
+    // Keep parsed CSS rules in a ref so the stable handleEditorReady closure always
+    // reads the latest version without needing to be re-created.
+    const cssRulesRef = useRef<CssRule[]>([]);
+    useEffect(() => {
+        cssRulesRef.current = parseCssRules(blogCss || '');
+    }, [blogCss]);
+
+    // Tooltip DOM element ref — cleaned up on unmount
+    const tooltipElRef = useRef<HTMLDivElement | null>(null);
+    useEffect(() => {
+        return () => {
+            tooltipElRef.current?.remove();
+            tooltipElRef.current = null;
+            document.getElementById(TOOLTIP_ID)?.remove();
+        };
+    }, []);
 
     /**
      * jodit-react v5 calls `editorRef(joditInstance)` once the editor is
@@ -68,6 +122,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             const editorEl: HTMLElement | undefined = joditInstance.editor;
             if (!editorEl) return;
 
+            // ── Selection events (existing) ───────────────────────────────────
             const handleSelectionEvent = () => {
                 const cb = onSelectionChangeRef.current;
                 if (!cb) return;
@@ -101,6 +156,88 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
             editorEl.addEventListener('mouseup', handleSelectionEvent);
             editorEl.addEventListener('keyup', handleSelectionEvent);
+
+            // ── CSS class hover tooltip ───────────────────────────────────────
+            // Re-use or create the singleton tooltip div in document.body.
+            document.getElementById(TOOLTIP_ID)?.remove();
+            const tooltip = document.createElement('div');
+            tooltip.id = TOOLTIP_ID;
+            Object.assign(tooltip.style, {
+                position: 'fixed',
+                zIndex: '99999',
+                display: 'none',
+                maxWidth: '380px',
+                maxHeight: '320px',
+                overflowY: 'auto',
+                background: '#0f172a',
+                color: '#e2e8f0',
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                lineHeight: '1.6',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                pointerEvents: 'none',
+                whiteSpace: 'pre',
+            });
+            document.body.appendChild(tooltip);
+            tooltipElRef.current = tooltip;
+
+            const hideTooltip = () => { tooltip.style.display = 'none'; };
+
+            const showTooltip = (e: MouseEvent) => {
+                const target = e.target as Element;
+                if (!target || target === editorEl || target.tagName === 'BODY') {
+                    hideTooltip();
+                    return;
+                }
+
+                const rules = cssRulesRef.current;
+                if (rules.length === 0) { hideTooltip(); return; }
+
+                // Find all CSS rules whose selector matches this element
+                // Strip pseudo-classes before matching so :hover / :focus don't fail
+                const matched: CssRule[] = [];
+                for (const rule of rules) {
+                    const cleanSel = rule.selector.replace(/:[a-zA-Z-]+(\([^)]*\))?/g, '');
+                    try {
+                        if (target.matches(cleanSel)) matched.push(rule);
+                    } catch { /* invalid selector */ }
+                }
+
+                if (matched.length === 0) { hideTooltip(); return; }
+
+                // Build tooltip text
+                const tag = target.tagName.toLowerCase();
+                const classes = typeof target.className === 'string' ? target.className.trim() : '';
+                const classStr = classes ? '.' + classes.split(/\s+/).join('.') : '';
+
+                const lines: string[] = [`${tag}${classStr}`, ''];
+                matched.forEach(rule => {
+                    lines.push(`  ${rule.selector}`);
+                    Object.entries(rule.props).forEach(([p, v]) => {
+                        lines.push(`    ${p}: ${v};`);
+                    });
+                    lines.push('');
+                });
+
+                tooltip.textContent = lines.join('\n').trimEnd();
+                tooltip.style.display = 'block';
+            };
+
+            const moveTooltip = (e: MouseEvent) => {
+                if (tooltip.style.display === 'none') return;
+                const x = e.clientX + 14;
+                const y = e.clientY - 10;
+                // Flip left if overflowing viewport right edge
+                const tw = tooltip.offsetWidth;
+                tooltip.style.left = `${x + tw > window.innerWidth ? x - tw - 28 : x}px`;
+                tooltip.style.top = `${y}px`;
+            };
+
+            editorEl.addEventListener('mouseover', showTooltip);
+            editorEl.addEventListener('mousemove', moveTooltip);
+            editorEl.addEventListener('mouseleave', hideTooltip);
         };
 
         if (joditInstance.isReady) {

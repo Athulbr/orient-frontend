@@ -9,18 +9,18 @@ import { msalInstance, initializeMsal } from './modules/auth/login/sso/msal-serv
 import { config } from './config/default';
 
 const startApp = async () => {
-    await initializeMsal();
+    // await initializeMsal();
 
     const root = createRoot(document.getElementById('root')!);
     root.render(
         <GoogleOAuthProvider clientId={config.google.clientId as string}>
-            <MsalProvider instance={msalInstance}>
-                <BrowserRouter>
-                    {/* <StrictMode> */}
-                    <App />
-                    {/* </StrictMode> */}
-                </BrowserRouter>
-            </MsalProvider>
+            {/* <MsalProvider instance={msalInstance}> */}
+            <BrowserRouter>
+                {/* <StrictMode> */}
+                <App />
+                {/* </StrictMode> */}
+            </BrowserRouter>
+            {/* </MsalProvider> */}
         </GoogleOAuthProvider>
     );
 };

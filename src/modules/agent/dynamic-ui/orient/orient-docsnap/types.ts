@@ -35,7 +35,11 @@ export interface OrderDetails {
     deliveryCharge?: number;
     handlingCharges?: number;
     purpose?: string;
+    residentialStatus?: string;
     documentUploadTime?: string;
+    orderCreatedDate?: string;
+    gst?: string;
+    tcs?: string;
 }
 
 export interface UserDetails {
@@ -68,10 +72,19 @@ export interface Order {
     webDocuments: DocumentDetail[];
     manualDocuments?: DocumentDetail[];
     emailDocuments?: DocumentDetail[];
+    receipts?: DocumentDetail[];
     linkedEmailIds?: string[];
     extractionDetails: {
         recordId?: string;
         extractedData?: Record<string, unknown>;
+    };
+    receiptExtractionDetails?: {
+        recordId?: string;
+        extractedData?: Record<string, unknown>;
+    };
+    maraekatDetails?: {
+        eonBookingNumber?: string;
+        bookingNumber?: string;
     };
     createdAt?: string;
 }

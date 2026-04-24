@@ -72,7 +72,7 @@ export const SingleSelect: React.FC<SelectProps> = ({ value, label, options, onV
             </button>
             {isOpen && (
                 <div className={cn('absolute z-50 w-full overflow-hidden rounded-md border border-gray-300 bg-white shadow-lg', position === 'top' ? 'bottom-full mb-1' : 'top-full mt-1')}>
-                    <ul className="max-h-45 overflow-auto py-1" role="listbox">
+                    <ul className="max-h-70 overflow-auto py-1" role="listbox">
                         {options.map(option => (
                             <li
                                 key={option.value}

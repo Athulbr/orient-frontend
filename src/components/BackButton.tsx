@@ -13,11 +13,10 @@ const BackButton: React.FC<BackButtonIF> = ({ onClick, tooltipText = 'Go back', 
     const navigate = useNavigate();
     const location = useLocation();
     const isOrient = location.state?.orient;
-    console.log('isOrient:===========', isOrient);
 
     const onClickHandler = () => {
         if (isOrient) {
-            navigate('/agent/run/69c512577f13230d0d7be991');
+            navigate('/agent/run/69ce4d5d95ebad5341099ad1');
             return;
         }
         if (onClick) return onClick();

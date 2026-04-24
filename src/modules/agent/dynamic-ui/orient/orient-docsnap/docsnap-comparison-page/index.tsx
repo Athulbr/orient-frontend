@@ -1,11 +1,18 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link, Printer, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
 import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
+import { SearchableSelect } from './SearchableSelect';
+import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
 import { Order } from '../types';
+import { useToastStore } from '../../../../../../components/toast/ToastStore';
+import { getMaraekatPayload } from './utils/getMaraekatPayload';
+import Spinner from '../../../../../../components/Spinner';
+import FullScreenLoader from '../../../../../../components/FullScreenLoader';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -47,11 +54,13 @@ interface DocsnapComparisonUIProps {
     recordId: string;
     onClose?: () => void;
     order: Order;
+    onOrderUpdate?: (updatedOrder: Order) => void;
+    viewReceipt?: boolean;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewReceipt, recordId, onClose, order, onOrderUpdate }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -61,6 +70,238 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [record, setRecord] = useState<any>({});
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
+    const [currentOrder, setCurrentOrder] = useState<Order>(order);
+    const [isExchanging, setIsExchanging] = useState(false);
+    const [isExchangingAll, setIsExchangingAll] = useState(false);
+    const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
+    const [agentTemplate, setAgentTemplate] = useState<any>(null);
+    const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+    // console.log('record====>>', record);
+
+    // Build a lookup map: fieldKey -> enums[] from the agent template
+    const enumsLookup = useMemo(() => {
+        const lookup: Record<string, string[]> = {};
+        if (!agentTemplate?.sections) return lookup;
+        for (const section of agentTemplate.sections) {
+            if (!section.fields) continue;
+            for (const field of section.fields) {
+                if (field.key && Array.isArray(field.enums) && field.enums.length > 0) {
+                    lookup[field.key] = field.enums;
+                }
+            }
+        }
+        return lookup;
+    }, [agentTemplate]);
+
+    const toast = useToastStore();
+
+    const handleOrderUpdate = useCallback(
+        (updatedOrder: Order) => {
+            setCurrentOrder(updatedOrder);
+            onOrderUpdate?.(updatedOrder);
+        },
+        [onOrderUpdate]
+    );
+
+    // const handleExchange = async (item: any) => {
+    //     const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
+    //     const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
+    //     console.log('bookingNo=>', bookingNo);
+    //     if (!eonBookingNumber || !bookingNo) return;
+
+    //     console.log(item);
+
+    //     setIsExchanging(true);
+    //     setExchangeResult(null);
+
+    //     try {
+    //         // Step 1: Login to get auth token
+    //         const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' }
+    //         });
+
+    //         if (!loginRes.ok) {
+    //             setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
+    //             setIsExchanging(false);
+    //             return;
+    //         }
+
+    //         const loginData = await loginRes.json();
+    //         const authToken = loginData?.Result;
+
+    //         if (!authToken) {
+    //             setExchangeResult({ type: 'error', message: 'No auth token received from login' });
+    //             setIsExchanging(false);
+    //             return;
+    //         }
+
+    //         // Step 2: Get payload data for exchange
+    //         const { payload } = getMaraekatPayload(currentOrder, extractedData);
+    //         const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
+
+    //         // Step 3: Call PUSHFXBOOKINGEX via backend proxy
+    //         const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 Authorization: `Bearer ${authToken}`
+    //             },
+
+    //             body: JSON.stringify({
+    //                 BRANCHCODE: payload.BRANCHCODE || '',
+    //                 BOOKINGTYPE: payload.BOOKINGTYPE || '',
+    //                 BOOKINGNO: bookingNo || '',
+    //                 EONBOOKINGNO: eonBookingNumber,
+    //                 CURRENCY: item.currency || '',
+    //                 EXCHTYPE: exchangeType || '',
+    //                 FCNAMOUNT: item.quantity || '',
+    //                 BOOKINGRATE: item.rate || ''
+    //             })
+    //         });
+
+    //         if (!exchangeRes.ok) {
+    //             setExchangeResult({ type: 'error', message: `Exchange API failed: ${exchangeRes.status}` });
+    //             setIsExchanging(false);
+    //             return;
+    //         }
+
+    //         const exchangeData = await exchangeRes.json();
+    //         const resultItem = exchangeData?.Result?.[0];
+
+    //         if (resultItem?.APISTATUS === 'FAILED') {
+    //             setExchangeResult({
+    //                 type: 'error',
+    //                 message: `Exchange failed: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`
+    //             });
+    //         } else if (resultItem?.BOOKINGNO) {
+    //             setExchangeResult({
+    //                 type: 'success',
+    //                 message: `Exchange successful! Booking No: ${resultItem.BOOKINGNO}. ${resultItem.BOOKINGSTATUS || ''}`
+    //             });
+    //             toast.success(`Exchange successful! Booking No: ${resultItem.BOOKINGNO}`);
+    //         } else {
+    //             setExchangeResult({
+    //                 type: 'error',
+    //                 message: exchangeData?.Error || 'Exchange failed — no booking number returned'
+    //             });
+    //         }
+    //     } catch (err: any) {
+    //         console.error('Exchange error:', err);
+    //         setExchangeResult({ type: 'error', message: err.message || 'Exchange request failed' });
+    //     } finally {
+    //         setIsExchanging(false);
+    //     }
+    // };
+
+    const handleExchangeAll = async () => {
+        const items = currentOrder.currencyDetails;
+        if (!items || items.length === 0) return;
+
+        const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
+        const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
+        if (!eonBookingNumber || !bookingNo) return;
+
+        setIsExchangingAll(true);
+        setExchangeResult(null);
+
+        // Step 1: Login once to get auth token
+        let authToken: string | null = null;
+        try {
+            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!loginRes.ok) {
+                setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
+                setIsExchangingAll(false);
+                return;
+            }
+            const loginData = await loginRes.json();
+            authToken = loginData?.Result;
+            if (!authToken) {
+                setExchangeResult({ type: 'error', message: 'No auth token received from login' });
+                setIsExchangingAll(false);
+                return;
+            }
+        } catch (err: any) {
+            setExchangeResult({ type: 'error', message: err.message || 'Login request failed' });
+            setIsExchangingAll(false);
+            return;
+        }
+
+        // Step 2: Fire all exchange requests in parallel
+        const { payload } = getMaraekatPayload(currentOrder, extractedData);
+
+        const results = await Promise.allSettled(
+            items.map(async (item: any) => {
+                const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
+
+                const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        BRANCHCODE: payload.BRANCHCODE || '',
+                        BOOKINGTYPE: payload.BOOKINGTYPE || '',
+                        BOOKINGNO: bookingNo || '',
+                        EONBOOKINGNO: eonBookingNumber,
+                        CURRENCY: item.currency || '',
+                        EXCHTYPE: exchangeType || '',
+                        FCNAMOUNT: item.quantity || '',
+                        BOOKINGRATE: item.rate || ''
+                    })
+                });
+
+                if (!exchangeRes.ok) {
+                    throw new Error(`${item.currency}: API failed (${exchangeRes.status})`);
+                }
+
+                const exchangeData = await exchangeRes.json();
+                const resultItem = exchangeData?.Result?.[0];
+
+                if (resultItem?.APISTATUS === 'FAILED') {
+                    throw new Error(`${item.currency}: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`);
+                } else if (resultItem?.BOOKINGNO) {
+                    return `${item.currency}: Booking No ${resultItem.BOOKINGNO}`;
+                } else {
+                    throw new Error(`${item.currency}: ${exchangeData?.Error || 'No booking number returned'}`);
+                }
+            })
+        );
+
+        // Step 3: Aggregate results
+        const successes: string[] = [];
+        const failures: string[] = [];
+        results.forEach(r => {
+            if (r.status === 'fulfilled') {
+                successes.push(r.value);
+            } else {
+                failures.push((r as PromiseRejectedResult).reason?.message || 'Unknown error');
+            }
+        });
+
+        if (failures.length === 0) {
+            setExchangeResult({
+                type: 'success',
+                message: `All ${successes.length} exchange(s) successful! ${successes.join(' · ')}`
+            });
+            toast.success(`All ${successes.length} exchange(s) completed successfully!`);
+        } else {
+            setExchangeResult({
+                type: 'error',
+                message: `${failures.length} exchange(s) failed: ${failures.join(' | ')}${successes.length > 0 ? ` (${successes.length} succeeded: ${successes.join(' · ')})` : ''}`
+            });
+            toast.error(`${failures.length} exchange(s) failed.`);
+        }
+
+        setIsExchangingAll(false);
+    };
 
     useEffect(() => {
         const handlePopState = () => {
@@ -97,9 +338,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 const data = await res.json();
                 if (data.success) {
                     setRecord(data.record);
+                    toast.success('Record saved successfully');
                 }
             }
         } catch (error) {
+            toast.error('Failed to save record');
             console.error('Error saving record:', error);
         } finally {
             setIsSaving(false);
@@ -111,12 +354,29 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         const fetchRecord = async () => {
             try {
                 if (!recordId) return;
+                setIsLoadingRecord(true);
                 const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`);
                 if (res.ok) {
                     const data = await res.json();
                     if (isMounted && data.success && data.record) {
                         setRecord(data.record);
+                        // setExtractedData(sampleFinalData as unknown as ExtractedData);
                         setExtractedData(data.record.finalOutput as unknown as ExtractedData);
+
+                        if (data.record.templateId) {
+                            try {
+                                const templateRes = await fetch(`${config.workflowService}/api/agent-templates/${data.record.templateId}?apiKey=secret1`);
+                                if (templateRes.ok) {
+                                    const templateData = await templateRes.json();
+                                    if (templateData?.success && templateData?.template) {
+                                        setAgentTemplate(templateData.template);
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error fetching agent template:', err);
+                            }
+                        }
+
                         return;
                     }
                 }
@@ -127,6 +387,10 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     // Fallback to sampleRecord for development if database fails
                     setRecord(sampleRecord);
                     setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoadingRecord(false);
                 }
             }
         };
@@ -169,18 +433,34 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             const inputRect = inputEl.getBoundingClientRect();
             const bboxRect = bboxEl.getBoundingClientRect();
 
-            // Start: left edge of the input field
-            const startX = inputRect.left - containerRect.left;
-            const startY = inputRect.top + inputRect.height / 2 - containerRect.top;
-            // End: right edge of the bbox
-            const endX = bboxRect.right - containerRect.left;
-            const endY = bboxRect.top + bboxRect.height / 2 - containerRect.top;
+            const isFloating = inputEl.closest('[data-floating-card]') !== null;
 
-            // Fixed length of each horizontal arm (start stub & end stub)
-            const armLen = 60;
+            let pathD = '';
+            let startX, startY, endX, endY;
 
-            // Build the straight-cross-straight path: short H arm → diagonal cross → short H arm
-            const pathD = `M ${startX} ${startY} H ${startX - armLen} L ${endX + armLen} ${endY} H ${endX}`;
+            if (isFloating) {
+                // start from field top (middle)
+                startX = inputRect.left + inputRect.width / 2 - containerRect.left;
+                startY = inputRect.top - containerRect.top;
+                // end at bbox bottom (middle)
+                endX = bboxRect.left + bboxRect.width / 2 - containerRect.left;
+                endY = bboxRect.bottom - containerRect.top;
+
+                pathD = `M ${startX} ${startY} L ${endX} ${endY}`;
+            } else {
+                // Start: left edge of the input field
+                startX = inputRect.left - containerRect.left;
+                startY = inputRect.top + inputRect.height / 2 - containerRect.top;
+                // End: right edge of the bbox
+                endX = bboxRect.right - containerRect.left;
+                endY = bboxRect.top + bboxRect.height / 2 - containerRect.top;
+
+                // Fixed length of each horizontal arm (start stub & end stub)
+                const armLen = 60;
+
+                // Build the straight-cross-straight path: short H arm → diagonal cross → short H arm
+                pathD = `M ${startX} ${startY} H ${startX - armLen} L ${endX + armLen} ${endY} H ${endX}`;
+            }
 
             const svg = lineRef.current;
             const path = svg.querySelector('path') as SVGPathElement | null;
@@ -329,11 +609,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             scrollToBbox(id);
             updateConnectionLine();
 
-            // Keep line connected during smooth scroll
+            // Keep line connected during smooth scroll (1500ms covers long cross-page scrolls)
             const start = performance.now();
             const tick = () => {
                 updateConnectionLine();
-                if (performance.now() - start < 500) {
+                if (performance.now() - start < 1500) {
                     requestAnimationFrame(tick);
                 }
             };
@@ -406,12 +686,31 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     // Get the field info (groupKey, fieldKey, value) for the active field
     const activeFieldInfo = useMemo(() => {
         if (!activeFieldId) return null;
-        const [groupKey, fieldKey] = activeFieldId.split('-');
+        const firstDashIdx = activeFieldId.indexOf('-');
+        if (firstDashIdx === -1) return null;
+        const groupKey = activeFieldId.substring(0, firstDashIdx);
+        const rest = activeFieldId.substring(firstDashIdx + 1);
+
         const group = extractedData[groupKey];
-        if (!group || Array.isArray(group)) return null;
-        const field = group[fieldKey];
-        if (!field) return null;
-        return { groupKey, fieldKey, field };
+        if (!group) return null;
+
+        if (Array.isArray(group)) {
+            const secondDashIdx = rest.indexOf('-');
+            if (secondDashIdx === -1) return null;
+            const rowIndex = parseInt(rest.substring(0, secondDashIdx), 10);
+            const fieldKey = rest.substring(secondDashIdx + 1);
+
+            const row = group[rowIndex];
+            if (!row) return null;
+            const field = row[fieldKey];
+            if (!field) return null;
+            return { groupKey, rowIndex, fieldKey, field };
+        } else {
+            const fieldKey = rest;
+            const field = group[fieldKey];
+            if (!field) return null;
+            return { groupKey, fieldKey, field };
+        }
     }, [activeFieldId, extractedData]);
 
     const handleZoomIn = () => {
@@ -427,6 +726,102 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         updateTransform();
         if (canvasRef.current) {
             canvasRef.current.scrollTo({ top: 0, left: 0 });
+        }
+    };
+
+    const generatePDF = async () => {
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = doc.internal.pageSize.getHeight();
+
+        let i = 0;
+        for (const url of imageUrls) {
+            if (!url) continue;
+
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                const blob = await response.blob();
+                img.src = URL.createObjectURL(blob);
+            } catch (e) {
+                img.src = url;
+            }
+
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
+
+            if (i > 0) {
+                doc.addPage();
+            }
+
+            const imgRatio = img.width / img.height;
+
+            let finalWidth = pdfWidth;
+            let finalHeight = pdfWidth / imgRatio;
+
+            if (finalHeight > pdfHeight) {
+                finalHeight = pdfHeight;
+                finalWidth = pdfHeight * imgRatio;
+            }
+
+            const x = (pdfWidth - finalWidth) / 2;
+            const y = (pdfHeight - finalHeight) / 2;
+
+            doc.addImage(img, 'JPEG', x, y, finalWidth, finalHeight);
+            i++;
+        }
+
+        return doc;
+    };
+
+    const handleDownloadPDF = async () => {
+        setIsDownloadingPdf(true);
+        try {
+            const pdf = await generatePDF();
+            pdf.save(`${record?.name || 'document'}.pdf`);
+            toast.success('PDF downloaded successfully!');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error('Failed to generate PDF.');
+        } finally {
+            setIsDownloadingPdf(false);
+        }
+    };
+
+    const handlePrint = async () => {
+        // Open the window synchronously (before any await) so Chrome
+        // considers it a direct user-gesture and won't block the popup.
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            toast.error('Popup blocked. Please allow popups for this site and try again.');
+            return;
+        }
+        // Show a loading message while we generate the PDF
+        printWindow.document.write(
+            '<html><head><title>Preparing print…</title></head><body style="display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:system-ui"><p>Generating PDF…</p></body></html>'
+        );
+
+        toast.info('Preparing print...');
+        try {
+            const pdf = await generatePDF();
+            // autoPrint embeds a JavaScript print action inside the PDF so
+            // Chrome's PDF viewer triggers the print dialog automatically
+            pdf.autoPrint();
+            const blob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Navigate the already-open window to the PDF blob URL
+            printWindow.location.href = blobUrl;
+
+            toast.success('Print dialog will open in the new window!');
+        } catch (error) {
+            console.error('Error printing PDF:', error);
+            printWindow.close();
+            toast.error('Failed to prepare print.');
         }
     };
 
@@ -512,7 +907,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 canvas.removeEventListener('wheel', handleWheel);
             }
         };
-    }, [updateTransform]);
+    }, [updateTransform, isLoadingRecord]);
 
     // Update connection line on scroll
     useEffect(() => {
@@ -521,25 +916,158 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         const handleScroll = () => requestAnimationFrame(updateConnectionLine);
         canvas.addEventListener('scroll', handleScroll);
         return () => canvas.removeEventListener('scroll', handleScroll);
-    }, [updateConnectionLine]);
+    }, [updateConnectionLine, isLoadingRecord]);
 
-    // Only collect bboxes from non-array groups
     const allBboxes = useMemo(() => {
         const bboxes: { id: string; bbox: Pick<BBox, 'x_min' | 'y_min' | 'x_max' | 'y_max'>; page: number }[] = [];
         Object.entries(extractedData).forEach(([groupKey, groupValue]) => {
-            if (Array.isArray(groupValue)) return; // skip arrays
-            Object.entries(groupValue).forEach(([fieldKey, fieldValue]: [string, any]) => {
-                if (fieldValue?.bbox && fieldValue?.page !== null) {
-                    bboxes.push({
-                        id: `${groupKey}-${fieldKey}`,
-                        bbox: fieldValue.bbox,
-                        page: fieldValue.page
+            if (Array.isArray(groupValue)) {
+                groupValue.forEach((row, rowIndex) => {
+                    Object.entries(row).forEach(([fieldKey, fieldValue]: [string, any]) => {
+                        if (fieldValue?.bbox && fieldValue?.page !== null && fieldValue?.page !== undefined) {
+                            bboxes.push({
+                                id: `${groupKey}-${rowIndex}-${fieldKey}`,
+                                bbox: fieldValue.bbox,
+                                page: fieldValue.page
+                            });
+                        }
                     });
-                }
-            });
+                });
+            } else {
+                Object.entries(groupValue).forEach(([fieldKey, fieldValue]: [string, any]) => {
+                    if (fieldValue?.bbox && fieldValue?.page !== null && fieldValue?.page !== undefined) {
+                        bboxes.push({
+                            id: `${groupKey}-${fieldKey}`,
+                            bbox: fieldValue.bbox,
+                            page: fieldValue.page
+                        });
+                    }
+                });
+            }
         });
         return bboxes;
     }, [extractedData]);
+
+    const handleAddRow = useCallback(
+        (groupKey: string) => {
+            const newData = { ...extractedData };
+            const newGroup = [...(newData[groupKey] as any[])];
+            if (newGroup.length === 0) return;
+            const allKeys = Array.from(new Set(newGroup.flatMap(row => Object.keys(row))));
+            const emptyRow: any = {};
+            allKeys.forEach(k => {
+                const lastRowValue = newGroup[newGroup.length - 1]?.[k];
+                emptyRow[k] = {
+                    value: '',
+                    page: lastRowValue?.page || null,
+                    confidence: 1,
+                    bbox: null
+                };
+            });
+            newGroup.push(emptyRow);
+            newData[groupKey] = newGroup;
+            setExtractedData(newData);
+        },
+        [extractedData, setExtractedData]
+    );
+
+    const renderArrayTable = (groupKey: string, groupValue: any[]) => {
+        if (groupValue.length === 0) return null;
+        const allKeys = Array.from(new Set(groupValue.flatMap(row => Object.keys(row))));
+
+        return (
+            <div className="p-0 overflow-x-auto">
+                <table className="w-full min-w-min text-left text-sm text-zinc-600">
+                    <thead className="border-b border-zinc-200 bg-zinc-50/50 text-xs uppercase text-zinc-500">
+                        <tr>
+                            {allKeys.map(key => (
+                                <th key={key} className="whitespace-nowrap px-4 py-3 font-semibold tracking-wider">
+                                    {key.replace(/_/g, ' ')}
+                                </th>
+                            ))}
+                            <th className="w-12 px-4 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200">
+                        {groupValue.map((row, rowIndex) => (
+                            <tr key={rowIndex} className="hover:bg-zinc-50/50">
+                                {allKeys.map(key => {
+                                    const fieldValue = row[key];
+                                    const fieldId = `${groupKey}-${rowIndex}-${key}`;
+                                    const fieldEnums = enumsLookup[key];
+                                    return (
+                                        <td key={key} className="p-4 align-top">
+                                            {fieldEnums ? (
+                                                <SearchableSelect
+                                                    id={`input-${fieldId}`}
+                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                    options={fieldEnums}
+                                                    onFocus={() => handleFocus(fieldId)}
+                                                    onBlur={handleBlur}
+                                                    onChange={val => {
+                                                        const newData = { ...extractedData };
+                                                        const newGroup = [...(newData[groupKey] as any[])];
+                                                        newGroup[rowIndex] = {
+                                                            ...newGroup[rowIndex],
+                                                            [key]: { ...(fieldValue || {}), value: val }
+                                                        };
+                                                        newData[groupKey] = newGroup;
+                                                        setExtractedData(newData);
+                                                    }}
+                                                    placeholder="Not available"
+                                                    className="min-w-[120px]"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    id={`input-${fieldId}`}
+                                                    onFocus={() => handleFocus(fieldId)}
+                                                    onBlur={handleBlur}
+                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                    onChange={e => {
+                                                        const newData = { ...extractedData };
+                                                        const newGroup = [...(newData[groupKey] as any[])];
+                                                        newGroup[rowIndex] = {
+                                                            ...newGroup[rowIndex],
+                                                            [key]: { ...(fieldValue || {}), value: e.target.value }
+                                                        };
+                                                        newData[groupKey] = newGroup;
+                                                        setExtractedData(newData);
+                                                    }}
+                                                    placeholder="Not available"
+                                                    className="w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                />
+                                            )}
+                                        </td>
+                                    );
+                                })}
+                                <td className="p-4 align-top w-12 text-center">
+                                    <button
+                                        disabled={groupValue.length === 1}
+                                        onClick={() => {
+                                            const newData = { ...extractedData };
+                                            const newGroup = [...(newData[groupKey] as any[])];
+                                            newGroup.splice(rowIndex, 1);
+                                            newData[groupKey] = newGroup;
+                                            setExtractedData(newData);
+                                        }}
+                                        className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        title="Delete Row"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    if (isLoadingRecord) {
+        return <FullScreenLoader text="Loading Document..." />;
+    }
 
     return (
         <div ref={containerRef} className="relative flex h-full w-full overflow-hidden bg-white text-zinc-800">
@@ -551,7 +1079,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         <button onClick={handleClose} className="rounded p-1 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900" title="Back">
                             <ArrowLeft size={18} />
                         </button>
-                        <span className="max-w-[200px] truncate text-sm font-medium text-zinc-600">Document Viewer</span>
+                        <span className="max-w-[200px] truncate text-sm font-medium text-zinc-600">{(record?.name || '').split('_').join(' ').toUpperCase()}</span>
                     </div>
                     <div className="flex items-center space-x-1 rounded-md border border-zinc-200 bg-zinc-100 p-1">
                         <button onClick={handleZoomOut} className="rounded p-1.5 text-zinc-600 transition-all hover:bg-white hover:shadow-sm" title="Zoom Out">
@@ -568,7 +1096,23 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                             <RotateCcw size={16} />
                         </button>
                     </div>
-                    <div className="w-[88px]" />
+                    <div className="flex items-center space-x-3">
+                        <button
+                            onClick={handlePrint}
+                            className="rounded-md border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                            title="Print Document"
+                        >
+                            <Printer size={14} className="text-gray-500" />
+                        </button>
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={isDownloadingPdf}
+                            className="rounded-md border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Download PDF"
+                        >
+                            {isDownloadingPdf ? <Spinner size={15} className="animate-spin text-gray-500" /> : <Download size={15} className="text-gray-500" />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Canvas Area */}
@@ -609,7 +1153,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                 }}
                                                 onClick={e => handleBboxClick(b.id, e)}
                                             >
-                                                {/* Draggable edit card for the active bbox */}
                                                 {activeFieldId === b.id && activeFieldInfo && (
                                                     <div
                                                         data-edit-card
@@ -620,7 +1163,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         }}
                                                         onClick={e => e.stopPropagation()}
                                                     >
-                                                        {/* Drag handle + label + close */}
                                                         <div className="mb-2 flex items-center justify-between gap-2">
                                                             <div className="flex cursor-grab items-center gap-1.5 active:cursor-grabbing" onMouseDown={startEditCardDrag}>
                                                                 <GripHorizontal size={14} className="text-zinc-400" />
@@ -630,29 +1172,71 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 <X size={14} />
                                                             </button>
                                                         </div>
-                                                        {/* Editable textarea */}
-                                                        <textarea
-                                                            value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
-                                                            onChange={e => {
-                                                                const newData = { ...extractedData };
-                                                                newData[activeFieldInfo.groupKey] = {
-                                                                    ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                    [activeFieldInfo.fieldKey]: {
-                                                                        ...(activeFieldInfo.field || {}),
-                                                                        value: e.target.value
+                                                        {enumsLookup[activeFieldInfo.fieldKey] ? (
+                                                            <SearchableSelect
+                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                                options={enumsLookup[activeFieldInfo.fieldKey]}
+                                                                onChange={val => {
+                                                                    const newData = { ...extractedData };
+                                                                    if (activeFieldInfo.rowIndex !== undefined) {
+                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
+                                                                        newGroup[activeFieldInfo.rowIndex] = {
+                                                                            ...newGroup[activeFieldInfo.rowIndex],
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: val
+                                                                            }
+                                                                        };
+                                                                        newData[activeFieldInfo.groupKey] = newGroup;
+                                                                    } else {
+                                                                        newData[activeFieldInfo.groupKey] = {
+                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: val
+                                                                            }
+                                                                        };
                                                                     }
-                                                                };
-                                                                setExtractedData(newData);
-                                                            }}
-                                                            rows={1}
-                                                            className="w-full resize-none rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                                            style={{ minHeight: '32px' }}
-                                                            onInput={e => {
-                                                                const target = e.target as HTMLTextAreaElement;
-                                                                target.style.height = 'auto';
-                                                                target.style.height = `${target.scrollHeight}px`;
-                                                            }}
-                                                        />
+                                                                    setExtractedData(newData);
+                                                                }}
+                                                                placeholder="Select value"
+                                                            />
+                                                        ) : (
+                                                            <textarea
+                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                                onChange={e => {
+                                                                    const newData = { ...extractedData };
+                                                                    if (activeFieldInfo.rowIndex !== undefined) {
+                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
+                                                                        newGroup[activeFieldInfo.rowIndex] = {
+                                                                            ...newGroup[activeFieldInfo.rowIndex],
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: e.target.value
+                                                                            }
+                                                                        };
+                                                                        newData[activeFieldInfo.groupKey] = newGroup;
+                                                                    } else {
+                                                                        newData[activeFieldInfo.groupKey] = {
+                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
+                                                                            [activeFieldInfo.fieldKey]: {
+                                                                                ...(activeFieldInfo.field || {}),
+                                                                                value: e.target.value
+                                                                            }
+                                                                        };
+                                                                    }
+                                                                    setExtractedData(newData);
+                                                                }}
+                                                                rows={1}
+                                                                className="w-full resize-none rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                                                style={{ minHeight: '32px' }}
+                                                                onInput={e => {
+                                                                    const target = e.target as HTMLTextAreaElement;
+                                                                    target.style.height = 'auto';
+                                                                    target.style.height = `${target.scrollHeight}px`;
+                                                                }}
+                                                            />
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -676,9 +1260,40 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 {/* Scrollable Fields List */}
                 <div ref={rightPaneRef} onScroll={updateConnectionLine} className={`flex-1 overflow-y-auto px-6 py-6 ${styles.track}`}>
                     <div className="mx-auto max-w-3xl space-y-6">
+                        <div className="flex items-start gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50/80 p-4 shadow-sm ring-1 ring-amber-500/20">
+                            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                            <div className="flex flex-col">
+                                <h4 className="text-sm font-semibold tracking-wide text-amber-800">Action Required</h4>
+                                <p className="mt-1 text-xs leading-relaxed text-amber-700">
+                                    Please review all fields without fail. You must verify and confirm all extracted information before submitting the order.
+                                </p>
+                            </div>
+                        </div>
                         {Object.entries(extractedData).map(([groupKey, groupValue]) => {
-                            // Skip array groups (e.g. line_items)
-                            if (Array.isArray(groupValue)) return null;
+                            if (Array.isArray(groupValue)) {
+                                if (groupValue.length === 0) return null;
+                                const allKeys = Array.from(new Set(groupValue.flatMap(row => Object.keys(row))));
+
+                                return (
+                                    <div key={groupKey} className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+                                        <div className="flex justify-between border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100/50 px-5 py-3.5">
+                                            <h3 className=" flex items-center gap-3 text-sm font-semibold tracking-wide text-zinc-800 capitalize">
+                                                {groupKey.replace(/_/g, ' ')}
+                                                <Expand size={15} onClick={() => setExpandedTableGroup(groupKey)} className="text-zinc-500 cursor-pointer hover:text-blue-600 transition-colors" />
+                                            </h3>
+                                            <button
+                                                tabIndex={1}
+                                                onClick={() => handleAddRow(groupKey)}
+                                                className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 hover:text-blue-600"
+                                            >
+                                                <Plus size={14} />
+                                                Add Row
+                                            </button>
+                                        </div>
+                                        {expandedTableGroup !== groupKey && renderArrayTable(groupKey, groupValue)}
+                                    </div>
+                                );
+                            }
 
                             return (
                                 <div key={groupKey} className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
@@ -686,34 +1301,143 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                         <h3 className="text-sm font-semibold tracking-wide text-zinc-800 capitalize">{groupKey.replace(/_/g, ' ')}</h3>
                                     </div>
                                     <div className="flex flex-col gap-5 p-5">
-                                        {Object.entries(groupValue).map(([fieldKey, fieldValue]: [string, any]) => (
-                                            <div key={fieldKey} className="flex flex-col space-y-2">
-                                                <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
-                                                    {fieldKey.replace(/_/g, ' ')}
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    id={`input-${groupKey}-${fieldKey}`}
-                                                    onFocus={() => handleFocus(`${groupKey}-${fieldKey}`)}
-                                                    onBlur={e => handleBlur(e)}
-                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
-                                                    onChange={e => {
-                                                        const newData = { ...extractedData };
-                                                        newData[groupKey] = {
-                                                            ...(newData[groupKey] as FieldGroup),
-                                                            [fieldKey]: { ...(fieldValue || {}), value: e.target.value }
-                                                        };
-                                                        setExtractedData(newData);
-                                                    }}
-                                                    placeholder="Not available"
-                                                    className="w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
-                                                />
-                                            </div>
-                                        ))}
+                                        {Object.entries(groupValue).map(([fieldKey, fieldValue]: [string, any]) => {
+                                            const fieldEnums = enumsLookup[fieldKey];
+                                            return (
+                                                <div key={fieldKey} className="flex flex-col space-y-2">
+                                                    <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
+                                                        {fieldKey.replace(/_/g, ' ')}
+                                                    </label>
+                                                    {fieldEnums ? (
+                                                        <SearchableSelect
+                                                            id={`input-${groupKey}-${fieldKey}`}
+                                                            value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                            options={fieldEnums}
+                                                            onFocus={() => handleFocus(`${groupKey}-${fieldKey}`)}
+                                                            onBlur={e => handleBlur(e)}
+                                                            onChange={val => {
+                                                                const newData = { ...extractedData };
+                                                                newData[groupKey] = {
+                                                                    ...(newData[groupKey] as FieldGroup),
+                                                                    [fieldKey]: { ...(fieldValue || {}), value: val }
+                                                                };
+                                                                setExtractedData(newData);
+                                                            }}
+                                                            placeholder="Not available"
+                                                        />
+                                                    ) : (
+                                                        <input
+                                                            type="text"
+                                                            id={`input-${groupKey}-${fieldKey}`}
+                                                            onFocus={() => handleFocus(`${groupKey}-${fieldKey}`)}
+                                                            onBlur={e => handleBlur(e)}
+                                                            value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                            onChange={e => {
+                                                                const newData = { ...extractedData };
+                                                                newData[groupKey] = {
+                                                                    ...(newData[groupKey] as FieldGroup),
+                                                                    [fieldKey]: { ...(fieldValue || {}), value: e.target.value }
+                                                                };
+                                                                setExtractedData(newData);
+                                                            }}
+                                                            placeholder="Not available"
+                                                            className="w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );
                         })}
+                        {/* EON Booking Number display */}
+                        {currentOrder.maraekatDetails?.eonBookingNumber && (
+                            <div className="space-y-3">
+                                {/* EON Booking Number */}
+                                <div className="overflow-hidden rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 shadow-sm">
+                                    <div className="flex items-center justify-between px-5 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100">
+                                                <ArrowLeftRight size={18} className="text-green-600" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-medium tracking-wider text-green-600 uppercase">EON Booking Number</p>
+                                                <p className="text-lg font-bold text-green-900">{currentOrder.maraekatDetails.eonBookingNumber}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Currency Details List */}
+                                {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
+                                    <div
+                                        className={`overflow-hidden rounded-xl border shadow-sm ${exchangeResult?.type === 'success' ? 'border-green-300 bg-green-50/30' : 'border-indigo-200 bg-white'}`}
+                                    >
+                                        <div
+                                            className={`flex items-center justify-between border-b px-5 py-3 ${exchangeResult?.type === 'success' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50'}`}
+                                        >
+                                            <p className={`text-xs font-semibold tracking-wider uppercase ${exchangeResult?.type === 'success' ? 'text-green-700' : 'text-indigo-700'}`}>
+                                                Currency Details
+                                            </p>
+                                            <button
+                                                onClick={handleExchangeAll}
+                                                disabled={isExchangingAll || isExchanging || exchangeResult?.type === 'success'}
+                                                className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${exchangeResult?.type === 'success' ? 'border-green-500 bg-green-600 hover:bg-green-700' : 'border-indigo-500 bg-indigo-600 hover:bg-indigo-700'}`}
+                                            >
+                                                {isExchangingAll ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
+                                                {isExchangingAll ? 'Adding All...' : exchangeResult?.type === 'success' ? 'Added' : 'Add All'}
+                                            </button>
+                                        </div>
+                                        <div className={`divide-y ${exchangeResult?.type === 'success' ? 'divide-green-100' : 'divide-indigo-50'}`}>
+                                            {currentOrder.currencyDetails.map((item, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`flex items-center justify-between px-5 py-3 transition-colors ${exchangeResult?.type === 'success' ? 'hover:bg-green-50/50' : 'hover:bg-indigo-50/40'}`}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div
+                                                            className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${exchangeResult?.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}
+                                                        >
+                                                            {item.currency?.slice(0, 3) || '—'}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-semibold text-zinc-800">
+                                                                {item.currency} <span className="text-zinc-400 font-normal">·</span> {item.product}
+                                                            </span>
+                                                            <span className="text-xs text-zinc-500">
+                                                                Qty: <span className="font-medium text-zinc-700">{item.quantity}</span>
+                                                                &nbsp;·&nbsp; Rate: <span className="font-medium text-zinc-700">{item.rate}</span>
+                                                                &nbsp;·&nbsp; Amt: <span className="font-medium text-zinc-700">{item.amount}</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {/* <button
+                                                        onClick={() => handleExchange(item)}
+                                                        disabled={isExchanging || isExchangingAll}
+                                                        className="flex items-center gap-1.5 rounded-md border border-indigo-400 bg-white px-3 py-1 text-xs font-medium text-indigo-600 transition-all duration-200 hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
+                                                        Add
+                                                    </button> */}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Exchange result message */}
+                        {exchangeResult && (
+                            <div
+                                className={`rounded-xl border px-5 py-3 text-sm font-medium ${
+                                    exchangeResult.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'
+                                }`}
+                            >
+                                {exchangeResult.message}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -734,16 +1458,49 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         {isSaving ? 'Saving...' : 'Save'}
                     </button>
 
-                    <SubmitToMaraekat order={order} extractedData={extractedData} />
+                    <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />
+                    {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />}
                 </div>
             </div>
 
-            {/* Connection line overlay — zig-zag (straight → cross → straight) */}
-            <svg ref={lineRef} className="pointer-events-none absolute inset-0 z-[100] h-full w-full opacity-0 transition-opacity duration-150" xmlns="http://www.w3.org/2000/svg">
+            {/* Connection line overlay — variable (straight vs zig-zag) */}
+            <svg ref={lineRef} className="pointer-events-none absolute inset-0 z-[250] h-full w-full opacity-0 transition-opacity duration-150" xmlns="http://www.w3.org/2000/svg">
                 <path fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="" />
                 <circle className="dot-start" r="3" fill="#3b82f6" cx="0" cy="0" />
                 <circle className="dot-end" r="3" fill="#3b82f6" cx="0" cy="0" />
             </svg>
+
+            {/* Expanded Table Floating Card */}
+            {expandedTableGroup &&
+                Array.isArray(extractedData[expandedTableGroup]) &&
+                (() => {
+                    const groupKey = expandedTableGroup;
+                    const groupValue = extractedData[groupKey] as any[];
+                    return (
+                        <div
+                            data-floating-card
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[200] w-11/12 max-w-[1200px] bg-white rounded-xl shadow-[0_4px_40px_rgba(0,0,0,0.15)] border border-zinc-300 flex flex-col max-h-[60vh] overflow-hidden"
+                        >
+                            <div className="flex justify-between items-center bg-zinc-50 px-5 py-3 border-b border-zinc-200">
+                                <h3 className="font-semibold text-zinc-800 capitalize flex items-center gap-3">{groupKey.replace(/_/g, ' ')}</h3>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleAddRow(groupKey)}
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 hover:text-blue-600"
+                                        title="Add new row"
+                                    >
+                                        <Plus size={14} />
+                                        Add Row
+                                    </button>
+                                    <button onClick={() => setExpandedTableGroup(null)} className="text-zinc-500 hover:text-zinc-800 rounded-md p-1.5 hover:bg-zinc-200 transition-colors">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="overflow-auto flex-1 bg-white">{renderArrayTable(groupKey, groupValue)}</div>
+                        </div>
+                    );
+                })()}
         </div>
     );
 };

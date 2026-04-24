@@ -123,14 +123,14 @@ const PageInput: React.FC<InputProps> = ({ page, totalPages, setPage, className 
     return (
         <span
             className={
-                (className || 'cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-2 text-sm') +
+                (className || 'cursor-pointer rounded-lg border-1 border-gray-100 px-4 py-1 text-sm') +
                 ' inline-flex items-center gap-1' +
                 (committed ? '' : ' hover:bg-gray-50')
             }
         >
             <span className="text-sm text-gray-500">Page</span>
 
-            <span className="relative inline-flex items-center">
+            <span className="relative inline-flex items-center ">
                 <input
                     ref={inputRef}
                     type="text"

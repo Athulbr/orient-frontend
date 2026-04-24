@@ -41,6 +41,7 @@
         "lodash": "^4.17.21",
         "lucide-react": "^0.486.0",
         "mammoth": "^1.11.0",
+        "monaco-editor": "^0.55.1",
         "pdfjs-dist": "^5.3.31",
         "react": "^19.0.0",
         "react-chartjs-2": "^5.3.1",

@@ -6,7 +6,7 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 import { useParams } from 'react-router-dom';
 
 export const useContentCreationApi = () => {
-    const { setState } = useContentCreationEditorState();
+    const { state, setState } = useContentCreationEditorState();
     const toast = useToastStore()
     const { id } = useParams()
 
@@ -17,10 +17,14 @@ export const useContentCreationApi = () => {
         const fetchedContent = fetchedRecord?.extractedData?.htmlContent || '';
 
         let fetchedExtractionPrompt = '';
+        let fetchedBlogCss = '';
+        let fetchedBlogCssWrapperClass = 'contentbody';
         if (fetchedRecord?.templateId) {
             const templateId = fetchedRecord.templateId._id;
             const templateRes = await httpRequest('GET', `${config.nodeApiUrl}/idp/template/${templateId}`);
             fetchedExtractionPrompt = templateRes.data?.settings?.extractionPrompt || '';
+            fetchedBlogCss = templateRes.data?.settings?.blogCss || '';
+            fetchedBlogCssWrapperClass = templateRes.data?.settings?.blogCssWrapperClass || 'contentbody';
         }
 
         setState(prev => ({
@@ -35,11 +39,17 @@ export const useContentCreationApi = () => {
             ...(fetchedRecord?.keywords ? { keywords: fetchedRecord.keywords } : {}),
             content: fetchedContent,
             record: fetchedRecord,
-            extractionPrompt: fetchedExtractionPrompt
+            extractionPrompt: fetchedExtractionPrompt,
+            blogCss: fetchedBlogCss,
+            blogCssWrapperClass: fetchedBlogCssWrapperClass,
         }));
     };
     const regenerateBlog = async (payload: { keywords?: any[]; extractedData?: any; extractionPrompt?: string }) => {
-        const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/regenerate-blog`, payload);
+        const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/regenerate-blog`, {
+            ...payload,
+            blogCss: state.blogCss,
+            blogCssWrapperClass: state.blogCssWrapperClass,
+        });
         return res;
     };
 
