@@ -90,7 +90,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         fetchData,
         handleDeleteOrder,
         handleLinkEmail,
-        handleUnlinkEmail,
         handleUploadFiles,
         handleRemoveUploadedFile,
         handleRemoveWebDocument,
@@ -98,7 +97,6 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         handleProceed,
         handleCreateOrder,
         handleUpdateOrder,
-        getLinkedEmails,
         setOrders
     } = useOrders({ searchQuery, debouncedSearchQuery, statusFilter, branchFilter, orderTypeFilter, dateRange, perPage, currentPage }, agentSettings);
 
@@ -163,9 +161,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                             <OrderCard
                                 key={`${order.orderDetails.orderNumber}-${order.orderDetails.orderId}`} // #12 — more stable key
                                 order={order}
-                                linkedEmails={getLinkedEmails(order)}
                                 onLinkEmail={handleLinkEmail}
-                                onUnlinkEmail={handleUnlinkEmail}
                                 onUploadFiles={handleUploadFiles}
                                 onRemoveUploadedFile={handleRemoveUploadedFile}
                                 onRemoveWebDocument={handleRemoveWebDocument}

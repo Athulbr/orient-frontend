@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { FileText, Mail, UploadCloud, Link2, Unlink, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight } from 'lucide-react';
+import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
 import EmailLinkDialog from './EmailLinkDialog';
-import { Order, Email, FileItem } from './types';
+import { Order, FileItem } from './types';
 import { config } from '../../../../../config/default';
 import Spinner from '../../../../../components/Spinner';
 import { DocsnapComparisonUI } from './docsnap-comparison-page';
@@ -18,13 +18,11 @@ import OrderCardHeader from './OrderCardHeader';
 
 interface OrderCardProps {
     order: Order;
-    linkedEmails: Email[];
     onLinkEmail: (orderNumber: number, emailId: string) => void;
-    onUnlinkEmail: (orderNumber: number, emailId: string) => void;
     onUploadFiles: (orderNumber: number, files: File[]) => void;
     onRemoveUploadedFile: (orderNumber: number, fileIndex: number) => void;
     onRemoveWebDocument?: (orderNumber: number, fileIndex: number) => void;
-    onRemoveEmailDocument?: (emailId: string, fileIndex: number) => void;
+    onRemoveEmailDocument?: (orderNumber: number, fileIndex: number) => void;
     onProceed: (orderNumber: number) => void;
     onEdit?: (order: Order) => void;
     onDelete?: (orderNumber: number) => void;
@@ -39,9 +37,7 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({
     order,
-    linkedEmails,
     onLinkEmail,
-    onUnlinkEmail,
     onUploadFiles,
     onRemoveUploadedFile,
     onRemoveWebDocument,
@@ -75,20 +71,17 @@ const OrderCard: React.FC<OrderCardProps> = ({
         return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [], index: i };
     });
 
-    const emailFiles: (FileItem & { emailId: string; index: number })[] = linkedEmails.flatMap(email =>
-        (email.attachments || []).map((att: any, idx: number) => {
-            const url = att.documentPages?.[0] || att.url || '';
-            return {
-                name: att.documentName || att.name || '',
-                url,
-                type: getFileType(url),
-                source: 'email' as const,
-                pages: att.documentPages || att.pages || [],
-                emailId: email.emailId,
-                index: idx
-            };
-        })
-    );
+    const emailFiles: (FileItem & { index: number })[] = (order.emailDocuments || []).map((doc, i) => {
+        const url = doc.documentPages?.[0] || '';
+        return {
+            name: doc.documentName,
+            url,
+            type: getFileType(url),
+            source: 'email' as const,
+            pages: doc.documentPages || [],
+            index: i
+        };
+    });
 
     const uploadedFileItems: (FileItem & { index: number })[] = (order.manualDocuments || []).map((f, i) => {
         const url = f.documentPages?.[0] || '';
@@ -183,35 +176,15 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         />
                     </div>
 
-                    {linkedEmails.length > 0 &&
-                        linkedEmails.map(email => (
-                            <div key={email.emailId} className="flex items-center gap-2 px-[10px] py-2 rounded-lg bg-violet-50 border border-violet-200 mb-[10px]">
-                                <div className="w-7 h-7 rounded-[7px] bg-violet-100 flex items-center justify-center flex-shrink-0">
-                                    <Mail size={14} className="text-violet-700" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <div className="text-[13px] font-bold text-gray-700 truncate">{email.subject}</div>
-                                    <div className="text-xs text-gray-400 mt-[1px]">{email.from}</div>
-                                </div>
-                                <GBtn
-                                    colorClass="text-red-600"
-                                    borderClass="border-red-300/50"
-                                    hoverClass="hover:bg-red-50"
-                                    icon={<Unlink size={11} />}
-                                    label="Unlink"
-                                    onClick={() => onUnlinkEmail(order.orderDetails.orderNumber, email.emailId)}
-                                />
-                            </div>
-                        ))}
 
                     {emailFiles.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px]">
                             {emailFiles.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(f.emailId, f.index) : undefined} />
+                                <DocTile key={i} file={f} onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined} />
                             ))}
                         </div>
                     ) : (
-                        <span className="text-[13px] text-gray-300 italic">{linkedEmails.length > 0 ? 'No attachments in linked emails' : 'No email linked yet'}</span>
+                        <span className="text-[13px] text-gray-300 italic">No email linked yet</span>
                     )}
 
                     <DialogComponent isOpen={showLinkDialog} closeDialog={() => setShowLinkDialog(false)} name="Select an Email to Link" className="w-[80vw] h-[90vh]">

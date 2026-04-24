@@ -45,11 +45,10 @@ export interface UseOrdersReturn {
     handleUploadFiles: (orderNumber: number, files: File[]) => Promise<void>;
     handleRemoveUploadedFile: (orderNumber: number, fileIndex: number) => Promise<void>;
     handleRemoveWebDocument: (orderNumber: number, fileIndex: number) => Promise<void>;
-    handleRemoveEmailDocument: (emailId: string, fileIndex: number) => Promise<void>;
+    handleRemoveEmailDocument: (orderNumber: number, fileIndex: number) => Promise<void>;
     handleProceed: (orderNumber: number) => Promise<void>;
     handleCreateOrder: (newOrder: Partial<Order>) => Promise<void>;
     handleUpdateOrder: (updatedOrder: Order) => Promise<void>;
-    getLinkedEmails: (order: Order) => Email[];
     setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
     setTotalPages: React.Dispatch<React.SetStateAction<number>>;
     setTotalCount: React.Dispatch<React.SetStateAction<number>>;
@@ -138,13 +137,69 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         }
     }, [filters.debouncedSearchQuery, filters.statusFilter, filters.branchFilter, filters.orderTypeFilter, filters.dateRange, filters.currentPage, filters.perPage]);
 
-    // ── Linked emails helper ──
-    const getLinkedEmails = useCallback(
-        (order: Order): Email[] => {
-            if (!order.linkedEmailIds || order.linkedEmailIds.length === 0) return [];
-            return emails.filter(e => order.linkedEmailIds!.includes(e.emailId));
+    // ── Link email — copy attachments into emailDocuments, set linked:true ──
+    const handleLinkEmail = useCallback(
+        async (orderNumber: number, emailId: string) => {
+            const linkKey = `${orderNumber}-${emailId}`;
+            setLinkingEmails(prev => ({ ...prev, [linkKey]: true }));
+
+            try {
+                // Fetch email details to get attachments
+                let email = emailsRef.current.find(e => e.emailId === emailId);
+                if (!email) {
+                    const emailDetailRes = await fetch(`${config.workflowService}/api/emails/${emailId}`);
+                    if (!emailDetailRes.ok) throw new Error('Failed to fetch email');
+                    email = await emailDetailRes.json();
+                    setEmails(prev => [...prev, email!]);
+                }
+
+                // Convert email attachments to DocumentDetail format
+                const newDocs: DocumentDetail[] = (email!.attachments || []).map((att: any) => ({
+                    documentName: att.documentName || att.name || '',
+                    documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
+                })).filter((d: DocumentDetail) => d.documentPages.length > 0);
+
+                const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
+                const updatedEmailDocuments = [...(order?.emailDocuments || []), ...newDocs];
+
+                // Optimistic update
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: updatedEmailDocuments } : o)));
+
+                // Persist: update order emailDocuments + email linked flag
+                const [orderRes, emailRes] = await Promise.all([
+                    fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ emailDocuments: updatedEmailDocuments })
+                    }),
+                    fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ linked: true })
+                    })
+                ]);
+
+                if (!orderRes.ok || !emailRes.ok) throw new Error('API returned non-OK status');
+
+                // Update local email cache
+                setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, linked: true } : e)));
+
+                toast.success('Email linked successfully');
+            } catch (err) {
+                console.error('Failed to link email', err);
+                toast.error('Failed to link email');
+                // Rollback
+                const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: order?.emailDocuments || [] } : o)));
+            } finally {
+                setLinkingEmails(prev => {
+                    const next = { ...prev };
+                    delete next[linkKey];
+                    return next;
+                });
+            }
         },
-        [emails]
+        [toast]
     );
 
     // ── Delete order (#7 — now checks response) (#17 — toast on error) ──
@@ -166,107 +221,50 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         [toast]
     );
 
-    // ── Link email (#1 — functional updater, #18 — loading, #23 — rollback) ──
-    const handleLinkEmail = useCallback(
-        async (orderNumber: number, emailId: string) => {
-            const linkKey = `${orderNumber}-${emailId}`;
-            setLinkingEmails(prev => ({ ...prev, [linkKey]: true }));
 
-            // Optimistic update
-            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: [...(o.linkedEmailIds || []), emailId] } : o)));
-
-            try {
-                const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
-                if (order) {
-                    const linkedEmailIds = [...(order.linkedEmailIds || []), emailId];
-                    const [orderRes, emailRes] = await Promise.all([
-                        fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ linkedEmailIds })
-                        }),
-                        fetch(`${config.workflowService}/api/emails/${emailId}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ orderNumber })
-                        })
-                    ]);
-
-                    if (!orderRes.ok || !emailRes.ok) {
-                        throw new Error('API returned non-OK status');
-                    }
-
-                    // Ensure the linked email is in our local cache so getLinkedEmails can find it
-                    if (!emailsRef.current.some(e => e.emailId === emailId)) {
-                        try {
-                            const emailDetailRes = await fetch(`${config.workflowService}/api/emails/${emailId}`);
-                            if (emailDetailRes.ok) {
-                                const emailDetail = await emailDetailRes.json();
-                                setEmails(prev => [...prev, emailDetail]);
-                            }
-                        } catch {
-                            /* non-critical — email will load on next page refresh */
-                        }
-                    }
-
-                    toast.success('Email linked successfully');
-                }
-            } catch (err) {
-                console.error('Failed to link email', err);
-                toast.error('Failed to link email');
-                // Rollback (#23)
-                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
-            } finally {
-                setLinkingEmails(prev => {
-                    const next = { ...prev };
-                    delete next[linkKey];
-                    return next;
-                });
-            }
-        },
-        [toast]
-    );
-
-    // ── Unlink email (#1, #18 — loading, #23 — rollback) ──
+    // ── Unlink email — remove email docs from emailDocuments, set linked:false ──
     const handleUnlinkEmail = useCallback(
         async (orderNumber: number, emailId: string) => {
             const linkKey = `${orderNumber}-${emailId}`;
             setLinkingEmails(prev => ({ ...prev, [linkKey]: true }));
 
-            // Save snapshot for rollback
-            const prevLinkedIds = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber)?.linkedEmailIds || [];
+            const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
+            const prevEmailDocs = order?.emailDocuments || [];
+
+            // Get the email to know which docs to remove
+            const email = emailsRef.current.find(e => e.emailId === emailId);
+            const emailDocNames = new Set((email?.attachments || []).map((att: any) => att.documentName || att.name || ''));
+
+            const updatedEmailDocuments = prevEmailDocs.filter(d => !emailDocNames.has(d.documentName));
 
             // Optimistic update
-            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: (o.linkedEmailIds || []).filter(id => id !== emailId) } : o)));
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: updatedEmailDocuments } : o)));
 
             try {
-                const linkedEmailIds = prevLinkedIds.filter(id => id !== emailId);
                 const [orderRes, emailRes] = await Promise.all([
                     fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ linkedEmailIds })
+                        body: JSON.stringify({ emailDocuments: updatedEmailDocuments })
                     }),
                     fetch(`${config.workflowService}/api/emails/${emailId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderNumber: null })
+                        body: JSON.stringify({ linked: false })
                     })
                 ]);
 
-                if (!orderRes.ok || !emailRes.ok) {
-                    throw new Error('API returned non-OK status');
-                }
+                if (!orderRes.ok || !emailRes.ok) throw new Error('API returned non-OK status');
 
-                // Update local email cache to clear orderNumber so it shows as unlinked
-                setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, orderNumber: undefined } : e)));
+                // Update local email cache
+                setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, linked: false } : e)));
 
                 toast.success('Email unlinked');
             } catch (err) {
                 console.error('Failed to unlink email', err);
                 toast.error('Failed to unlink email');
-                // Rollback (#23)
-                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, linkedEmailIds: prevLinkedIds } : o)));
+                // Rollback
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: prevEmailDocs } : o)));
             } finally {
                 setLinkingEmails(prev => {
                     const next = { ...prev };
@@ -437,29 +435,29 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         [toast]
     );
 
-    // ── Remove email document (#1, #17, #23) ──
+    // ── Remove email document from order.emailDocuments ──
     const handleRemoveEmailDocument = useCallback(
-        async (emailId: string, fileIndex: number) => {
-            const email = emailsRef.current.find(e => e.emailId === emailId);
-            if (!email || !email.attachments) return;
+        async (orderNumber: number, fileIndex: number) => {
+            const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
+            if (!order || !order.emailDocuments) return;
 
-            const prevAttachments = email.attachments;
-            const updatedAttachments = email.attachments.filter((_, i) => i !== fileIndex);
+            const prevDocs = order.emailDocuments;
+            const updatedEmailDocuments = order.emailDocuments.filter((_, i) => i !== fileIndex);
 
-            setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, attachments: updatedAttachments } : e)));
+            setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: updatedEmailDocuments } : o)));
 
             try {
-                const res = await fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ attachments: updatedAttachments })
+                    body: JSON.stringify({ emailDocuments: updatedEmailDocuments })
                 });
                 if (!res.ok) throw new Error(`Status ${res.status}`);
             } catch (err) {
                 console.error('Failed to remove email document', err);
                 toast.error('Failed to remove email document');
                 // Rollback
-                setEmails(prev => prev.map(e => (e.emailId === emailId ? { ...e, attachments: prevAttachments } : e)));
+                setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: prevDocs } : o)));
             }
         },
         [toast]
@@ -473,15 +471,9 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             setProceedingOrders(prev => ({ ...prev, [orderNumber]: true }));
 
-            const linkedEmails = getLinkedEmails(order);
-            const actualEmailDocuments = linkedEmails.flatMap(email =>
-                (email.attachments || []).map((att: any) => ({
-                    documentName: att.documentName || att?.name || '',
-                    documentPages: att.documentPages || att?.pages || (att.url ? [att.url] : [])
-                }))
-            );
+            const emailDocuments = order.emailDocuments || [];
 
-            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + actualEmailDocuments.length > 0;
+            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + emailDocuments.length > 0;
             if (!hasDocuments) {
                 // #22 — use toast instead of alert()
                 toast.error('Please upload files before extracting');
@@ -489,7 +481,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 return;
             }
 
-            const allDocDetails = [...actualEmailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
+            const allDocDetails = [...emailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
 
             const payloadDocuments = allDocDetails.flatMap(doc => {
                 const pages = doc.documentPages || [];
@@ -607,7 +599,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 toast.error('Extraction failed');
             }
         },
-        [agentSettings, getLinkedEmails, toast]
+        [agentSettings, toast]
     );
 
     // ── Create order (#3 — functional updater) ──
@@ -680,7 +672,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         handleProceed,
         handleCreateOrder,
         handleUpdateOrder,
-        getLinkedEmails,
         setOrders,
         setTotalPages,
         setTotalCount
