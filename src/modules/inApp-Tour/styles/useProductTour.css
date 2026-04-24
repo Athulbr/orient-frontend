@@ -1,8 +1,8 @@
-/* Custom Driver.js styling to match application UI */
+/* Custom Driver.js popover styling */
 
 .driver-popover {
     background: white !important;
-    color: #1f2937 !important;
+    color: #2d2d2d !important;
     border-radius: 12px !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
     border: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -11,7 +11,6 @@
 }
 
 .driver-popover-title {
-    color: #1f2937 !important;
     font-size: 18px !important;
     font-weight: 600 !important;
     margin-bottom: 12px !important;
@@ -20,77 +19,62 @@
 }
 
 .driver-popover-description {
-    color: #374151 !important;
     font-size: 14px !important;
     line-height: 1.6 !important;
     margin-bottom: 16px !important;
 }
 
 .driver-popover-footer {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 8px !important;
     padding-top: 12px !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
 .driver-popover-progress-text {
     color: #6b7280 !important;
     font-size: 13px !important;
+}
+
+/*
+ * Fix for Driver.js known bug (GitHub issue #605):
+ * Driver.js default CSS applies `text-shadow: 1px 1px 0 #fff` and `zoom: 1`
+ * on footer buttons. The white text-shadow creates a visible ghost/blur effect
+ * when buttons have a dark background (e.g. the blue "Next" button).
+ */
+.driver-popover-footer button {
+    text-shadow: none !important;
+    zoom: normal !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
     font-weight: 500 !important;
-}
-
-.driver-popover-btn {
-    background: #e5e7eb !important;
-    color: #1f2937 !important;
-    border: none !important;
-    padding: 8px 16px !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    /* font-family: sans-serif !important; */
-}
-
-.driver-popover-btn:hover {
-    background: #d1d5db !important;
-    transform: translateY(-1px) !important;
-}
-
-.driver-popover-btn-disabled {
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-}
-
-.driver-popover-btn-disabled:hover {
-    background: #e5e7eb !important;
-    transform: none !important;
 }
 
 .driver-popover-next-btn {
-    background: #2563eb !important;
+    background-color: #3b82f6 !important;
     color: white !important;
-    font-family: sans-serif !important;
+    border: none !important;
+    transition: color 0.3s ease !important;
 }
 
 .driver-popover-next-btn:hover {
-    background: #1d4ed8 !important;
+    background-color: #3b82f6 !important;
+    color: #e5e7eb !important;
 }
 
 .driver-popover-prev-btn {
-    background: #e5e7eb !important;
+    background-color: white !important;
     color: #1f2937 !important;
+    border: 1px solid #d1d5db !important;
+    transition: background-color 0.3s ease !important;
 }
 
 .driver-popover-prev-btn:hover {
-    background: #d1d5db !important;
+    background-color: #f3f4f6 !important;
 }
 
 .driver-popover-close-btn {
     background: #f3f4f6 !important;
-    color: #1f2937 !important;
+    color: #6b7280 !important;
     width: 32px !important;
     height: 32px !important;
     border-radius: 8px !important;
@@ -103,22 +87,22 @@
     padding: 0 !important;
     font-size: 20px !important;
     line-height: 1 !important;
+    transition: background-color 0.3s ease, color 0.3s ease !important;
 }
 
 .driver-popover-close-btn:hover {
-    background: #e5e7eb !important;
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
 }
 
 .driver-popover-arrow {
     display: none !important;
 }
 
-/* Overlay styling */
 .driver-overlay {
     background: rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Active element highlight */
 .driver-active-element {
     border-radius: 12px !important;
 }

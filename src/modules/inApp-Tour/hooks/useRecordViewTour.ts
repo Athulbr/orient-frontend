@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { driver, DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import './useProductTour.css';
+import '../styles/useProductTour.css';
 import { getTourState, setTourState, isUserLoggedIn, setAllToursComplete, isTourEnabled } from './tourStorage';
 
 export const useRecordViewTour = () => {
@@ -36,7 +36,7 @@ export const useRecordViewTour = () => {
 
                 const driverObj = driver({
                     showProgress: false,
-                    showButtons: ['close'],
+                    showButtons: ['next', 'previous', 'close'],
                     allowClose: false,
                     steps: [
                         {

@@ -2,7 +2,7 @@ import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFix
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
-import { useProductTour } from '../../../src/inApp-Tour/useProductTour';
+import { useProductTour } from '../inApp-Tour/hooks/useProductTour';
 
 interface SidebarComponentIF {
     showSidebar?: boolean;
