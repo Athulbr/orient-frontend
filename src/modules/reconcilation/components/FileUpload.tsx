@@ -202,7 +202,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
       />
 
       {!hasFiles ? (
-        // ✅ EMPTY STATE (same as others)
+        
         <div className={styles['slot-empty']}>
           <div className={styles['slot-text']}>
             <p className={styles['slot-label']}>PayU On-Demand</p>
@@ -212,7 +212,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
           <div className={styles['slot-cta']}>Click or drag file(s) here</div>
         </div>
       ) : (
-        // ✅ FILLED STATE (fixed UI)
+        
         <div
           className={styles['slot-filled']}
           onClick={e => e.stopPropagation()}
@@ -222,7 +222,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
           <div className={styles['slot-filled-info']}>
             <p className={styles['slot-filled-label']}>PayU On-Demand</p>
 
-            {/* 🔥 FILE LIST */}
+            
             {payuOdFiles.map((file, idx) => (
               <div
                 key={idx}
@@ -241,7 +241,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
                   {file.name}
                 </p>
 
-                {/* ❌ REMOVE SINGLE FILE */}
+                
                 <button
                   className={styles['slot-remove']}
                   disabled={isLoading}
@@ -258,7 +258,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
             ))}
           </div>
 
-          {/* ➕ ADD MORE FILES (secondary action, not primary) */}
+          
           <button
             className={styles['slot-add-more']}
             disabled={isLoading}
