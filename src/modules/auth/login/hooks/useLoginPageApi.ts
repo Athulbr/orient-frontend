@@ -142,11 +142,17 @@ export const useLoginPageApi = () => {
                 if (res.data?.orientClientId) {
                     window?.sessionStorage?.setItem('orientClientId', res.data.orientClientId);
                 }
-                if (res.data?.orderNumber) {
-                    window?.sessionStorage?.setItem('order_no', res.data.orderNumber);
+                if (orderNumber) {
+                    window?.sessionStorage?.setItem('order_no', orderNumber);
                 }
-                if (res.data?.orderType) {
-                    window?.sessionStorage?.setItem('order_type', res.data.orderType);
+                if (orderType) {
+                    window?.sessionStorage?.setItem('order_type', orderType);
+                }
+                if (res.data?.branchCode) {
+                    window?.sessionStorage?.setItem('branch_code', res.data.branchCode);
+                }
+                if (res.data?.branchId) {
+                    window?.sessionStorage?.setItem('branch_id', res.data.branchId);
                 }
 
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
