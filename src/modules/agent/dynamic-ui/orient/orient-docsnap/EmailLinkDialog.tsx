@@ -3,6 +3,7 @@ import { Mail, Paperclip, Search, ChevronLeft, ChevronRight, X, Trash } from 'lu
 import { Email } from './types';
 import { config } from '../../../../../config/default';
 import { SingleSelect } from '../../../../../components/SingleSelect';
+import DocTile from './DocTile';
 
 interface EmailLinkDialogProps {
     onLink: (emailId: string) => void;
@@ -28,7 +29,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [perPage, setPerPage] = useState('10');
     const [currentPage, setCurrentPage] = useState(1);
-    const [showAll, setShowAll] = useState(false);
+    const [showAll, setShowAll] = useState(true);
     const [daysFilter, setDaysFilter] = useState<number | null>(null);
 
     // Debounce search input
@@ -167,7 +168,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                     ))}
                 </div>
                 {/* Show also linked emails checkbox */}
-                <label className="flex items-center gap-2 text-xs text-gray-700 font-medium shrink-0 cursor-pointer">
+                {/* <label className="flex items-center gap-2 text-xs text-gray-700 font-medium shrink-0 cursor-pointer">
                     <input
                         type="checkbox"
                         checked={showAll}
@@ -178,7 +179,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                         className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-2 h-2 cursor-pointer"
                     />
                     Show Linked Emails also
-                </label>
+                </label> */}
             </div>
 
             {/* Email list */}
@@ -199,7 +200,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                                         <div className="flex-1 min-w-0">
                                             <p className="text-base font-semibold text-gray-900 break-words group-hover:text-purple-800 mb-1.5 flex items-center gap-2">
                                                 {email.subject}
-                                                {email.linked && <span className="text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded border border-green-200">LINKED</span>}
+                                                {email.linked && <span className="text-[10px] bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded border border-green-200">Already Used</span>}
                                             </p>
                                             <p className="text-sm text-gray-600 mb-1">
                                                 <span className="font-medium text-gray-500">From:</span> {email.from}

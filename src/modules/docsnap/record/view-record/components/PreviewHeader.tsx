@@ -142,44 +142,34 @@ export const PreviewHeaderComponent = ({ zoom, name, zoomOut, zoomIn, handleZoom
             </div>
             <div className="flex items-center gap-2 rounded-md border bg-white p-1">
                 <LightIconButton Icon={ZoomOut} onClick={zoomOut} title="Zoom Out" />
-                <input type="range" min="30" max="250" step="0.002" value={zoom} onChange={handleZoomChange} className="w-36 cursor-pointer" />
+                <input
+                    type="range"
+                    min="30"
+                    max="250"
+                    step="0.002"
+                    value={zoom}
+                    onChange={handleZoomChange}
+                    className="w-36 cursor-pointer"
+                    style={{
+                        accentColor: '#2563eb'
+                    }}
+                />
                 <span className="w-8 text-sm font-light text-gray-500">{zoom.toFixed(0)}%</span>
                 <LightIconButton Icon={ZoomIn} onClick={zoomIn} title="Zoom In" />
-                {shrinked ? (
-                    <LightIconButton Icon={Expand} onClick={shrinkExpandHandler} title="Expand" />
-                ) : (
-                    <LightIconButton Icon={Shrink} onClick={shrinkExpandHandler} title="Shrink" />
-                )}
+                {shrinked ? <LightIconButton Icon={Expand} onClick={shrinkExpandHandler} title="Expand" /> : <LightIconButton Icon={Shrink} onClick={shrinkExpandHandler} title="Shrink" />}
             </div>
             {downloading ? <Spinner size={16} className="text-gray-400 m-2" /> : <LightIconButton Icon={Download} onClick={handleDownload} title="Download" />}
         </div>
     );
 };
 
-const LightIconButton = ({
-    onClick,
-    Icon,
-    title,
-    iconClassName,
-    className
-}: {
-    onClick: (e: any) => void;
-    Icon: any;
-    title?: string;
-    iconClassName?: string;
-    className?: string;
-}) => {
+const LightIconButton = ({ onClick, Icon, title, iconClassName, className }: { onClick: (e: any) => void; Icon: any; title?: string; iconClassName?: string; className?: string }) => {
     const onClickHandler = (e: any) => {
         e.stopPropagation();
         onClick(e);
     };
     return (
-        <span
-            translate="no"
-            className={cn('group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200', className)}
-            onClick={onClickHandler}
-            unselectable="on"
-        >
+        <span translate="no" className={cn('group relative cursor-pointer rounded-md border border-gray-50 p-1.5 hover:border-gray-200', className)} onClick={onClickHandler} unselectable="on">
             <Icon translate="no" strokeWidth={1} size={18} className={iconClassName} />
             <div
                 unselectable="on"

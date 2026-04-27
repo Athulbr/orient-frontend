@@ -7,6 +7,7 @@ const SUPPORTED_FORMATS = [
     'yyyy-MM-dd', // 2026-07-22
     'dd-MM-yyyy', // 22-07-2026
     'dd-MMM-yyyy', // 02-Apr-2026 (also handles 02-APR-2026 via normalization)
+    'dd/MMM/yyyy', // 30/Apr/2026 (handles 30/APR/2026 via normalization)
     'MM-dd-yyyy', // 07-22-2026
     'dd.MM.yyyy', // 22.07.2026
     'MM.dd.yyyy', // 07.22.2026

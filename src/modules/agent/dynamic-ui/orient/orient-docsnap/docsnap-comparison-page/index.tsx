@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
-import { sampleRecord } from './sampleRecord';
+// import { sampleRecord } from './sampleRecord';
 import SubmitToMaraekat from './SubmitToMaraekat';
 import { SearchableSelect } from './SearchableSelect';
 import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
@@ -383,11 +383,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                 throw new Error('Failed to fetch from API');
             } catch (err) {
                 console.error('Error fetching record:', err);
-                if (isMounted) {
-                    // Fallback to sampleRecord for development if database fails
-                    setRecord(sampleRecord);
-                    setExtractedData(sampleRecord.finalOutput as unknown as ExtractedData);
-                }
             } finally {
                 if (isMounted) {
                     setIsLoadingRecord(false);
