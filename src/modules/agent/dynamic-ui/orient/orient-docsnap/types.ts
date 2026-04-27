@@ -27,6 +27,7 @@ export interface OrderDetails {
     locationId?: number;
     branch: string;
     branchId: number;
+    branchCode?: string;
     totalAmount: number;
     actualAmount: number;
     orderStatus: 'pending' | 'extracted' | 'submitted' | 'failed';
