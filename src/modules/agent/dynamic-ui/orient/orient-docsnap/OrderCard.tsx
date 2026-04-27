@@ -170,12 +170,11 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             colorClass="text-violet-700"
                             borderClass="border-violet-300/50"
                             hoverClass="hover:bg-violet-50"
-                            icon={<Link2 size={11} />}
-                            label="Link Email"
+                            icon={<Plus size={11} />}
+                            label="Add Files"
                             onClick={() => setShowLinkDialog(true)}
                         />
                     </div>
-
 
                     {emailFiles.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px]">
