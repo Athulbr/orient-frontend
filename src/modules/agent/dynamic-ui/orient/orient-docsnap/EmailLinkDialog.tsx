@@ -167,7 +167,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                     ))}
                 </div>
                 {/* Show also linked emails checkbox */}
-                <label className="flex items-center gap-2 text-sm text-gray-700 font-medium shrink-0 cursor-pointer">
+                <label className="flex items-center gap-2 text-xs text-gray-700 font-medium shrink-0 cursor-pointer">
                     <input
                         type="checkbox"
                         checked={showAll}
@@ -175,9 +175,9 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                             setShowAll(e.target.checked);
                             setCurrentPage(1);
                         }}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer"
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-2 h-2 cursor-pointer"
                     />
-                    Show All
+                    Show Linked Emails also
                 </label>
             </div>
 
