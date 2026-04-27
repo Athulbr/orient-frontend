@@ -118,10 +118,10 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         return 'Wrong Purpose Key';
     };
     const payload = {
-        BRANCHCODE: 'BANH',
+        BRANCHCODE: window.sessionStorage.getItem('branch_code') || '',
         BOOKINGTYPE: orderType === 'sell' ? 'SALE' : orderType === 'buy' ? 'PURCHASE' : orderType,
-        BOOKINGNO: String(generateRandomBookingNumber()),
-        // BOOKINGNO: String(order.orderDetails?.orderNumber),
+        // BOOKINGNO: String(generateRandomBookingNumber()),
+        BOOKINGNO: String(order.orderDetails?.orderNumber),
         BOOKINGDATE: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase(),
         SOURCEFROM: order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE',
         HANDLEDBY: 'SAJI',
