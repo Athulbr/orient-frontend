@@ -15,6 +15,7 @@ export interface Email {
     body?: string;
     attachments: FileItem[];
     orderNumber?: number;
+    linked?: boolean;
 }
 
 export interface OrderDetails {
@@ -73,7 +74,6 @@ export interface Order {
     manualDocuments?: DocumentDetail[];
     emailDocuments?: DocumentDetail[];
     receipts?: DocumentDetail[];
-    linkedEmailIds?: string[];
     extractionDetails: {
         recordId?: string;
         extractedData?: Record<string, unknown>;

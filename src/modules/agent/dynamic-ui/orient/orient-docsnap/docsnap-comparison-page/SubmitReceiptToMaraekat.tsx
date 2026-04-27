@@ -128,7 +128,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
 
             for (const receipt of receipts) {
                 const payload = {
-                    BRANCHCODE: 'BANH',
+                    BRANCHCODE: window.sessionStorage.getItem('branch_code') || '',
                     BOOKINGTYPE: orderType === 'sell' ? 'SALE' : orderType === 'buy' ? 'PURCHASE' : orderType?.toUpperCase() || '',
                     BOOKINGNO: String(bookingNo).toUpperCase(),
                     EONBOOKINGNO: String(eonBookingNumber).toUpperCase(),

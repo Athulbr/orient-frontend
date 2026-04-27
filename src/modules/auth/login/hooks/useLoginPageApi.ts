@@ -135,7 +135,7 @@ export const useLoginPageApi = () => {
     const loginWithPhpSession = async (sessionToken: string, clientId: string, orderNumber?: string, orderType?: string) => {
         try {
             setState(prev => ({ ...prev, oAuthLoading: true, authError: '' }));
-            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId, order_no: orderNumber });
+            const res = await httpRequest('POST', `${config.nodeApiUrl}/auth/bootstrap`, { token: sessionToken, client_id: clientId, order_no: orderNumber, order_type: orderType });
             if (res.data?.accessToken) {
                 window?.sessionStorage?.setItem('accessToken', JSON.stringify(res.data?.accessToken));
                 window?.sessionStorage?.setItem('reactLoginTime', Date.now().toString());
