@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X } from 'lucide-react';
+import { RefreshCcw, RefreshCwOff, RotateCw, Search, X } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
@@ -17,16 +17,7 @@ interface OrderFiltersBarProps {
     onCreateOrder: () => void;
 }
 
-const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
-    searchQuery,
-    onSearchChange,
-    statusFilter,
-    onStatusChange,
-    dateRange,
-    onDateRangeChange,
-    onReset,
-    onCreateOrder
-}) => {
+const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({ searchQuery, onSearchChange, statusFilter, onStatusChange, dateRange, onDateRangeChange, onReset, onCreateOrder }) => {
     return (
         <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
@@ -59,9 +50,18 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
                         ]}
                     />
                     <div className="flex flex-col gap-1">
-                        <DateTimePicker minDate='2026-01-01' maxDate={new Date().toISOString()} onChange={onDateRangeChange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
+                        <DateTimePicker
+                            minDate="2026-01-01"
+                            maxDate={new Date().toISOString()}
+                            onChange={onDateRangeChange}
+                            initialStartDate={dateRange.startDate}
+                            initialEndDate={dateRange.endDate}
+                        />
                     </div>
                     <Button startIcon={<X size={16} />} onClick={onReset} outlined></Button>
+                    <Button startIcon={<RotateCw size={16} />} onClick={onReset} outlined>
+                        Refresh
+                    </Button>
                     <Button onClick={onCreateOrder}>Create Order</Button>
                 </div>
             </div>
