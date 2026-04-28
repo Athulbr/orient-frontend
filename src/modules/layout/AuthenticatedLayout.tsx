@@ -22,7 +22,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     };
     const updateUserSettingsHandler = async () => {};
 
-    const agentRoute = window.location.pathname.includes('agent');
+    const agentRoute = window.location.pathname.includes('agent') || window.location.pathname.includes('reconcilation');
 
     useEffect(() => {
         updateRolePermission();

@@ -61,6 +61,14 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
 
                 toast.success('Logged in successfully');
+                const permission: any = JSON.parse(window?.sessionStorage?.getItem('permissions') || '[]');
+                for (let index = 0; index < permission?.length; index++) {
+                    const element = permission[index].key;
+                    if (element === 'read:reconsile') {
+                        window?.location?.replace('/reconcilation/list');
+                        break;
+                    }
+                }
                 window?.location?.replace('/');
             } else {
                 setState(prev => ({ ...prev, authError: 'Login failed. Please check your credentials.' }));
