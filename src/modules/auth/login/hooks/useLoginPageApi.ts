@@ -62,14 +62,19 @@ export const useLoginPageApi = () => {
 
                 toast.success('Logged in successfully');
                 const permission: any = JSON.parse(window?.sessionStorage?.getItem('permissions') || '[]');
+                let reconsileUser = false;
                 for (let index = 0; index < permission?.length; index++) {
                     const element = permission[index].key;
                     if (element === 'read:reconsile') {
-                        window?.location?.replace('/reconcilation/list');
+                        reconsileUser = true;
                         break;
                     }
                 }
-                window?.location?.replace('/');
+                if (reconsileUser) {
+                    window?.location?.replace('/reconcilation/list');
+                } else {
+                    window?.location?.replace('/');
+                }
             } else {
                 setState(prev => ({ ...prev, authError: 'Login failed. Please check your credentials.' }));
             }
