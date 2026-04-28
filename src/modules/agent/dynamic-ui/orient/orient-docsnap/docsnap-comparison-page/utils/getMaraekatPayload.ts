@@ -32,7 +32,7 @@ const normalizeDateString = (dateStr: string): string => {
     return dateStr.replace(/[A-Za-z]+/g, match => match.charAt(0).toUpperCase() + match.slice(1).toLowerCase());
 };
 
-const formatDate = (date: string | Date | null | undefined): DateResult => {
+export const formatDateForMaraekat = (date: string | Date | null | undefined): DateResult => {
     if (!date) return { success: false, date: '' };
 
     // Handle Date object directly
@@ -81,7 +81,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
     for (const field of DATE_FIELDS) {
         const rawValue = field.getValue(extractedData);
         if (rawValue) {
-            const result = formatDate(rawValue);
+            const result = formatDateForMaraekat(rawValue);
             if (!result.success) {
                 dateErrors.push(`Invalid date format for ${field.label}: "${rawValue}"`);
             }

@@ -93,24 +93,27 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
     }, [firstPageUrl, file.type]);
 
     // Fetch a specific page blob for the lightbox
-    const fetchPageBlob = useCallback(async (pageIndex: number) => {
-        if (pageBlobUrlsRef.current[pageIndex]) return;
-        setPageLoading(true);
-        try {
-            const url = pageApiUrls[pageIndex];
-            if (!url) return;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('Failed to fetch page');
-            const blob = await res.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            pageBlobUrlsRef.current[pageIndex] = blobUrl;
-            setPageBlobUrls(prev => ({ ...prev, [pageIndex]: blobUrl }));
-        } catch (err) {
-            console.error('Error fetching page:', err);
-        } finally {
-            setPageLoading(false);
-        }
-    }, [pageApiUrls]);
+    const fetchPageBlob = useCallback(
+        async (pageIndex: number) => {
+            if (pageBlobUrlsRef.current[pageIndex]) return;
+            setPageLoading(true);
+            try {
+                const url = pageApiUrls[pageIndex];
+                if (!url) return;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Failed to fetch page');
+                const blob = await res.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                pageBlobUrlsRef.current[pageIndex] = blobUrl;
+                setPageBlobUrls(prev => ({ ...prev, [pageIndex]: blobUrl }));
+            } catch (err) {
+                console.error('Error fetching page:', err);
+            } finally {
+                setPageLoading(false);
+            }
+        },
+        [pageApiUrls]
+    );
 
     // Cleanup all page blob URLs only on unmount
     useEffect(() => {
@@ -182,7 +185,7 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                     </button>
                 )}
 
-                {totalPages > 1 && <span className="absolute top-1.5 left-1.5 text-[9px] font-extrabold text-white bg-black/50 px-[5px] py-[2px] rounded-md z-10">{totalPages}p</span>}
+                {totalPages > 1 && <span className="absolute top-1.5 left-1.5 text-[8px] font-extrabold text-white bg-black/50 px-[5px] py-[2px] rounded-md z-10">{totalPages} Pages</span>}
 
                 {file.type === 'image' ? (
                     <div className="absolute inset-0 rounded-2xl overflow-hidden">
@@ -290,22 +293,23 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
             )}
 
             {onRemove && (
-                <DialogComponent
-                    isOpen={showRemoveConfirm}
-                    closeDialog={() => setShowRemoveConfirm(false)}
-                    name="Remove Document"
-                    className="max-w-[400px]"
-                >
+                <DialogComponent isOpen={showRemoveConfirm} closeDialog={() => setShowRemoveConfirm(false)} name="Remove Document" className="max-w-[400px]">
                     <div className="p-6">
                         <div className="text-gray-600 mb-6 text-sm">
                             Are you sure you want to remove <strong className="break-all">{file.name}</strong>?
                         </div>
                         <div className="flex justify-end gap-3">
-                            <Button outlined onClick={(e) => { e.stopPropagation(); setShowRemoveConfirm(false); }}>
+                            <Button
+                                outlined
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    setShowRemoveConfirm(false);
+                                }}
+                            >
                                 Cancel
                             </Button>
                             <Button
-                                onClick={(e) => {
+                                onClick={e => {
                                     e.stopPropagation();
                                     onRemove();
                                     setShowRemoveConfirm(false);

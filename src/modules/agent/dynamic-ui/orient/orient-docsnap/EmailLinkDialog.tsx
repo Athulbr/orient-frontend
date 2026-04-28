@@ -106,6 +106,23 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
         <div className="bg-white overflow-hidden flex-1 rounded-b-lg pb-4 flex flex-col">
             {/* Toolbar */}
             <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center gap-2 bg-gray-50">
+                <div className="flex items-center gap-2 px-2">
+                    <span className="text-xs text-gray-500 font-medium mr-1">Filter by expected date:</span>
+                    {[2, 5, 10, 30].map(days => (
+                        <button
+                            key={days}
+                            onClick={() => {
+                                setDaysFilter(daysFilter === days ? null : days);
+                                setCurrentPage(1);
+                            }}
+                            className={`px-3 py-1 text-xs font-semibold rounded-md border transition-colors ${
+                                daysFilter === days ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                            }`}
+                        >
+                            Last {days} Days
+                        </button>
+                    ))}
+                </div>
                 {/* Search */}
                 <div className="relative flex-1 min-w-[180px]">
                     <input
@@ -130,27 +147,13 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                     )}
                 </div>
 
-                {/* Row count */}
-                <div className="shrink-0">
-                    <SingleSelect
-                        value={perPage}
-                        onValueChange={handlePerPageChange}
-                        options={[
-                            { label: '10 / page', value: '10' },
-                            { label: '20 / page', value: '20' },
-                            { label: '50 / page', value: '50' },
-                            { label: '100 / page', value: '100' }
-                        ]}
-                    />
-                </div>
-
                 {/* Result count */}
-                <span className="text-xs text-gray-400 shrink-0">{loading ? 'Loading…' : `${totalCount} result${totalCount !== 1 ? 's' : ''}`}</span>
+                {/* <span className="text-xs text-gray-400 shrink-0">{loading ? 'Loading…' : `${totalCount} result${totalCount !== 1 ? 's' : ''}`}</span> */}
             </div>
 
             {/* Date Filters Row */}
             <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center gap-2 bg-white">
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500 font-medium mr-1">Filter by expected date:</span>
                     {[2, 5, 10, 30].map(days => (
                         <button
@@ -166,7 +169,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                             Last {days} Days
                         </button>
                     ))}
-                </div>
+                </div> */}
                 {/* Show also linked emails checkbox */}
                 {/* <label className="flex items-center gap-2 text-xs text-gray-700 font-medium shrink-0 cursor-pointer">
                     <input
@@ -420,3 +423,24 @@ export default EmailLinkDialog;
 // "AMOUNT":"100000"
 
 // }'
+
+// 081010200019813,
+// 009010200015039,
+// 914020014608384,
+// 918020069425192,
+// 920020053547564,
+// 510101005983524,
+// 11530200023482,
+// 01332320001240,
+// 041505000723,
+// 116205000517,
+// 10020841026,
+// 200000979511,
+// 204011032315,
+// 4762000100174701,
+// 20062019000134,
+// 67341643312,
+// 0087073000001784,
+// 019784000000068,
+// 002281400006909,
+// 002281400006896

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { config } from '../../../../../../config/default';
 import { format } from 'date-fns';
+import { formatDateForMaraekat } from './utils/getMaraekatPayload';
 
 interface SubmitReceiptToMaraekatProps {
     order: any;
@@ -17,61 +18,6 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
     console.log('extractedData', extractedData);
 
     const handleSubmit = async () => {
-        const sampleReceipts = [
-            {
-                bank_name: {
-                    value: 'okicici',
-                    page: 10,
-                    wordIndexes: [2069],
-                    bbox: {
-                        x_min: 0.2279202279,
-                        y_min: 0.3475,
-                        x_max: 0.2927350427,
-                        y_max: 0.3605
-                    },
-                    confidence: 0.9863
-                },
-                amount: {
-                    value: '37,401.00',
-                    page: 10,
-                    wordIndexes: [2064],
-                    bbox: {
-                        x_min: 0.3739316239,
-                        y_min: 0.2615,
-                        x_max: 0.5163817664,
-                        y_max: 0.2775
-                    },
-                    confidence: 0.9737
-                },
-                cheque_date: {
-                    value: '06/01/2026',
-                    page: 10,
-                    wordIndexes: [2050, 2051, 2053],
-                    bbox: {
-                        x_min: 0.1809116809,
-                        y_min: 0.1845,
-                        x_max: 0.287037037,
-                        y_max: 0.1945
-                    },
-                    confidence: 0.9843666666666667
-                },
-                drawn_on: {
-                    value: '',
-                    page: 10,
-                    wordIndexes: []
-                },
-                check_number: {
-                    value: '',
-                    page: 10,
-                    wordIndexes: []
-                },
-                bank_branch: {
-                    value: '',
-                    page: 10,
-                    wordIndexes: []
-                }
-            }
-        ];
         setIsSubmitting(true);
         try {
             const eonBookingNumber = order?.maraekatDetails?.eonBookingNumber;
@@ -108,14 +54,14 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
             }
 
             // Helper to format date
-            const formatForMaraekat = (dateStr: string) => {
-                if (!dateStr) return '';
-                const parseDate = new Date(dateStr);
-                if (!isNaN(parseDate.getTime())) {
-                    return format(parseDate, 'dd-MMM-yyyy').toUpperCase();
-                }
-                return dateStr.toUpperCase();
-            };
+            // const formatForMaraekat = (dateStr: string) => {
+            //     if (!dateStr) return '';
+            //     const parseDate = new Date(dateStr);
+            //     if (!isNaN(parseDate.getTime())) {
+            //         return format(parseDate, 'dd-MMM-yyyy').toUpperCase();
+            //     }
+            //     return dateStr.toUpperCase();
+            // };
 
             if (receipts.length === 0) {
                 toast.error('No receipts found to submit');
@@ -133,10 +79,10 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
                     BOOKINGNO: String(bookingNo).toUpperCase(),
                     EONBOOKINGNO: String(eonBookingNumber).toUpperCase(),
                     CASHBANK: String(receipt.mode_of_transaction?.value || 'CASH').toUpperCase(),
-                    CHQNO: String(receipt.cheque_number?.value || receipt.check_number?.value || '99').toUpperCase(),
-                    CHQDT: formatForMaraekat(String(receipt.cheque_date?.value || '')),
-                    DRAWNON: String(receipt.drawn_on?.value || receipt.bank_name?.value || '').toUpperCase(),
-                    BANKBRANCH: String(receipt.branch?.value || receipt.bank_branch?.value || '').toUpperCase(),
+                    CHQNO: String(receipt.cheque_number?.value || receipt.check_number?.value || '').toUpperCase(),
+                    CHQDT: formatDateForMaraekat(String(receipt.cheque_date?.value || '')),
+                    DRAWNON: 'AAA',
+                    BANKBRANCH: 'BBB',
                     AMOUNT: String(receipt.amount?.value || '').replace(/[^\d.]/g, '')
                 };
 
@@ -189,7 +135,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
             className="flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
         >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-            Rec Pay Submit
+            Rec Pay
         </button>
     );
 };
