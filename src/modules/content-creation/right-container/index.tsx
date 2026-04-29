@@ -17,8 +17,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useToastStore } from '../../../components/toast/ToastStore';
 import { config } from '../../../config/default';
 import Tooltip from '../../../components/Tooltip';
+import ImagesTab from '../components/ImagesTab';
 
-type RightTab = 'content' | 'styles';
+type RightTab = 'content' | 'styles' | 'images';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
@@ -263,7 +264,7 @@ ${state.content}
             <div className="sticky top-0 z-10 border-b bg-white">
                 <div className="flex items-center justify-between p-2">
                     <p className="text-xl font-semibold">
-                        {activeTab === 'content' ? 'Content Details' : 'Style Editor'}
+                        {activeTab === 'content' ? 'Content Details' : activeTab === 'images' ? 'Images' : 'Style Editor'}
                     </p>
                 </div>
                 <div className="flex border-b">
@@ -275,7 +276,17 @@ ${state.content}
                                 : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                        Content
+                        Content Details
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('images')}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'images'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        Images
                     </button>
                     {/* <button
                         onClick={() => setActiveTab('styles')}
@@ -299,6 +310,8 @@ ${state.content}
                     resetTheme={resetTheme}
                 />
             )}
+
+            {activeTab === 'images' && <ImagesTab />}
 
             {activeTab === 'content' && <div className="flex flex-col gap-3 border-b pb-4 mb-2">
                 <div className="flex flex-col gap-1">
