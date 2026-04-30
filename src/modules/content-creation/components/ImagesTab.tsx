@@ -20,11 +20,12 @@ export default function ImagesTab() {
         setImages(prev => prev.filter(i => i.id !== imgObj.id));
 
         // 2. Remove from global store safely
-        if (state.extractedData?.rowData?.imageList) {
-            state.extractedData.rowData.imageList = state.extractedData.rowData.imageList.filter((i: any) => {
-                const targetSrc = i.url || i.src;
-                return targetSrc !== imgObj.src;
-            });
+        if (state.extractedData?.rowData) {
+            const updatedImageList = images
+                .filter(i => i.id !== imgObj.id)
+                .map(img => ({ url: img.src, title: img.title }));
+            
+            state.extractedData.rowData.imageList = updatedImageList;
         }
 
         // 3. Revert to dummy image in the Editor Content
@@ -149,7 +150,35 @@ export default function ImagesTab() {
                 )}
             </div>
 
-            <CreateNewImageDialog isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} />
+            <CreateNewImageDialog 
+                isOpen={createModalOpen} 
+                onClose={() => setCreateModalOpen(false)} 
+                onImagesGenerated={(urls) => {
+                    const newGeneratedImages = urls.map((url, idx) => ({
+                        id: `new-gen-${Date.now()}-${idx}`,
+                        title: `Custom AI Image ${idx + 1}`,
+                        src: url
+                    }));
+                    
+                    // Add instantly to UI list - Appending directly to the bottom instead of top
+                    setImages(prev => {
+                        const updated = [...prev, ...newGeneratedImages];
+                        
+                        // Inject securely into the backend datastore format to persist at the bottom
+                        // By pushing the entire 'updated' array, we ensure older fallback images aren't dropped!
+                        if (state.extractedData) {
+                            if (!state.extractedData.rowData) state.extractedData.rowData = {};
+                            const dbMapped = updated.map(img => ({ url: img.src, title: img.title }));
+                            state.extractedData.rowData.imageList = dbMapped;
+                            
+                            // Trigger a context sync so the core editor registers the new property officially
+                            setState(s => ({ ...s, extractedData: state.extractedData }));
+                        }
+                        
+                        return updated;
+                    });
+                }}
+            />
             <RegenerateImageDialog 
                 isOpen={regenModalOpen} 
                 onClose={() => setRegenModalOpen(false)} 

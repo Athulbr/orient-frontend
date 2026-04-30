@@ -1,12 +1,54 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Image as ImageIcon, Maximize } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Sparkles, Image as ImageIcon, Maximize, RefreshCcw, Check } from 'lucide-react';
 import { DialogComponent } from '../../../components/DialogComponent';
+import httpRequest from '../../../global-utils/httpRequest';
+import { config } from '../../../config/default';
+import { useToastStore } from '../../../components/toast/ToastStore';
 
-export default function CreateNewImageDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerated }: { isOpen: boolean; onClose: () => void; onImagesGenerated?: (urls: string[]) => void }) {
     const [description, setDescription] = useState('');
     const [style, setStyle] = useState('Photorealistic');
     const [aspectRatio, setAspectRatio] = useState('16:9 (Landscape)');
     const [count, setCount] = useState(3);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedUrls, setGeneratedUrls] = useState<string[]>([]);
+    const toast = useToastStore();
+
+    useEffect(() => {
+        if (isOpen) {
+            setDescription('');
+            setStyle('Photorealistic');
+            setAspectRatio('16:9 (Landscape)');
+            setCount(3);
+            setGeneratedUrls([]);
+            setIsGenerating(false);
+        }
+    }, [isOpen]);
+
+    const handleGenerate = async () => {
+        if (!description.trim()) return;
+        setIsGenerating(true);
+        setGeneratedUrls([]);
+        try {
+            const res: any = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/create-new-images`, {
+                description,
+                style,
+                aspectRatio,
+                count
+            });
+            if (res?.data?.imageUrls && Array.isArray(res.data.imageUrls)) {
+                setGeneratedUrls(res.data.imageUrls);
+                toast.success(`Successfully generated ${res.data.imageUrls.length} image(s)!`);
+                if (onImagesGenerated) {
+                    onImagesGenerated(res.data.imageUrls);
+                }
+            }
+        } catch (e: any) {
+            toast.error(e?.response?.data?.message || 'Failed to generate new images.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     const suggestChips = [
         'Cryotherapy chamber exterior', 'Athlete in cryo session', 'Temperature comparison chart',
@@ -107,9 +149,9 @@ export default function CreateNewImageDialog({ isOpen, onClose }: { isOpen: bool
                                     </button>
                                 ))}
                             </div>
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20">
+                            {/* <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20">
                                 <Maximize size={32} />
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Quantity */}
@@ -136,21 +178,36 @@ export default function CreateNewImageDialog({ isOpen, onClose }: { isOpen: bool
                             <span className="text-sm font-medium text-gray-400">Preview</span>
                         </div>
                         <div className="flex flex-col gap-4">
-                            {Array.from({ length: count }).map((_, i) => (
-                                <div key={i} className="aspect-video bg-[#e6dcf3] border border-[#d1c4e9] rounded-sm flex items-center justify-center shadow-inner relative">
-                                    <ImageIcon size={32} className="text-[#a890d3]" />
-                                    {i === count - 1 && <span className="absolute bottom-4 text-xs text-gray-400">Generated images will appear here</span>}
-                                </div>
-                            ))}
+                            {isGenerating ? (
+                                Array.from({ length: count }).map((_, i) => (
+                                    <div key={`gen-${i}`} className="aspect-video bg-blue-50 border-2 border-blue-200 border-dashed rounded-sm flex flex-col gap-2 items-center justify-center text-blue-500 shadow-inner">
+                                        <RefreshCcw size={28} className="animate-spin" />
+                                        <span className="text-sm font-medium">Generating...</span>
+                                    </div>
+                                ))
+                            ) : generatedUrls.length > 0 ? (
+                                generatedUrls.map((url, i) => (
+                                    <div key={`img-${i}`} className="aspect-video bg-gray-100 flex items-center justify-center rounded-sm overflow-hidden shadow-sm border border-gray-200">
+                                        <img src={url} alt={`Generated ${i+1}`} className="w-full h-full object-cover" />
+                                    </div>
+                                ))
+                            ) : (
+                                Array.from({ length: count }).map((_, i) => (
+                                    <div key={`empty-${i}`} className="aspect-video bg-[#e6dcf3] border border-[#d1c4e9] rounded-sm flex items-center justify-center shadow-inner relative">
+                                        <ImageIcon size={32} className="text-[#a890d3]" />
+                                        {i === count - 1 && <span className="absolute bottom-4 text-xs text-gray-400">Generated images will appear here</span>}
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between p-4 px-6 border-t border-gray-200 shrink-0">
-                    <p className="text-sm text-gray-500">
+                    {/* <p className="text-sm text-gray-500">
                         Generated images are saved to your Image Library and can be dragged into the article.
-                    </p>
+                    </p> */}
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={onClose}
@@ -159,15 +216,24 @@ export default function CreateNewImageDialog({ isOpen, onClose }: { isOpen: bool
                             Cancel
                         </button>
                         <button 
-                            disabled={!description.trim()}
+                            onClick={generatedUrls.length > 0 ? onClose : handleGenerate}
+                            disabled={!description.trim() || isGenerating}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded text-sm font-semibold transition-colors shadow-sm ${
-                                !description.trim()
+                                !description.trim() || isGenerating
                                     ? 'bg-blue-300 text-white cursor-not-allowed border outline-none' 
-                                    : 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-700'
+                                    : generatedUrls.length > 0 
+                                        ? 'bg-green-600 hover:bg-green-700 text-white border border-green-700'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-700'
                             }`}
                         >
-                            <Sparkles size={16} className="text-blue-200" />
-                            Generate Images
+                            {isGenerating ? (
+                                <RefreshCcw size={16} className="text-white animate-spin" />
+                            ) : generatedUrls.length > 0 ? (
+                                <Check size={16} className="text-white" />
+                            ) : (
+                                <Sparkles size={16} className="text-blue-200" />
+                            )}
+                            {isGenerating ? 'Generating...' : generatedUrls.length > 0 ? 'Done Adding' : 'Generate Images'}
                         </button>
                     </div>
                 </div>
