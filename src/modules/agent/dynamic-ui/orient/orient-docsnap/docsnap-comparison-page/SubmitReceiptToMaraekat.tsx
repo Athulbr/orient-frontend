@@ -154,7 +154,34 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
                     }
 
                     // If receipt type is NEFT, return NEFT
-                    if (receiptType.includes('BANK')) return '';
+                    if (receiptType.includes('BANK')) {
+                        const bankAccounts = {
+                            '081010200019813': 'AXIS9813',
+                            '009010200015039': 'AXISBLRMGROAD',
+                            '914020014608384': 'COMMAXIS',
+                            '918020069425192': 'ONLINEAXIS192',
+                            '920020053547564': 'AXISEEFC564',
+                            '510101005983524': 'CORPBANK3524',
+                            '11530200023482': 'FEDERAL482',
+                            '01332320001240': 'HDFC1240',
+                            '041505000723': 'ICICI',
+                            '116205000517': 'ICICIKOCHI',
+                            '10020841026': 'IDFC1026',
+                            '200000979511': 'INDUSIND',
+                            '204011032315': 'INGVY',
+                            '4762000100174701': 'KAR701',
+                            '20062019000134': 'SBM0134',
+                            '67341643312': 'SBT',
+                            '0087073000001784': 'SIB784',
+                            '019784000000068': 'YESB',
+                            '002281400006909': 'YESBNK06909',
+                            '002281400006896': 'YESFINTIBA'
+                        };
+
+                        if (bankAccounts[receipt.account_number as keyof typeof bankAccounts]) {
+                            return bankAccounts[receipt.account_number as keyof typeof bankAccounts];
+                        }
+                    }
 
                     return '';
                 };
