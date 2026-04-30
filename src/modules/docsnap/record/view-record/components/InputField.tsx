@@ -98,7 +98,9 @@ export const InputField = ({
                         }
                     }));
                     setValidated(true);
-                    console.log('Validation status:', response.data.validationStatus);
+                    // console.log('Validation status:', response.data.validationStatus);
+                    const finalUrl = renderTemplate(validationUrl, { value });
+                    window.open(finalUrl, '_blank');
                 }
             } catch (err) {
                 console.error('Tracking ID validation error:', err);
