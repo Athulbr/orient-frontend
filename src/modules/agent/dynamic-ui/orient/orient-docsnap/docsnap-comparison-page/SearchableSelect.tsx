@@ -144,11 +144,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             const target = e.target as Node;
-            if (
-                containerRef.current && 
-                !containerRef.current.contains(target) &&
-                (!dropdownRef.current || !dropdownRef.current.contains(target))
-            ) {
+            if (containerRef.current && !containerRef.current.contains(target) && (!dropdownRef.current || !dropdownRef.current.contains(target))) {
                 setIsOpen(false);
                 setSearch('');
             }
@@ -163,11 +159,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
     const handleContainerBlur = useCallback(
         (e: React.FocusEvent) => {
             const relatedTarget = e.relatedTarget as Node;
-            if (
-                containerRef.current && 
-                !containerRef.current.contains(relatedTarget) &&
-                (!dropdownRef.current || !dropdownRef.current.contains(relatedTarget))
-            ) {
+            if (containerRef.current && !containerRef.current.contains(relatedTarget) && (!dropdownRef.current || !dropdownRef.current.contains(relatedTarget))) {
                 setIsOpen(false);
                 setSearch('');
                 onBlur?.(e);
@@ -176,8 +168,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
         [onBlur]
     );
 
-    const isInvalidValue = value !== '' && !options.includes(value);
+    const normalizedValue = `${value}`.toUpperCase();
 
+    const isInvalidValue = normalizedValue !== '' && !options.map(opt => `${opt}`.toUpperCase()).includes(normalizedValue);
     return (
         <div ref={containerRef} className={`relative ${className || ''}`} onBlur={handleContainerBlur} onKeyDown={handleKeyDown}>
             {/* Trigger button */}
@@ -207,50 +200,52 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
             </button>
 
             {/* Dropdown */}
-            {isOpen && typeof document !== 'undefined' && createPortal(
-                <div 
-                    ref={dropdownRef}
-                    className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg animate-in fade-in slide-in-from-top-1 duration-150"
-                    style={dropdownStyle}
-                >
-                    {/* Search */}
-                    <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2">
-                        <Search size={14} className="shrink-0 text-zinc-400" />
-                        <input
-                            ref={searchInputRef}
-                            type="text"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            placeholder="Search..."
-                            className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
-                        />
-                    </div>
+            {isOpen &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                    <div ref={dropdownRef} className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg animate-in fade-in slide-in-from-top-1 duration-150" style={dropdownStyle}>
+                        {/* Search */}
+                        <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2">
+                            <Search size={14} className="shrink-0 text-zinc-400" />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                placeholder="Search..."
+                                className="w-full bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
+                            />
+                        </div>
 
-                    {/* Options list */}
-                    <div ref={listRef} className="max-h-[200px] overflow-y-auto py-1">
-                        {filteredOptions.length === 0 ? (
-                            <div className="px-3 py-4 text-center text-xs text-zinc-400">No matching options</div>
-                        ) : (
-                            filteredOptions.map((opt, idx) => (
-                                <div
-                                    key={opt + idx}
-                                    data-option
-                                    onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        handleSelect(opt);
-                                    }}
-                                    className={`cursor-pointer px-3 py-2 text-sm transition-colors ${
-                                        opt === value ? 'bg-blue-50 font-medium text-blue-700' : highlightedIndex === idx ? 'bg-zinc-50 text-zinc-800' : 'text-zinc-700 hover:bg-zinc-50'
-                                    }`}
-                                >
-                                    {opt}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>,
-                document.body
-            )}
+                        {/* Options list */}
+                        <div ref={listRef} className="max-h-[200px] overflow-y-auto py-1">
+                            {filteredOptions.length === 0 ? (
+                                <div className="px-3 py-4 text-center text-xs text-zinc-400">No matching options</div>
+                            ) : (
+                                filteredOptions.map((opt, idx) => (
+                                    <div
+                                        key={opt + idx}
+                                        data-option
+                                        onMouseDown={e => {
+                                            e.preventDefault();
+                                            handleSelect(opt);
+                                        }}
+                                        className={`cursor-pointer px-3 py-2 text-sm transition-colors ${
+                                            `${opt}`.toUpperCase() === `${value}`.toUpperCase()
+                                                ? 'bg-blue-50 font-medium text-blue-700'
+                                                : highlightedIndex === idx
+                                                  ? 'bg-zinc-50 text-zinc-800'
+                                                  : 'text-zinc-700 hover:bg-zinc-50'
+                                        }`}
+                                    >
+                                        {opt}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 };

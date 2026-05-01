@@ -90,53 +90,6 @@ export const RenderObjectFields: FC<RenderObjectFieldsIF> = ({ updateWire, refs 
                                         label={label === 'Price Method' ? 'Price Method (MAP/CALC/CSFP)' : label}
                                         showRegenButton={showRegenButton}
                                         validationUrl={validationUrl || (label === "Manufacturer's URL" ? value?.value : '')}
-                                        isValidated={
-                                            key === 'shipping' && subKey === 'tracking_id'
-                                                ? valueMain?.validation?.value === 'validated'
-                                                : false
-                                        }
-                                        validationStatus={
-                                            key === 'shipping' && subKey === 'tracking_id'
-                                                ? valueMain?.validation?.value || ''
-                                                : ''
-                                        }
-                                        onValidationStatusChange={
-                                            key === 'shipping' && subKey === 'tracking_id'
-                                                ? status => {
-                                                      setState(prev => ({
-                                                          ...prev,
-                                                          objectFields: {
-                                                              ...prev.objectFields,
-                                                              [key]: {
-                                                                  ...prev.objectFields[key],
-                                                                  validation: { value: status }
-                                                              }
-                                                          }
-                                                      }));
-                                                  }
-                                                : undefined
-                                        }
-                                        onValidate={
-                                            key === 'shipping' && subKey === 'tracking_id'
-                                                ? () => {
-                                                    //   console.log('[Tracking ID] validate click -> set tracking_id_validated', {
-                                                    //       key,
-                                                    //       subKey,
-                                                    //       value: value?.value
-                                                    //   });
-                                                      setState(prev => ({
-                                                          ...prev,
-                                                          objectFields: {
-                                                              ...prev.objectFields,
-                                                              [key]: {
-                                                                  ...prev.objectFields[key],
-                                                                  validation: { value: 'validated' }
-                                                              }
-                                                          }
-                                                      }));
-                                                  }
-                                                : undefined
-                                        }
                                         showTextarea={showTextarea}
                                         jsonKey={subKey}
                                         value={`${value?.value}`}

@@ -1,7 +1,12 @@
 import { Ref, useId, useState, useRef, useEffect } from 'react'; // 1. Import Ref
+import { useViewRecordState } from '../hooks/viewRecordContext';
 import { CircleCheck, Eye, MessageSquareText } from 'lucide-react';
+import httpRequest from '../../../../../global-utils/httpRequest';
+import { config } from '../../../../../config/default';
 import { CommentDialog } from './CommentDialog';
 import { ConfidenceScore } from './ConfidenceScore';
+import Spinner from '../../../../../components/Spinner';
+import { lab } from 'd3';
 
 interface InputFieldProps {
     label?: string;
@@ -21,10 +26,6 @@ interface InputFieldProps {
     jsonKey?: string;
     showRegenButton?: boolean;
     validationUrl?: string;
-    onValidate?: () => void;
-    isValidated?: boolean;
-    validationStatus?: string;
-    onValidationStatusChange?: (status: string) => void;
     showTextarea?: boolean;
     dataTourId?: string;
 }
@@ -44,16 +45,14 @@ export const InputField = ({
     handleRegenerateField,
     showRegenButton,
     validationUrl,
-    onValidate,
-    isValidated,
-    validationStatus,
-    onValidationStatusChange,
     showTextarea,
     dataTourId,
     ...props
 }: InputFieldProps) => {
+    const { state, setState } = useViewRecordState();
     const [commentDialog, setCommentDialog] = useState(false);
-    const [validateClicked, setValidateClicked] = useState(false);
+    const [validating, setValidating] = useState(false);
+    const [validated, setValidated] = useState(false);
     const id = useId();
     const [commentList, setCommentList] = useState<{ text: string; date: string; time: string }[]>([]);
 
@@ -68,26 +67,48 @@ export const InputField = ({
         }
     }, [value, showTextarea]);
 
-    const isValidatedState = Boolean(isValidated || validationStatus === 'validated');
-    const showValidationStatus =
-        validateClicked || validationStatus === 'validated' || validationStatus === 'invalid';
-
-    useEffect(() => {
-        setValidateClicked(isValidatedState);
-    }, [isValidatedState]);
-
-    useEffect(() => {
-        if (!isValidatedState) {
-            setValidateClicked(false);
-        }
-    }, [value, validationUrl, isValidatedState]);
-
     const renderTemplate = (template: string, data: Record<string, string>) => {
         return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => data[key] ?? '');
     };
 
-    const validateLink = (validationUrl: string, value: string) => {
+    const validateLink = async (validationUrl: string, value: string, label: string) => {
         if (!validationUrl.trim() || !value.trim()) return;
+        if (label === 'Tracking ID') {
+            setValidating(true);
+            setValidated(false);
+            const trackingNumber = state?.objectFields?.shipping?.tracking_id?.value || '';
+            const carrierName = state?.objectFields?.shipping?.carrier?.value || '';
+            try {
+                const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/tracking_id`, {
+                    tracking_number: trackingNumber,
+                    carrier_name: carrierName
+                });
+                if (response?.data?.validationStatus) {
+                    setState(prev => ({
+                        ...prev,
+                        objectFields: {
+                            ...prev.objectFields,
+                            shipping: {
+                                ...prev.objectFields.shipping,
+                                validation: {
+                                    ...(prev.objectFields.shipping?.validation || {}),
+                                    value: response.data.validationStatus
+                                }
+                            }
+                        }
+                    }));
+                    setValidated(true);
+                    // console.log('Validation status:', response.data.validationStatus);
+                    const finalUrl = renderTemplate(validationUrl, { value });
+                    window.open(finalUrl, '_blank');
+                }
+            } catch (err) {
+                console.error('Tracking ID validation error:', err);
+            } finally {
+                setValidating(false);
+            }
+            return;
+        }
         const finalUrl = renderTemplate(validationUrl, { value });
         window.open(finalUrl, '_blank');
     };
@@ -108,34 +129,18 @@ export const InputField = ({
                         )}
                         {validationUrl && (
                             <span
-                                onClick={() => {
-                                    setValidateClicked(true);
-                                    onValidate?.();
-                                    validateLink(validationUrl, value);
-                                }}
-                                className={`text-xs cursor-pointer border px-2 py-0.5 rounded-md ${
-                                    validationStatus === 'invalid'
-                                        ? 'text-red-600 border-red-600 hover:bg-red-50'
-                                        : validateClicked
-                                          ? 'text-green-600 border-green-600 hover:bg-green-50'
-                                          : 'text-gray-600 hover:bg-sky-50 hover:border-gray-500'
-                                }`}
+                                onClick={async () => await validateLink(validationUrl, value, label)}
+                                className={`text-xs border px-2 py-0.5 rounded-md cursor-pointer flex items-center gap-1
+                                    ${validating
+                                        ? 'text-gray-400 border-gray-300 bg-gray-50 cursor-wait'
+                                        : validated
+                                            ? 'text-green-600 border-green-500 bg-green-50'
+                                            : 'text-gray-600 border-gray-500 hover:bg-sky-50 hover:border-gray-500'}
+                                `}
+                                style={{ minWidth: 60, justifyContent: 'center' }}
                             >
-                                Validate
+                                {validating ? <Spinner size={16} /> : 'Validate'}
                             </span>
-                        )}
-                        {onValidationStatusChange && showValidationStatus && (
-                            <select
-                                value={validationStatus || ''}
-                                onChange={e => onValidationStatusChange(e.target.value)}
-                                className="text-xs text-gray-700 border px-2 py-0.5 rounded-md bg-white hover:border-gray-500 focus:outline-none"
-                            >
-                                <option value="" disabled hidden>
-                                    Status
-                                </option>
-                                <option value="validated">Verified</option>
-                                <option value="invalid">Invalid</option>
-                            </select>
                         )}
                         {confidence && <ConfidenceScore confidence={confidence} />}
                     </div>

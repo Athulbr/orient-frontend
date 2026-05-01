@@ -844,11 +844,13 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
     const toast = useToastStore();
 
     const [templateName, setTemplateName] = useState('New Template');
+
     const [settings, setSettings] = useState<TemplateSettings>(DEFAULT_SETTINGS);
     const [sections, setSections] = useState<Section[]>([]);
     const [saved, setSaved] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+    const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
     // Load existing template in edit mode
     useEffect(() => {
@@ -861,6 +863,7 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
                         setTemplateName(t.name || 'Untitled');
                         if (t.settings) setSettings(t.settings);
                         if (t.sections) setSections(t.sections);
+                        if (t.updatedAt) setUpdatedAt(t.updatedAt);
                     }
                 })
                 .catch((err: any) => console.error('Failed to load template', err))
@@ -1024,10 +1027,16 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
         setIsSaving(true);
         try {
             const payload = { name: templateName, settings, sections };
+            let res: any;
             if (isCreate) {
-                await httpRequest('POST', `${config.workflowService}/api/agent-templates`, payload);
+                res = await httpRequest('POST', `${config.workflowService}/api/agent-templates`, payload);
             } else if (id) {
-                await httpRequest('PATCH', `${config.workflowService}/api/agent-templates/${id}`, payload);
+                res = await httpRequest('PATCH', `${config.workflowService}/api/agent-templates/${id}`, payload);
+            }
+            if (res?.template?.updatedAt) {
+                setUpdatedAt(res.template.updatedAt);
+            } else {
+                setUpdatedAt(new Date().toISOString());
             }
             setSaved(true);
             setTimeout(() => {
@@ -1077,6 +1086,11 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
                 />
 
                 <div className="ml-auto flex items-center gap-2">
+                    {updatedAt && (
+                        <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
+                            Last updated: {new Date(updatedAt).toLocaleString()}
+                        </div>
+                    )}
                     <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
                         {settings.llmProvider} · {settings.llmModel}
                     </div>

@@ -4,6 +4,7 @@ import { config } from '../../../../../../config/default';
 import { Order } from '../types';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
 import { validateMaraekatPayload } from './utils/validateMaraekatPayload';
+import { manipulateMaraekatPayload } from './utils/manipulateMaraekatPayload';
 
 type ResultMessage = {
     type: 'success' | 'error';
@@ -117,14 +118,15 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
         setResultMessage(null);
 
         const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
-        const validationResult = {
-            isValid: true,
-            errors: []
-        };
+        // const validationResult = {
+        //     isValid: true,
+        //     errors: []
+        // };
+        const manipulatedJson = manipulateMaraekatPayload(payload, order);
         // setIsSubmitting(false);
 
         // return;
-        // const validationResult = validateMaraekatPayload(payload);
+        const validationResult = validateMaraekatPayload(manipulatedJson);
 
         const allErrors = [...dateErrors, ...validationResult.errors];
         if (allErrors.length > 0) {
@@ -139,7 +141,7 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ payload })
+                body: JSON.stringify({ payload: manipulatedJson })
             });
 
             if (!response.ok) {
