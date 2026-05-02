@@ -143,7 +143,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         PAXADDRESS: extractedData?.user_identity_details?.passenger_address?.value || '',
         MOBILENO: order.userDetails?.phone,
         EMAILID: order.userDetails?.email,
-        PARENTNAME: extractedData?.passport?.parent_name?.value || '',
+        PARENTNAME: extractedData?.pan_card?.parent_name?.value || '',
         VOTERCARDNO: extractedData?.voter_id_card?.voter_card_number?.value || '',
         FIRSTNAME: extractedData?.passport?.first_name?.value || '',
         LASTNAME: extractedData?.passport?.last_name?.value || '',
@@ -167,7 +167,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         PurposeofTransaction: getPurposeKey(order.orderDetails?.purpose || ''),
         ResidentStatus: order.orderDetails?.residentialStatus,
         LoanAmount: order.orderDetails?.totalAmount,
-        StudentTravellerPAN: ''
+        StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || ''
     };
     // console.log('extractedData', extractedData);
     // console.log('payload', payload);

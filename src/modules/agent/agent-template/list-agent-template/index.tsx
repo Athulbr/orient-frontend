@@ -92,8 +92,24 @@ const ListAgentTemplatePage = () => {
                     settings: response.template.settings,
                     sections: response.template.sections
                 };
-                await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-                toast.success('Template exported to clipboard');
+                const textToCopy = JSON.stringify(data, null, 2);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(textToCopy);
+                    toast.success('Template exported to clipboard');
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        toast.success('Template exported to clipboard');
+                    } catch (err) {
+                        toast.error('Failed to copy to clipboard');
+                    } finally {
+                        document.body.removeChild(textArea);
+                    }
+                }
             } else {
                 toast.error('Failed to fetch template details');
             }
