@@ -83,7 +83,7 @@ const Results: React.FC<ResultsProps> = ({ data, onDownload, isDownloading }) =>
 
   const tabs = [
     { id: 'summary',   label: 'Summary',       count: undefined,              alert: false },
-    { id: 'matched',   label: isGateway ? 'Gateway Matched' : 'Matched',
+    { id: 'matched',   label: 'Matched',
                                                 count: data.summary.matched,   alert: false },
     { id: 'book-only', label: isGateway ? 'DNC (Book Only)' : 'Book Only',
                                                 count: data.summary.book_only, alert: data.summary.book_only > 0 },
@@ -106,9 +106,6 @@ const Results: React.FC<ResultsProps> = ({ data, onDownload, isDownloading }) =>
         );
 
       case 'matched':
-        if (isGateway) {
-          return <GatewayMatchedTable data={data.matched} />;
-        }
         return <MatchedTable data={data.matched} />;
 
       case 'book-only':
@@ -134,6 +131,7 @@ const Results: React.FC<ResultsProps> = ({ data, onDownload, isDownloading }) =>
             company_name={data.company_name}
             account_info={data.account_info}
             brs_date={data.brs_date}
+            recon_type={data.recon_type}
           />
         );
 

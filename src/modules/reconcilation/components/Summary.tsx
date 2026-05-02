@@ -79,7 +79,10 @@ const Summary: React.FC<SummaryProps> = ({
     ? 100
     : Math.max(0, Math.round((1 - unmatchedRatio) * 100));
 
-  const matchPct = Math.min(100, Math.round(matchQuality * 0.70 + brsScore * 0.30));
+  // If BRS is fully reconciled, accuracy is always 100% regardless of match breakdown
+  const matchPct = isReconciled
+    ? 100
+    : Math.min(100, Math.round(matchQuality * 0.70 + brsScore * 0.30));
 
   const statusMsg = isReconciled
     ? 'Books and bank are fully reconciled — difference is zero'
