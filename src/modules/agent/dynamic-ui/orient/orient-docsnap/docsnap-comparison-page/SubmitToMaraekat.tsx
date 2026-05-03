@@ -107,15 +107,26 @@ interface SubmitToMaraekatIF {
     order: Order;
     extractedData: any;
     onOrderUpdate?: (updatedOrder: Order) => void;
+    onBeforeSubmit?: () => Promise<void>;
 }
 
-const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, onOrderUpdate }) => {
+const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, onOrderUpdate, onBeforeSubmit }) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
         setResultMessage(null);
+
+        // Silently save the latest extracted data to the DB before submitting
+        if (onBeforeSubmit) {
+            try {
+                await onBeforeSubmit();
+            } catch (err) {
+                console.error('Silent save before submit failed:', err);
+                // Do not block submission on save failure
+            }
+        }
 
         const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
         // const validationResult = {
