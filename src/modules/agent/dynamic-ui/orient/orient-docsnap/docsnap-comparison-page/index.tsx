@@ -349,6 +349,16 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         }
     };
 
+    /** Silently persist the latest extractedData before submitting — no toasts, no spinner */
+    const silentSave = async () => {
+        if (!recordId) return;
+        await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ finalOutput: extractedData })
+        });
+    };
+
     useEffect(() => {
         let isMounted = true;
         const fetchRecord = async () => {
@@ -1454,7 +1464,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                     </button>
 
                     <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />
-                    {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />}
+                    {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} onBeforeSubmit={silentSave} />}
                 </div>
             </div>
 
