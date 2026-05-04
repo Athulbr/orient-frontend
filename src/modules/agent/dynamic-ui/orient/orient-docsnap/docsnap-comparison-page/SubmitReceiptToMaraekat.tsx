@@ -137,6 +137,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
 
             for (const receipt of receipts) {
                 const getCashBank = (): string => {
+                    // return 'SBI743';
                     const receiptType = receipt.receipt_type?.value?.trim().toUpperCase() ?? '';
                     const bankName = receipt.bank_name?.value?.trim().toUpperCase() ?? '';
                     console.log('receiptType', receiptType);
@@ -154,33 +155,78 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
                     }
 
                     // If receipt type is NEFT, return NEFT
-                    if (receiptType.includes('BANK')) {
-                        const bankAccounts = {
-                            '081010200019813': 'AXIS9813',
-                            '009010200015039': 'AXISBLRMGROAD',
-                            '914020014608384': 'COMMAXIS',
-                            '918020069425192': 'ONLINEAXIS192',
-                            '920020053547564': 'AXISEEFC564',
-                            '510101005983524': 'CORPBANK3524',
-                            '11530200023482': 'FEDERAL482',
-                            '01332320001240': 'HDFC1240',
-                            '041505000723': 'ICICI',
-                            '116205000517': 'ICICIKOCHI',
-                            '10020841026': 'IDFC1026',
-                            '200000979511': 'INDUSIND',
-                            '204011032315': 'INGVY',
-                            '4762000100174701': 'KAR701',
-                            '20062019000134': 'SBM0134',
-                            '67341643312': 'SBT',
-                            '0087073000001784': 'SIB784',
-                            '019784000000068': 'YESB',
-                            '002281400006909': 'YESBNK06909',
-                            '002281400006896': 'YESFINTIBA'
-                        };
+                    const bankAccounts = {
+                        '081010200019813': 'AXIS9813',
+                        '009010200015039': 'AXISBLRMGROAD',
+                        '914020014608384': 'COMMAXIS',
+                        '918020069425192': 'ONLINEAXIS192',
+                        '920020053547564': 'AXISEEFC564',
+                        '510101005983524': 'CORPBANK3524',
+                        '11530200023482': 'FEDERAL482',
+                        '01332320001240': 'HDFC1240',
+                        '041505000723': 'ICICI',
+                        '116205000517': 'ICICIKOCHI',
+                        '10020841026': 'IDFC1026',
+                        '200000979511': 'INDUSIND',
+                        '204011032315': 'INGVY',
+                        '4762000100174701': 'KAR701',
+                        '20062019000134': 'SBM0134',
+                        '67341643312': 'SBT',
+                        '0087073000001784': 'SIB784',
+                        '019784000000068': 'YESB',
+                        '002281400006909': 'YESBNK06909',
+                        '002281400006896': 'YESFINTIBA',
+                        '914020023991846': 'AXIS846',
+                        '00000035782412743': 'SBI743',
+                        '916020014634868': 'AXIS868',
+                        '919020074095783': 'AXIS5783',
+                        '12262090000050': 'HDFC',
+                        '923020070570106': 'AXIS70106',
+                        '914020012417461': 'AXIS',
+                        '02532090000040': 'HDFC0040',
+                        '914020013039000': 'AXIS',
+                        '200999478501': 'INDUSJNR',
+                        '914020006153764': 'AXIS',
+                        '002281400006919': 'YESBNK06919',
+                        '200999478532': 'INDUSCOARP',
+                        '919020084679889': 'AXIS889',
+                        '913020024767106': 'AXISEXPO',
+                        '15122090000014': 'HDFC0014',
+                        '002281400006929': 'YESBNK06929',
+                        '914020021605910': 'AXISDLHI',
+                        '50200011742914': 'HDFC2914',
+                        '200999478518': 'INDUS8518',
+                        '002281400006949': 'YESBNK06949',
+                        '916020029890684': 'AXI684',
+                        '16272560000035': 'HDFC0035',
+                        '916020014438806': 'AXIS806',
+                        '2999002100042248': 'PNB2248',
+                        '04751100000976': 'PSIB976',
+                        '00000065255370455': 'SBP455',
+                        '002281400006939': 'YESBNK06939',
+                        '913020049024154': 'AXIS',
+                        '50200009566772': 'HDFC6772',
+                        '911020022168048': 'AXIS',
+                        '913020055629086': 'AXIS',
+                        '914020023991888': 'AXIS888',
+                        '015020110000301': 'BOI301',
+                        '50200119383552': 'HDFC83552',
+                        '913020038917603': 'AXIS',
+                        '03582090000031': 'HDFC0031',
+                        '002281400006886': 'YESBNK06886',
+                        '917020063654511': 'AXI511',
+                        '01880200001335': 'BOB1335',
+                        '200999478525': 'INDUS8525',
+                        '914020012500615': 'AXISTHRI',
+                        '06702090000016': 'HDFC0016',
+                        '914020011087568': 'AXISBANKTVM',
+                        '917020042844012': 'AXIS4012'
+                    };
+                    console.log('receipt.account_number', `${receipt.account_number}`);
+                    console.log('bankAccounts[receipt.account_number as keyof typeof bankAccounts]', bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]);
 
-                        if (bankAccounts[receipt.account_number as keyof typeof bankAccounts]) {
-                            return bankAccounts[receipt.account_number as keyof typeof bankAccounts];
-                        }
+                    if (bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]) {
+                        return bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts];
                     }
 
                     return '';
