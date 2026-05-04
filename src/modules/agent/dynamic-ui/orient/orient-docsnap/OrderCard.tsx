@@ -271,7 +271,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 ) : (
                     <div className="flex items-center gap-2">
                         <Button
-                            hidden={order.orderDetails.orderStatus === 'submitted'}
+                            // hidden={order.orderDetails.orderStatus === 'submitted'}
                             startIcon={isProceeding ? <Spinner size={12} /> : <RefreshCw size={12} />}
                             outlined
                             onClick={() => onProceed(order.orderDetails?.orderNumber)}

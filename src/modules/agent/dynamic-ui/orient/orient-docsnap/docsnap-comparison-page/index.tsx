@@ -1161,7 +1161,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                 {activeFieldId === b.id && activeFieldInfo && (
                                                     <div
                                                         data-edit-card
-                                                        className="absolute z-20 min-w-[240px] rounded-lg border border-zinc-300 bg-white p-3 shadow-xl"
+                                                        className="absolute z-20 min-w-[300px] rounded-lg border border-zinc-300 bg-white p-3 shadow-xl"
                                                         style={{
                                                             top: `calc(100% + 8px + ${editCardPos.y}px)`,
                                                             left: `${-10 + editCardPos.x}px`
@@ -1177,71 +1177,12 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                                 <X size={14} />
                                                             </button>
                                                         </div>
-                                                        {enumsLookup[activeFieldInfo.fieldKey] ? (
-                                                            <SearchableSelect
-                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
-                                                                options={enumsLookup[activeFieldInfo.fieldKey]}
-                                                                onChange={val => {
-                                                                    const newData = { ...extractedData };
-                                                                    if (activeFieldInfo.rowIndex !== undefined) {
-                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
-                                                                        newGroup[activeFieldInfo.rowIndex] = {
-                                                                            ...newGroup[activeFieldInfo.rowIndex],
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: val
-                                                                            }
-                                                                        };
-                                                                        newData[activeFieldInfo.groupKey] = newGroup;
-                                                                    } else {
-                                                                        newData[activeFieldInfo.groupKey] = {
-                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: val
-                                                                            }
-                                                                        };
-                                                                    }
-                                                                    setExtractedData(newData);
-                                                                }}
-                                                                placeholder="Select value"
-                                                            />
-                                                        ) : (
-                                                            <textarea
-                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
-                                                                onChange={e => {
-                                                                    const newData = { ...extractedData };
-                                                                    if (activeFieldInfo.rowIndex !== undefined) {
-                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
-                                                                        newGroup[activeFieldInfo.rowIndex] = {
-                                                                            ...newGroup[activeFieldInfo.rowIndex],
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: e.target.value
-                                                                            }
-                                                                        };
-                                                                        newData[activeFieldInfo.groupKey] = newGroup;
-                                                                    } else {
-                                                                        newData[activeFieldInfo.groupKey] = {
-                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: e.target.value
-                                                                            }
-                                                                        };
-                                                                    }
-                                                                    setExtractedData(newData);
-                                                                }}
-                                                                rows={1}
-                                                                className="w-full resize-none rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                                                style={{ minHeight: '32px' }}
-                                                                onInput={e => {
-                                                                    const target = e.target as HTMLTextAreaElement;
-                                                                    target.style.height = 'auto';
-                                                                    target.style.height = `${target.scrollHeight}px`;
-                                                                }}
-                                                            />
-                                                        )}
+                                                        <div
+                                                            className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-semibold text-lg text-zinc-800 break-words whitespace-pre-wrap"
+                                                            style={{ minHeight: '10px', maxWidth: '300px' }}
+                                                        >
+                                                            {activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -1447,7 +1388,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                 </div>
 
                 {/* Fixed Save Bar */}
-                <div className="flex shrink-0 items-center justify-end gap-2 border-t border-zinc-200 px-4 py-3">
+                <div className="flex shrink-0 items-center justify-end gap-2 border-t border-zinc-200 px-4 py-3 flex-wrap">
                     <button
                         onClick={handleClose}
                         className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:shadow-md"
