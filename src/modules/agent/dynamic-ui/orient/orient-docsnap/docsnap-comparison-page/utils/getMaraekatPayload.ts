@@ -136,6 +136,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         GENDER: extractedData?.passport?.gender?.value || '',
         NATIONALITY: extractedData?.passport?.nationality?.value || '',
         PANNO: extractedData?.pan_card?.pan_number?.value || '',
+        PANDOB: extractedData?.pan_card?.pan_date_of_birth?.value || '',
         PANCARDHOLDERNAME: extractedData?.pan_card?.pan_card_holder_name?.value || '',
         FATHERNAME: extractedData?.pan_card?.father_name?.value || '',
         TYPEOFPERSON: extractedData?.pan_card?.type_of_person?.value || '',

@@ -217,7 +217,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
                                                     minute: '2-digit'
                                                 })}
                                             </p>
-                                            {email.bodyInnerText && <p className="text-sm text-gray-600 line-clamp-5 mt-2 italic border-l-2 border-gray-200 pl-3">{email.bodyInnerText}</p>}
+                                            {email.bodyInnerText && <p className="text-sm text-gray-600 mt-2 italic border-l-2 border-gray-200 pl-3">{email.bodyInnerText}</p>}
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0 mt-1">
                                             <div className="flex items-center gap-1.5 bg-white border border-gray-200 px-2.5 py-1 rounded-md shadow-sm">
