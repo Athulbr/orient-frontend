@@ -28,6 +28,7 @@ export default function RightContainer() {
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGenerateTitlesOpen, setIsGenerateTitlesOpen] = useState(false);
     const [originalCustomTitle, setOriginalCustomTitle] = useState('');
     const [activeTab, setActiveTab] = useState<RightTab>('content');
@@ -230,6 +231,8 @@ ${state.content}
 
         const selectedTenantName = window?.sessionStorage?.getItem('selectedTenantName') || '';
         const selectedModule = window?.sessionStorage?.getItem('module') || '';
+        const userData = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
+        const tenantName = userData?.tenant?.name || ''; 
 
         const content = {
             title: state.extractedData?.title || '',
@@ -241,7 +244,7 @@ ${state.content}
             // author: state.extractedData?.author || ''
         };
         const payload = {
-            tenant_name: selectedTenantName,
+            tenant_name: selectedTenantName === '' ? tenantName : selectedTenantName,
             module: selectedModule,
             blog: content,
             extractedData: {
@@ -251,7 +254,7 @@ ${state.content}
             recordId: id
         };
         try {
-            setState(prev => ({ ...prev, loadingData: true }));
+            setIsSubmitting(true);
             const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/rehab/create`, payload);
             toast.success('Record submitted successfully');
             if (selectedModule === 'content-creation') navigate('/content-creation/record/list');
@@ -259,7 +262,7 @@ ${state.content}
             console.error('Error submitting content:', error);
             toast.error(error?.message || 'Failed to submit blog content');
         } finally {
-            setState(prev => ({ ...prev, loadingData: false }));
+            setIsSubmitting(false);
         }
     };
 
@@ -458,7 +461,7 @@ ${state.content}
                         </Button>
                     </Tooltip> */}
                     <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
-                        {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+                        {isRegenerating ? 'Blog Regenerating...' : 'Blog Regenerate'}
                     </Button>
                     {/* <Button disabled={!state.content} onClick={downloadHTML}>
                         Download HTML
@@ -466,8 +469,8 @@ ${state.content}
                     <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
                         {isSaving ? 'Saving...' : 'Save'}
                     </Button>
-                    <Button disabled={!state.content} onClick={handleOnSubmit}>
-                        Submit
+                    <Button disabled={!state.content || isSubmitting} onClick={handleOnSubmit} startIcon={isSubmitting ? <Spinner size={16} /> : null}>
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
                     </Button>
                 </div>
             </div>

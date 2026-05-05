@@ -110,10 +110,10 @@ export default function ImagesTab() {
         toast.success('Supporting image regenerated successfully.');
     };
 
-    const handleImagesGenerated = (urls: string[]) => {
+    const handleImagesGenerated = (urls: string[], titles?: string[]) => {
         const newImages = urls.map((url, idx) => ({
             id: `new-gen-${Date.now()}-${idx}`,
-            title: `Supporting Image ${idx + 1}`,
+            title: titles?.[idx] || `Supporting Image ${idx + 1}`,
             src: url,
         }));
 

@@ -8,7 +8,7 @@ import { useToastStore } from '../../../components/toast/ToastStore';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    onImagesGenerated?: (urls: string[]) => void;
+    onImagesGenerated?: (urls: string[], titles?: string[]) => void;
     /** Pre-filled from the current document context */
     blogTitle?: string;
     blogContent?: string;
@@ -20,6 +20,9 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
     const [count, setCount] = useState(2);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedUrls, setGeneratedUrls] = useState<string[]>([]);
+    const [scenarioTitle, setScenarioTitle] = useState('');
+    const [suggestChips, setSuggestChips] = useState<string[]>([]);
+    const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
     const toast = useToastStore();
 
     useEffect(() => {
@@ -28,7 +31,26 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
             setAspectRatio('16:9 (Landscape)');
             setCount(2);
             setGeneratedUrls([]);
+            setScenarioTitle('');
             setIsGenerating(false);
+            setSuggestChips([]);
+
+            // Fetch content-aware suggestions from backend
+            if (blogTitle || blogContent) {
+                setIsFetchingSuggestions(true);
+                httpRequest('POST', `${config.mlServiceNodejs}/content-creation/suggest-image-scenarios`, {
+                    blogTitle,
+                    blogContent,
+                })
+                    .then((res: any) => {
+                        const suggestions = res?.data?.suggestions;
+                        if (Array.isArray(suggestions) && suggestions.length > 0) {
+                            setSuggestChips(suggestions);
+                        }
+                    })
+                    .catch(() => { /* suggestions are optional — fail silently */ })
+                    .finally(() => setIsFetchingSuggestions(false));
+            }
         }
     }, [isOpen]);
 
@@ -45,10 +67,10 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
             });
             if (res?.data?.imageUrls && Array.isArray(res.data.imageUrls)) {
                 setGeneratedUrls(res.data.imageUrls);
+                // Store scenarioTitle for use when the user clicks Done
+                setScenarioTitle(res.data.scenarioTitle || '');
                 toast.success(`Generated ${res.data.imageUrls.length} image(s) successfully!`);
-                if (onImagesGenerated) {
-                    onImagesGenerated(res.data.imageUrls);
-                }
+                // NOTE: images are NOT added to the tab yet — user must click Done
             }
         } catch (e: any) {
             toast.error(e?.response?.data?.message || 'Failed to generate images.');
@@ -57,13 +79,6 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
         }
     };
 
-    const suggestChips = [
-        'Elderly person struggling to get out of bed',
-        'Caregiver assisting a patient in a hospital room',
-        'Person in pain after a fall at home',
-        'Nurse helping a patient walk in a corridor',
-        'Family member comforting a bedridden patient',
-    ];
 
     const aspectChips = ['16:9 (Landscape)', '1:1 (Square)', '4:3', 'Portrait 9:16'];
     const countChips = [1, 2, 3, 4];
@@ -121,17 +136,33 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
                                 placeholder="e.g. An elderly person lying on the floor after a fall, caregiver rushing to help..."
                             />
                             <div className="flex flex-col gap-1.5 mt-1">
-                                <span className="text-xs text-gray-500 font-medium">Quick suggestions:</span>
+                                <span className="text-xs text-gray-500 font-medium">
+                                    Quick suggestions:
+                                    {isFetchingSuggestions && (
+                                        <span className="ml-1.5 text-gray-400 italic">generating…</span>
+                                    )}
+                                </span>
                                 <div className="flex flex-wrap gap-2">
-                                    {suggestChips.map(s => (
-                                        <button
-                                            key={s}
-                                            onClick={() => setUserInstruction(s)}
-                                            className="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:text-gray-900 transition-colors rounded"
-                                        >
-                                            {s}
-                                        </button>
-                                    ))}
+                                    {isFetchingSuggestions ? (
+                                        // Skeleton shimmer chips while loading
+                                        [72, 96, 80, 88, 104].map((w, i) => (
+                                            <div
+                                                key={i}
+                                                className="h-7 rounded bg-gray-200 animate-pulse"
+                                                style={{ width: `${w}px` }}
+                                            />
+                                        ))
+                                    ) : (
+                                        suggestChips.map(s => (
+                                            <button
+                                                key={s}
+                                                onClick={() => setUserInstruction(s)}
+                                                className="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors rounded"
+                                            >
+                                                {s}
+                                            </button>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -239,7 +270,21 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
                     )}
 
                     <button
-                        onClick={generatedUrls.length > 0 ? onClose : handleGenerate}
+                        onClick={() => {
+                            if (generatedUrls.length > 0) {
+                                // Build per-image titles from the scenario GPT-4o described
+                                const baseTitle = scenarioTitle || userInstruction.trim() || blogTitle || 'Supporting Image';
+                                const titles = generatedUrls.map((_, idx) =>
+                                    generatedUrls.length === 1
+                                        ? baseTitle
+                                        : `${baseTitle} (${idx + 1})`
+                                );
+                                if (onImagesGenerated) onImagesGenerated(generatedUrls, titles);
+                                onClose();
+                            } else {
+                                handleGenerate();
+                            }
+                        }}
                         disabled={isGenerating}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded text-sm font-semibold transition-colors shadow-sm ${
                             isGenerating
