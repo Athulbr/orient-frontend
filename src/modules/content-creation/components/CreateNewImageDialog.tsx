@@ -16,7 +16,6 @@ interface Props {
 
 export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerated, blogTitle = '', blogContent = '' }: Props) {
     const [userInstruction, setUserInstruction] = useState('');
-    const [style, setStyle] = useState('Photorealistic');
     const [aspectRatio, setAspectRatio] = useState('16:9 (Landscape)');
     const [count, setCount] = useState(2);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -26,7 +25,6 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
     useEffect(() => {
         if (isOpen) {
             setUserInstruction('');
-            setStyle('Photorealistic');
             setAspectRatio('16:9 (Landscape)');
             setCount(2);
             setGeneratedUrls([]);
@@ -42,7 +40,6 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
                 blogTitle,
                 blogContent,
                 userInstruction: userInstruction.trim() || undefined,
-                style,
                 aspectRatio,
                 count,
             });
@@ -60,7 +57,6 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
         }
     };
 
-    // Example instruction suggestions aligned to healthcare blog storytelling
     const suggestChips = [
         'Elderly person struggling to get out of bed',
         'Caregiver assisting a patient in a hospital room',
@@ -69,9 +65,9 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
         'Family member comforting a bedridden patient',
     ];
 
-    const styleChips = ['Photorealistic', 'Illustration', 'Infographic', 'Minimalist'];
     const aspectChips = ['16:9 (Landscape)', '1:1 (Square)', '4:3', 'Portrait 9:16'];
     const countChips = [1, 2, 3, 4];
+
 
     return (
         <DialogComponent
@@ -140,22 +136,6 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
                             </div>
                         </div>
 
-                        {/* Style */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[15px] font-semibold text-gray-800">Image style</label>
-                            <div className="flex flex-wrap gap-2">
-                                {styleChips.map(s => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setStyle(s)}
-                                        className={`px-4 py-2 text-sm font-medium transition-colors border ${style === s ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}`}
-                                    >
-                                        {s}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
                         {/* Aspect Ratio */}
                         <div className="flex flex-col gap-2">
                             <label className="text-[15px] font-semibold text-gray-800">Aspect ratio</label>
@@ -195,31 +175,45 @@ export default function CreateNewImageDialog({ isOpen, onClose, onImagesGenerate
                             <span className="text-sm font-medium text-gray-400">Preview</span>
                         </div>
                         <div className="flex flex-col gap-4">
-                            {isGenerating ? (
-                                Array.from({ length: count }).map((_, i) => (
-                                    <div key={`gen-${i}`} className="aspect-video bg-blue-50 border-2 border-blue-200 border-dashed rounded-sm flex flex-col gap-2 items-center justify-center text-blue-500 shadow-inner">
-                                        <RefreshCcw size={28} className="animate-spin" />
-                                        <span className="text-sm font-medium">Generating scene...</span>
-                                    </div>
-                                ))
-                            ) : generatedUrls.length > 0 ? (
-                                generatedUrls.map((url, i) => (
-                                    <div key={`img-${i}`} className="aspect-video bg-gray-100 flex items-center justify-center rounded-sm overflow-hidden shadow-sm border border-gray-200">
-                                        <img src={url} alt={`Generated ${i + 1}`} className="w-full h-full object-cover" />
-                                    </div>
-                                ))
-                            ) : (
-                                Array.from({ length: count }).map((_, i) => (
-                                    <div key={`empty-${i}`} className="aspect-video bg-[#e6dcf3] border border-[#d1c4e9] rounded-sm flex items-center justify-center shadow-inner relative">
-                                        <ImageIcon size={32} className="text-[#a890d3]" />
-                                        {i === count - 1 && (
-                                            <span className="absolute bottom-4 text-xs text-gray-400 text-center px-4">
-                                                Generated scene images will appear here
-                                            </span>
+                            {/* Derive preview aspect class from selected ratio */}
+                            {(() => {
+                                const aspectClass = aspectRatio.includes('9:16')
+                                    ? 'aspect-[9/16] max-w-[160px] mx-auto w-full'
+                                    : aspectRatio.includes('4:3')
+                                        ? 'aspect-[4/3]'
+                                        : aspectRatio.includes('1:1')
+                                            ? 'aspect-square'
+                                            : 'aspect-video'; // default 16:9
+                                return (
+                                    <>
+                                        {isGenerating ? (
+                                            Array.from({ length: count }).map((_, i) => (
+                                                <div key={`gen-${i}`} className={`${aspectClass} bg-blue-50 border-2 border-blue-200 border-dashed rounded-sm flex flex-col gap-2 items-center justify-center text-blue-500 shadow-inner`}>
+                                                    <RefreshCcw size={28} className="animate-spin" />
+                                                    <span className="text-sm font-medium">Generating scene...</span>
+                                                </div>
+                                            ))
+                                        ) : generatedUrls.length > 0 ? (
+                                            generatedUrls.map((url, i) => (
+                                                <div key={`img-${i}`} className={`${aspectClass} bg-gray-100 flex items-center justify-center rounded-sm overflow-hidden shadow-sm border border-gray-200`}>
+                                                    <img src={url} alt={`Generated ${i + 1}`} className="w-full h-full object-contain" />
+                                                </div>
+                                            ))
+                                        ) : (
+                                            Array.from({ length: count }).map((_, i) => (
+                                                <div key={`empty-${i}`} className={`${aspectClass} bg-[#e6dcf3] border border-[#d1c4e9] rounded-sm flex items-center justify-center shadow-inner relative`}>
+                                                    <ImageIcon size={32} className="text-[#a890d3]" />
+                                                    {i === count - 1 && (
+                                                        <span className="absolute bottom-4 text-xs text-gray-400 text-center px-4">
+                                                            Generated scene images will appear here
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))
                                         )}
-                                    </div>
-                                ))
-                            )}
+                                    </>
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>
