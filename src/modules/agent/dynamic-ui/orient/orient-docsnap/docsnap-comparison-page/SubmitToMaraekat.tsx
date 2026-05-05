@@ -108,9 +108,10 @@ interface SubmitToMaraekatIF {
     extractedData: any;
     onOrderUpdate?: (updatedOrder: Order) => void;
     onBeforeSubmit?: () => Promise<void>;
+    isDisabled?: boolean;
 }
 
-const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, onOrderUpdate, onBeforeSubmit }) => {
+const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, onOrderUpdate, onBeforeSubmit, isDisabled }) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -267,9 +268,9 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
         <div className="relative">
             {resultMessage && <DraggableResultCard result={resultMessage} onClose={() => setResultMessage(null)} />}
             <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={isDisabled ? () => {} : handleSubmit}
+                disabled={isSubmitting || isDisabled}
+                className={`flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${isDisabled ? 'opacity-10 cursor-not-allowed ' : ''}`}
             >
                 {isSubmitting && <Loader2 size={16} className="animate-spin" />}
                 Submit KYC

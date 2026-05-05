@@ -8,9 +8,10 @@ import { formatDateForMaraekat } from './utils/getMaraekatPayload';
 interface SubmitReceiptToMaraekatProps {
     order: any;
     extractedData: any;
+    onOrderUpdate?: (updatedOrder: any) => void;
 }
 
-const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order, extractedData }) => {
+const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order, extractedData, onOrderUpdate }) => {
     // const sampleReceipts = [
     //     {
     //         amount: {
@@ -274,7 +275,32 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
             }
 
             if (!hasError && successCount > 0) {
+                // disable button after success
                 toast.success(`Successfully submitted ${successCount} receipt(s) to Maraekat!`);
+                try {
+                    const updatePayload = {
+                        maraekatDetails: {
+                            ...order.maraekatDetails,
+                            receiptPayStatus: 'submitted'
+                        }
+                    };
+                    const res = await fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatePayload)
+                    });
+                    if (res.ok && onOrderUpdate) {
+                        onOrderUpdate({
+                            ...order,
+                            maraekatDetails: {
+                                ...order.maraekatDetails,
+                                receiptPayStatus: 'submitted'
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error('Failed to update order with receipt pay status:', err);
+                }
             } else if (hasError) {
                 toast.error(`Failed to submit all receipts. ${successCount}/${receipts.length} successful.`);
             }
@@ -286,11 +312,13 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
         }
     };
 
+    const isAlreadySubmitted = order?.maraekatDetails?.receiptPayStatus === 'submitted';
+
     return (
         <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
+            onClick={isAlreadySubmitted ? undefined : handleSubmit}
+            disabled={isSubmitting || isAlreadySubmitted}
+            className={`flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${isAlreadySubmitted ? 'opacity-10 cursor-not-allowed ' : ''}`}
         >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
             Submit&nbsp;Rec&nbsp;Pay

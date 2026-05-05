@@ -1404,8 +1404,16 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                         {isSaving ? 'Saving...' : 'Save'}
                     </button>
 
-                    <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />
-                    {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} onBeforeSubmit={silentSave} />}
+                    <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />
+                    {!viewReceipt && (
+                        <SubmitToMaraekat
+                            isDisabled={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
+                            order={currentOrder}
+                            extractedData={extractedData}
+                            onOrderUpdate={handleOrderUpdate}
+                            onBeforeSubmit={silentSave}
+                        />
+                    )}
                 </div>
             </div>
 
