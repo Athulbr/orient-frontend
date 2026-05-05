@@ -321,7 +321,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
             className={`flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${isAlreadySubmitted ? 'opacity-10 cursor-not-allowed ' : ''}`}
         >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-            Submit&nbsp;Rec&nbsp;Pay
+            {isAlreadySubmitted ? 'Rec Pay Submitted' : 'Submit Rec Pay'}
         </button>
     );
 };

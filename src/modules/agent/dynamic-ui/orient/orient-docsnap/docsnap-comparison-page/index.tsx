@@ -1407,7 +1407,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                     <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />
                     {!viewReceipt && (
                         <SubmitToMaraekat
-                            isDisabled={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
+                            isSubmitted={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
                             order={currentOrder}
                             extractedData={extractedData}
                             onOrderUpdate={handleOrderUpdate}
