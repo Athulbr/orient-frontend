@@ -99,10 +99,10 @@ export const useContentCreationApi = () => {
             const selectedModule = window?.sessionStorage?.getItem('module') || '';
             const user: any = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
 
-            if (!accessToken || !(selectedTenant || user?.tenant?._id)) {
-                toast.error('Authentication failed: missing token or tenantId');
-                return null;
-            }
+            // if (!accessToken ) {
+            //     toast.error('Authentication failed: missing token or tenantId');
+            //     return null;
+            // }
 
             const headers: HeadersInit = {
                 Accept: '*/*',
