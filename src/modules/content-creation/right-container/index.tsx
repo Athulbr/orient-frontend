@@ -12,6 +12,7 @@ import { useBlogTheme } from '../hooks/useBlogTheme';
 import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
 import Spinner from '../../../components/Spinner';
+import AudioPlayButton from '../components/AudioPlayButton';
 import httpRequest from '../../../global-utils/httpRequest';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToastStore } from '../../../components/toast/ToastStore';
@@ -23,13 +24,14 @@ type RightTab = 'content' | 'styles' | 'images';
 
 export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
-    const { regenerateBlog, updateRecordApi } = useContentCreationApi();
+    const { regenerateBlog, updateRecordApi, htmlToAudio } = useContentCreationApi();
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerateTitlesOpen, setIsGenerateTitlesOpen] = useState(false);
     const [originalCustomTitle, setOriginalCustomTitle] = useState('');
     const [activeTab, setActiveTab] = useState<RightTab>('content');
+    const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const toast = useToastStore();
     const { id } = useParams();
 
@@ -162,6 +164,39 @@ ${state.content}
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
+
+    const downloadAudio = async () => {
+        setState(prev => ({ ...prev, loadingData: true }));
+        try {
+            const fullHTML = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <meta name=\"description\" content=\"Generated content\">\n    <title>Document</title>\n</head>\n<body>\n${state.content}\n</body>\n</html>`;
+
+            const audioBlob = await htmlToAudio(fullHTML as string);
+            if (audioBlob) {
+                if (audioBlob.type && !audioBlob.type.startsWith('audio/')) {
+                    const errorText = await audioBlob.text();
+                    console.error('Unexpected audio response:', audioBlob.type, errorText);
+                    toast.error('Audio response is not a supported audio file');
+                    return;
+                }
+
+                const normalizedBlob = audioBlob.type ? audioBlob : audioBlob.slice(0, audioBlob.size, 'audio/mpeg');
+                const url = URL.createObjectURL(normalizedBlob);
+
+                setAudioUrl(prev => {
+                    if (prev) URL.revokeObjectURL(prev);
+                    return url;
+                });
+
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Audio generation failed');
+        } finally {
+            setState(prev => ({ ...prev, loadingData: false }));
+        }
+    };
+
+    
 
     const handleOnSave = async () => {
         setIsSaving(true);
@@ -412,24 +447,29 @@ ${state.content}
                 <KeywordsSection keywords={state.keywords} onToggle={handleToggleKeyword} onAdd={handleAddKeyword} onSelectAll={handleSelectAll} />
             )}
 
-            <div className="sticky bottom-0 z-10 mt-auto flex justify-end gap-2 border-t bg-white px-2 py-4">
-                {/* <Tooltip text="Skip to Next Document">
-                    <Button data-tour-id="skip-next-document-button" disabled={isRegenerating || isSaving} onClick={skipToNextDocumentHandler} startIcon={<SkipForward size={16} />}>
-                        Next
+            <div className="sticky bottom-0 z-10 mt-auto flex justify-between gap-2 border-t bg-white px-2 py-4">
+                <div className="flex flex-col gap-2">
+                    <AudioPlayButton audioUrl={audioUrl} isLoading={Boolean(state.loadingData)} onGenerate={downloadAudio} isGenerateDisabled={!state.content} />
+                </div>
+                <div className="flex gap-2">
+                    {/* <Tooltip text="Skip to Next Document">
+                        <Button data-tour-id="skip-next-document-button" disabled={isRegenerating || isSaving} onClick={skipToNextDocumentHandler} startIcon={<SkipForward size={16} />}>
+                            Next
+                        </Button>
+                    </Tooltip> */}
+                    <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
+                        {isRegenerating ? 'Regenerating...' : 'Regenerate'}
                     </Button>
-                </Tooltip> */}
-                <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
-                    {isRegenerating ? 'Regenerating...' : 'Regenerate'}
-                </Button>
-                {/* <Button disabled={!state.content} onClick={downloadHTML}>
-                    Download HTML
-                </Button> */}
-                <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
-                    {isSaving ? 'Saving...' : 'Save'}
-                </Button>
-                <Button disabled={!state.content} onClick={handleOnSubmit}>
-                    Submit
-                </Button>
+                    {/* <Button disabled={!state.content} onClick={downloadHTML}>
+                        Download HTML
+                    </Button> */}
+                    <Button disabled={!state.content || isSaving} onClick={handleOnSave} startIcon={isSaving ? <Spinner size={16} /> : null}>
+                        {isSaving ? 'Saving...' : 'Save'}
+                    </Button>
+                    <Button disabled={!state.content} onClick={handleOnSubmit}>
+                        Submit
+                    </Button>
+                </div>
             </div>
 
             <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={state.record || null} />

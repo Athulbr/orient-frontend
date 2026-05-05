@@ -86,7 +86,67 @@ export const useContentCreationApi = () => {
         }
     };
 
+    const htmlToAudio = async (fullHTML: string): Promise<Blob | null> => {
+        try {
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const formData = new FormData();
+            formData.append('file', blob, `content-${Date.now()}.html`);
+
+            const sessionStorageAccessToken = window?.sessionStorage?.getItem('accessToken') || '';
+            const accessToken = sessionStorageAccessToken ? JSON.parse(sessionStorageAccessToken) : '';
+            const selectedTenant = window?.sessionStorage?.getItem('selectedTenant') || '';
+            const selectedRole = window?.sessionStorage?.getItem('selectedRole') || '';
+            const selectedModule = window?.sessionStorage?.getItem('module') || '';
+            const user: any = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
+
+            if (!accessToken || !(selectedTenant || user?.tenant?._id)) {
+                toast.error('Authentication failed: missing token or tenantId');
+                return null;
+            }
+
+            const headers: HeadersInit = {
+                Accept: '*/*',
+                tenantid: selectedTenant ? selectedTenant : user?.tenant?._id,
+                roleid: selectedRole ? selectedRole : user?.role?._id,
+                module: selectedModule,
+                'x-api-key': 'secret1',
+                authorization: `Bearer ${accessToken}`
+            };
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000000);
+
+            try {
+                const response = await fetch(`${config.mlServiceNodejs}/content-creation/html-to-audio`, {
+                    method: 'POST',
+                    headers,
+                    body: formData,
+                    signal: controller.signal,
+                    credentials: 'same-origin'
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const errText = await response.text().catch(() => '');
+                    toast.error(errText || `Audio generation failed: ${response.status}`);
+                    return null;
+                }
+
+                const audioBlob = await response.blob();
+                toast.success('Audio generated successfully');
+                return audioBlob;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } catch (error) {
+            console.error('Error in htmlToAudio:', error);
+            toast.error('Audio generation failed');
+            return null;
+        }
+    };
 
 
-    return { fetchRecord, regenerateBlog, updateContentCreationPrompt, updateRecordApi, editSelectedContent };
+
+    return { fetchRecord, regenerateBlog, updateContentCreationPrompt, updateRecordApi, editSelectedContent, htmlToAudio };
 };
