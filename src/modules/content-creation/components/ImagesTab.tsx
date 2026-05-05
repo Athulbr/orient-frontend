@@ -108,7 +108,6 @@ export default function ImagesTab() {
         }
 
         toast.success('Supporting image regenerated successfully.');
-        setRegenTarget(null);
     };
 
     const handleImagesGenerated = (urls: string[]) => {
