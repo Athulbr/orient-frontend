@@ -165,6 +165,14 @@ export default function ImagesTab() {
                                 <div
                                     className="relative aspect-video bg-gray-100 flex items-center justify-center cursor-grab active:cursor-grabbing border-b border-gray-100 overflow-hidden"
                                     draggable
+                                    onDragStart={(e) => {
+                                        // Inject a properly-sized <img> into the drag payload so the
+                                        // Jodit editor inserts it at a consistent thumbnail width.
+                                        e.dataTransfer.setData(
+                                            'text/html',
+                                            `<img src="${img.src}" alt="${img.title}" style="width:240px; max-width:240px; height:auto; display:block; object-fit:contain;">`
+                                        );
+                                    }}
                                 >
                                     <img src={img.src} alt={img.title} className="w-full h-full object-cover rounded-sm shadow-sm" />
                                 </div>
