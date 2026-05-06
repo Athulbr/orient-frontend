@@ -41,8 +41,8 @@ function buildInfoChips(order: Order): InfoChip[] {
     }
 
     chips.push({ icon: <Building2 size={12} className="text-gray-400" />, val: od.branch });
-    chips.push({ icon: null, val: <LabelValue label="Actual" value={`₹${od.actualAmount}`} />, hide: !od.actualAmount });
-    chips.push({ icon: null, val: <LabelValue label="Total" value={`₹${od.totalAmount}`} bold />, hide: !od.totalAmount });
+    chips.push({ icon: null, val: <LabelValue label="Invioce Amount" value={`${od.actualAmount}`} />, hide: !od.actualAmount });
+    chips.push({ icon: null, val: <LabelValue label="Total Amount" value={`${od.totalAmount}`} bold />, hide: !od.totalAmount });
 
     if (od.paymentType) chips.push({ icon: null, val: <LabelValue label="Payment" value={od.paymentType} /> });
     if (od.deliveryMode) chips.push({ icon: null, val: <LabelValue label="Delivery" value={od.deliveryMode} /> });
