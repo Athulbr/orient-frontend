@@ -4,9 +4,10 @@ import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { config } from '../../../../../../config/default';
 import { format } from 'date-fns';
 import { formatDateForMaraekat } from './utils/getMaraekatPayload';
+import { Order } from '../types';
 
 interface SubmitReceiptToMaraekatProps {
-    order: any;
+    order: Order;
     extractedData: any;
     onOrderUpdate?: (updatedOrder: any) => void;
 }
@@ -85,7 +86,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
         try {
             const eonBookingNumber = order?.maraekatDetails?.eonBookingNumber;
             const bookingNo = order?.maraekatDetails?.bookingNumber;
-            const orderType = order?.orderDetails?.orderType;
+            const orderType: string = order?.orderDetails?.orderType;
 
             if (!eonBookingNumber || !bookingNo) {
                 toast.error('Booking Number or EON Booking Number is missing');
@@ -226,6 +227,8 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
                     console.log('receipt.account_number', `${receipt.account_number}`);
                     console.log('bankAccounts[receipt.account_number as keyof typeof bankAccounts]', bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]);
 
+                    if (order.orderDetails.branchAccountNumber) {
+                    }
                     if (bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]) {
                         return bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts];
                     }
@@ -294,7 +297,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
                             ...order,
                             maraekatDetails: {
                                 ...order.maraekatDetails,
-                                receiptPayStatus: 'submitted'
+                                recPaySubmitted: true
                             }
                         });
                     }
@@ -312,7 +315,7 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
         }
     };
 
-    const isAlreadySubmitted = order?.maraekatDetails?.receiptPayStatus === 'submitted';
+    const isAlreadySubmitted = order?.maraekatDetails?.recPaySubmitted;
 
     return (
         <button

@@ -128,6 +128,15 @@ const SubmitToMaraekat: React.FC<SubmitToMaraekatIF> = ({ order, extractedData, 
                 // Do not block submission on save failure
             }
         }
+        if (!(extractedData?.travel_itinerary?.passenger_name?.value || '').toUpperCase().includes(extractedData?.passport?.first_name?.value.toUpperCase())) {
+            const accepted = confirm(
+                `Passenger name does not match passport name.\nPassport name: ${extractedData?.passport?.first_name?.value} ${extractedData?.passport?.last_name?.value}\nTicket name: ${extractedData?.travel_itinerary?.passenger_name?.value}\n\nProceed anyway?`
+            );
+            if (!accepted) {
+                setIsSubmitting(false);
+                return;
+            }
+        }
 
         const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
         // const validationResult = {
