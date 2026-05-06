@@ -78,10 +78,12 @@ export const InputField = ({
             setValidated(false);
             const trackingNumber = state?.objectFields?.shipping?.tracking_id?.value || '';
             const carrierName = state?.objectFields?.shipping?.carrier?.value || '';
+            const recordId = state.record._id;
             try {
                 const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/history/tracking_id`, {
                     tracking_number: trackingNumber,
-                    carrier_name: carrierName
+                    carrier_name: carrierName,
+                    recordId: recordId
                 });
                 if (response?.data?.validationStatus) {
                     setState(prev => ({
