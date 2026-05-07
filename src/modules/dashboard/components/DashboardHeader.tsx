@@ -134,10 +134,10 @@ export const DashboardHeaderComponent: FC = () => {
                         )}
                     </>
                 )}
-                <Button outlined onClick={() => navigate('/reconcilation/list')}>
+                <Button permission="read:reconsile" outlined onClick={() => navigate('/reconcilation/list')}>
                     Reconcilation
                 </Button>
-                <Button outlined onClick={() => navigate('/agent/list')}>
+                <Button permission="read:agents" outlined onClick={() => navigate('/agent/list')}>
                     Makez Agents
                 </Button>
                 <Button outlined onClick={() => navigate('/docsnap/template/list')}>
