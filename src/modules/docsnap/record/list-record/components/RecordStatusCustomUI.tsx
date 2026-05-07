@@ -58,6 +58,13 @@ export const RecordStatusCustomUI = (row: any) => {
             </div>
         );
     }
+    if (row?.data?.status === 'already_reported') {
+        return (
+            <div className="w-fit cursor-pointer rounded-lg border-green-100 bg-green-50 px-3 py-1 text-xs font-semibold text-green-500 hover:bg-green-100 hover:text-green-700">
+                Already Reported
+            </div>
+        );
+    }
     if (row?.data?.status === 'carriers not found') {
         return (
             <div className="w-fit cursor-pointer rounded-lg border-red-100 bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 hover:bg-red-100 hover:text-red-700">
