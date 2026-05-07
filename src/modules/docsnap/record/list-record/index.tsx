@@ -101,12 +101,12 @@ const ListRecordPage: React.FC = () => {
                     <div className="flex gap-2">
                         {/* <Button outlined onClick={() => navigate('/config/exportbuilder/quick-report')}>
                             Quick Report
-                        </Button>
-                        {isAdminUser && (
-                            <Button outlined onClick={() => navigate('/config/exportbuilder/list')}>
-                                Export Records New
+                        </Button> */}
+                        {/* {isAdminUser && ( */}
+                            <Button permission="export:record" outlined onClick={() => navigate('/config/exportbuilder/list')}>
+                                Export Records
                             </Button>
-                        )} */}
+                        {/* )} */}
                         <Button outlined onClick={() => navigate('/docsnap/template/list')}>
                             Manage Templates
                         </Button>
