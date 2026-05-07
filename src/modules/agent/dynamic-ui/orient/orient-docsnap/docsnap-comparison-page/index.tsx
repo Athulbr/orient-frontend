@@ -5,9 +5,9 @@ import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
 // import { sampleRecord } from './sampleRecord';
-import SubmitToMaraekat from './SubmitToMaraekat';
 import { SearchableSelect } from './SearchableSelect';
-import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
+import CombinedSubmitToMaraekat from './CombinedSubmitToMaraekat';
+
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
@@ -100,6 +100,17 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         (updatedOrder: Order) => {
             setCurrentOrder(updatedOrder);
             onOrderUpdate?.(updatedOrder);
+
+            // Scroll the field container to the bottom so newly-rendered
+            // success messages (KYC, Rec Pay, Currency) are visible.
+            setTimeout(() => {
+                if (rightPaneRef.current) {
+                    rightPaneRef.current.scrollTo({
+                        top: rightPaneRef.current.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
         },
         [onOrderUpdate]
     );
@@ -1225,7 +1236,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         {currentOrder.maraekatDetails?.eonBookingNumber && (
                             <div className="space-y-3">
                                 {/* EON Booking Number */}
-                                <div className="overflow-hidden rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 shadow-sm">
+                                <div className="overflow-hidden rounded-xl border border-green-200 bg-green-50 shadow-sm">
                                     <div className="flex items-center justify-between px-5 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100">
@@ -1244,6 +1255,9 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                         </div>
                                     </div>
                                 </div>
+                                {order?.maraekatDetails?.recPaySubmitted && (
+                                    <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-medium text-green-700">Rec Pay Submitted Successfully.</div>
+                                )}
 
                                 {/* Currency Details List */}
                                 {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
@@ -1299,9 +1313,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         {currentOrder.maraekatDetails?.currencySubmitted && (
                             <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-medium text-green-700">Currency Added Successfully.</div>
                         )}
-                        {order?.maraekatDetails?.recPaySubmitted && (
-                            <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-medium text-green-700">Rec Pay Submitted Successfully.</div>
-                        )}
                     </div>
                 </div>
 
@@ -1324,13 +1335,13 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         </button>
                     )}
 
-                    <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} />
-                    <SubmitToMaraekat
-                        isSubmitted={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
+                    <CombinedSubmitToMaraekat
                         order={currentOrder}
                         extractedData={extractedData}
                         onOrderUpdate={handleOrderUpdate}
                         onBeforeSubmit={silentSave}
+                        isKycSubmitted={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
+                        isRecPaySubmitted={Boolean(currentOrder?.maraekatDetails?.recPaySubmitted)}
                     />
                 </div>
             </div>
