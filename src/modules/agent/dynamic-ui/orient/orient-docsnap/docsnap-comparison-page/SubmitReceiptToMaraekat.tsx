@@ -299,13 +299,34 @@ export const useRecPaySubmit = ({ order, extractedData, onOrderUpdate }: SubmitR
                     console.log('bankAccounts[receipt.account_number as keyof typeof bankAccounts]', bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]);
 
                     if (effectiveOrder.orderDetails.branchAccountNumber) {
+                        if (bankAccounts[`${effectiveOrder.orderDetails.branchAccountNumber}` as keyof typeof bankAccounts]) {
+                            return bankAccounts[`${effectiveOrder.orderDetails.branchAccountNumber}` as keyof typeof bankAccounts];
+                        }
                     }
-                    if (bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]) {
-                        return bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts];
+                    if (receipt.account_number?.value) {
+                        if (bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts]) {
+                            return bankAccounts[`${receipt.account_number?.value}` as keyof typeof bankAccounts];
+                        } else {
+                            throw new Error('Account Number not found in branch bank accounts');
+                        }
+                    }
+
+                    const defaultBranchAccount = categorisedAccountNumbers[sessionStorage.getItem('branch_code') as keyof typeof categorisedAccountNumbers];
+
+                    if (defaultBranchAccount) {
+                        return Object.values(defaultBranchAccount)[0];
                     }
 
                     return '';
                 };
+
+                try {
+                    const bankCode = getCashBank();
+                } catch (error: any) {
+                    console.error(error);
+                    toast.error(error.message);
+                    continue;
+                }
 
                 const payload = {
                     BRANCHCODE: window.sessionStorage.getItem('branch_code') || '',
