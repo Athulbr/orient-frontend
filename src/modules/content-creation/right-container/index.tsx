@@ -183,6 +183,14 @@ ${state.content}
                 const normalizedBlob = audioBlob.type ? audioBlob : audioBlob.slice(0, audioBlob.size, 'audio/mpeg');
                 const url = URL.createObjectURL(normalizedBlob);
 
+                // Automatically trigger download
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `audio-${Date.now()}.mp3`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
                 setAudioUrl(prev => {
                     if (prev) URL.revokeObjectURL(prev);
                     return url;
