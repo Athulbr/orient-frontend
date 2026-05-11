@@ -1137,9 +1137,9 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 <div className="absolute inset-y-0 z-20 -ml-1 w-3" />
             </div>
 
-            <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="flex h-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
                 {/* Scrollable Fields List */}
-                <div ref={rightPaneRef} onScroll={updateConnectionLine} className={`flex-1 overflow-y-auto px-6 py-6 ${styles.track}`}>
+                <div ref={rightPaneRef} onScroll={updateConnectionLine} className={`flex-1 min-h-0 overflow-y-auto px-6 py-6 ${styles.track}`}>
                     <div className="mx-auto max-w-3xl space-y-6">
                         <div className="flex items-start gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50/80 p-4 shadow-sm ring-1 ring-amber-500/20">
                             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />

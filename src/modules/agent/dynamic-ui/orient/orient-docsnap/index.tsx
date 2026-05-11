@@ -70,6 +70,30 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
+    // ── Show page scrollbar (overrides global display:none) ───
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+            ::-webkit-scrollbar {
+                display: block !important;
+                width: 8px !important;
+                height: 6px !important;
+            }
+            ::-webkit-scrollbar-track {
+                background: #e5e5eb;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #b3b3b7;
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #484646;
+            }
+        `;
+        document.head.appendChild(style);
+        return () => { document.head.removeChild(style); };
+    }, []);
+
     // ── Search debounce ───────────────────────────────────────
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
