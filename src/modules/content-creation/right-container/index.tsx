@@ -242,6 +242,7 @@ ${state.content}
         const userData = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
         const tenantName = userData?.tenant?.name || ''; 
 
+        const imageList: { url: string }[] = state.extractedData?.rowData?.imageList || [];
         const content = {
             title: state.extractedData?.title || '',
             category: '',
@@ -249,7 +250,7 @@ ${state.content}
             summaryImagePath: state.extractedData?.primaryImageUrl || '',
             product_category: '',
             html: fullHTML,
-            // author: state.extractedData?.author || ''
+            supportImages: imageList.map(img => img.url).filter(Boolean),
         };
         const payload = {
             tenant_name: selectedTenantName === '' ? tenantName : selectedTenantName,
