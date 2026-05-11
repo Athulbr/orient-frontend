@@ -86,7 +86,7 @@ export const useContentCreationApi = () => {
         }
     };
 
-    const htmlToAudio = async (fullHTML: string): Promise<Blob | null> => {
+    const htmlToAudio = async (fullHTML: string): Promise<string | null> => {
         try {
             const blob = new Blob([fullHTML], { type: 'text/html' });
             const formData = new FormData();
@@ -99,13 +99,8 @@ export const useContentCreationApi = () => {
             const selectedModule = window?.sessionStorage?.getItem('module') || '';
             const user: any = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
 
-            // if (!accessToken ) {
-            //     toast.error('Authentication failed: missing token or tenantId');
-            //     return null;
-            // }
-
             const headers: HeadersInit = {
-                Accept: '*/*',
+                Accept: 'application/json',
                 tenantid: selectedTenant ? selectedTenant : user?.tenant?._id,
                 roleid: selectedRole ? selectedRole : user?.role?._id,
                 module: selectedModule,
@@ -133,9 +128,9 @@ export const useContentCreationApi = () => {
                     return null;
                 }
 
-                const audioBlob = await response.blob();
+                const data = await response.json();
                 toast.success('Audio generated successfully');
-                return audioBlob;
+                return data.audioUrl as string;
             } finally {
                 clearTimeout(timeoutId);
             }

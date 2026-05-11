@@ -166,37 +166,13 @@ ${state.content}
         URL.revokeObjectURL(url);
     };
 
-    const downloadAudio = async () => {
+    const generateAudio = async () => {
         setState(prev => ({ ...prev, loadingData: true }));
         try {
             const fullHTML = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <meta name=\"description\" content=\"Generated content\">\n    <title>Document</title>\n</head>\n<body>\n${state.content}\n</body>\n</html>`;
 
-            const audioBlob = await htmlToAudio(fullHTML as string);
-            if (audioBlob) {
-                if (audioBlob.type && !audioBlob.type.startsWith('audio/')) {
-                    const errorText = await audioBlob.text();
-                    console.error('Unexpected audio response:', audioBlob.type, errorText);
-                    toast.error('Audio response is not a supported audio file');
-                    return;
-                }
-
-                const normalizedBlob = audioBlob.type ? audioBlob : audioBlob.slice(0, audioBlob.size, 'audio/mpeg');
-                const url = URL.createObjectURL(normalizedBlob);
-
-                // Automatically trigger download
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `audio-${Date.now()}.mp3`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                setAudioUrl(prev => {
-                    if (prev) URL.revokeObjectURL(prev);
-                    return url;
-                });
-
-            }
+            const url = await htmlToAudio(fullHTML);
+            if (url) setAudioUrl(url);
         } catch (err) {
             console.error(err);
             toast.error('Audio generation failed');
@@ -204,6 +180,45 @@ ${state.content}
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
+
+    // const downloadAudio = async () => {
+    //     setState(prev => ({ ...prev, loadingData: true }));
+    //     try {
+    //         const fullHTML = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <meta name=\"description\" content=\"Generated content\">\n    <title>Document</title>\n</head>\n<body>\n${state.content}\n</body>\n</html>`;
+
+    //         const audioBlob = await htmlToAudio(fullHTML as string);
+    //         if (audioBlob) {
+    //             if (audioBlob.type && !audioBlob.type.startsWith('audio/')) {
+    //                 const errorText = await audioBlob.text();
+    //                 console.error('Unexpected audio response:', audioBlob.type, errorText);
+    //                 toast.error('Audio response is not a supported audio file');
+    //                 return;
+    //             }
+
+    //             const normalizedBlob = audioBlob.type ? audioBlob : audioBlob.slice(0, audioBlob.size, 'audio/mpeg');
+    //             const url = URL.createObjectURL(normalizedBlob);
+
+    //             // Automatically trigger download
+    //             const link = document.createElement('a');
+    //             link.href = url;
+    //             link.download = `audio-${Date.now()}.mp3`;
+    //             document.body.appendChild(link);
+    //             link.click();
+    //             document.body.removeChild(link);
+
+    //             setAudioUrl(prev => {
+    //                 if (prev) URL.revokeObjectURL(prev);
+    //                 return url;
+    //             });
+
+    //         }
+    //     } catch (err) {
+    //         console.error(err);
+    //         toast.error('Audio generation failed');
+    //     } finally {
+    //         setState(prev => ({ ...prev, loadingData: false }));
+    //     }
+    // };
 
     
 
@@ -251,6 +266,7 @@ ${state.content}
             product_category: '',
             html: fullHTML,
             supportImages: imageList.map(img => img.url).filter(Boolean),
+            ...(audioUrl && { audioUrl }),
         };
         const payload = {
             tenant_name: selectedTenantName === '' ? tenantName : selectedTenantName,
@@ -461,7 +477,7 @@ ${state.content}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-between gap-2 border-t bg-white px-2 py-4">
                 <div className="flex flex-col gap-2">
-                    <AudioPlayButton audioUrl={audioUrl} isLoading={Boolean(state.loadingData)} onGenerate={downloadAudio} isGenerateDisabled={!state.content} />
+                    <AudioPlayButton audioUrl={audioUrl} isLoading={Boolean(state.loadingData)} onGenerate={generateAudio} isGenerateDisabled={!state.content} />
                 </div>
                 <div className="flex gap-2">
                     {/* <Tooltip text="Skip to Next Document">
