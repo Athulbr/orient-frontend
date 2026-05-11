@@ -29,6 +29,7 @@ export default function RightContainer() {
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
     const [isGenerateTitlesOpen, setIsGenerateTitlesOpen] = useState(false);
     const [originalCustomTitle, setOriginalCustomTitle] = useState('');
     const [activeTab, setActiveTab] = useState<RightTab>('content');
@@ -165,6 +166,60 @@ ${state.content}
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
+
+    const publishApi = async () => {
+        setIsPublishing(true);
+        try {
+            // Compose the HTML content
+            const fullHTML = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <meta name=\"description\" content=\"Generated content\">\n    <title>Document</title>\n</head>\n<body>\n${state.content}\n</body>\n</html>`;
+
+            // Get title
+            const title = state.extractedData?.title || 'Untitled';
+
+            // Compose keywords string (comma separated)
+
+            // Only include keywords with selected: true
+            let keywords = '';
+            if (state.keywords && Array.isArray(state.keywords)) {
+                const selectedKeywords = state.keywords
+                    .filter(k => (typeof k === 'object' && k.selected) || (typeof k === 'string'))
+                    .map(k => typeof k === 'string' ? k : k.keyword || '')
+                    .filter(Boolean);
+                // If all are string, include all; if objects, only selected
+                keywords = selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '';
+            }
+
+            const payload = {
+                title,
+                content: fullHTML,
+                keywords
+            };
+
+            const response = await fetch('https://otshow.com/wp-json/makez/v1/publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-secret-key': 'OTShow@2026!'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                toast.error(`API Error: ${response.status} - ${errorText}`);
+                return;
+            }
+
+            const data = await response.json();
+            toast.success('Content published successfully!');
+            console.log('API response:', data);
+        } catch (error) {
+            console.error('API call failed:', error);
+            toast.error('Failed to publish content');
+        } finally {
+            setIsPublishing(false);
+        }
+    }
 
     const generateAudio = async () => {
         setState(prev => ({ ...prev, loadingData: true }));
@@ -485,6 +540,9 @@ ${state.content}
                             Next
                         </Button>
                     </Tooltip> */}
+                    <Button disabled={isPublishing} onClick={publishApi} startIcon={isPublishing ? <Spinner size={16} /> : null}>
+                        {isPublishing ? 'Publishing...' : 'Publish'}
+                    </Button>
                     <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                         {isRegenerating ? 'Blog Regenerating...' : 'Blog Regenerate'}
                     </Button>
