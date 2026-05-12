@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link, Printer, Download } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, RotateCw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link, Printer, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { config } from '../../../../../../config/default';
 
@@ -76,6 +76,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
     const [agentTemplate, setAgentTemplate] = useState<any>(null);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+    const [imageRotations, setImageRotations] = useState<number[]>([]);
+    const [imageDimensions, setImageDimensions] = useState<Array<{ w: number; h: number }>>([]);
 
     // console.log('record====>>', record);
 
@@ -1072,59 +1074,117 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                             transformOrigin: 'top center'
                         }}
                     >
-                        {imageUrls.map((url, index) => (
-                            <div key={index} className="relative w-full bg-white px-8 shadow-lg ring-1 ring-black/5">
-                                {url ? <img src={url} alt={`Document Page ${index + 1}`} className="pointer-events-none block w-full object-contain select-none" draggable={false} /> : null}
-                                <div className="absolute inset-y-0 right-8 left-8">
-                                    {allBboxes
-                                        .filter(b => b.page === index + 1)
-                                        .map(b => (
-                                            <div
-                                                key={b.id}
-                                                id={`bbox-${b.id}`}
-                                                className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${
-                                                    activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
-                                                }`}
+                        {imageUrls.map((url, index) => {
+                            const rotation = imageRotations[index] || 0;
+                            const isRotated = rotation === 90 || rotation === 270;
+                            const dims = imageDimensions[index];
+                            // When rotated 90/270 the image's natural width becomes the visual height.
+                            // Scale it so the visual width still fits the container (scale = W/H).
+                            const scale = dims && isRotated ? dims.w / dims.h : 1;
+                            return (
+                                <div key={index} className="relative w-full bg-white px-8 shadow-lg ring-1 ring-black/5">
+                                    {/* Rotate button — top-right corner */}
+                                    <button
+                                        onClick={() => {
+                                            setImageRotations(prev => {
+                                                const next = [...prev];
+                                                next[index] = ((next[index] || 0) + 90) % 360;
+                                                return next;
+                                            });
+                                        }}
+                                        className="absolute top-2 right-2 z-20 flex items-center justify-center rounded-full bg-white/80 p-1.5 text-zinc-600 shadow-md ring-1 ring-black/10 backdrop-blur-sm transition-all hover:bg-white hover:text-blue-600 hover:shadow-lg hover:ring-blue-300"
+                                        title={`Rotate image (currently ${rotation}°)`}
+                                    >
+                                        <RotateCw size={15} />
+                                    </button>
+                                    {url ? (
+                                        // Wrapper holds the correct aspect-ratio for the rotated orientation
+                                        // so the outer card expands/contracts to exactly fit the image.
+                                        <div
+                                            style={{
+                                                position: 'relative',
+                                                width: '100%',
+                                                aspectRatio: dims ? (isRotated ? `${dims.h} / ${dims.w}` : `${dims.w} / ${dims.h}`) : 'auto',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            <img
+                                                src={url}
+                                                alt={`Document Page ${index + 1}`}
+                                                className="pointer-events-none select-none"
                                                 style={{
-                                                    left: `${(b.bbox.x_min - 0.004) * 100}%`,
-                                                    top: `${(b.bbox.y_min - 0.003) * 100}%`,
-                                                    width: `${(b.bbox.x_max - b.bbox.x_min + 0.01) * 100}%`,
-                                                    height: `${(b.bbox.y_max - b.bbox.y_min + 0.005) * 100}%`
+                                                    position: dims ? 'absolute' : ('block' as any),
+                                                    top: '50%',
+                                                    left: '50%',
+                                                    width: '100%',
+                                                    height: 'auto',
+                                                    transformOrigin: 'center center',
+                                                    transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`,
+                                                    transition: 'transform 0.3s ease'
                                                 }}
-                                                onClick={e => handleBboxClick(b.id, e)}
-                                            >
-                                                {activeFieldId === b.id && activeFieldInfo && (
-                                                    <div
-                                                        data-edit-card
-                                                        className="absolute z-20 min-w-[300px] rounded-lg border border-zinc-300 bg-white p-3 shadow-xl"
-                                                        style={{
-                                                            top: `calc(100% + 8px + ${editCardPos.y}px)`,
-                                                            left: `${-10 + editCardPos.x}px`
-                                                        }}
-                                                        onClick={e => e.stopPropagation()}
-                                                    >
-                                                        <div className="mb-2 flex items-center justify-between gap-2">
-                                                            <div className="flex cursor-grab items-center gap-1.5 active:cursor-grabbing" onMouseDown={startEditCardDrag}>
-                                                                <GripHorizontal size={14} className="text-zinc-400" />
-                                                                <span className="text-xs font-semibold tracking-wider text-zinc-500 uppercase">{activeFieldInfo.fieldKey.replace(/_/g, ' ')}</span>
-                                                            </div>
-                                                            <button onClick={closeEditCard} className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-red-500">
-                                                                <X size={14} />
-                                                            </button>
-                                                        </div>
+                                                draggable={false}
+                                                onLoad={e => {
+                                                    const img = e.currentTarget;
+                                                    setImageDimensions(prev => {
+                                                        const next = [...prev];
+                                                        next[index] = { w: img.naturalWidth, h: img.naturalHeight };
+                                                        return next;
+                                                    });
+                                                }}
+                                            />
+                                        </div>
+                                    ) : null}
+                                    <div className="absolute inset-y-0 right-8 left-8">
+                                        {allBboxes
+                                            .filter(b => b.page === index + 1)
+                                            .map(b => (
+                                                <div
+                                                    key={b.id}
+                                                    id={`bbox-${b.id}`}
+                                                    className={`absolute cursor-pointer border transition-colors hover:border-blue-500 hover:bg-blue-400/10 ${
+                                                        activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
+                                                    }`}
+                                                    style={{
+                                                        left: `${(b.bbox.x_min - 0.004) * 100}%`,
+                                                        top: `${(b.bbox.y_min - 0.003) * 100}%`,
+                                                        width: `${(b.bbox.x_max - b.bbox.x_min + 0.01) * 100}%`,
+                                                        height: `${(b.bbox.y_max - b.bbox.y_min + 0.005) * 100}%`
+                                                    }}
+                                                    onClick={e => handleBboxClick(b.id, e)}
+                                                >
+                                                    {activeFieldId === b.id && activeFieldInfo && (
                                                         <div
-                                                            className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-semibold text-lg text-zinc-800 break-words whitespace-pre-wrap"
-                                                            style={{ minHeight: '10px', maxWidth: '300px' }}
+                                                            data-edit-card
+                                                            className="absolute z-20 min-w-[300px] rounded-lg border border-zinc-300 bg-white p-3 shadow-xl"
+                                                            style={{
+                                                                top: `calc(100% + 8px + ${editCardPos.y}px)`,
+                                                                left: `${-10 + editCardPos.x}px`
+                                                            }}
+                                                            onClick={e => e.stopPropagation()}
                                                         >
-                                                            {activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                            <div className="mb-2 flex items-center justify-between gap-2">
+                                                                <div className="flex cursor-grab items-center gap-1.5 active:cursor-grabbing" onMouseDown={startEditCardDrag}>
+                                                                    <GripHorizontal size={14} className="text-zinc-400" />
+                                                                    <span className="text-xs font-semibold tracking-wider text-zinc-500 uppercase">{activeFieldInfo.fieldKey.replace(/_/g, ' ')}</span>
+                                                                </div>
+                                                                <button onClick={closeEditCard} className="rounded p-0.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-red-500">
+                                                                    <X size={14} />
+                                                                </button>
+                                                            </div>
+                                                            <div
+                                                                className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-semibold text-lg text-zinc-800 break-words whitespace-pre-wrap"
+                                                                style={{ minHeight: '10px', maxWidth: '300px' }}
+                                                            >
+                                                                {activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                                    )}
+                                                </div>
+                                            ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
