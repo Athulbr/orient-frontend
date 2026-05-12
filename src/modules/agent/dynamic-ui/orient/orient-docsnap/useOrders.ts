@@ -154,10 +154,12 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 }
 
                 // Convert email attachments to DocumentDetail format
-                const newDocs: DocumentDetail[] = (email!.attachments || []).map((att: any) => ({
-                    documentName: att.documentName || att.name || '',
-                    documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
-                })).filter((d: DocumentDetail) => d.documentPages.length > 0);
+                const newDocs: DocumentDetail[] = (email!.attachments || [])
+                    .map((att: any) => ({
+                        documentName: att.documentName || att.name || '',
+                        documentPages: att.documentPages || att.pages || (att.url ? [att.url] : [])
+                    }))
+                    .filter((d: DocumentDetail) => d.documentPages.length > 0);
 
                 const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
                 const updatedEmailDocuments = [...(order?.emailDocuments || []), ...newDocs];
@@ -220,7 +222,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         },
         [toast]
     );
-
 
     // ── Unlink email — remove email docs from emailDocuments, set linked:false ──
     const handleUnlinkEmail = useCallback(
@@ -508,6 +509,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderNumber: orderNumber,
+                        order: order,
                         templateId: agentSettings?.defaultTemplateId || '',
                         templateName: agentSettings?.templates?.[0]?.name,
                         documents: payloadDocuments

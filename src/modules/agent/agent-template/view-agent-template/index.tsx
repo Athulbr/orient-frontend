@@ -506,7 +506,7 @@ function FieldSettingsPanel({ field, sectionId, onUpdate, onClose }: FieldSettin
                     <textarea
                         value={field.instruction}
                         onChange={e => set('instruction', e.target.value)}
-                        rows={4}
+                        rows={8}
                         placeholder="Describe what to extract for this field..."
                         className="w-full px-2.5 py-2 border border-gray-200 rounded-lg text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors resize-y leading-relaxed font-sans"
                     />
@@ -1086,11 +1086,7 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
                 />
 
                 <div className="ml-auto flex items-center gap-2">
-                    {updatedAt && (
-                        <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
-                            Last updated: {new Date(updatedAt).toLocaleString()}
-                        </div>
-                    )}
+                    {updatedAt && <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">Last updated: {new Date(updatedAt).toLocaleString()}</div>}
                     <div className="text-[12px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md border border-gray-200">
                         {settings.llmProvider} · {settings.llmModel}
                     </div>

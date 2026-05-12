@@ -70,7 +70,8 @@ const DATE_FIELDS: { key: string; label: string; getValue: (extractedData: Recor
     { key: 'PASSPORT_EXPIRYDATE', label: 'Passport Expiry Date', getValue: d => d?.passport?.passport_expiry_date?.value || '' },
     { key: 'DOB', label: 'Date of Birth', getValue: d => d?.passport?.date_of_birth?.value || '' },
     { key: 'DEPARTUREDATE', label: 'Departure Date', getValue: d => d?.travel_itinerary?.departure_date?.value || '' },
-    { key: 'ARRIVALDATE', label: 'Arrival Date', getValue: d => d?.travel_itinerary?.arrival_date?.value || '' }
+    { key: 'ARRIVALDATE', label: 'Arrival Date', getValue: d => d?.travel_itinerary?.arrival_date?.value || '' },
+    { key: 'PANDOB', label: 'PAN Date of Birth', getValue: d => d?.pan_card?.pan_date_of_birth?.value || '' }
 ];
 
 export const getMaraekatPayload = (order: Order, extractedData: Record<string, any>): MaraekatPayloadResult => {
@@ -136,6 +137,8 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         GENDER: extractedData?.passport?.gender?.value || '',
         NATIONALITY: extractedData?.passport?.nationality?.value || '',
         PANNO: extractedData?.pan_card?.pan_number?.value || '',
+        PANDOB: dateValues.PANDOB,
+        // PANDOB: extractedData?.pan_card?.pan_date_of_birth?.value || '',
         PANCARDHOLDERNAME: extractedData?.pan_card?.pan_card_holder_name?.value || '',
         FATHERNAME: extractedData?.pan_card?.father_name?.value || '',
         TYPEOFPERSON: extractedData?.pan_card?.type_of_person?.value || '',

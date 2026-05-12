@@ -42,6 +42,7 @@ export interface OrderDetails {
     orderCreatedDate?: string;
     gst?: string;
     tcs?: string;
+    branchAccountNumber?: string;
 }
 
 export interface UserDetails {
@@ -86,6 +87,8 @@ export interface Order {
     maraekatDetails?: {
         eonBookingNumber?: string;
         bookingNumber?: string;
+        recPaySubmitted?: boolean;
+        currencySubmitted?: boolean;
     };
     createdAt?: string;
 }

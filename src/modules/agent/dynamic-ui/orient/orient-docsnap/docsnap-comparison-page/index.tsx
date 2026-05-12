@@ -5,9 +5,9 @@ import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
 // import { sampleRecord } from './sampleRecord';
-import SubmitToMaraekat from './SubmitToMaraekat';
 import { SearchableSelect } from './SearchableSelect';
-import SubmitReceiptToMaraekat from './SubmitReceiptToMaraekat';
+import CombinedSubmitToMaraekat from './CombinedSubmitToMaraekat';
+
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import { getMaraekatPayload } from './utils/getMaraekatPayload';
@@ -60,7 +60,7 @@ interface DocsnapComparisonUIProps {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewReceipt, recordId, onClose, order, onOrderUpdate }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order, onOrderUpdate }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -73,8 +73,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
     const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
     const [currentOrder, setCurrentOrder] = useState<Order>(order);
     const [isExchanging, setIsExchanging] = useState(false);
-    const [isExchangingAll, setIsExchangingAll] = useState(false);
-    const [exchangeResult, setExchangeResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
     const [agentTemplate, setAgentTemplate] = useState<any>(null);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
@@ -102,100 +100,20 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         (updatedOrder: Order) => {
             setCurrentOrder(updatedOrder);
             onOrderUpdate?.(updatedOrder);
+
+            // Scroll the field container to the bottom so newly-rendered
+            // success messages (KYC, Rec Pay, Currency) are visible.
+            setTimeout(() => {
+                if (rightPaneRef.current) {
+                    rightPaneRef.current.scrollTo({
+                        top: rightPaneRef.current.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
         },
         [onOrderUpdate]
     );
-
-    // const handleExchange = async (item: any) => {
-    //     const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
-    //     const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
-    //     console.log('bookingNo=>', bookingNo);
-    //     if (!eonBookingNumber || !bookingNo) return;
-
-    //     console.log(item);
-
-    //     setIsExchanging(true);
-    //     setExchangeResult(null);
-
-    //     try {
-    //         // Step 1: Login to get auth token
-    //         const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' }
-    //         });
-
-    //         if (!loginRes.ok) {
-    //             setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
-    //             setIsExchanging(false);
-    //             return;
-    //         }
-
-    //         const loginData = await loginRes.json();
-    //         const authToken = loginData?.Result;
-
-    //         if (!authToken) {
-    //             setExchangeResult({ type: 'error', message: 'No auth token received from login' });
-    //             setIsExchanging(false);
-    //             return;
-    //         }
-
-    //         // Step 2: Get payload data for exchange
-    //         const { payload } = getMaraekatPayload(currentOrder, extractedData);
-    //         const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
-
-    //         // Step 3: Call PUSHFXBOOKINGEX via backend proxy
-    //         const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 Authorization: `Bearer ${authToken}`
-    //             },
-
-    //             body: JSON.stringify({
-    //                 BRANCHCODE: payload.BRANCHCODE || '',
-    //                 BOOKINGTYPE: payload.BOOKINGTYPE || '',
-    //                 BOOKINGNO: bookingNo || '',
-    //                 EONBOOKINGNO: eonBookingNumber,
-    //                 CURRENCY: item.currency || '',
-    //                 EXCHTYPE: exchangeType || '',
-    //                 FCNAMOUNT: item.quantity || '',
-    //                 BOOKINGRATE: item.rate || ''
-    //             })
-    //         });
-
-    //         if (!exchangeRes.ok) {
-    //             setExchangeResult({ type: 'error', message: `Exchange API failed: ${exchangeRes.status}` });
-    //             setIsExchanging(false);
-    //             return;
-    //         }
-
-    //         const exchangeData = await exchangeRes.json();
-    //         const resultItem = exchangeData?.Result?.[0];
-
-    //         if (resultItem?.APISTATUS === 'FAILED') {
-    //             setExchangeResult({
-    //                 type: 'error',
-    //                 message: `Exchange failed: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`
-    //             });
-    //         } else if (resultItem?.BOOKINGNO) {
-    //             setExchangeResult({
-    //                 type: 'success',
-    //                 message: `Exchange successful! Booking No: ${resultItem.BOOKINGNO}. ${resultItem.BOOKINGSTATUS || ''}`
-    //             });
-    //             toast.success(`Exchange successful! Booking No: ${resultItem.BOOKINGNO}`);
-    //         } else {
-    //             setExchangeResult({
-    //                 type: 'error',
-    //                 message: exchangeData?.Error || 'Exchange failed — no booking number returned'
-    //             });
-    //         }
-    //     } catch (err: any) {
-    //         console.error('Exchange error:', err);
-    //         setExchangeResult({ type: 'error', message: err.message || 'Exchange request failed' });
-    //     } finally {
-    //         setIsExchanging(false);
-    //     }
-    // };
 
     const handleExchangeAll = async () => {
         const items = currentOrder.currencyDetails;
@@ -205,8 +123,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
         if (!eonBookingNumber || !bookingNo) return;
 
-        setIsExchangingAll(true);
-        setExchangeResult(null);
+        setIsExchanging(true);
 
         // Step 1: Login once to get auth token
         let authToken: string | null = null;
@@ -216,20 +133,20 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                 headers: { 'Content-Type': 'application/json' }
             });
             if (!loginRes.ok) {
-                setExchangeResult({ type: 'error', message: `Login failed: ${loginRes.status}` });
-                setIsExchangingAll(false);
+                toast.error(`Login failed: ${loginRes.status}`);
+                setIsExchanging(false);
                 return;
             }
             const loginData = await loginRes.json();
             authToken = loginData?.Result;
             if (!authToken) {
-                setExchangeResult({ type: 'error', message: 'No auth token received from login' });
-                setIsExchangingAll(false);
+                toast.error('No auth token received from login');
+                setIsExchanging(false);
                 return;
             }
         } catch (err: any) {
-            setExchangeResult({ type: 'error', message: err.message || 'Login request failed' });
-            setIsExchangingAll(false);
+            toast.error(err.message || 'Login request failed');
+            setIsExchanging(false);
             return;
         }
 
@@ -287,20 +204,38 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
         });
 
         if (failures.length === 0) {
-            setExchangeResult({
-                type: 'success',
-                message: `All ${successes.length} exchange(s) successful! ${successes.join(' · ')}`
-            });
             toast.success(`All ${successes.length} exchange(s) completed successfully!`);
+
+            try {
+                const updatePayload = {
+                    maraekatDetails: {
+                        ...currentOrder.maraekatDetails,
+                        currencySubmitted: true
+                    }
+                };
+                const res = await fetch(`${config.workflowService}/api/orders/${currentOrder.orderDetails.orderNumber}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatePayload)
+                });
+
+                if (res.ok) {
+                    handleOrderUpdate({
+                        ...currentOrder,
+                        maraekatDetails: {
+                            ...currentOrder.maraekatDetails,
+                            currencySubmitted: true
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to update order with currency submitted status:', err);
+            }
         } else {
-            setExchangeResult({
-                type: 'error',
-                message: `${failures.length} exchange(s) failed: ${failures.join(' | ')}${successes.length > 0 ? ` (${successes.length} succeeded: ${successes.join(' · ')})` : ''}`
-            });
-            toast.error(`${failures.length} exchange(s) failed.`);
+            toast.error(`${failures.length} exchange(s) failed: ${failures.join(' | ')}`);
         }
 
-        setIsExchangingAll(false);
+        setIsExchanging(false);
     };
 
     useEffect(() => {
@@ -1161,7 +1096,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                 {activeFieldId === b.id && activeFieldInfo && (
                                                     <div
                                                         data-edit-card
-                                                        className="absolute z-20 min-w-[240px] rounded-lg border border-zinc-300 bg-white p-3 shadow-xl"
+                                                        className="absolute z-20 min-w-[300px] rounded-lg border border-zinc-300 bg-white p-3 shadow-xl"
                                                         style={{
                                                             top: `calc(100% + 8px + ${editCardPos.y}px)`,
                                                             left: `${-10 + editCardPos.x}px`
@@ -1177,71 +1112,12 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                                 <X size={14} />
                                                             </button>
                                                         </div>
-                                                        {enumsLookup[activeFieldInfo.fieldKey] ? (
-                                                            <SearchableSelect
-                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
-                                                                options={enumsLookup[activeFieldInfo.fieldKey]}
-                                                                onChange={val => {
-                                                                    const newData = { ...extractedData };
-                                                                    if (activeFieldInfo.rowIndex !== undefined) {
-                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
-                                                                        newGroup[activeFieldInfo.rowIndex] = {
-                                                                            ...newGroup[activeFieldInfo.rowIndex],
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: val
-                                                                            }
-                                                                        };
-                                                                        newData[activeFieldInfo.groupKey] = newGroup;
-                                                                    } else {
-                                                                        newData[activeFieldInfo.groupKey] = {
-                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: val
-                                                                            }
-                                                                        };
-                                                                    }
-                                                                    setExtractedData(newData);
-                                                                }}
-                                                                placeholder="Select value"
-                                                            />
-                                                        ) : (
-                                                            <textarea
-                                                                value={activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
-                                                                onChange={e => {
-                                                                    const newData = { ...extractedData };
-                                                                    if (activeFieldInfo.rowIndex !== undefined) {
-                                                                        const newGroup = [...(newData[activeFieldInfo.groupKey] as any[])];
-                                                                        newGroup[activeFieldInfo.rowIndex] = {
-                                                                            ...newGroup[activeFieldInfo.rowIndex],
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: e.target.value
-                                                                            }
-                                                                        };
-                                                                        newData[activeFieldInfo.groupKey] = newGroup;
-                                                                    } else {
-                                                                        newData[activeFieldInfo.groupKey] = {
-                                                                            ...(newData[activeFieldInfo.groupKey] as FieldGroup),
-                                                                            [activeFieldInfo.fieldKey]: {
-                                                                                ...(activeFieldInfo.field || {}),
-                                                                                value: e.target.value
-                                                                            }
-                                                                        };
-                                                                    }
-                                                                    setExtractedData(newData);
-                                                                }}
-                                                                rows={1}
-                                                                className="w-full resize-none rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                                                style={{ minHeight: '32px' }}
-                                                                onInput={e => {
-                                                                    const target = e.target as HTMLTextAreaElement;
-                                                                    target.style.height = 'auto';
-                                                                    target.style.height = `${target.scrollHeight}px`;
-                                                                }}
-                                                            />
-                                                        )}
+                                                        <div
+                                                            className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-semibold text-lg text-zinc-800 break-words whitespace-pre-wrap"
+                                                            style={{ minHeight: '10px', maxWidth: '300px' }}
+                                                        >
+                                                            {activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -1261,9 +1137,9 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                 <div className="absolute inset-y-0 z-20 -ml-1 w-3" />
             </div>
 
-            <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="flex h-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
                 {/* Scrollable Fields List */}
-                <div ref={rightPaneRef} onScroll={updateConnectionLine} className={`flex-1 overflow-y-auto px-6 py-6 ${styles.track}`}>
+                <div ref={rightPaneRef} onScroll={updateConnectionLine} className={`flex-1 min-h-0 overflow-y-auto px-6 py-6 ${styles.track}`}>
                     <div className="mx-auto max-w-3xl space-y-6">
                         <div className="flex items-start gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50/80 p-4 shadow-sm ring-1 ring-amber-500/20">
                             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
@@ -1360,7 +1236,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                         {currentOrder.maraekatDetails?.eonBookingNumber && (
                             <div className="space-y-3">
                                 {/* EON Booking Number */}
-                                <div className="overflow-hidden rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 shadow-sm">
+                                <div className="overflow-hidden rounded-xl border border-green-200 bg-green-50 shadow-sm">
                                     <div className="flex items-center justify-between px-5 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-100">
@@ -1369,40 +1245,49 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                             <div>
                                                 <p className="text-xs font-medium tracking-wider text-green-600 uppercase">EON Booking Number</p>
                                                 <p className="text-lg font-bold text-green-900">{currentOrder.maraekatDetails.eonBookingNumber}</p>
+                                                <p className="text-xs font-medium tracking-wider text-green-600 uppercase mt-2">
+                                                    {`${currentOrder.maraekatDetails?.bookingNumber}`.trim() !== `${currentOrder.orderDetails?.orderNumber}`.trim()
+                                                        ? 'Random Order Number'
+                                                        : 'Order Number'}
+                                                </p>
+                                                <p className=" font-bold text-green-900">{currentOrder.maraekatDetails?.bookingNumber}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                {order?.maraekatDetails?.recPaySubmitted && (
+                                    <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-medium text-green-700">Rec Pay Submitted Successfully.</div>
+                                )}
 
                                 {/* Currency Details List */}
                                 {currentOrder.currencyDetails && currentOrder.currencyDetails.length > 0 && (
                                     <div
-                                        className={`overflow-hidden rounded-xl border shadow-sm ${exchangeResult?.type === 'success' ? 'border-green-300 bg-green-50/30' : 'border-indigo-200 bg-white'}`}
+                                        className={`overflow-hidden rounded-xl border shadow-sm ${currentOrder.maraekatDetails?.currencySubmitted ? 'border-green-300 bg-green-50/30' : 'border-indigo-200 bg-white'}`}
                                     >
                                         <div
-                                            className={`flex items-center justify-between border-b px-5 py-3 ${exchangeResult?.type === 'success' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50'}`}
+                                            className={`flex items-center justify-between border-b px-5 py-3 ${currentOrder.maraekatDetails?.currencySubmitted ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50'}`}
                                         >
-                                            <p className={`text-xs font-semibold tracking-wider uppercase ${exchangeResult?.type === 'success' ? 'text-green-700' : 'text-indigo-700'}`}>
+                                            <p className={`text-xs font-semibold tracking-wider uppercase ${currentOrder.maraekatDetails?.currencySubmitted ? 'text-green-700' : 'text-indigo-700'}`}>
                                                 Currency Details
                                             </p>
                                             <button
                                                 onClick={handleExchangeAll}
-                                                disabled={isExchangingAll || isExchanging || exchangeResult?.type === 'success'}
-                                                className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${exchangeResult?.type === 'success' ? 'border-green-500 bg-green-600 hover:bg-green-700' : 'border-indigo-500 bg-indigo-600 hover:bg-indigo-700'}`}
+                                                disabled={isExchanging || currentOrder.maraekatDetails?.currencySubmitted}
+                                                className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${currentOrder.maraekatDetails?.currencySubmitted ? 'border-green-500 bg-green-600 hover:bg-green-700' : 'border-indigo-500 bg-indigo-600 hover:bg-indigo-700'}`}
                                             >
-                                                {isExchangingAll ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
-                                                {isExchangingAll ? 'Adding All...' : exchangeResult?.type === 'success' ? 'Added' : 'Add All'}
+                                                {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
+                                                {isExchanging ? 'Adding All...' : currentOrder.maraekatDetails?.currencySubmitted ? 'Added' : 'Add All'}
                                             </button>
                                         </div>
-                                        <div className={`divide-y ${exchangeResult?.type === 'success' ? 'divide-green-100' : 'divide-indigo-50'}`}>
+                                        <div className={`divide-y ${currentOrder.maraekatDetails?.currencySubmitted ? 'divide-green-100' : 'divide-indigo-50'}`}>
                                             {currentOrder.currencyDetails.map((item, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className={`flex items-center justify-between px-5 py-3 transition-colors ${exchangeResult?.type === 'success' ? 'hover:bg-green-50/50' : 'hover:bg-indigo-50/40'}`}
+                                                    className={`flex items-center justify-between px-5 py-3 transition-colors ${currentOrder.maraekatDetails?.currencySubmitted ? 'hover:bg-green-50/50' : 'hover:bg-indigo-50/40'}`}
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div
-                                                            className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${exchangeResult?.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}
+                                                            className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${currentOrder.maraekatDetails?.currencySubmitted ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}
                                                         >
                                                             {item.currency?.slice(0, 3) || '—'}
                                                         </div>
@@ -1417,14 +1302,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    {/* <button
-                                                        onClick={() => handleExchange(item)}
-                                                        disabled={isExchanging || isExchangingAll}
-                                                        className="flex items-center gap-1.5 rounded-md border border-indigo-400 bg-white px-3 py-1 text-xs font-medium text-indigo-600 transition-all duration-200 hover:border-indigo-600 hover:bg-indigo-500 hover:text-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-                                                    >
-                                                        {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
-                                                        Add
-                                                    </button> */}
                                                 </div>
                                             ))}
                                         </div>
@@ -1433,21 +1310,14 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                             </div>
                         )}
 
-                        {/* Exchange result message */}
-                        {exchangeResult && (
-                            <div
-                                className={`rounded-xl border px-5 py-3 text-sm font-medium ${
-                                    exchangeResult.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'
-                                }`}
-                            >
-                                {exchangeResult.message}
-                            </div>
+                        {currentOrder.maraekatDetails?.currencySubmitted && (
+                            <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-medium text-green-700">Currency Added Successfully.</div>
                         )}
                     </div>
                 </div>
 
                 {/* Fixed Save Bar */}
-                <div className="flex shrink-0 items-center justify-end gap-2 border-t border-zinc-200 px-4 py-3">
+                <div className="flex shrink-0 items-center justify-end gap-2 border-t border-zinc-200 px-4 py-3 flex-wrap">
                     <button
                         onClick={handleClose}
                         className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:shadow-md"
@@ -1455,16 +1325,24 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ viewRe
                         Close
                     </button>
 
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {isSaving ? 'Saving...' : 'Save'}
-                    </button>
+                    {!currentOrder?.maraekatDetails?.eonBookingNumber && (
+                        <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {isSaving ? 'Saving...' : 'Save'}
+                        </button>
+                    )}
 
-                    <SubmitReceiptToMaraekat order={currentOrder} extractedData={extractedData} />
-                    {!viewReceipt && <SubmitToMaraekat order={currentOrder} extractedData={extractedData} onOrderUpdate={handleOrderUpdate} onBeforeSubmit={silentSave} />}
+                    <CombinedSubmitToMaraekat
+                        order={currentOrder}
+                        extractedData={extractedData}
+                        onOrderUpdate={handleOrderUpdate}
+                        onBeforeSubmit={silentSave}
+                        isKycSubmitted={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
+                        isRecPaySubmitted={Boolean(currentOrder?.maraekatDetails?.recPaySubmitted)}
+                    />
                 </div>
             </div>
 

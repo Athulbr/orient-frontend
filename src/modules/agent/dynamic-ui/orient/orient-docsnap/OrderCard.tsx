@@ -237,7 +237,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 dropText="Drag & drop files here"
                                 browseText="browse"
                                 className="h-[80vh] bg-white border-2 border-dashed border-emerald-300"
-                                accept=".png,.jpeg,.jpg,.pdf"
+                                accept=".png,.jpeg,.jpg,.pdf,.webp"
                             />
                         </div>
                     </DialogComponent>
