@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight } from 'lucide-react';
+import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight, Trash2 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -166,14 +166,36 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             <span className="text-[15px] font-bold text-gray-700">Email Documents</span>
                             <ColCount colorClass="text-violet-700" bgClass="bg-violet-100" borderClass="border-violet-200" n={emailFiles.length} />
                         </div>
-                        <GBtn
-                            colorClass="text-violet-700"
-                            borderClass="border-violet-300/50"
-                            hoverClass="hover:bg-violet-50"
-                            icon={<Plus size={11} />}
-                            label="Add Files"
-                            onClick={() => setShowLinkDialog(true)}
-                        />
+                        <div className="flex items-center gap-2">
+                            {emailFiles.length > 0 && (
+                                <GBtn
+                                    colorClass="text-red-600"
+                                    borderClass="border-red-200"
+                                    hoverClass="hover:bg-red-50"
+                                    icon={<Trash2 size={11} />}
+                                    label="Remove All"
+                                    onClick={() => {
+                                        if (window.confirm('Are you sure you want to remove all email documents?')) {
+                                            const updatedOrder = { ...order, emailDocuments: [] };
+                                            onOrderUpdate?.(updatedOrder);
+                                            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ emailDocuments: [] })
+                                            }).catch(err => console.error('Failed to remove all email documents', err));
+                                        }
+                                    }}
+                                />
+                            )}
+                            <GBtn
+                                colorClass="text-violet-700"
+                                borderClass="border-violet-300/50"
+                                hoverClass="hover:bg-violet-50"
+                                icon={<Plus size={11} />}
+                                label="Add Files"
+                                onClick={() => setShowLinkDialog(true)}
+                            />
+                        </div>
                     </div>
 
                     {emailFiles.length > 0 ? (
@@ -206,14 +228,36 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             <span className="text-[15px] font-bold text-gray-700">{isUploading ? 'Uploading...' : 'Manual Documents'}</span>
                             <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFileItems.length} />
                         </div>
-                        <GBtn
-                            colorClass="text-emerald-700"
-                            borderClass="border-emerald-300/50"
-                            hoverClass="hover:bg-emerald-50"
-                            icon={isUploading ? <Spinner size={11} /> : <Plus size={11} />}
-                            label={isUploading ? 'Uploading' : 'Add Files'}
-                            onClick={() => !isUploading && setShowUploader(true)}
-                        />
+                        <div className="flex items-center gap-2">
+                            {uploadedFileItems.length > 0 && (
+                                <GBtn
+                                    colorClass="text-red-600"
+                                    borderClass="border-red-200"
+                                    hoverClass="hover:bg-red-50"
+                                    icon={<Trash2 size={11} />}
+                                    label="Remove All"
+                                    onClick={() => {
+                                        if (window.confirm('Are you sure you want to remove all manual documents?')) {
+                                            const updatedOrder = { ...order, manualDocuments: [] };
+                                            onOrderUpdate?.(updatedOrder);
+                                            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ manualDocuments: [] })
+                                            }).catch(err => console.error('Failed to remove all manual documents', err));
+                                        }
+                                    }}
+                                />
+                            )}
+                            <GBtn
+                                colorClass="text-emerald-700"
+                                borderClass="border-emerald-300/50"
+                                hoverClass="hover:bg-emerald-50"
+                                icon={isUploading ? <Spinner size={11} /> : <Plus size={11} />}
+                                label={isUploading ? 'Uploading' : 'Add Files'}
+                                onClick={() => !isUploading && setShowUploader(true)}
+                            />
+                        </div>
                     </div>
 
                     {uploadedFileItems.length > 0 ? (

@@ -91,7 +91,9 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
             }
         `;
         document.head.appendChild(style);
-        return () => { document.head.removeChild(style); };
+        return () => {
+            document.head.removeChild(style);
+        };
     }, []);
 
     // ── Search debounce ───────────────────────────────────────
@@ -142,11 +144,12 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     // ── Filter reset ──────────────────────────────────────────
 
     const handleResetFilters = useCallback(() => {
+        // TODO: remove
         setSearchQuery('');
         setDebouncedSearchQuery('');
         setStatusFilter('all');
-        setBranchFilter('');
-        setOrderTypeFilter(initialOrderType || 'all');
+        // setBranchFilter('');
+        // setOrderTypeFilter(initialOrderType || 'all');
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);

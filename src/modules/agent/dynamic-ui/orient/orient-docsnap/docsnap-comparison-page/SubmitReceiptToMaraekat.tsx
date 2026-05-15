@@ -432,3 +432,53 @@ const SubmitReceiptToMaraekat: React.FC<SubmitReceiptToMaraekatProps> = ({ order
 };
 
 export default SubmitReceiptToMaraekat;
+
+
+
+
+const UPI_USING_GATEWAY_SAMPLE={
+    
+"BRANCHCODE":"BANH",  
+
+"BOOKINGTYPE":"SALE", 
+
+"BOOKINGNO":"52000000001", 
+
+"EONBOOKINGNO":"MUM5900001", 
+
+"BANKBRANCH":".",     
+
+"DRAWNON":".", 
+
+"AMOUNT":"100000",
+
+"CHQNO":"511",       
+
+"CHQDT":"21-MAR-2026",
+
+"CASHBANK":"Gateway", 
+
+}
+const NETBANKING_USING_GATEWAY_SAMPLE={
+    
+"BRANCHCODE":"BANH",  
+
+"BOOKINGTYPE":"SALE", 
+
+"BOOKINGNO":"52000000001", 
+
+"EONBOOKINGNO":"MUM5900001", 
+
+"BANKBRANCH":".",     
+
+"DRAWNON":".", 
+
+"AMOUNT":"100000",
+
+"CHQNO":"511",       
+
+"CHQDT":"21-MAR-2026",
+
+"CASHBANK":"Gateway", 
+
+}

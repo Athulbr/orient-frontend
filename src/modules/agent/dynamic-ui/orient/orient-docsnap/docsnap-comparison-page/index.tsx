@@ -1133,7 +1133,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                             return (
                                 <div key={index} className="relative w-full bg-white px-8 shadow-lg ring-1 ring-black/5">
                                     {/* Rotate button — top-right corner */}
-                                    {/* <button
+                                    <button
                                         onClick={() => {
                                             setImageRotations(prev => {
                                                 const next = [...prev];
@@ -1145,7 +1145,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                         title="Rotate Image"
                                     >
                                         <RotateCw size={16} />
-                                    </button> */}
+                                    </button>
                                     {url ? (
                                         // Wrapper holds the correct aspect-ratio for the rotated orientation
                                         // so the outer card expands/contracts to exactly fit the image.
@@ -1456,6 +1456,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         onBeforeSubmit={silentSave}
                         isKycSubmitted={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
                         isRecPaySubmitted={Boolean(currentOrder?.maraekatDetails?.recPaySubmitted)}
+                        isCurrencySubmitted={Boolean(currentOrder?.maraekatDetails?.currencySubmitted)}
+                        onAfterRecPay={handleExchangeAll}
                     />
                 </div>
             </div>

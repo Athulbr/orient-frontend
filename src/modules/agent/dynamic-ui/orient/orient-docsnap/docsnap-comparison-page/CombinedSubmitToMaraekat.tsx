@@ -11,6 +11,8 @@ interface CombinedSubmitProps {
     onBeforeSubmit?: () => Promise<void>;
     isKycSubmitted?: boolean;
     isRecPaySubmitted?: boolean;
+    isCurrencySubmitted?: boolean;
+    onAfterRecPay?: () => Promise<void>;
 }
 
 /**
@@ -30,7 +32,9 @@ const CombinedSubmitToMaraekat: React.FC<CombinedSubmitProps> = ({
     onOrderUpdate,
     onBeforeSubmit,
     isKycSubmitted,
-    isRecPaySubmitted
+    isRecPaySubmitted,
+    isCurrencySubmitted,
+    onAfterRecPay
 }) => {
     // latestOrderRef always holds the most-recently-updated order.
     // When KYC succeeds it calls onOrderUpdate with the order enriched with
@@ -58,13 +62,13 @@ const CombinedSubmitToMaraekat: React.FC<CombinedSubmitProps> = ({
         onOrderUpdate: wrappedOnOrderUpdate
     });
 
-    const [phase, setPhase] = useState<'idle' | 'kyc' | 'recpay'>('idle');
+    const [phase, setPhase] = useState<'idle' | 'kyc' | 'recpay' | 'exchange'>('idle');
 
     const isSubmitting = phase !== 'idle';
-    const bothDone = isKycSubmitted && isRecPaySubmitted;
+    const allDone = isKycSubmitted && isRecPaySubmitted && isCurrencySubmitted;
 
     const handleCombinedSubmit = async () => {
-        if (isSubmitting || bothDone) return;
+        if (isSubmitting || allDone) return;
 
         // ── Step 1: KYC ──────────────────────────────────────────────────
         if (!isKycSubmitted) {
@@ -81,16 +85,27 @@ const CombinedSubmitToMaraekat: React.FC<CombinedSubmitProps> = ({
         // KYC just wrote to the DB and returned via onOrderUpdate.
         if (!isRecPaySubmitted) {
             setPhase('recpay');
-            await recPayHook.handleSubmit(latestOrderRef.current);
+            const recPaySuccess = await recPayHook.handleSubmit(latestOrderRef.current);
+            if (!recPaySuccess) {
+                setPhase('idle');
+                return; // Stop — do not proceed to exchange if rec pay failed
+            }
+        }
+
+        // ── Step 3: Exchange (runs only after Rec Pay success) ────────────
+        if (!isCurrencySubmitted && onAfterRecPay) {
+            setPhase('exchange');
+            await onAfterRecPay();
         }
 
         setPhase('idle');
     };
 
     const getLabel = () => {
-        if (bothDone) return 'Submitted';
+        if (allDone) return 'Submitted';
         if (phase === 'kyc') return 'Submitting KYC...';
         if (phase === 'recpay') return 'Submitting Rec Pay...';
+        if (phase === 'exchange') return 'Adding Exchange...';
         return 'Submit';
     };
 
@@ -107,8 +122,8 @@ const CombinedSubmitToMaraekat: React.FC<CombinedSubmitProps> = ({
             <button
                 id="combined-submit-btn"
                 onClick={handleCombinedSubmit}
-                disabled={isSubmitting || bothDone}
-                className={`flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${bothDone ? 'opacity-10 cursor-not-allowed' : ''}`}
+                disabled={isSubmitting || allDone}
+                className={`flex items-center justify-center gap-2 rounded-md border border-gray-400 bg-white px-3 py-1 text-base font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${allDone ? 'opacity-10 cursor-not-allowed' : ''}`}
             >
                 {isSubmitting && <Loader2 size={16} className="animate-spin" />}
                 {getLabel()}
