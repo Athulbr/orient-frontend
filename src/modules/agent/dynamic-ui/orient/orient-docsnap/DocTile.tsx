@@ -47,7 +47,7 @@ export const getPreviewUrl = (url: string) => {
 
 // ── DocTile Component ─────────────────────────────────────────
 
-const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void }> = ({ file, onRemove }) => {
+const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void; orderStatus?: string }> = ({ file, onRemove, orderStatus }) => {
     const [hover, setHover] = useState(false);
     const [preview, setPreview] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
@@ -169,11 +169,11 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                 onMouseLeave={() => setHover(false)}
                 onClick={handleClick}
                 title={file.name}
-                className={`relative w-[96px] h-[112px] rounded-2xl flex flex-col items-center justify-center gap-2 px-2 pb-2 pt-3 cursor-pointer overflow-hidden flex-shrink-0 transition-all duration-200 shadow-lg
+                className={`relative w-[84px] h-[112px] rounded-2xl flex flex-col items-center justify-center gap-2 px-2 pb-2 pt-3 cursor-pointer overflow-hidden flex-shrink-0 transition-all duration-200 shadow-lg
                     ${hover ? 'bg-white shadow-xl shadow-gray-800 scale-[1.03] border border-gray-300' : 'bg-gray-50 border border-gray-150 scale-100'}`}
                 style={{ boxShadow: hover ? '0 4px 18px 0 rgba(0,0,0,0.10)' : '0 1px 4px 0 rgba(0,0,0,0.06)' }}
             >
-                {onRemove && hover && (
+                {onRemove && hover && orderStatus !== 'submitted' && (
                     <button
                         onClick={e => {
                             e.stopPropagation();

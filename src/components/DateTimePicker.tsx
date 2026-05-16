@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from './Button';
 import { DialogComponent } from './DialogComponent';
 
@@ -89,6 +89,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
     const [endValue, setEndValue] = useState<string>(formatDateForInput(initialEndDate));
     const [error, setError] = useState<string | null>(null);
 
+    useEffect(() => {
+        setStartValue(formatDateForInput(initialStartDate));
+    }, [initialStartDate, formatDateForInput]);
+
+    useEffect(() => {
+        setEndValue(formatDateForInput(initialEndDate));
+    }, [initialEndDate, formatDateForInput]);
+
     const handleClear = useCallback(() => {
         setStartValue('');
         setEndValue('');
@@ -155,6 +163,13 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
         [handleApply, disabled]
     );
 
+    const handleCloseDialog = useCallback(() => {
+        setStartValue(formatDateForInput(initialStartDate));
+        setEndValue(formatDateForInput(initialEndDate));
+        setError(null);
+        setShowDialog(false);
+    }, [initialStartDate, initialEndDate, formatDateForInput]);
+
     const getButtonText = () => {
         if (startValue && endValue) {
             return `${startValue.replace('T', ' ')} to ${endValue.replace('T', ' ')}`;
@@ -173,7 +188,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
             <Button outlined onClick={() => setShowDialog(true)}>
                 {getButtonText()}
             </Button>
-            <DialogComponent name="Select Date Range" isOpen={showDialog} className="w-120" closeDialog={() => setShowDialog(false)}>
+            <DialogComponent name="Select Date Range" isOpen={showDialog} className="w-120" closeDialog={handleCloseDialog}>
                 <div className="w-full p-4 bg-white transition-shadow duration-200">
                     <div className="space-y-5" onKeyDown={handleKeyPress} tabIndex={0}>
                         {/* Start Date Input */}
