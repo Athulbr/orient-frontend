@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight } from 'lucide-react';
+import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight, Trash2 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -148,38 +148,60 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         emptyText="No documents attached"
                         hasBorderRight
                     >
-                        <div className="flex flex-wrap gap-[7px]">
+                        <div className="flex flex-wrap gap-[7px] p-2">
                             {orderFiles.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined} />
+                                <DocTile key={i} file={f} onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined} orderStatus={order.orderDetails.orderStatus} />
                             ))}
                         </div>
                     </DocumentColumn>
                 )}
 
                 {/* Email Documents */}
-                <div className="p-3 border-r border-gray-100 min-w-0">
-                    <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
+                <div className="p-2 border-r border-gray-100 min-w-0">
+                    <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-3 rounded-lg">
                         <div className="flex items-center gap-[8px]">
                             <ColIcon bg="bg-violet-50" border="border-violet-200">
                                 <Mail size={15} className="text-violet-500" />
                             </ColIcon>
                             <span className="text-[15px] font-bold text-gray-700">Email Documents</span>
-                            <ColCount colorClass="text-violet-700" bgClass="bg-violet-100" borderClass="border-violet-200" n={emailFiles.length} />
+                            {/* <ColCount colorClass="text-violet-700" bgClass="bg-violet-100" borderClass="border-violet-200" n={emailFiles.length} /> */}
                         </div>
-                        <GBtn
-                            colorClass="text-violet-700"
-                            borderClass="border-violet-300/50"
-                            hoverClass="hover:bg-violet-50"
-                            icon={<Plus size={11} />}
-                            label="Add Files"
-                            onClick={() => setShowLinkDialog(true)}
-                        />
+                        <div className="flex items-center gap-2">
+                            {/* {emailFiles.length > 0 && (
+                                <GBtn
+                                    colorClass="text-red-600"
+                                    borderClass="border-red-200"
+                                    hoverClass="hover:bg-red-50"
+                                    icon={<Trash2 size={11} />}
+                                    label="Remove All"
+                                    onClick={() => {
+                                        if (window.confirm('Are you sure you want to remove all email documents?')) {
+                                            const updatedOrder = { ...order, emailDocuments: [] };
+                                            onOrderUpdate?.(updatedOrder);
+                                            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ emailDocuments: [] })
+                                            }).catch(err => console.error('Failed to remove all email documents', err));
+                                        }
+                                    }}
+                                />
+                            )} */}
+                            <GBtn
+                                colorClass="text-violet-700"
+                                borderClass="border-violet-300/50"
+                                hoverClass="hover:bg-violet-50"
+                                icon={<Plus size={11} />}
+                                label="Add Files"
+                                onClick={() => setShowLinkDialog(true)}
+                            />
+                        </div>
                     </div>
 
                     {emailFiles.length > 0 ? (
-                        <div className="flex flex-wrap gap-[7px]">
+                        <div className="flex flex-wrap gap-[7px] p-2">
                             {emailFiles.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined} />
+                                <DocTile key={i} file={f} onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined} orderStatus={order.orderDetails.orderStatus} />
                             ))}
                         </div>
                     ) : (
@@ -197,29 +219,51 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
 
                 {/* Manual Documents */}
-                <div className="p-3 min-w-0">
-                    <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
+                <div className="p-2 min-w-0">
+                    <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-3 rounded-lg">
                         <div className="flex items-center gap-[8px]">
                             <ColIcon bg="bg-emerald-50" border="border-emerald-200">
                                 {isUploading ? <Spinner size={15} /> : <UploadCloud size={15} className="text-emerald-500" />}
                             </ColIcon>
                             <span className="text-[15px] font-bold text-gray-700">{isUploading ? 'Uploading...' : 'Manual Documents'}</span>
-                            <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFileItems.length} />
+                            {/* <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFileItems.length} /> */}
                         </div>
-                        <GBtn
-                            colorClass="text-emerald-700"
-                            borderClass="border-emerald-300/50"
-                            hoverClass="hover:bg-emerald-50"
-                            icon={isUploading ? <Spinner size={11} /> : <Plus size={11} />}
-                            label={isUploading ? 'Uploading' : 'Add Files'}
-                            onClick={() => !isUploading && setShowUploader(true)}
-                        />
+                        <div className="flex items-center gap-2">
+                            {uploadedFileItems.length > 0 && (
+                                <GBtn
+                                    colorClass="text-red-600"
+                                    borderClass="border-red-200"
+                                    hoverClass="hover:bg-red-50"
+                                    icon={<Trash2 size={11} />}
+                                    label="Remove All"
+                                    onClick={() => {
+                                        if (window.confirm('Are you sure you want to remove all manual documents?')) {
+                                            const updatedOrder = { ...order, manualDocuments: [] };
+                                            onOrderUpdate?.(updatedOrder);
+                                            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ manualDocuments: [] })
+                                            }).catch(err => console.error('Failed to remove all manual documents', err));
+                                        }
+                                    }}
+                                />
+                            )}
+                            <GBtn
+                                colorClass="text-emerald-700"
+                                borderClass="border-emerald-300/50"
+                                hoverClass="hover:bg-emerald-50"
+                                icon={isUploading ? <Spinner size={11} /> : <Plus size={11} />}
+                                label={isUploading ? 'Uploading' : 'Add Files'}
+                                onClick={() => !isUploading && setShowUploader(true)}
+                            />
+                        </div>
                     </div>
 
                     {uploadedFileItems.length > 0 ? (
-                        <div className="flex flex-wrap gap-[7px]">
+                        <div className="flex flex-wrap gap-[7px] p-2">
                             {uploadedFileItems.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)} />
+                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)} orderStatus={order.orderDetails.orderStatus} />
                             ))}
                         </div>
                     ) : (
@@ -335,14 +379,14 @@ const DocumentColumn: React.FC<{
     action?: React.ReactNode;
     children: React.ReactNode;
 }> = ({ title, icon, iconBg, iconBorder, countColor, count, emptyText, hasBorderRight, action, children }) => (
-    <div className={`p-3 min-w-0 ${hasBorderRight ? 'border-r border-gray-100' : ''}`}>
-        <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-4 rounded-lg">
+    <div className={`p-2 min-w-0 ${hasBorderRight ? 'border-r border-gray-100' : ''}`}>
+        <div className="flex items-center justify-between mb-[11px] bg-gray-100 p-3 rounded-lg">
             <div className="flex items-center gap-[8px]">
                 <ColIcon bg={iconBg} border={iconBorder}>
                     {icon}
                 </ColIcon>
                 <span className="text-[15px] font-bold text-gray-700">{title}</span>
-                <ColCount colorClass={countColor.text} bgClass={countColor.bg} borderClass={countColor.border} n={count} />
+                {/* <ColCount colorClass={countColor.text} bgClass={countColor.bg} borderClass={countColor.border} n={count} /> */}
             </div>
             {action}
         </div>

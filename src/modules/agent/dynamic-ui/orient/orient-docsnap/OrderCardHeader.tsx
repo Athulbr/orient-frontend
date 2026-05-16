@@ -272,7 +272,9 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                         {onEdit && od.orderStatus !== 'submitted' && (
                             <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
                         )}
-                        {onDelete && <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />}
+                        {onDelete && od.orderStatus !== 'submitted' && (
+                            <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />
+                        )}
                     </div>
                     <div className="flex gap-[7px]">
                         {[
@@ -326,6 +328,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                                 pages: receipt.documentPages
                                             }}
                                             onRemove={() => onRemoveReceipt?.(idx)}
+                                            orderStatus={order.orderDetails.orderStatus}
                                         />
                                     );
                                 })}

@@ -15,7 +15,11 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
     const isEdit = !!initialOrder;
     const [orderType, setOrderType] = useState(initialOrder?.orderDetails.orderType || 'sell');
     const [productType, setProductType] = useState<string[]>(
-        initialOrder?.orderDetails.productType ? (Array.isArray(initialOrder.orderDetails.productType) ? initialOrder.orderDetails.productType : [initialOrder.orderDetails.productType as string]) : []
+        initialOrder?.orderDetails.productType
+            ? Array.isArray(initialOrder.orderDetails.productType)
+                ? initialOrder.orderDetails.productType
+                : [initialOrder.orderDetails.productType as string]
+            : ['currency']
     );
     const [purpose, setPurpose] = useState(initialOrder?.orderDetails.purpose || '');
     const [residentialStatus, setResidentialStatus] = useState(initialOrder?.orderDetails.residentialStatus || 'resident');
@@ -97,17 +101,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
 
             const getBranchName = () => {
                 const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
-                if (user.firstName === 'sam') {
-                    return 'Makez';
-                }
-                return user.firstName;
-            };
-            const getBranchId = () => {
-                const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
-                if (user.lastName === 'superadmin') {
-                    return 43;
-                }
-                return Number(user.lastName);
+
+                return user.firstName || 'NA';
             };
 
             const newOrder: Order = {
@@ -119,11 +114,11 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     purpose,
                     residentialStatus,
                     branch: getBranchName(),
-                    branchId: getBranchId(),
+                    branchId: Number(sessionStorage.getItem('branch_id')),
                     totalAmount: 0,
                     actualAmount: 0,
                     orderStatus: 'pending',
-                    documentSubmitStatus: 'Offline'
+                    documentSubmitStatus: 'offline'
                 },
                 userDetails: {
                     userId,
@@ -219,6 +214,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
+                                    disabled
                                     type="radio"
                                     name="orderType"
                                     value="buy"
@@ -236,16 +232,17 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         </label>
                         <div className="flex gap-4 mt-3">
                             {[
-                                { label: 'Currency', value: 'currency' },
-                                { label: 'Card', value: 'card' },
-                                { label: 'TT', value: 'tt' },
-                                { label: 'TP', value: 'tp' }
+                                { label: 'Currency', value: 'currency', disabled: false },
+                                { label: 'Card', value: 'card', disabled: true },
+                                { label: 'TT', value: 'tt', disabled: true },
+                                { label: 'TP', value: 'tp', disabled: true }
                             ].map(type => {
                                 if (orderType === 'sell' && type.value === 'tp') return null;
                                 if (orderType === 'buy' && type.value === 'tt') return null;
                                 return (
                                     <label key={type.value} className="flex items-center gap-2 cursor-pointer">
                                         <input
+                                            disabled={type.disabled}
                                             type="checkbox"
                                             name="productType"
                                             value={type.value}

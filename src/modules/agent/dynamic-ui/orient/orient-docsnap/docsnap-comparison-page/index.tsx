@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, RotateCw, X, GripHorizontal, ArrowLeft, AlertTriangle, Loader2, ArrowLeftRight, Trash2, Plus, Expand, Link, Printer, Download } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, RotateCw, X, GripHorizontal, ArrowLeft, AlertTriangle, ArrowLeftRight, Trash2, Plus, Expand, Printer, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { config } from '../../../../../../config/default';
 
 import styles from './scrollbar.module.css';
-// import { sampleRecord } from './sampleRecord';
 import { SearchableSelect } from './SearchableSelect';
-import CombinedSubmitToMaraekat from './CombinedSubmitToMaraekat';
+import SubmitOrder from './submit-order';
 
 import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
-import { getMaraekatPayload } from './utils/getMaraekatPayload';
 import Spinner from '../../../../../../components/Spinner';
 import FullScreenLoader from '../../../../../../components/FullScreenLoader';
 
@@ -72,7 +70,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [isSaving, setIsSaving] = useState(false);
     const [isLoadingRecord, setIsLoadingRecord] = useState(!!recordId);
     const [currentOrder, setCurrentOrder] = useState<Order>(order);
-    const [isExchanging, setIsExchanging] = useState(false);
     const [expandedTableGroup, setExpandedTableGroup] = useState<string | null>(null);
     const [agentTemplate, setAgentTemplate] = useState<any>(null);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
@@ -117,128 +114,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         [onOrderUpdate]
     );
 
-    const handleExchangeAll = async () => {
-        const items = currentOrder.currencyDetails;
-        if (!items || items.length === 0) return;
-
-        const eonBookingNumber = currentOrder.maraekatDetails?.eonBookingNumber;
-        const bookingNo = currentOrder.maraekatDetails?.bookingNumber;
-        if (!eonBookingNumber || !bookingNo) return;
-
-        setIsExchanging(true);
-
-        // Step 1: Login once to get auth token
-        let authToken: string | null = null;
-        try {
-            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (!loginRes.ok) {
-                toast.error(`Login failed: ${loginRes.status}`);
-                setIsExchanging(false);
-                return;
-            }
-            const loginData = await loginRes.json();
-            authToken = loginData?.Result;
-            if (!authToken) {
-                toast.error('No auth token received from login');
-                setIsExchanging(false);
-                return;
-            }
-        } catch (err: any) {
-            toast.error(err.message || 'Login request failed');
-            setIsExchanging(false);
-            return;
-        }
-
-        // Step 2: Fire all exchange requests in parallel
-        const { payload } = getMaraekatPayload(currentOrder, extractedData);
-
-        const results = await Promise.allSettled(
-            items.map(async (item: any) => {
-                const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
-
-                const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        BRANCHCODE: payload.BRANCHCODE || '',
-                        BOOKINGTYPE: payload.BOOKINGTYPE || '',
-                        BOOKINGNO: bookingNo || '',
-                        EONBOOKINGNO: eonBookingNumber,
-                        CURRENCY: item.currency || '',
-                        EXCHTYPE: exchangeType || '',
-                        FCNAMOUNT: item.quantity || '',
-                        BOOKINGRATE: item.rate || ''
-                    })
-                });
-
-                if (!exchangeRes.ok) {
-                    throw new Error(`${item.currency}: API failed (${exchangeRes.status})`);
-                }
-
-                const exchangeData = await exchangeRes.json();
-                const resultItem = exchangeData?.Result?.[0];
-
-                if (resultItem?.APISTATUS === 'FAILED') {
-                    throw new Error(`${item.currency}: ${resultItem.ERRORDESC || 'Unknown error'} (Code: ${resultItem.ERRORCODE || 'N/A'})`);
-                } else if (resultItem?.BOOKINGNO) {
-                    return `${item.currency}: Booking No ${resultItem.BOOKINGNO}`;
-                } else {
-                    throw new Error(`${item.currency}: ${exchangeData?.Error || 'No booking number returned'}`);
-                }
-            })
-        );
-
-        // Step 3: Aggregate results
-        const successes: string[] = [];
-        const failures: string[] = [];
-        results.forEach(r => {
-            if (r.status === 'fulfilled') {
-                successes.push(r.value);
-            } else {
-                failures.push((r as PromiseRejectedResult).reason?.message || 'Unknown error');
-            }
-        });
-
-        if (failures.length === 0) {
-            toast.success(`All ${successes.length} exchange(s) completed successfully!`);
-
-            try {
-                const updatePayload = {
-                    maraekatDetails: {
-                        ...currentOrder.maraekatDetails,
-                        currencySubmitted: true
-                    }
-                };
-                const res = await fetch(`${config.workflowService}/api/orders/${currentOrder.orderDetails.orderNumber}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatePayload)
-                });
-
-                if (res.ok) {
-                    handleOrderUpdate({
-                        ...currentOrder,
-                        maraekatDetails: {
-                            ...currentOrder.maraekatDetails,
-                            currencySubmitted: true
-                        }
-                    });
-                }
-            } catch (err) {
-                console.error('Failed to update order with currency submitted status:', err);
-            }
-        } else {
-            toast.error(`${failures.length} exchange(s) failed: ${failures.join(' | ')}`);
-        }
-
-        setIsExchanging(false);
-    };
 
     useEffect(() => {
         const handlePopState = () => {
@@ -1383,15 +1258,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                         >
                                             <p className={`text-xs font-semibold tracking-wider uppercase ${currentOrder.maraekatDetails?.currencySubmitted ? 'text-green-700' : 'text-indigo-700'}`}>
                                                 Currency Details
+                                                {currentOrder.maraekatDetails?.currencySubmitted && ' — Added Successfully'}
                                             </p>
-                                            <button
-                                                onClick={handleExchangeAll}
-                                                disabled={isExchanging || currentOrder.maraekatDetails?.currencySubmitted}
-                                                className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 ${currentOrder.maraekatDetails?.currencySubmitted ? 'border-green-500 bg-green-600 hover:bg-green-700' : 'border-indigo-500 bg-indigo-600 hover:bg-indigo-700'}`}
-                                            >
-                                                {isExchanging ? <Loader2 size={12} className="animate-spin" /> : <ArrowLeftRight size={12} />}
-                                                {isExchanging ? 'Adding All...' : currentOrder.maraekatDetails?.currencySubmitted ? 'Added' : 'Add All'}
-                                            </button>
                                         </div>
                                         <div className={`divide-y ${currentOrder.maraekatDetails?.currencySubmitted ? 'divide-green-100' : 'divide-indigo-50'}`}>
                                             {currentOrder.currencyDetails.map((item, idx) => (
@@ -1449,13 +1317,14 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         </button>
                     )}
 
-                    <CombinedSubmitToMaraekat
+                    <SubmitOrder
                         order={currentOrder}
                         extractedData={extractedData}
                         onOrderUpdate={handleOrderUpdate}
                         onBeforeSubmit={silentSave}
                         isKycSubmitted={Boolean(currentOrder?.maraekatDetails?.eonBookingNumber)}
                         isRecPaySubmitted={Boolean(currentOrder?.maraekatDetails?.recPaySubmitted)}
+                        isCurrencySubmitted={Boolean(currentOrder?.maraekatDetails?.currencySubmitted)}
                     />
                 </div>
             </div>

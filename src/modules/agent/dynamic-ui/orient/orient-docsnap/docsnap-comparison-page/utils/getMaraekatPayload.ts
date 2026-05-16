@@ -129,7 +129,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         HANDLEDBY: 'SAJI',
         BOOKEDBY: 'SHAILESH',
         PAXNAME: extractedData?.pan_card?.pax_name?.value || '',
-        PASSPORTNO: extractedData?.passport?.passport_number?.value || '',
+        PASSPORTNO: (extractedData?.passport?.passport_number?.value || '').replace(/ /g, ''),
         PASSPORT_ISSUEFROM: extractedData?.passport?.passport_issued_from?.value || '',
         PASSPORT_ISSUEDATE: dateValues.PASSPORT_ISSUEDATE,
         PASSPORT_EXPIRYDATE: dateValues.PASSPORT_EXPIRYDATE,
