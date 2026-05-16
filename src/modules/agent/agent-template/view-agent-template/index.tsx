@@ -47,6 +47,7 @@ interface TemplateSettings {
     disableBoundingBox: boolean;
     alignmentCorrection: boolean;
     includeOcrTextForExtraction: boolean;
+    webhookKey?: string;
 }
 
 interface Field {
@@ -109,7 +110,8 @@ const DEFAULT_SETTINGS: TemplateSettings = {
     extractionLimit: 10,
     disableBoundingBox: false,
     alignmentCorrection: false,
-    includeOcrTextForExtraction: false
+    includeOcrTextForExtraction: false,
+    webhookKey: ''
 };
 
 const DEFAULT_FIELD = (): Field => ({
@@ -401,6 +403,10 @@ function TemplateSettingsPanel({ settings, onChange }: TemplateSettingsPanelProp
             <PanelSection title="Extraction" icon={Hash}>
                 <FieldLabel>Extraction Limit</FieldLabel>
                 <TextInput type="number" value={settings.extractionLimit} onChange={e => set('extractionLimit', Number(e.target.value))} min={1} max={100} />
+            </PanelSection>
+            <PanelSection title="Webhook" icon={Zap}>
+                <FieldLabel>Webhook Key</FieldLabel>
+                <TextInput type="text" value={settings.webhookKey || ''} onChange={e => set('webhookKey', e.target.value)} />
             </PanelSection>
 
             <Divider />
