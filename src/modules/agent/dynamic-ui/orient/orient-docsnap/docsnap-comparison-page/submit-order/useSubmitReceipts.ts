@@ -70,6 +70,9 @@ function getCashBank(receipt: any, order: Order): string {
         if (!bankName) throw new Error('Bank Name is missing');
         return bankName.includes('HDFC') ? 'QRHDFC' : 'QRYESBANK';
     }
+    if (receiptType.includes('NET') || receiptType.includes('PAYU')) {
+        if (order.orderDetails.documentSubmitStatus === 'online') return 'GATEWAY';
+    }
 
     const bankAccounts = ACCOUNT_NUMBERS[sessionStorage.getItem('branch_code') as string];
 
