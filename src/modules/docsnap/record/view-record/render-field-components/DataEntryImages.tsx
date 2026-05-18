@@ -1,7 +1,32 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useViewRecordState } from '../hooks/viewRecordContext';
-import { TextField } from '../../../../../components/TextField';
-import { Pen, SquareMousePointer, Trash2 } from 'lucide-react';
+import { SquareMousePointer, Trash2 } from 'lucide-react';
+
+interface SelectedImageProps {
+    src: string;
+}
+
+const SelectedImage: FC<SelectedImageProps> = ({ src }) => {
+    const [error, setError] = useState(false);
+
+    if (error) {
+        return (
+            <div className="flex h-32 w-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 text-xs text-gray-400">
+                Image unavailable
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={src}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setError(true)}
+            className="max-h-48 w-full rounded-md object-contain"
+        />
+    );
+};
 
 export const DataEntryImages: FC = () => {
     const { state, setState } = useViewRecordState();
@@ -10,52 +35,65 @@ export const DataEntryImages: FC = () => {
 
     return (
         <div className="flex flex-col gap-2 rounded-lg border bg-white p-3 hover:border-blue-400">
-            <div className="flex flex-col cursor-pointer gap-3   justify-between rounded-lg border py-3 pr-3 pl-6  hover:border-blue-400 ">
-                <label className="font-semibold text-lg border-b pb-3">Primary Image</label>
-                {state.primaryImage && (
-                    <div className="flex justify-evenly items-center">
-                        <img src={state.primaryImage.path} alt="" className="min-w-0 max-w-100" />
+            {/* Primary Image */}
+            <div className="flex flex-col gap-3 rounded-lg border py-3 pr-3 pl-6 hover:border-blue-400">
+                <label className="border-b pb-3 text-lg font-semibold">Primary Image</label>
+
+                {state.primaryImage?.path && (
+                    <div className="flex items-start justify-between gap-3">
+                        <SelectedImage src={state.primaryImage.path} />
                         <Trash2
-                            size={40}
-                            className="cursor-pointer text-gray-200 hover:text-red-400"
+                            size={20}
+                            className="mt-1 shrink-0 cursor-pointer text-gray-300 hover:text-red-400"
                             onClick={() => setState(prev => ({ ...prev, primaryImage: null }))}
                         />
                     </div>
                 )}
+
                 <div className="flex flex-col gap-1">
-                    <label className="pl-1">Primary Image Caption</label>
+                    <label className="pl-1 text-sm">Primary Image Caption</label>
                     <input
-                        onChange={e => setState(prev => ({ ...prev, primaryImage: { path: prev.primaryImage?.path || '', caption: e.target.value } }))}
+                        onChange={e =>
+                            setState(prev => ({ ...prev, primaryImage: { path: prev.primaryImage?.path || '', caption: e.target.value } }))
+                        }
                         type="text"
                         value={state.primaryImage?.caption || ''}
-                        className="border py-2.5 hover:border-[#2563eb] pr-3 pl-6 rounded-lg focus:outline-none"
+                        placeholder="Enter caption…"
+                        className="rounded-lg border py-2.5 pr-3 pl-6 focus:outline-none hover:border-blue-500"
                     />
                 </div>
+
                 <button
                     tabIndex={-1}
                     onClick={() => setState(prev => ({ ...prev, showSelectPrimaryImageDialog: true }))}
-                    className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6 hover:bg-blue-50  hover:border-blue-300`}
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg border py-3 pr-3 pl-6 hover:border-blue-300 hover:bg-blue-50"
                 >
                     <SquareMousePointer size={16} />
-                    Select Primary Image
+                    {state.primaryImage?.path ? 'Change Primary Image' : 'Select Primary Image'}
                 </button>
             </div>
-            <div className="flex flex-col cursor-pointer gap-4  justify-between rounded-lg border py-3 pr-3 pl-6 hover:border-blue-400 ">
-                <label className="font-semibold text-lg border-b pb-3 ">Additional Images</label>
+
+            {/* Additional Images */}
+            <div className="flex flex-col gap-4 rounded-lg border py-3 pr-3 pl-6 hover:border-blue-400">
+                <label className="border-b pb-3 text-lg font-semibold">Additional Images</label>
+
                 {state.additionalImages?.map((image: any, index: number) => (
-                    <div className="flex flex-col gap-2 border p-4 rounded-lg hover:border-gray-400" key={index}>
-                        <div className="flex justify-evenly items-center">
-                            <img src={image.path} alt="" className="w-[60%] min-w-0 max-w-50" />
+                    <div key={index} className="flex flex-col gap-2 rounded-lg border p-4 hover:border-gray-400">
+                        <div className="flex items-start justify-between gap-3">
+                            <SelectedImage src={image.path} />
                             <Trash2
-                                size={40}
-                                className="cursor-pointer text-gray-200 hover:text-red-400"
+                                size={20}
+                                className="mt-1 shrink-0 cursor-pointer text-gray-300 hover:text-red-400"
                                 onClick={() =>
-                                    setState(prev => ({ ...prev, additionalImages: prev.additionalImages.filter((item: any, idx: number) => idx !== index) }))
+                                    setState(prev => ({
+                                        ...prev,
+                                        additionalImages: prev.additionalImages.filter((_: any, idx: number) => idx !== index)
+                                    }))
                                 }
                             />
                         </div>
                         <div className="flex flex-col gap-1 pt-2">
-                            <label className="pl-1">Image Caption</label>
+                            <label className="pl-1 text-sm">Image Caption</label>
                             <input
                                 onChange={e =>
                                     setState(prev => ({
@@ -67,7 +105,8 @@ export const DataEntryImages: FC = () => {
                                 }
                                 type="text"
                                 value={image?.caption || ''}
-                                className="border py-2.5 hover:border-[#2563eb] pr-3 pl-6 rounded-lg focus:outline-none"
+                                placeholder="Enter caption…"
+                                className="rounded-lg border py-2.5 pr-3 pl-6 focus:outline-none hover:border-blue-500"
                             />
                         </div>
                     </div>
@@ -76,7 +115,7 @@ export const DataEntryImages: FC = () => {
                 <button
                     tabIndex={-1}
                     onClick={() => setState(prev => ({ ...prev, showSelectAdditionalImagesDialog: true }))}
-                    className={`flex w-full gap-2 cursor-pointer items-center  rounded-lg border py-3 pr-3 pl-6  hover:bg-blue-50  hover:border-blue-300`}
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-lg border py-3 pr-3 pl-6 hover:border-blue-300 hover:bg-blue-50"
                 >
                     <SquareMousePointer size={16} />
                     Add Additional Images
