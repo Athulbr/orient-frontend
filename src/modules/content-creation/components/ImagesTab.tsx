@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import CreateNewImageDialog from './CreateNewImageDialog';
@@ -62,21 +62,9 @@ export default function ImagesTab() {
                 }))
                 .filter(img => img.src);
             setImages(mappedImages);
-        } else if (state.content && images.length === 0) {
-            // Fallback for legacy documents without a separate imageList
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(state.content, 'text/html');
-            const imgTags = Array.from(doc.querySelectorAll('img'));
-
-            const extractedImages = imgTags
-                .map((img, idx) => ({
-                    id: `img-${idx}`,
-                    title: img.getAttribute('alt') || `Generated Image ${idx + 1}`,
-                    src: img.getAttribute('src') || img.src || '',
-                }))
-                .filter(img => img.src && !img.src.includes('placehold.co'));
-
-            setImages(extractedImages);
+        } else if (Array.isArray(imageList)) {
+            // imageList exists but is empty — so the gallery is cleared
+            setImages([]);
         }
     }, [state.extractedData?.rowData?.imageList]);
 
