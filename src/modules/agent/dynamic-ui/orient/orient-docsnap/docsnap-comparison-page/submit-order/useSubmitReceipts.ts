@@ -37,16 +37,26 @@ const ACCOUNT_NUMBERS: Record<string, Record<string, string>> = {
     TVM: { '914020011087568': 'AXISBANKTVM' },
     VADO: { '917020042844012': 'AXIS4012' },
     HOT: {
-        '081010200019813': 'AXIS9813', '009010200015039': 'AXISBLRMGROAD',
-        '914020014608384': 'COMMAXIS', '918020069425192': 'ONLINEAXIS192',
-        '920020053547564': 'AXISEEFC564', '510101005983524': 'CORPBANK3524',
-        '11530200023482': 'FEDERAL482', '01332320001240': 'HDFC1240',
-        '041505000723': 'ICICI', '116205000517': 'ICICIKOCHI',
-        '10020841026': 'IDFC1026', '200000979511': 'INDUSIND',
-        '204011032315': 'INGVY', '4762000100174701': 'KAR701',
-        '20062019000134': 'SBM0134', '67341643312': 'SBT',
-        '0087073000001784': 'SIB784', '019784000000068': 'YESB',
-        '002281400006909': 'YESBNK06909', '002281400006896': 'YESFINTIBA'
+        '081010200019813': 'AXIS9813',
+        '009010200015039': 'AXISBLRMGROAD',
+        '914020014608384': 'COMMAXIS',
+        '918020069425192': 'ONLINEAXIS192',
+        '920020053547564': 'AXISEEFC564',
+        '510101005983524': 'CORPBANK3524',
+        '11530200023482': 'FEDERAL482',
+        '01332320001240': 'HDFC1240',
+        '041505000723': 'ICICI',
+        '116205000517': 'ICICIKOCHI',
+        '10020841026': 'IDFC1026',
+        '200000979511': 'INDUSIND',
+        '204011032315': 'INGVY',
+        '4762000100174701': 'KAR701',
+        '20062019000134': 'SBM0134',
+        '67341643312': 'SBT',
+        '0087073000001784': 'SIB784',
+        '019784000000068': 'YESB',
+        '002281400006909': 'YESBNK06909',
+        '002281400006896': 'YESFINTIBA'
     }
 };
 
@@ -56,6 +66,8 @@ function getCashBank(receipt: any, order: Order): string {
 
     if (receiptType.includes('CHEQ')) return '';
     if (receiptType.includes('UPI') || receiptType.includes('SCAN')) {
+        if (order.orderDetails.documentSubmitStatus === 'online') return 'GATEWAY';
+        if (!bankName) throw new Error('Bank Name is missing');
         return bankName.includes('HDFC') ? 'QRHDFC' : 'QRYESBANK';
     }
 
@@ -140,8 +152,8 @@ export const useSubmitReceipts = ({ extractedData, onOrderUpdate }: UseSubmitRec
                 CASHBANK: cashBank.toUpperCase(),
                 CHQNO: String(receipt.cheque_number?.value || '').toUpperCase(),
                 CHQDT: formatDateForMaraekat(String(receipt.cheque_date?.value || '')).date,
-                DRAWNON: 'AAA',
-                BANKBRANCH: 'BBB',
+                DRAWNON: '.',
+                BANKBRANCH: '.',
                 AMOUNT: String(receipt.amount?.value || '').replace(/[^\d.]/g, '')
             };
 
