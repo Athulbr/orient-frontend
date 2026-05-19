@@ -43,6 +43,7 @@ export interface OrderDetails {
     gst?: string;
     tcs?: string;
     branchAccountNumber?: string;
+    isLoanOrder?: boolean;
 }
 
 export interface UserDetails {

@@ -169,7 +169,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         ROUTE: extractedData?.travel_itinerary?.route?.value || '',
         PurposeofTransaction: getPurposeKey(order.orderDetails?.purpose || ''),
         ResidentStatus: order.orderDetails?.residentialStatus,
-        LoanAmount: order.orderDetails?.totalAmount,
+        LoanAmount: order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0',
         StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || ''
     };
     // console.log('extractedData', extractedData);

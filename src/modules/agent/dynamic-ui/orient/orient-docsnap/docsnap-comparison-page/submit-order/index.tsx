@@ -27,15 +27,7 @@ type SubmitPhase = 'idle' | 'kyc' | 'receipts' | 'currency';
  *
  * Each step has specific error handling and the flow stops on first failure.
  */
-const SubmitOrder: React.FC<SubmitOrderProps> = ({
-    order,
-    extractedData,
-    onOrderUpdate,
-    onBeforeSubmit,
-    isKycSubmitted,
-    isRecPaySubmitted,
-    isCurrencySubmitted
-}) => {
+const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrderUpdate, onBeforeSubmit, isKycSubmitted, isRecPaySubmitted, isCurrencySubmitted }) => {
     const [phase, setPhase] = useState<SubmitPhase>('idle');
 
     // Track the latest order so subsequent steps use the enriched order
@@ -110,14 +102,10 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({
     return (
         <div className="relative">
             {/* KYC result card (validation errors / success) */}
-            {resultMessage && (
-                <DraggableResultCard
-                    result={resultMessage}
-                    onClose={() => setResultMessage(null)}
-                />
-            )}
+            {resultMessage && <DraggableResultCard result={resultMessage} onClose={() => setResultMessage(null)} />}
 
             <button
+                tabIndex={1}
                 id="submit-order-btn"
                 onClick={handleSubmit}
                 disabled={isSubmitting || allDone}

@@ -5,6 +5,7 @@ import { cn } from '../global-utils/twMerge';
 export interface SelectOption {
     value: string;
     label: string;
+    color?: string;
 }
 
 interface SelectProps {
@@ -67,7 +68,12 @@ export const SingleSelect: React.FC<SelectProps> = ({ value, label, options, onV
                 type="button"
                 role="button"
             >
-                <span className="truncate text-gray-700">{selectedOption?.label || placeholder}</span>
+                <span 
+                    className="truncate text-gray-700"
+                    style={selectedOption?.color ? { color: selectedOption.color } : undefined}
+                >
+                    {selectedOption?.label || placeholder}
+                </span>
                 <ChevronDown className={`transition-transform duration-200 ${iconSizeClasses[size]} ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             {isOpen && (
@@ -77,6 +83,7 @@ export const SingleSelect: React.FC<SelectProps> = ({ value, label, options, onV
                             <li
                                 key={option.value}
                                 className={`cursor-pointer hover:bg-gray-100 ${optionSizeClasses[size]} ${option.value === value ? 'bg-gray-200 font-medium' : ''}`}
+                                style={option.color ? { color: option.color } : undefined}
                                 onClick={() => {
                                     onValueChange(option.value);
                                     setIsOpen(false);

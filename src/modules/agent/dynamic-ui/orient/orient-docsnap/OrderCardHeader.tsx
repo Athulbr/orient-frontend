@@ -244,7 +244,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                     {/* Meta row */}
                     <div className="flex items-center gap-1 text-[13px] text-gray-400 mb-[10px]">
                         <Clock size={13} className="text-gray-400" />
-                        {order.orderDetails.orderCreatedDate ? order.orderDetails.orderCreatedDate : formatDate(order.createdAt || '')}
+                        {order.orderDetails.orderCreatedDate ? formatDate(order.orderDetails.orderCreatedDate) : formatDate(order.createdAt || '')}
                         <span className="mx-1.5">•</span>
                         <Building2 size={13} className="text-gray-400" />
                         {od.location || od.branch}
@@ -272,7 +272,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                         {onEdit && od.orderStatus !== 'submitted' && (
                             <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
                         )}
-                        {onDelete && od.orderStatus !== 'submitted' && (
+                        {onDelete && od.orderStatus !== 'submitted' && localStorage.getItem('isDeveloper') === 'true' && (
                             <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />
                         )}
                     </div>
