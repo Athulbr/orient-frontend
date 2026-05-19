@@ -43,10 +43,10 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({ searchQuery, onSearch
                         onValueChange={onStatusChange}
                         options={[
                             { label: 'All Status', value: 'all' },
-                            { label: 'Extraction Pending', value: 'pending' },
-                            { label: 'Review Pending', value: 'extracted' },
-                            { label: 'Maraekat Submitted', value: 'submitted' },
-                            { label: 'Extraction Failed', value: 'failed' }
+                            { label: 'Extraction Pending', value: 'pending', color: '#4169E1' },
+                            { label: 'Review Pending', value: 'extracted', color: 'orange' },
+                            { label: 'Maraekat Submitted', value: 'submitted', color: 'green' },
+                            { label: 'Extraction Failed', value: 'failed', color: 'red' }
                         ]}
                     />
                     <div className="flex flex-col gap-1">

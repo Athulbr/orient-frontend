@@ -114,7 +114,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         [onOrderUpdate]
     );
 
-
     useEffect(() => {
         const handlePopState = () => {
             if (onClose) onClose();
@@ -1149,7 +1148,13 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                         <div className="flex justify-between border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100/50 px-5 py-3.5">
                                             <h3 className=" flex items-center gap-3 text-sm font-semibold tracking-wide text-zinc-800 capitalize">
                                                 {groupKey.replace(/_/g, ' ')}
-                                                <Expand size={15} onClick={() => setExpandedTableGroup(groupKey)} className="text-zinc-500 cursor-pointer hover:text-blue-600 transition-colors" />
+                                                <Expand
+                                                    tabIndex={0}
+                                                    onFocus={() => setExpandedTableGroup(groupKey)}
+                                                    size={15}
+                                                    onClick={() => setExpandedTableGroup(groupKey)}
+                                                    className="text-zinc-500 cursor-pointer hover:text-blue-600 transition-colors"
+                                                />
                                             </h3>
                                             <button
                                                 tabIndex={1}
@@ -1301,6 +1306,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 {/* Fixed Save Bar */}
                 <div className="flex shrink-0 items-center justify-end gap-2 border-t border-zinc-200 px-4 py-3 flex-wrap">
                     <button
+                        tabIndex={1}
                         onClick={handleClose}
                         className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:shadow-md"
                     >
@@ -1309,6 +1315,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
 
                     {!currentOrder?.maraekatDetails?.eonBookingNumber && (
                         <button
+                            tabIndex={1}
                             onClick={handleSave}
                             disabled={isSaving}
                             className="text-md rounded-md border border-gray-400 bg-white px-3 py-1 font-light text-gray-500 transition-all duration-200 ease-in-out hover:border-blue-500 hover:bg-blue-400 hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
@@ -1351,6 +1358,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                 <h3 className="font-semibold text-zinc-800 capitalize flex items-center gap-3">{groupKey.replace(/_/g, ' ')}</h3>
                                 <div className="flex items-center gap-2">
                                     <button
+                                        tabIndex={1}
                                         onClick={() => handleAddRow(groupKey)}
                                         className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 hover:text-blue-600"
                                         title="Add new row"
@@ -1358,7 +1366,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                         <Plus size={14} />
                                         Add Row
                                     </button>
-                                    <button onClick={() => setExpandedTableGroup(null)} className="text-zinc-500 hover:text-zinc-800 rounded-md p-1.5 hover:bg-zinc-200 transition-colors">
+                                    <button tabIndex={1} onClick={() => setExpandedTableGroup(null)} className="text-zinc-500 hover:text-zinc-800 rounded-md p-1.5 hover:bg-zinc-200 transition-colors">
                                         <X size={16} />
                                     </button>
                                 </div>
