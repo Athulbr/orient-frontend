@@ -511,7 +511,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         orderNumber: orderNumber,
                         order: order,
                         templateId: agentSettings?.defaultTemplateId || '',
-                        templateName: agentSettings?.templates?.[0]?.name,
+                        templateName: agentSettings?.templates?.[0]?.name || 'Orient Document Extractor V1',
                         documents: payloadDocuments
                     })
                 });
