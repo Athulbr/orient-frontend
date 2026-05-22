@@ -736,7 +736,15 @@ function SectionCard({
     isSectionDragging
 }: SectionCardProps) {
     const [collapsed, setCollapsed] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isTable = section.type === 'table';
+
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [section['instruction'], collapsed]);
 
     const accentClasses = isTable
         ? { icon: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-200', ring: 'border-violet-400' }
@@ -804,11 +812,14 @@ function SectionCard({
             {!collapsed && (
                 <div className="px-3 pb-3 pt-3">
                     <div className="mb-3">
-                        <input
+                        <label className="pl-2 block text-[12px] font-semibold text-gray-700 mb-1">{isTable ? 'Table' : 'Group'} Instruction</label>
+                        <textarea
+                            ref={textareaRef}
+                            rows={1}
                             value={(section['instruction'] as string) ?? ''}
                             onChange={e => onUpdate(section.id, 'instruction', e.target.value)}
                             placeholder={`${isTable ? 'Table' : 'Group'} instruction...`}
-                            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md text-[12px] text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-colors"
+                            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-md text-[12px] text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-colors resize-none overflow-hidden"
                         />
                     </div>
 
