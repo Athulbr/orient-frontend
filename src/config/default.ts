@@ -56,6 +56,12 @@ const globalEnv: any = {
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_EXTERNAL,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_EXTERNAL,
         workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_EXTERNAL
+    },
+    orient_dev: {
+        baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_DEV,
+        nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_DEV,
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_DEV,
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_DEV
     }
 };
 const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || ''];
