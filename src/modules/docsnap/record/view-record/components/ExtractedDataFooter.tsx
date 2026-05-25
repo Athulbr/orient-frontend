@@ -7,6 +7,7 @@ import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { DialogComponent } from '../../../../../components/DialogComponent';
+import Spinner from '../../../../../components/Spinner';
 import { useState } from 'react';
 import { SingleSelect, SelectOption } from '../../../../../components/SingleSelect';
 interface ExtractedDataFooterIF {
@@ -411,7 +412,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 onClick={() => handleSubmit()}
                 outlined
                 small
-                startIcon={isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : undefined}
+                startIcon={isSubmitting ? <Spinner size={16} /> : undefined}
             >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
             </Button>
