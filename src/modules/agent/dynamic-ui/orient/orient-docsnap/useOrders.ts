@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Order, Email, DocumentDetail } from './types';
 import { config } from '../../../../../config/default';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
+import { rearrangeDocuments } from './upload-receipt/functions';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -484,7 +485,11 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             const allDocDetails = [...emailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
 
-            const payloadDocuments = allDocDetails.flatMap(doc => {
+            const arrangedDocuments = rearrangeDocuments(allDocDetails);
+
+            console.log('allDocDetails', arrangedDocuments);
+
+            const payloadDocuments = arrangedDocuments.flatMap(doc => {
                 const pages = doc.documentPages || [];
                 if (pages.length === 0) return [];
 

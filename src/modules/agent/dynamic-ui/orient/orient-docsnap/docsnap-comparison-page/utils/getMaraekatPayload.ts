@@ -141,7 +141,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         // PANDOB: extractedData?.pan_card?.pan_date_of_birth?.value || '',
         PANCARDHOLDERNAME: extractedData?.pan_card?.pan_card_holder_name?.value || '',
         FATHERNAME: extractedData?.pan_card?.father_name?.value || '',
-        TYPEOFPERSON: extractedData?.pan_card?.type_of_person?.value || '',
+        TYPEOFPERSON: extractedData?.pan_card?.entity?.value || '',
         ADHAARCARDNO: extractedData?.user_identity_details?.aadhaar_card_number?.value || '',
         PAXADDRESS: extractedData?.user_identity_details?.passenger_address?.value || '',
         MOBILENO: order.userDetails?.phone,
