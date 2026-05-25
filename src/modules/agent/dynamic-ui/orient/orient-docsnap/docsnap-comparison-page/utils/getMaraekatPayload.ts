@@ -171,6 +171,8 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         ResidentStatus: order.orderDetails?.residentialStatus,
         LoanAmount: order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0',
         StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || ''
+        // Fields required for conditions(We are not sending these fields to Maraekat)
+        // PRODUCT_TYPE: order.orderDetails?.productType || ''
     };
     // console.log('extractedData', extractedData);
     // console.log('payload', payload);
