@@ -10,6 +10,11 @@ const isEmpty = (value: string | undefined | null): boolean => {
 export const validateMaraekatPayload = (payload: Record<string, string>): ValidationResult => {
     const errors: string[] = [];
 
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+
     // if()
 
     // 1. DOB must be more than 12 years and less than 100 years

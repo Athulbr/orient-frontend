@@ -141,7 +141,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         // PANDOB: extractedData?.pan_card?.pan_date_of_birth?.value || '',
         PANCARDHOLDERNAME: extractedData?.pan_card?.pan_card_holder_name?.value || '',
         FATHERNAME: extractedData?.pan_card?.father_name?.value || '',
-        TYPEOFPERSON: extractedData?.pan_card?.type_of_person?.value || '',
+        TYPEOFPERSON: extractedData?.pan_card?.entity?.value || '',
         ADHAARCARDNO: extractedData?.user_identity_details?.aadhaar_card_number?.value || '',
         PAXADDRESS: extractedData?.user_identity_details?.passenger_address?.value || '',
         MOBILENO: order.userDetails?.phone,
@@ -171,6 +171,8 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         ResidentStatus: order.orderDetails?.residentialStatus,
         LoanAmount: order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0',
         StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || ''
+        // Fields required for conditions(We are not sending these fields to Maraekat)
+        // PRODUCT_TYPE: order.orderDetails?.productType || ''
     };
     // console.log('extractedData', extractedData);
     // console.log('payload', payload);

@@ -65,7 +65,6 @@ export interface CurrencyDetail {
 
 export interface DocumentDetail {
     documentName: string;
-    // documentUrl: string;  // -- old
     documentPages: string[]; // -- new
 }
 

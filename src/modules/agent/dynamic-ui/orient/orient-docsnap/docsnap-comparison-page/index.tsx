@@ -63,7 +63,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const [leftWidth, setLeftWidth] = useState(55);
+    const [leftWidth, setLeftWidth] = useState(60);
     const [isResizing, setIsResizing] = useState(false);
     const [record, setRecord] = useState<any>({});
     const [extractedData, setExtractedData] = useState<ExtractedData>({});
@@ -1020,6 +1020,19 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                     >
                                         <RotateCw size={16} />
                                     </button>
+                                    <button
+                                        onClick={() => {
+                                            setImageRotations(prev => {
+                                                const next = [...prev];
+                                                next[index] = ((next[index] || 0) + 90) % 360;
+                                                return next;
+                                            });
+                                        }}
+                                        className="absolute bottom-3 right-3 z-20 flex items-center justify-center rounded-full bg-white/80 p-2 text-zinc-600 shadow-md ring-1 ring-black/10 backdrop-blur-sm transition-all hover:bg-white hover:text-blue-600 hover:shadow-lg hover:ring-blue-300"
+                                        title="Rotate Image"
+                                    >
+                                        <RotateCw size={16} />
+                                    </button>
                                     {url ? (
                                         // Wrapper holds the correct aspect-ratio for the rotated orientation
                                         // so the outer card expands/contracts to exactly fit the image.
@@ -1199,6 +1212,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
+                                                            className={String(fieldValue?.value ?? '').trim().toUpperCase() !== String(fieldValue?.initialValue ?? '').trim().toUpperCase() ? 'bg-yellow-100' : ''}
                                                         />
                                                     ) : (
                                                         <input
@@ -1216,7 +1230,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className="w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                            className={`w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${String(fieldValue?.value ?? '').trim().toUpperCase() !== String(fieldValue?.initialValue ?? '').trim().toUpperCase() ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'}`}
                                                         />
                                                     )}
                                                 </div>

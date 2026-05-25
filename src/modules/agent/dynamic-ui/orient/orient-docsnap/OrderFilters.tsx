@@ -52,7 +52,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({ searchQuery, onSearch
                     <div className="flex flex-col gap-1">
                         <DateTimePicker
                             minDate="2026-01-01"
-                            maxDate={new Date().toISOString()}
+                            // maxDate={new Date().toISOString()}
                             onChange={onDateRangeChange}
                             initialStartDate={dateRange.startDate}
                             initialEndDate={dateRange.endDate}
