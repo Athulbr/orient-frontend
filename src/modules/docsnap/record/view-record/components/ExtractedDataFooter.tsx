@@ -10,6 +10,7 @@ import { DialogComponent } from '../../../../../components/DialogComponent';
 import Spinner from '../../../../../components/Spinner';
 import { useState } from 'react';
 import { SingleSelect, SelectOption } from '../../../../../components/SingleSelect';
+import { config } from '../../../../../config/default';
 interface ExtractedDataFooterIF {
     test?: string;
 }
