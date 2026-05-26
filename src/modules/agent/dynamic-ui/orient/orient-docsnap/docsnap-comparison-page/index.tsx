@@ -1212,7 +1212,17 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={String(fieldValue?.value ?? '').trim().toUpperCase() !== String(fieldValue?.initialValue ?? '').trim().toUpperCase() ? 'bg-yellow-100' : ''}
+                                                            className={
+                                                                fieldValue?.initialValue &&
+                                                                String(fieldValue?.value ?? '')
+                                                                    .trim()
+                                                                    .toUpperCase() !==
+                                                                    String(fieldValue?.initialValue ?? '')
+                                                                        .trim()
+                                                                        .toUpperCase()
+                                                                    ? 'bg-yellow-100'
+                                                                    : ''
+                                                            }
                                                         />
                                                     ) : (
                                                         <input
@@ -1230,7 +1240,17 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={`w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${String(fieldValue?.value ?? '').trim().toUpperCase() !== String(fieldValue?.initialValue ?? '').trim().toUpperCase() ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'}`}
+                                                            className={`w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${
+                                                                fieldValue?.initialValue &&
+                                                                String(fieldValue?.value ?? '')
+                                                                    .trim()
+                                                                    .toUpperCase() !==
+                                                                    String(fieldValue?.initialValue ?? '')
+                                                                        .trim()
+                                                                        .toUpperCase()
+                                                                    ? 'bg-yellow-100 focus:bg-yellow-50'
+                                                                    : 'focus:bg-white'
+                                                            }`}
                                                         />
                                                     )}
                                                 </div>

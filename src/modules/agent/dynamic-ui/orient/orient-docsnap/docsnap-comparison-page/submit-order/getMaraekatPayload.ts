@@ -91,6 +91,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
             dateValues[field.key] = '';
         }
     }
+
     function generateRandomBookingNumber() {
         const now = new Date();
         const year = now.getFullYear();
@@ -119,18 +120,45 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         }
         return 'Wrong Purpose Key';
     };
-    const getProductType = (order: Order) => {
+    const getProductType = () => {
         const offlineProductType = order.orderDetails?.productType?.join(',');
         const onlineProductTypes = order.currencyDetails.map((item: any) => item.product).join(',');
         return offlineProductType || onlineProductTypes;
     };
+    const getBookingType = () => {
+        return orderType === 'sell' ? 'SALE' : orderType === 'buy' ? 'PURCHASE' : orderType;
+    };
+    const getBranchCode = () => {
+        return window.sessionStorage.getItem('branch_code') || '';
+    };
+    const getBookingDate = () => {
+        return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase();
+    };
+    const getSourceFrom = () => {
+        return order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE';
+    };
+
+    const getLoanAmount = () => {
+        return order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0';
+    };
+    const checkIsEmploymentLetterAvailable = () => {
+        const value = extractedData?.employment_letter?.is_employment_letter_available?.value || '';
+        if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
+        return '';
+    };
+    const checkIsVisaAvailable = () => {
+        const value = extractedData?.visa?.is_visa_available?.value || '';
+        if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
+        return '';
+    };
+
     const payload = {
-        BRANCHCODE: window.sessionStorage.getItem('branch_code') || '',
-        BOOKINGTYPE: orderType === 'sell' ? 'SALE' : orderType === 'buy' ? 'PURCHASE' : orderType,
+        BRANCHCODE: getBranchCode(),
+        BOOKINGTYPE: getBookingType(),
         // BOOKINGNO: String(generateRandomBookingNumber()),
         BOOKINGNO: String(order.orderDetails?.orderNumber),
-        BOOKINGDATE: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase(),
-        SOURCEFROM: order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE',
+        BOOKINGDATE: getBookingDate(),
+        SOURCEFROM: getSourceFrom(),
         HANDLEDBY: 'SAJI',
         BOOKEDBY: 'SHAILESH',
         PAXNAME: extractedData?.pan_card?.pax_name?.value || '',
@@ -143,7 +171,6 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         NATIONALITY: extractedData?.passport?.nationality?.value || '',
         PANNO: extractedData?.pan_card?.pan_number?.value || '',
         PANDOB: dateValues.PANDOB,
-        // PANDOB: extractedData?.pan_card?.pan_date_of_birth?.value || '',
         PANCARDHOLDERNAME: extractedData?.pan_card?.pan_card_holder_name?.value || '',
         FATHERNAME: extractedData?.pan_card?.father_name?.value || '',
         TYPEOFPERSON: extractedData?.pan_card?.entity?.value || '',
@@ -165,7 +192,6 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         COUNTRY: extractedData?.user_identity_details?.country?.value || '',
         PNRNO: extractedData?.travel_itinerary?.pnr_number?.value || '',
         TICKETNO: extractedData?.travel_itinerary?.ticket_number?.value || '',
-        // AIRLINENAME: extractedData?.travel_itinerary?.airline_name?.value || '',
         AIRLINENAME: 'AIR CANADA',
         DEPARTUREFROM: extractedData?.travel_itinerary?.departure_from?.value || '',
         DEPARTUREDATE: dateValues.DEPARTUREDATE,
@@ -174,13 +200,13 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         ROUTE: extractedData?.travel_itinerary?.route?.value || '',
         PurposeofTransaction: getPurposeKey(order.orderDetails?.purpose || ''),
         ResidentStatus: order.orderDetails?.residentialStatus,
-        LoanAmount: order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0',
+        LoanAmount: getLoanAmount(),
         StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || '',
         // Fields required for conditions(We are not sending these fields to Maraekat)
-        PRODUCT_TYPES: getProductType(order)
+        PRODUCT_TYPES: getProductType(),
+        IsEmploymentLetterAvailable: checkIsEmploymentLetterAvailable(),
+        IsVisaAvailable: checkIsVisaAvailable()
     };
-    // console.log('extractedData', extractedData);
-    // console.log('payload', payload);
 
     const uppercasedPayload = Object.keys(payload).reduce(
         (acc, key) => {

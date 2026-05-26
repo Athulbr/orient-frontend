@@ -1,6 +1,6 @@
 import { config } from '../../../../../../../config/default';
 import { Order } from '../../types';
-import { formatDateForMaraekat } from '../utils/getMaraekatPayload';
+import { formatDateForMaraekat } from './getMaraekatPayload';
 import { useToastStore } from '../../../../../../../components/toast/ToastStore';
 
 export interface UseSubmitReceiptsOptions {

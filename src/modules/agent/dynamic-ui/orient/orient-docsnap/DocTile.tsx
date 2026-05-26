@@ -194,7 +194,7 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                                 <Spinner size={16} />
                             </div>
                         ) : thumbError || !thumbUrl ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-red-100 text-red-400">
+                            <div className="w-full h-full flex flex-col items-center justify-center rounded-2xl border border-red-300 bg-red-200 text-red-400">
                                 <FileText size={20} className="mb-1 opacity-50 text-red-500" />
                                 <span className="text-red-500 text-[10px]">Invalid File</span>
                             </div>

@@ -67,6 +67,11 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
     const handleSubmit = async () => {
         if (isSubmitting || allDone) return;
 
+        const nationality = extractedData?.passport?.nationality?.value;
+        if (nationality && !['INDIA', 'INDIAN'].includes(nationality.toUpperCase())) {
+            alert('Only Indian passports are allowed for submission.');
+        }
+
         // ── Email duplicate check ───────────────────────────────────────
         const userEmail = order?.userDetails?.email;
         if (userEmail) {
