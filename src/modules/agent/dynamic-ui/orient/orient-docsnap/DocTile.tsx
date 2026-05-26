@@ -194,9 +194,9 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                                 <Spinner size={16} />
                             </div>
                         ) : thumbError || !thumbUrl ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400">
-                                <FileText size={20} className="mb-1 opacity-50" />
-                                <span className="text-[9px]">No preview</span>
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-red-100 text-red-400">
+                                <FileText size={20} className="mb-1 opacity-50 text-red-500" />
+                                <span className="text-red-500 text-[10px]">Invalid File</span>
                             </div>
                         ) : (
                             <img src={thumbUrl} alt={file.name} className="w-full h-full object-cover" />
@@ -238,8 +238,8 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                             <img src={pageBlobUrls[currentPage]} alt={`${file.name} - page ${currentPage + 1}`} className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl" />
                         ) : (
                             <div className="flex flex-col items-center justify-center text-gray-400">
-                                <FileText size={32} className="mb-2 opacity-50" />
-                                <span className="text-sm">Preview unavailable</span>
+                                <FileText size={32} className="mb-2 opacity-50 text-red-500" />
+                                <span className="text-sm text-red-500">Invalid File</span>
                             </div>
                         )}
 

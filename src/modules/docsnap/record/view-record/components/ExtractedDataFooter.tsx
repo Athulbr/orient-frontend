@@ -5,11 +5,12 @@ import { useViewRecordState } from '../hooks/viewRecordContext';
 import { RefreshCw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
-import httpRequest from '../../../../../global-utils/httpRequest';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
-import { config } from '../../../../../config/default';
 import { DialogComponent } from '../../../../../components/DialogComponent';
+import Spinner from '../../../../../components/Spinner';
 import { useState } from 'react';
+import { SingleSelect, SelectOption } from '../../../../../components/SingleSelect';
+import { config } from '../../../../../config/default';
 interface ExtractedDataFooterIF {
     test?: string;
 }
@@ -18,8 +19,23 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
-    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument } = useViewRecordApi();
+    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument, getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useViewRecordApi();
     const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showLedgerDialog, setShowLedgerDialog] = useState(false);
+    const [ledgerOptions, setLedgerOptions] = useState<SelectOption[]>([]);
+    const [selectedLedger, setSelectedLedger] = useState('');
+    const [matchedLedger, setMatchedLedger] = useState<string | null>(null);
+    const [showTallyDialog, setShowTallyDialog] = useState(false);
+    const [tallyLedgerOptions, setTallyLedgerOptions] = useState<SelectOption[]>([]);
+    const [stockItemOptions, setStockItemOptions] = useState<SelectOption[]>([]);
+    const [tallySelections, setTallySelections] = useState({
+        cgstLedgerName: '',
+        igstLedgerName: '',
+        sgstLedgerName: '',
+        stockItemName: '',
+        purchaseLedgerName: ''
+    });
 
     // Validate that all required object sub-fields have a value before save/submit
     const validateRequiredFields = (): boolean => {
@@ -46,9 +62,199 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         return true;
     };
 
-    const handleSubmit = async () => {
+    const reconcilation = (remainingBalanceRaw: unknown): boolean => {
+        const taxableAmountRaw = state.objectFields?.summary_totals?.taxable_amount?.value;
+        const taxableAmount = Number(`${taxableAmountRaw ?? ''}`.replace(/,/g, '').trim());
+        const remainingBalance = Number(`${remainingBalanceRaw ?? ''}`.replace(/,/g, '').trim());
+
+        if (Number.isNaN(taxableAmount)) {
+            toast.error('Taxable amount is missing');
+            return false;
+        }
+
+        if (Number.isNaN(remainingBalance)) {
+            toast.error('Remaining balance is missing');
+            return false;
+        }
+
+        if (remainingBalance < taxableAmount) {
+            toast.error('PO limit exceed');
+            return false;
+        }
+
+        if (remainingBalance - taxableAmount === 0) {
+            toast.success('PO fully consumed');
+            return true;
+        }
+
+        toast.success('po partialy consumed');
+        return true;
+    };
+
+    const parseFlexibleDate = (value: unknown): Date | null => {
+        const normalized = `${value ?? ''}`.trim();
+        if (!normalized) return null;
+
+        if (/^[0-9]{8}$/.test(normalized)) {
+            const year = Number(normalized.slice(0, 4));
+            const month = Number(normalized.slice(4, 6));
+            const day = Number(normalized.slice(6, 8));
+            if (!year || !month || !day) return null;
+            return new Date(year, month - 1, day);
+        }
+
+        if (/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/.test(normalized)) {
+            const [yearStr, monthStr, dayStr] = normalized.split('-');
+            const year = Number(yearStr);
+            const month = Number(monthStr);
+            const day = Number(dayStr);
+            if (!year || !month || !day) return null;
+            return new Date(year, month - 1, day);
+        }
+
+        const monthMap: Record<string, number> = {
+            jan: 1,
+            feb: 2,
+            mar: 3,
+            apr: 4,
+            may: 5,
+            jun: 6,
+            jul: 7,
+            aug: 8,
+            sep: 9,
+            oct: 10,
+            nov: 11,
+            dec: 12
+        };
+
+        const spaceParts = normalized.split(/\s+/);
+        if (spaceParts.length === 3) {
+            const [dayStr, monStr, yearStr] = spaceParts;
+            const day = Number(dayStr);
+            const month = monthMap[monStr.toLowerCase().slice(0, 3)];
+            const year = Number(yearStr);
+            if (!day || !month || !year) return null;
+            return new Date(year, month - 1, day);
+        }
+
+        const dashParts = normalized.split('-');
+        if (dashParts.length === 3) {
+            const [dayStr, monStr, yearStr] = dashParts;
+            const day = Number(dayStr);
+            const month = monthMap[monStr.toLowerCase().slice(0, 3)];
+            let year = Number(yearStr);
+            if (yearStr.length === 2) {
+                year = 2000 + year;
+            }
+            if (!day || !month || !year) return null;
+            return new Date(year, month - 1, day);
+        }
+
+        return null;
+    };
+
+    const handleSubmit = async (fromTallyDialog: boolean = false) => {
         if (!validateRequiredFields()) return;
-        await submitRecordApi();
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+        try {
+            if (state.record?.templateId?.settings?.tally === true) {
+                const tallyHealthResponse = await tallyHealthCheck();
+                if (!tallyHealthResponse || tallyHealthResponse?.success === false ) {
+                    toast.error('Connection to tally failed, please check the connection string');
+                    return;
+                }
+
+            const purchaseOrdersResponse = await listAllPurchaseOrdersApi();
+            const purchaseOrders = purchaseOrdersResponse?.data?.vouchers || [];
+            console.log('all po details are:', purchaseOrders);
+            const poNumberRaw = state.objectFields?.invoice_basic_details?.po_number?.value;
+            const poNumber = poNumberRaw ? `${poNumberRaw}`.trim() : '';
+            if (!poNumber) {
+                toast.error('PO is missing');
+                return;
+            }
+            if (poNumber) {
+                const bestMatchedPO =
+                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim() === poNumber) ||
+                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase() === poNumber.toLowerCase()) ||
+                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase().includes(poNumber.toLowerCase()));
+
+                if (bestMatchedPO) {
+                    //to check the date is valid for the matched PO
+                    const invoiceDateRaw = state.objectFields?.invoice_basic_details?.invoice_date?.value;
+                    const invoiceDate = parseFlexibleDate(invoiceDateRaw);
+                    const poStartDate = parseFlexibleDate(bestMatchedPO?.date);
+                    const poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
+                    if (invoiceDate && poStartDate && poClosingDate) {
+                        if (invoiceDate < poStartDate || invoiceDate > poClosingDate) {
+                            toast.error('Invoice date is not within PO start and closing date');
+                            return;
+                        }
+                    }
+
+                    const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
+                    const isReconciled = reconcilation(remainingBalance);
+                    if (!isReconciled) return;
+                } else {
+                    toast.error(`PO number ${poNumber} is not matched to any of the PO in tally`);
+                    return;
+                }
+            }
+
+            if (!fromTallyDialog) {
+                
+                const ledgerResponse = await getAllLedgerApi();
+                const ledgers = ledgerResponse?.data?.ledgers || [];
+                const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
+                setTallyLedgerOptions(options);
+
+                const stockItemsResponse = await listAllStockItemsApi();
+                const stockItems = stockItemsResponse?.data?.stockItems || [];
+                const stockOptions = stockItems.map((item: any) => {
+                    if (typeof item === 'string') {
+                        return { value: item, label: item };
+                    }
+
+                    const label = item?.name || item?.value || '';
+                    return { value: label, label };
+                });
+                setStockItemOptions(stockOptions);
+                setShowTallyDialog(true);
+                return;
+            }
+            // console.log('tally selections:', tallySelections);
+            
+            const ledgerResponse = await getAllLedgerApi();
+            const ledgers = ledgerResponse?.data?.ledgers || [];
+            const senderName = state.objectFields?.sender_details?.name?.value;
+            const bestMatchedLedger = ledgers.find((ledger: string) => ledger === senderName) || null;
+            if (bestMatchedLedger) {
+                setMatchedLedger(bestMatchedLedger);
+                console.log('matchedLedger:', bestMatchedLedger);
+                const payload = {
+                    extractedData: state.record?.extractedData,
+                    config: {
+                        purchaseLedgerName: bestMatchedLedger,
+                        tallyLedgers :tallySelections
+                    }
+                };
+                // await createJournalVoucherApi(payload);
+                await createPurchaseVoucher(payload);
+            } else {
+                const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
+                setLedgerOptions(options);
+                setSelectedLedger('');
+                setMatchedLedger(null);
+                setShowLedgerDialog(true);
+            }
+                return;
+            }
+            await submitRecordApi();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleNodeReExtraction = async () => {
@@ -201,8 +407,15 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     Save
                 </Button>
             </Tooltip>
-            <Button data-tour-id="submit-button" disabled={reExtracting} onClick={handleSubmit} outlined small>
-                Submit
+            <Button
+                data-tour-id="submit-button"
+                disabled={reExtracting || isSubmitting}
+                onClick={() => handleSubmit()}
+                outlined
+                small
+                startIcon={isSubmitting ? <Spinner size={16} /> : undefined}
+            >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
             </Button>
             <DialogComponent
                 name="Discard changes?"
@@ -215,6 +428,85 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             >
                 <div className="px-8 py-6 text-sm text-gray-700">
                     Your changes won&apos;t be saved.
+                </div>
+            </DialogComponent>
+            <DialogComponent
+                name="Select Tally Ledgers"
+                isOpen={showTallyDialog}
+                closeDialog={() => setShowTallyDialog(false)}
+                primaryButtonText="Done"
+                onPrimaryAction={async () => {
+                    setShowTallyDialog(false);
+                    await handleSubmit(true);
+                }}
+            >
+                <div className="flex flex-col gap-4 px-8 py-6">
+                    <SingleSelect
+                        value={tallySelections.cgstLedgerName}
+                        options={tallyLedgerOptions}
+                        onValueChange={value => setTallySelections(prev => ({ ...prev, cgstLedgerName: value }))}
+                        placeholder="Select CGST ledger name"
+                        className="w-full"
+                    />
+                    <SingleSelect
+                        value={tallySelections.sgstLedgerName}
+                        options={tallyLedgerOptions}
+                        onValueChange={value => setTallySelections(prev => ({ ...prev, sgstLedgerName: value }))}
+                        placeholder="Select SGST ledger name"
+                        className="w-full"
+                    />
+                    <SingleSelect
+                        value={tallySelections.igstLedgerName}
+                        options={tallyLedgerOptions}
+                        onValueChange={value => setTallySelections(prev => ({ ...prev, igstLedgerName: value }))}
+                        placeholder="Select IGST ledger name"
+                        className="w-full"
+                    />
+                    <SingleSelect
+                        value={tallySelections.stockItemName}
+                        options={stockItemOptions}
+                        onValueChange={value => setTallySelections(prev => ({ ...prev, stockItemName: value }))}
+                        placeholder="Select stock item name"
+                        className="w-full"
+                    />
+                    <SingleSelect
+                        value={tallySelections.purchaseLedgerName}
+                        options={tallyLedgerOptions}
+                        onValueChange={value => setTallySelections(prev => ({ ...prev, purchaseLedgerName: value }))}
+                        placeholder="Select purchase ledger name"
+                        className="w-full"
+                    />
+                </div>
+            </DialogComponent>
+            <DialogComponent
+                name="Select Ledger"
+                isOpen={showLedgerDialog}
+                closeDialog={() => setShowLedgerDialog(false)}
+                primaryButtonText="Done"
+                onPrimaryAction={async () => {
+                    const payload = {
+                        extractedData: state.record?.extractedData,
+                        config: {
+                            ledger: selectedLedger,
+                            tallySelections
+                        }
+                    };
+                    await createPurchaseVoucher(payload);
+                    setShowLedgerDialog(false);
+                }}
+            >
+                <div className="flex flex-col gap-4 px-8 py-6">
+                    <p className="text-sm text-gray-700">Ledger not matched, please select a ledger.</p>
+                    <SingleSelect
+                        value={selectedLedger}
+                        options={ledgerOptions}
+                        onValueChange={value => {
+                            setSelectedLedger(value);
+                            console.log('selectedLedger:', value);
+                        }}
+                        placeholder="Select a ledger"
+                        className="w-full"
+                    />
                 </div>
             </DialogComponent>
         </div>

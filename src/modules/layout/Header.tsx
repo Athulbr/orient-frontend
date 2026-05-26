@@ -97,6 +97,11 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
         if (e === 'Account') navigate(`/user/account/${user._id}`);
     };
 
+    const navigateToHome = () => {
+        if(Number(sessionStorage.getItem('branch_id')) > 0 ) return;
+        navigate('/');
+    }
+
     return (
         <div className="flex min-h-16 justify-between bg-[#012D56]">
             {!showSidebar && (
@@ -104,7 +109,7 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
                     <Menu onClick={() => setShowSidebar(true)} className="cursor-pointer" color="white" size={30} />
                 </div>
             )}
-            <div tabIndex={0} className={cn('flex h-full cursor-pointer items-center md:pl-4', showSidebar && 'pl-4')} onClick={() => navigate('/')}>
+            <div tabIndex={0} className={cn('flex h-full cursor-pointer items-center md:pl-4', showSidebar && 'pl-4')} onClick={() => navigateToHome()}>
                 <MakezLogoHeader />
             </div>
             <div className="flex flex-1 items-center justify-end">
