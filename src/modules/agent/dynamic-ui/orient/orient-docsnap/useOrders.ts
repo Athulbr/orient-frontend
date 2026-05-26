@@ -111,8 +111,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             if (filters.branchFilter !== 'all') params.append('branch', filters.branchFilter);
             if (filters.orderTypeFilter && filters.orderTypeFilter !== 'all') params.append('orderType', filters.orderTypeFilter);
             if (filters.dateRange.startDate && filters.dateRange.endDate) {
-                params.append('startDate', filters.dateRange.startDate);
-                params.append('endDate', filters.dateRange.endDate);
+                params.append('startDate', new Date(filters.dateRange.startDate).toISOString());
+                params.append('endDate', new Date(filters.dateRange.endDate).toISOString());
             }
             params.append('page', filters.currentPage.toString());
             params.append('limit', filters.perPage);

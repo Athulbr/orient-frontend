@@ -8,7 +8,7 @@ function getDocumentPriority(documentName: string): number {
 
     if (name.includes('passport')) return 0;
     if (name.includes('ticket')) return 2;
-    if (name.includes('visa')) return 3;
+    // if (name.includes('visa')) return 3;
 
     return 1;
 }
