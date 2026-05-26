@@ -241,7 +241,7 @@ export const sampleRecord = {
                 },
                 confidence: 0.9933
             },
-            type_of_person: {
+            entity: {
                 value: 'Person',
                 page: 3,
                 wordIndexes: []

@@ -150,7 +150,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     >
                         <div className="flex flex-wrap gap-[7px] p-2">
                             {orderFiles.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined} orderStatus={order.orderDetails.orderStatus} />
+                                <DocTile
+                                    key={i}
+                                    file={f}
+                                    onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined}
+                                    orderStatus={order.orderDetails.orderStatus}
+                                />
                             ))}
                         </div>
                     </DocumentColumn>
@@ -201,7 +206,12 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     {emailFiles.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px] p-2">
                             {emailFiles.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined} orderStatus={order.orderDetails.orderStatus} />
+                                <DocTile
+                                    key={i}
+                                    file={f}
+                                    onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined}
+                                    orderStatus={order.orderDetails.orderStatus}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -229,7 +239,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             {/* <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFileItems.length} /> */}
                         </div>
                         <div className="flex items-center gap-2">
-                            {uploadedFileItems.length > 0 && (
+                            {uploadedFileItems.length > 0 && order.orderDetails.orderStatus !== 'submitted' && (
                                 <GBtn
                                     colorClass="text-red-600"
                                     borderClass="border-red-200"

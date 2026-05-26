@@ -4,6 +4,7 @@ import getDynamicUserInterface from '../dynamic-ui';
 import httpRequest from '../../../global-utils/httpRequest';
 import { config } from '../../../config/default';
 import FullScreenLoader from '../../../components/FullScreenLoader';
+import ErrorState from '../../../components/ErrorState';
 
 const RunAgentPage: React.FC = () => {
     const { name } = useParams();
@@ -38,7 +39,7 @@ const RunAgentPage: React.FC = () => {
     }
 
     if (!DynamicUI) {
-        return <div>Dynamic UI not found</div>;
+        return <ErrorState showHomeButton={false} title="Something went wrong" message="User Interface not found for this workflow. Please try again or go back home." />;
     }
 
     // We can pass the workflow data to the dynamic UI component if needed
