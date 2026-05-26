@@ -26,6 +26,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const [ledgerOptions, setLedgerOptions] = useState<SelectOption[]>([]);
     const [selectedLedger, setSelectedLedger] = useState('');
     const [matchedLedger, setMatchedLedger] = useState<string | null>(null);
+    const [poDueDate, setPoDueDate] = useState<string | null>(null);
     const [showTallyDialog, setShowTallyDialog] = useState(false);
     const [tallyLedgerOptions, setTallyLedgerOptions] = useState<SelectOption[]>([]);
     const [stockItemOptions, setStockItemOptions] = useState<SelectOption[]>([]);
@@ -91,66 +92,22 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         return true;
     };
 
-    const parseFlexibleDate = (value: unknown): Date | null => {
+    const parseFlexibleDate = (value: unknown): Date => {
         const normalized = `${value ?? ''}`.trim();
-        if (!normalized) return null;
 
-        if (/^[0-9]{8}$/.test(normalized)) {
-            const year = Number(normalized.slice(0, 4));
-            const month = Number(normalized.slice(4, 6));
-            const day = Number(normalized.slice(6, 8));
-            if (!year || !month || !day) return null;
-            return new Date(year, month - 1, day);
+        if (!/^[0-9]{8}$/.test(normalized)) {
+            throw new Error('Expected date format is YYYYMMDD');
         }
 
-        if (/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/.test(normalized)) {
-            const [yearStr, monthStr, dayStr] = normalized.split('-');
-            const year = Number(yearStr);
-            const month = Number(monthStr);
-            const day = Number(dayStr);
-            if (!year || !month || !day) return null;
-            return new Date(year, month - 1, day);
+        const year = Number(normalized.slice(0, 4));
+        const month = Number(normalized.slice(4, 6));
+        const day = Number(normalized.slice(6, 8));
+
+        if (!year || !month || !day) {
+            throw new Error('Expected date format is YYYYMMDD');
         }
 
-        const monthMap: Record<string, number> = {
-            jan: 1,
-            feb: 2,
-            mar: 3,
-            apr: 4,
-            may: 5,
-            jun: 6,
-            jul: 7,
-            aug: 8,
-            sep: 9,
-            oct: 10,
-            nov: 11,
-            dec: 12
-        };
-
-        const spaceParts = normalized.split(/\s+/);
-        if (spaceParts.length === 3) {
-            const [dayStr, monStr, yearStr] = spaceParts;
-            const day = Number(dayStr);
-            const month = monthMap[monStr.toLowerCase().slice(0, 3)];
-            const year = Number(yearStr);
-            if (!day || !month || !year) return null;
-            return new Date(year, month - 1, day);
-        }
-
-        const dashParts = normalized.split('-');
-        if (dashParts.length === 3) {
-            const [dayStr, monStr, yearStr] = dashParts;
-            const day = Number(dayStr);
-            const month = monthMap[monStr.toLowerCase().slice(0, 3)];
-            let year = Number(yearStr);
-            if (yearStr.length === 2) {
-                year = 2000 + year;
-            }
-            if (!day || !month || !year) return null;
-            return new Date(year, month - 1, day);
-        }
-
-        return null;
+        return new Date(year, month - 1, day);
     };
 
     const handleSubmit = async (fromTallyDialog: boolean = false) => {
@@ -184,10 +141,16 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 if (bestMatchedPO) {
                     //to check the date is valid for the matched PO
                     const invoiceDateRaw = state.objectFields?.invoice_basic_details?.invoice_date?.value;
-                    const invoiceDate = parseFlexibleDate(invoiceDateRaw);
-                    const poStartDate = parseFlexibleDate(bestMatchedPO?.date);
-                    const poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
-                    if (invoiceDate && poStartDate && poClosingDate) {
+                    let invoiceDate: Date, poStartDate: Date, poClosingDate: Date;
+                    try {
+                        invoiceDate = parseFlexibleDate(invoiceDateRaw);
+                        poStartDate = parseFlexibleDate(bestMatchedPO?.date);
+                        poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
+                    } catch {
+                        toast.error('Invalid date format. Expected date format is YYYYMMDD (e.g. 20240315)');
+                        return;
+                    }
+                    if (invoiceDate! && poStartDate! && poClosingDate!) {
                         if (invoiceDate < poStartDate || invoiceDate > poClosingDate) {
                             toast.error('Invoice date is not within PO start and closing date');
                             return;
@@ -197,6 +160,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
                     const isReconciled = reconcilation(remainingBalance);
                     if (!isReconciled) return;
+                    setPoDueDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date ?? null);
                 } else {
                     toast.error(`PO number ${poNumber} is not matched to any of the PO in tally`);
                     return;
@@ -237,7 +201,8 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     extractedData: state.record?.extractedData,
                     config: {
                         purchaseLedgerName: bestMatchedLedger,
-                        tallyLedgers :tallySelections
+                        tallyLedgers: tallySelections,
+                        poDueDate : poDueDate
                     }
                 };
                 // await createJournalVoucherApi(payload);
@@ -488,7 +453,8 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                         extractedData: state.record?.extractedData,
                         config: {
                             ledger: selectedLedger,
-                            tallySelections
+                            tallyLedgers: tallySelections,
+                            poDueDate : poDueDate
                         }
                     };
                     await createPurchaseVoucher(payload);
