@@ -1,6 +1,6 @@
 import { config } from '../../../../../../../config/default';
 import { Order } from '../../types';
-import { getMaraekatPayload } from '../utils/getMaraekatPayload';
+import { getMaraekatPayload } from './getMaraekatPayload';
 import { useToastStore } from '../../../../../../../components/toast/ToastStore';
 
 export interface UseSubmitCurrencyOptions {
@@ -53,13 +53,7 @@ export const useSubmitCurrency = ({ extractedData, onOrderUpdate }: UseSubmitCur
 
         const results = await Promise.allSettled(
             items.map(async (item: any) => {
-                const exchangeType = item.product === 'cash'
-                    ? 'CN'
-                    : payload.BOOKINGTYPE === 'PURCHASE'
-                        ? 'EM'
-                        : payload.BOOKINGTYPE === 'SALE'
-                            ? 'CM'
-                            : item.product;
+                const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
 
                 const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
                     method: 'POST',

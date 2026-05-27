@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { config } from '../../../../../../../config/default';
 import { Order } from '../../types';
-import { getMaraekatPayload } from '../utils/getMaraekatPayload';
-import { validateMaraekatPayload } from '../utils/validateMaraekatPayload';
-import { manipulateMaraekatPayload } from '../utils/manipulateMaraekatPayload';
+import { getMaraekatPayload } from './getMaraekatPayload';
 import { ResultMessage } from './DraggableResultCard';
 
 export interface UseSubmitKycOptions {
@@ -47,12 +45,9 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
 
         // Step 3: Build and validate payload
         const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
-        const manipulatedJson = manipulateMaraekatPayload(payload, order);
-        const validationResult = validateMaraekatPayload(manipulatedJson);
 
-        const allErrors = [...dateErrors, ...validationResult.errors];
-        if (allErrors.length > 0) {
-            setResultMessage({ type: 'error', messages: allErrors });
+        if (dateErrors.length > 0) {
+            setResultMessage({ type: 'error', messages: dateErrors });
             return { success: false };
         }
 
@@ -61,7 +56,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
             const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order-3`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: manipulatedJson })
+                body: JSON.stringify({ payload: payload })
             });
 
             if (!response.ok) {

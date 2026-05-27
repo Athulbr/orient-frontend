@@ -233,7 +233,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         <div className="flex gap-4 mt-3">
                             {[
                                 { label: 'Currency', value: 'currency', disabled: false },
-                                { label: 'Card', value: 'card', disabled: true },
+                                { label: 'Card', value: 'card', disabled: false },
                                 { label: 'TT', value: 'tt', disabled: true },
                                 { label: 'TP', value: 'tp', disabled: true }
                             ].map(type => {
