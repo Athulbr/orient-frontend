@@ -350,6 +350,28 @@ export const useViewRecordApi = () => {
             return null;
         }
     };
+
+    const listPurchaseAccountLedgersApi = async () => {
+        try {
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/listPurchaseAccountLedgers`, {});
+            return response;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to fetch purchase ledgers');
+            return null;
+        }
+    };
+    const listSundryCreditorLedgersApi = async () => {
+        try {
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/listSundryCreditorLedgers`, {});
+            return response;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to fetch sundry creditor ledgers');
+            return null;
+        }
+    };
+
     const tallyHealthCheck = async () => {
         try {
             const response = await httpRequest('GET', `${config.nodeApiUrl}/idp/tally/check`);
@@ -558,6 +580,8 @@ export const useViewRecordApi = () => {
         getAllLedgerApi,
         listAllPurchaseOrdersApi,
         listAllStockItemsApi,
+        listPurchaseAccountLedgersApi,
+        listSundryCreditorLedgersApi,
         tallyHealthCheck,
         createPurchaseVoucher,
         createJournalVoucherApi

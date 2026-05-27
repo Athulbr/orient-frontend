@@ -19,7 +19,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
-    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument, getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useViewRecordApi();
+    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument, getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, listPurchaseAccountLedgersApi, listSundryCreditorLedgersApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useViewRecordApi();
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLedgerDialog, setShowLedgerDialog] = useState(false);
@@ -27,9 +27,13 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const [selectedLedger, setSelectedLedger] = useState('');
     const [matchedLedger, setMatchedLedger] = useState<string | null>(null);
     const [poDueDate, setPoDueDate] = useState<string | null>(null);
+    const [autoMatchedTallyFields, setAutoMatchedTallyFields] = useState<Set<string>>(new Set());
+    const [useCgstSgstMode, setUseCgstSgstMode] = useState(false);
     const [showTallyDialog, setShowTallyDialog] = useState(false);
     const [tallyLedgerOptions, setTallyLedgerOptions] = useState<SelectOption[]>([]);
     const [stockItemOptions, setStockItemOptions] = useState<SelectOption[]>([]);
+    const [purchaseLedgerOptions, setPurchaseLedgerOptions] = useState<SelectOption[]>([]);
+    const [sundryCreditorOptions, setSundryCreditorOptions] = useState<SelectOption[]>([]);
     const [tallySelections, setTallySelections] = useState({
         cgstLedgerName: '',
         igstLedgerName: '',
@@ -185,6 +189,38 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     return { value: label, label };
                 });
                 setStockItemOptions(stockOptions);
+
+                const purchaseLedgersResponse = await listPurchaseAccountLedgersApi();
+                const purchaseLedgers = purchaseLedgersResponse?.data?.ledgers || [];
+                setPurchaseLedgerOptions(purchaseLedgers.map((l: string) => ({ value: l, label: l })));
+
+                const cgstOutput = `${state.objectFields?.tax_details?.cgst_output?.value ?? ''}`.trim();
+                const sgstOutput = `${state.objectFields?.tax_details?.sgst_output?.value ?? ''}`.trim();
+                const useCgstSgst = !!(cgstOutput && sgstOutput);
+
+                const cgstPct = `${state.objectFields?.tax_details?.cgst_percentage?.value ?? ''}`.trim();
+                const sgstPct = `${state.objectFields?.tax_details?.sgst_percentage?.value ?? ''}`.trim();
+                const igstPct = `${state.objectFields?.tax_details?.igst_percentage?.value ?? ''}`.trim();
+
+                const autoMatched = new Set<string>();
+                const updates: Partial<typeof tallySelections> = {};
+
+                if (useCgstSgst) {
+                    const matchedCgst = cgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('cgst') && l.includes(cgstPct)) ?? '' : '';
+                    const matchedSgst = sgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('sgst') && l.includes(sgstPct)) ?? '' : '';
+                    if (matchedCgst) { autoMatched.add('cgst'); updates.cgstLedgerName = matchedCgst; }
+                    if (matchedSgst) { autoMatched.add('sgst'); updates.sgstLedgerName = matchedSgst; }
+                } else {
+                    const matchedIgst = igstPct ? ledgers.find((l: string) => l.toLowerCase().includes('igst') && l.includes(igstPct)) ?? '' : '';
+                    if (matchedIgst) { autoMatched.add('igst'); updates.igstLedgerName = matchedIgst; }
+                }
+
+                setUseCgstSgstMode(useCgstSgst);
+                setAutoMatchedTallyFields(autoMatched);
+                if (Object.keys(updates).length) {
+                    setTallySelections(prev => ({ ...prev, ...updates }));
+                }
+
                 setShowTallyDialog(true);
                 return;
             }
@@ -208,8 +244,11 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 // await createJournalVoucherApi(payload);
                 await createPurchaseVoucher(payload);
             } else {
-                const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
-                setLedgerOptions(options);
+                const sundryResponse = await listSundryCreditorLedgersApi();
+                const sundryLedgers = sundryResponse?.data?.ledgers || [];
+                const sundryOptions = sundryLedgers.map((l: string) => ({ value: l, label: l }));
+                setSundryCreditorOptions(sundryOptions);
+                setLedgerOptions(sundryOptions);
                 setSelectedLedger('');
                 setMatchedLedger(null);
                 setShowLedgerDialog(true);
@@ -406,27 +445,33 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 }}
             >
                 <div className="flex flex-col gap-4 px-8 py-6">
-                    <SingleSelect
-                        value={tallySelections.cgstLedgerName}
-                        options={tallyLedgerOptions}
-                        onValueChange={value => setTallySelections(prev => ({ ...prev, cgstLedgerName: value }))}
-                        placeholder="Select CGST ledger name"
-                        className="w-full"
-                    />
-                    <SingleSelect
-                        value={tallySelections.sgstLedgerName}
-                        options={tallyLedgerOptions}
-                        onValueChange={value => setTallySelections(prev => ({ ...prev, sgstLedgerName: value }))}
-                        placeholder="Select SGST ledger name"
-                        className="w-full"
-                    />
-                    <SingleSelect
-                        value={tallySelections.igstLedgerName}
-                        options={tallyLedgerOptions}
-                        onValueChange={value => setTallySelections(prev => ({ ...prev, igstLedgerName: value }))}
-                        placeholder="Select IGST ledger name"
-                        className="w-full"
-                    />
+                    {useCgstSgstMode && !autoMatchedTallyFields.has('cgst') && (
+                        <SingleSelect
+                            value={tallySelections.cgstLedgerName}
+                            options={tallyLedgerOptions}
+                            onValueChange={value => setTallySelections(prev => ({ ...prev, cgstLedgerName: value }))}
+                            placeholder="Select CGST ledger name"
+                            className="w-full"
+                        />
+                    )}
+                    {useCgstSgstMode && !autoMatchedTallyFields.has('sgst') && (
+                        <SingleSelect
+                            value={tallySelections.sgstLedgerName}
+                            options={tallyLedgerOptions}
+                            onValueChange={value => setTallySelections(prev => ({ ...prev, sgstLedgerName: value }))}
+                            placeholder="Select SGST ledger name"
+                            className="w-full"
+                        />
+                    )}
+                    {!useCgstSgstMode && !autoMatchedTallyFields.has('igst') && (
+                        <SingleSelect
+                            value={tallySelections.igstLedgerName}
+                            options={tallyLedgerOptions}
+                            onValueChange={value => setTallySelections(prev => ({ ...prev, igstLedgerName: value }))}
+                            placeholder="Select IGST ledger name"
+                            className="w-full"
+                        />
+                    )}
                     <SingleSelect
                         value={tallySelections.stockItemName}
                         options={stockItemOptions}
@@ -436,7 +481,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     />
                     <SingleSelect
                         value={tallySelections.purchaseLedgerName}
-                        options={tallyLedgerOptions}
+                        options={purchaseLedgerOptions}
                         onValueChange={value => setTallySelections(prev => ({ ...prev, purchaseLedgerName: value }))}
                         placeholder="Select purchase ledger name"
                         className="w-full"
