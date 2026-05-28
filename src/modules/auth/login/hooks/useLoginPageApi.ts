@@ -164,7 +164,7 @@ export const useLoginPageApi = () => {
                 if (res.data?.branchCode) {
                     window?.sessionStorage?.setItem('branch_code', res.data.branchCode);
                 } else {
-                    window?.sessionStorage?.setItem('branch_code', '12');
+                    window?.sessionStorage?.setItem('branch_code', 'KOLM');
                 }
                 if (res.data?.branchId) {
                     window?.sessionStorage?.setItem('branch_id', res.data.branchId);
