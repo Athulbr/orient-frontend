@@ -163,9 +163,13 @@ export const useLoginPageApi = () => {
                 }
                 if (res.data?.branchCode) {
                     window?.sessionStorage?.setItem('branch_code', res.data.branchCode);
+                } else {
+                    window?.sessionStorage?.setItem('branch_code', '12');
                 }
                 if (res.data?.branchId) {
                     window?.sessionStorage?.setItem('branch_id', res.data.branchId);
+                } else {
+                    window?.sessionStorage?.setItem('branch_id', '12');
                 }
 
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
