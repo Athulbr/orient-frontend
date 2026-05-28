@@ -908,7 +908,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                     className={`w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''}`}
                                                 />
                                             )}
-                                            {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || ''}</div>}
+                                            {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || <span>" "</span>}</div>}
                                         </td>
                                     );
                                 })}
@@ -1245,7 +1245,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         />
                                                     )}
 
-                                                    {isValueDiff && <div className="ml-2 text-xs text-orange-500">Extracted Value: {fieldValue?.initialValue || ''}</div>}
+                                                    {isValueDiff && <div className="ml-2 text-xs text-orange-500">Extracted Value: {fieldValue?.initialValue || <span>" "</span>}</div>}
                                                 </div>
                                             );
                                         })}

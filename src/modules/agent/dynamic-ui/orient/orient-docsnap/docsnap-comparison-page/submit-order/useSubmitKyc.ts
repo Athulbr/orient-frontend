@@ -146,6 +146,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                     console.log('EONBOOKINGNO: ', eonBookingNo);
 
                                     const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
+                                    console.log('isExtractedDataUpdated: ', isExtractedDataUpdated);
                                     // Update local state with enriched order
                                     if (eonBookingNo && onOrderUpdate) {
                                         const updatedOrder: Order = {
@@ -154,14 +155,11 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                                 ...order.orderDetails,
                                                 orderStatus: 'submitted'
                                             },
-                                            extractionDetails: {
-                                                ...order.extractionDetails,
-                                                isExtractedDataUpdated
-                                            },
                                             maraekatDetails: {
                                                 ...order.maraekatDetails,
                                                 eonBookingNumber: eonBookingNo,
-                                                bookingNumber: bookingNo
+                                                bookingNumber: bookingNo,
+                                                isExtractedDataUpdated: isExtractedDataUpdated
                                             }
                                         };
                                         onOrderUpdate(updatedOrder);
@@ -171,10 +169,10 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                     if (eonBookingNo) {
                                         const updatePayload = {
                                             'orderDetails.orderStatus': 'submitted',
-                                            'extractionDetails.isExtractedDataUpdated': isExtractedDataUpdated,
                                             maraekatDetails: {
                                                 eonBookingNumber: eonBookingNo,
-                                                bookingNumber: bookingNo
+                                                bookingNumber: bookingNo,
+                                                isExtractedDataUpdated: isExtractedDataUpdated
                                             }
                                         };
                                         fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {

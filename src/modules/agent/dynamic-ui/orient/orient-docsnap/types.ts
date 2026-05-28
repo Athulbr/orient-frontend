@@ -77,7 +77,6 @@ export interface Order {
     emailDocuments?: DocumentDetail[];
     receipts?: DocumentDetail[];
     extractionDetails: {
-        isExtractedDataUpdated?: boolean;
         recordId?: string;
         templateName?: string;
         extractedData?: Record<string, unknown>;
@@ -91,6 +90,7 @@ export interface Order {
         bookingNumber?: string;
         recPaySubmitted?: boolean;
         currencySubmitted?: boolean;
+        isExtractedDataUpdated?: boolean;
     };
     createdAt?: string;
 }

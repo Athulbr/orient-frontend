@@ -139,7 +139,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
     };
 
     const getLoanAmount = () => {
-        return order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0';
+        return order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount || '0' : '0';
     };
     const checkIsEmploymentLetterAvailable = () => {
         const value = extractedData?.employment_letter?.is_employment_letter_available?.value || '';
