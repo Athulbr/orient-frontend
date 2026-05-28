@@ -171,6 +171,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                     if (eonBookingNo) {
                                         const updatePayload = {
                                             'orderDetails.orderStatus': 'submitted',
+                                            'extractionDetails.isExtractedDataUpdated': isExtractedDataUpdated,
                                             maraekatDetails: {
                                                 eonBookingNumber: eonBookingNo,
                                                 bookingNumber: bookingNo
