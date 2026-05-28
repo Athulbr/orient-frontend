@@ -59,6 +59,8 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                 window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
+                window?.sessionStorage?.setItem('branch_code', 'KOLM');
+                window?.sessionStorage?.setItem('branch_id', '12');
 
                 toast.success('Logged in successfully');
                 const permission: any = JSON.parse(window?.sessionStorage?.getItem('permissions') || '[]');
@@ -163,13 +165,9 @@ export const useLoginPageApi = () => {
                 }
                 if (res.data?.branchCode) {
                     window?.sessionStorage?.setItem('branch_code', res.data.branchCode);
-                } else {
-                    window?.sessionStorage?.setItem('branch_code', 'KOLM');
                 }
                 if (res.data?.branchId) {
                     window?.sessionStorage?.setItem('branch_id', res.data.branchId);
-                } else {
-                    window?.sessionStorage?.setItem('branch_id', '12');
                 }
 
                 window?.sessionStorage?.setItem('firstName', JSON.stringify(res?.data?.user?.firstName));
