@@ -22,6 +22,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             : ['currency']
     );
     const [purpose, setPurpose] = useState(initialOrder?.orderDetails.purpose || '');
+    const [isLoanOrder, setIsLoanOrder] = useState<boolean | undefined>(initialOrder?.orderDetails.isLoanOrder);
     const [residentialStatus, setResidentialStatus] = useState(initialOrder?.orderDetails.residentialStatus || 'resident');
     const [userName, setUserName] = useState(initialOrder?.userDetails.name || '');
     const [userEmail, setUserEmail] = useState(initialOrder?.userDetails.email || '');
@@ -50,6 +51,9 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
         if (orderType === 'sell' && !purpose.trim()) {
             newErrors.purpose = 'Purpose is required';
         }
+        if (orderType === 'sell' && purpose === 'Education' && isLoanOrder === undefined) {
+            newErrors.isLoanOrder = 'Please specify if it is a loan';
+        }
         if (orderType === 'buy' && !residentialStatus.trim()) {
             newErrors.residentialStatus = 'Residential Status is required';
         }
@@ -73,7 +77,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         orderType,
                         productType: productType as ('currency' | 'card' | 'tt')[],
                         purpose,
-                        residentialStatus
+                        residentialStatus,
+                        ...(orderType === 'sell' && purpose === 'Education' ? { isLoanOrder } : { isLoanOrder: undefined })
                     },
                     userDetails: {
                         ...initialOrder.userDetails,
@@ -113,6 +118,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
                     residentialStatus,
+                    ...(orderType === 'sell' && purpose === 'Education' ? { isLoanOrder } : {}),
                     branch: getBranchName(),
                     branchId: Number(sessionStorage.getItem('branch_id')),
                     totalAmount: 0,
@@ -214,7 +220,6 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
-                                    disabled
                                     type="radio"
                                     name="orderType"
                                     value="buy"
@@ -264,31 +269,33 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         {errors.productType && <p className="text-red-500 text-xs mt-1">{errors.productType}</p>}
                     </div>
 
-                    <div className="pt-3">
-                        <label className="pl-1 pt-0.5 block text-sm font-medium text-gray-700 mb-1">
-                            Purpose <span className="text-red-500">*</span>
-                        </label>
-                        <SingleSelect
-                            size="lg"
-                            value={purpose}
-                            onValueChange={val => {
-                                setPurpose(val);
-                                if (errors.purpose) setErrors(prev => ({ ...prev, purpose: '' }));
-                            }}
-                            options={[
-                                { value: 'Education', label: 'Education' },
-                                { value: 'Medical', label: 'Medical Treatment' },
-                                { value: 'Leisure/Holiday', label: 'Private Visit / Leisure / Holiday' },
-                                { value: 'Business Trip', label: 'Business Trip' },
-                                { value: 'Emigration', label: 'Emigration' },
-                                { value: 'Employment', label: 'Employment' }
-                            ]}
-                            className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
-                            placeholder="Select Purpose"
-                            position="top"
-                        />
-                        {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
-                    </div>
+                    {orderType === 'sell' && (
+                        <div className="pt-3">
+                            <label className="pl-1 pt-0.5 block text-sm font-medium text-gray-700 mb-1">
+                                Purpose <span className="text-red-500">*</span>
+                            </label>
+                            <SingleSelect
+                                size="lg"
+                                value={purpose}
+                                onValueChange={val => {
+                                    setPurpose(val);
+                                    if (errors.purpose) setErrors(prev => ({ ...prev, purpose: '' }));
+                                }}
+                                options={[
+                                    { value: 'Education', label: 'Education' },
+                                    { value: 'Medical', label: 'Medical Treatment' },
+                                    { value: 'Leisure/Holiday', label: 'Private Visit / Leisure / Holiday' },
+                                    { value: 'Business Trip', label: 'Business Trip' },
+                                    { value: 'Emigration', label: 'Emigration' },
+                                    { value: 'Employment', label: 'Employment' }
+                                ]}
+                                className={`w-full ${errors.purpose ? '[&>button]:border-red-500' : ''}`}
+                                placeholder="Select Purpose"
+                                position="top"
+                            />
+                            {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose}</p>}
+                        </div>
+                    )}
 
                     {orderType === 'buy' && (
                         <div className="pt-3">
@@ -311,6 +318,45 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 position="top"
                             />
                             {errors.residentialStatus && <p className="text-red-500 text-xs mt-1">{errors.residentialStatus}</p>}
+                        </div>
+                    )}
+
+                    {orderType === 'sell' && purpose === 'Education' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                                With Loan? <span className="text-red-500">*</span>
+                            </label>
+                            <div className="pt-2 flex gap-4 mt-2 ml-1">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="isLoanOrder"
+                                        value="yes"
+                                        checked={isLoanOrder === true}
+                                        onChange={() => {
+                                            setIsLoanOrder(true);
+                                            if (errors.isLoanOrder) setErrors(prev => ({ ...prev, isLoanOrder: '' }));
+                                        }}
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                    />
+                                    <span className="text-sm text-gray-700">Yes</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="isLoanOrder"
+                                        value="no"
+                                        checked={isLoanOrder === false}
+                                        onChange={() => {
+                                            setIsLoanOrder(false);
+                                            if (errors.isLoanOrder) setErrors(prev => ({ ...prev, isLoanOrder: '' }));
+                                        }}
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                    />
+                                    <span className="text-sm text-gray-700">No</span>
+                                </label>
+                            </div>
+                            {errors.isLoanOrder && <p className="text-red-500 text-xs mt-1">{errors.isLoanOrder}</p>}
                         </div>
                     )}
                 </div>

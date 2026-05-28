@@ -98,7 +98,6 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
     const [showReceiptComparison, setShowReceiptComparison] = useState(false);
 
     const hasReceipts = (order.receipts?.length || 0) > 0;
-    const hasReceiptExtraction = !!order.receiptExtractionDetails?.recordId;
 
     // ── Extract Receipt handler (webhook + SSE) ───────────────
     const handleExtractReceipt = useCallback(async () => {

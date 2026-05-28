@@ -17,6 +17,50 @@ export interface KycSubmitResult {
     bookingNumber?: string;
 }
 
+const checkIsExtractedDataUpdated = (extractedData: any): boolean => {
+    try {
+        const isFieldObject = (obj: any): boolean => {
+            try {
+                return obj !== null && typeof obj === 'object' && !Array.isArray(obj) && 'value' in obj && 'initialValue' in obj;
+            } catch {
+                return false;
+            }
+        };
+
+        const isFieldUpdated = (fieldValue: any): boolean => {
+            try {
+                const initial = fieldValue?.initialValue;
+                const current = fieldValue?.value;
+
+                if (!initial || typeof initial !== 'string') return false;
+
+                return (
+                    String(current ?? '')
+                        .trim()
+                        .toUpperCase() !== initial.trim().toUpperCase()
+                );
+            } catch {
+                return false;
+            }
+        };
+
+        const traverse = (node: any): boolean => {
+            try {
+                if (node === null || node === undefined || typeof node !== 'object') return false;
+                if (Array.isArray(node)) return node.some(item => traverse(item));
+                if (isFieldObject(node)) return isFieldUpdated(node);
+                return Object.values(node).some(val => traverse(val));
+            } catch {
+                return false;
+            }
+        };
+
+        return traverse(extractedData);
+    } catch {
+        return false;
+    }
+};
+
 export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubmit }: UseSubmitKycOptions) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
 
@@ -100,8 +144,8 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                     const eonBookingNo = result.EONBOOKINGNO;
                                     const bookingNo = result.BOOKINGNO;
                                     console.log('EONBOOKINGNO: ', eonBookingNo);
-                                    console.log('BOOKINGNO: ', bookingNo);
 
+                                    const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
                                     // Update local state with enriched order
                                     if (eonBookingNo && onOrderUpdate) {
                                         const updatedOrder: Order = {
@@ -109,6 +153,10 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                             orderDetails: {
                                                 ...order.orderDetails,
                                                 orderStatus: 'submitted'
+                                            },
+                                            extractionDetails: {
+                                                ...order.extractionDetails,
+                                                isExtractedDataUpdated
                                             },
                                             maraekatDetails: {
                                                 ...order.maraekatDetails,
