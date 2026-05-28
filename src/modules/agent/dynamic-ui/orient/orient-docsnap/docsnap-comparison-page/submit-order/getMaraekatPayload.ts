@@ -146,6 +146,11 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
         return '';
     };
+    const checkIsUniversityLetterAvailable = () => {
+        const value = extractedData?.university_letter?.is_university_letter_available?.value || '';
+        if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
+        return '';
+    };
     const checkIsVisaAvailable = () => {
         const value = extractedData?.visa?.is_visa_available?.value || '';
         if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
@@ -205,6 +210,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         // Fields required for conditions(We are not sending these fields to Maraekat)
         PRODUCT_TYPES: getProductType(),
         IsEmploymentLetterAvailable: checkIsEmploymentLetterAvailable(),
+        IsUniversityLetterAvailable: checkIsUniversityLetterAvailable(),
         IsVisaAvailable: checkIsVisaAvailable()
     };
 
