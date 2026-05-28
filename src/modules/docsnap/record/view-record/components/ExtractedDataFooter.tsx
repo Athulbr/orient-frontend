@@ -2,6 +2,7 @@ import { Button } from '../../../../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
 import { useViewRecordState } from '../hooks/viewRecordContext';
+import { useTallyApi } from '../hooks/useTallyApi';
 import { RefreshCw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
@@ -19,7 +20,8 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
-    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument, getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, listPurchaseAccountLedgersApi, listSundryCreditorLedgersApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useViewRecordApi();
+    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument } = useViewRecordApi();
+    const { getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, listPurchaseAccountLedgersApi, listSundryCreditorLedgersApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useTallyApi();
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLedgerDialog, setShowLedgerDialog] = useState(false);
@@ -67,7 +69,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         return true;
     };
 
-    const reconcilation = (remainingBalanceRaw: unknown): boolean => {
+    const reconcilation = (remainingBalanceRaw: unknown, balanceQuantityRaw: unknown): boolean => {
         const taxableAmountRaw = state.objectFields?.summary_totals?.taxable_amount?.value;
         const taxableAmount = Number(`${taxableAmountRaw ?? ''}`.replace(/,/g, '').trim());
         const remainingBalance = Number(`${remainingBalanceRaw ?? ''}`.replace(/,/g, '').trim());
@@ -80,6 +82,19 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         if (Number.isNaN(remainingBalance)) {
             toast.error('Remaining balance is missing');
             return false;
+        }
+
+        const invoiceQty = Number(`${state.objectFields?.tax_details?.quantity?.value ?? ''}`.trim());
+        const balanceQuantity = Number(`${balanceQuantityRaw ?? ''}`.trim());
+        if (!Number.isNaN(invoiceQty) && !Number.isNaN(balanceQuantity)) {
+            if (balanceQuantity <= 0) {
+                toast.error('PO quantity is fully consumed');
+                return false;
+            }
+            if (invoiceQty > balanceQuantity) {
+                toast.error(`Invoice quantity (${invoiceQty}) exceeds PO balance quantity (${balanceQuantity})`);
+                return false;
+            }
         }
 
         if (remainingBalance < taxableAmount) {
@@ -162,7 +177,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     }
 
                     const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
-                    const isReconciled = reconcilation(remainingBalance);
+                    const isReconciled = reconcilation(remainingBalance, bestMatchedPO?.balanceQuantity);
                     if (!isReconciled) return;
                     setPoDueDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date ?? null);
                 } else {
@@ -440,6 +455,14 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 closeDialog={() => setShowTallyDialog(false)}
                 primaryButtonText="Done"
                 onPrimaryAction={async () => {
+                    if (!tallySelections.stockItemName) {
+                        toast.error('Please select a stock item name to proceed');
+                        return;
+                    }
+                    if (!tallySelections.purchaseLedgerName) {
+                        toast.error('Please select a purchase ledger name to proceed');
+                        return;
+                    }
                     setShowTallyDialog(false);
                     await handleSubmit(true);
                 }}
@@ -494,12 +517,16 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 closeDialog={() => setShowLedgerDialog(false)}
                 primaryButtonText="Done"
                 onPrimaryAction={async () => {
+                    if (!selectedLedger) {
+                        toast.error('Please select a ledger to proceed');
+                        return;
+                    }
                     const payload = {
                         extractedData: state.record?.extractedData,
                         config: {
                             ledger: selectedLedger,
                             tallyLedgers: tallySelections,
-                            poDueDate : poDueDate
+                            poDueDate: poDueDate
                         }
                     };
                     await createPurchaseVoucher(payload);
@@ -513,7 +540,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                         options={ledgerOptions}
                         onValueChange={value => {
                             setSelectedLedger(value);
-                            console.log('selectedLedger:', value);
+                            // console.log('selectedLedger:', value);
                         }}
                         placeholder="Select a ledger"
                         className="w-full"
