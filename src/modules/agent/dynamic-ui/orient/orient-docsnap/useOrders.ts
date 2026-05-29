@@ -515,8 +515,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     body: JSON.stringify({
                         orderNumber: orderNumber,
                         order: order,
-                        templateId: agentSettings?.defaultTemplateId || '',
-                        templateName: agentSettings?.templates?.[0]?.name || 'Orient Document Extractor V1',
+                        templateName: order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY',
                         documents: payloadDocuments
                     })
                 });

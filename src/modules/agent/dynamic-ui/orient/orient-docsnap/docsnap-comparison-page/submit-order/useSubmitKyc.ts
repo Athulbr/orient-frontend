@@ -78,7 +78,10 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         }
 
         // Step 2: Validate passenger name against passport
-        if (!(extractedData?.travel_itinerary?.passenger_name?.value || '').toUpperCase().includes(extractedData?.passport?.first_name?.value.toUpperCase())) {
+        if (
+            order.orderDetails?.orderType === 'sell' &&
+            !(extractedData?.travel_itinerary?.passenger_name?.value || '').toUpperCase().includes(extractedData?.passport?.first_name?.value.toUpperCase())
+        ) {
             const accepted = confirm(
                 `Passenger name does not match passport name.\nPassport name: ${extractedData?.passport?.first_name?.value} ${extractedData?.passport?.last_name?.value}\nTicket name: ${extractedData?.travel_itinerary?.passenger_name?.value}\n\nProceed anyway?`
             );
