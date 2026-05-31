@@ -113,8 +113,12 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         Immigration: 'I'
     };
     const getPurposeKey = () => {
+        const nationality = getNationality();
         if (orderType === 'buy') {
-            return 'E';
+            if (order.orderDetails?.residentialStatus === 'resident') return 'S';
+            if (order.orderDetails?.residentialStatus === 'non-resident') return 'E';
+            if (nationality.trim().toUpperCase() === 'INDIAN') return 'S';
+            if (nationality.trim().toUpperCase() !== 'INDIAN') return 'E';
         }
         const purpose = order.orderDetails?.purpose || '';
         if (!purpose) {
@@ -171,11 +175,11 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         if (orderType === 'buy') return extractedData?.user_identity_details?.gender?.value || '';
         return '';
     };
-    const getNationality = () => {
+    function getNationality() {
         if (orderType === 'sell') return extractedData?.passport?.nationality?.value || '';
         if (orderType === 'buy') return extractedData?.user_identity_details?.nationality?.value || '';
         return '';
-    };
+    }
     const getFirstName = () => {
         if (orderType === 'sell') return extractedData?.passport?.first_name?.value || '';
         if (orderType === 'buy') return extractedData?.user_identity_details?.first_name?.value || '';
