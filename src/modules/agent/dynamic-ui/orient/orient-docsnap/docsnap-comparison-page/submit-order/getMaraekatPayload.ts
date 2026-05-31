@@ -190,6 +190,11 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         if (orderType === 'buy') return extractedData?.user_identity_details?.last_name?.value || '';
         return '';
     };
+    const getPaxName = () => {
+        if (orderType === 'sell') return extractedData?.passport?.pax_name?.value || '';
+        if (orderType === 'buy') return extractedData?.pan_card?.pan_card_holder_name?.value || '';
+        return '';
+    };
 
     const payload = {
         BRANCHCODE: getBranchCode(),
@@ -200,7 +205,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         SOURCEFROM: getSourceFrom(),
         HANDLEDBY: 'SAJI',
         BOOKEDBY: 'SHAILESH',
-        PAXNAME: extractedData?.pan_card?.pax_name?.value || '',
+        PAXNAME: getPaxName(),
         PASSPORTNO: (extractedData?.passport?.passport_number?.value || '').replace(/ /g, ''),
         PASSPORT_ISSUEFROM: extractedData?.passport?.passport_issued_from?.value || '',
         PASSPORT_ISSUEDATE: dateValues.PASSPORT_ISSUEDATE,
