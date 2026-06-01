@@ -195,6 +195,11 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         if (orderType === 'buy') return extractedData?.pan_card?.pan_card_holder_name?.value || '';
         return '';
     };
+    const getResidentStatus = () => {
+        if (orderType === 'sell') return order.orderDetails?.residentialStatus;
+        if (orderType === 'buy') return order.orderDetails?.residentialStatus === 'non-resident' ? 'FOREIGNER' : 'RESIDENT';
+        return '';
+    };
 
     const payload = {
         BRANCHCODE: getBranchCode(),
@@ -243,7 +248,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         ARRIVALDATE: dateValues.ARRIVALDATE,
         ROUTE: extractedData?.travel_itinerary?.route?.value || '',
         PurposeofTransaction: getPurposeKey(),
-        ResidentStatus: order.orderDetails?.residentialStatus,
+        ResidentStatus: getResidentStatus(),
         LoanAmount: getLoanAmount(),
         StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || '',
         // Fields required for conditions(We are not sending these fields to Maraekat)
