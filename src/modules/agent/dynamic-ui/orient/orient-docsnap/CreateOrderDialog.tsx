@@ -311,7 +311,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 }}
                                 options={[
                                     { value: 'resident', label: 'Resident' },
-                                    { value: 'non-resident', label: 'Non-Resident' }
+                                    { value: 'non-resident', label: 'Non-Resident' },
+                                    { value: 'foreigner ', label: 'Foreigner' }
                                 ]}
                                 className={`w-full ${errors.residentialStatus ? '[&>button]:border-red-500' : ''}`}
                                 placeholder="Select Residential Status"

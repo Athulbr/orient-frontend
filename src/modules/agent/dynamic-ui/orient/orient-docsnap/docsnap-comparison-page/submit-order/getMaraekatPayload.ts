@@ -197,7 +197,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
     };
     const getResidentStatus = () => {
         if (orderType === 'sell') return order.orderDetails?.residentialStatus;
-        if (orderType === 'buy') return order.orderDetails?.residentialStatus === 'non-resident' ? 'FOREIGNER' : 'RESIDENT';
+        if (orderType === 'buy') return order.orderDetails?.residentialStatus;
         return '';
     };
 
