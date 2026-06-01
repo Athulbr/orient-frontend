@@ -175,7 +175,7 @@ const CreatePoDialog: React.FC = () => {
             onSecondaryAction={closeDialog}
             onPrimaryAction={handleSubmit}
         >
-            <div className="flex flex-col gap-4 p-1 min-w-140">
+            <div className="flex flex-col gap-4 p-1 min-w-140 m-4">
                 <div className="grid grid-cols-2 gap-4">
                     <PoField label="Party Ledger Name">
                         <SingleSelect
