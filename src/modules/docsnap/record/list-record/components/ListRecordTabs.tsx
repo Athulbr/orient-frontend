@@ -1,4 +1,4 @@
-type TabOption = 'records' | 'PO';
+type TabOption = 'Invoice' | 'PO';
 
 interface ListRecordTabsProps {
     activeTab: TabOption;
@@ -8,7 +8,7 @@ interface ListRecordTabsProps {
 export const ListRecordTabs: React.FC<ListRecordTabsProps> = ({ activeTab, onChange }) => {
     return (
         <div className="flex border-b border-gray-200">
-            {(['records', 'PO'] as TabOption[]).map((tab) => (
+            {(['Invoice', 'PO'] as TabOption[]).map((tab) => (
                 <button
                     key={tab}
                     onClick={() => {

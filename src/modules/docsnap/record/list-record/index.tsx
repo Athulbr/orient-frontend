@@ -78,10 +78,11 @@ const initialState = {
 
 const ListRecordPage: React.FC = () => {
     const [state, setState] = useState<ListRecordPageStateIF>(initialState);
-    const [activeTab, setActiveTab] = useState<TabOption>('records');
+    const [activeTab, setActiveTab] = useState<TabOption>('Invoice');
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const { checkPermission, role } = usePermissionStore();
+    const moduleName = sessionStorage.getItem('module');
     const isAdminUser = !!role && ['admin', 'superadmin'].includes((role?.name || '').toLowerCase());
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -96,8 +97,8 @@ const ListRecordPage: React.FC = () => {
         <ListRecordPageStateProvider value={{ state, setState }}>
             <PageContainer className="gap-4 p-6">
                 <Breadcrumbs page="listRecord" />
-                <ListRecordTabs activeTab={activeTab} onChange={setActiveTab} />
-                {activeTab === 'records' ? (
+                {moduleName === 'tally' && <ListRecordTabs activeTab={activeTab} onChange={setActiveTab} />}
+                {activeTab === 'Invoice' ? (
                     <>
                         <PageNameComponent
                             name={`List of ${selectedFilter.status ? selectedFilter.status?.charAt(0).toUpperCase() + selectedFilter.status?.slice(1) : 'All'} Records`}

@@ -23,6 +23,7 @@ const AuthenticatedRoutes = () => {
     const ppeDetectionModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'ppeDetection:module');
     const invoiceTracking = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'invoiceTracking:module');
     const contentCreation = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'contentCreation:module');
+    const tallyModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'tally:module');
 
     const module = docsnapModule
         ? 'docsnap'
@@ -40,7 +41,9 @@ const AuthenticatedRoutes = () => {
                     ? 'invoice-tracking'
                     : contentCreation
                       ? 'content-creation'
-                      : 'none';
+                      : tallyModule
+                        ? 'tally'
+                        : 'none';
     module !== 'none' && sessionStorage.setItem('module', module);
     const role = JSON.parse(sessionStorage.getItem('role') || '{}');
     const selectedModule = sessionStorage.getItem('module') || 'docsnap';
@@ -54,6 +57,7 @@ const AuthenticatedRoutes = () => {
         'ppe-detection': '/ppe-detection',
         'invoice-tracking': '/invoice-tracking',
         'content-creation': '/content-creation',
+        tally: '/tally',
         none: '/docsnap'
     };
     return (
@@ -66,6 +70,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="sld/*" element={<DocSnapRoutes />} />
                 <Route path="invoice-tracking/*" element={<DocSnapRoutes />} />
                 <Route path="content-creation/*" element={<DocSnapRoutes />} />
+                <Route path="tally/*" element={<DocSnapRoutes />} />
                 <Route path="document-generation/*" element={<DocSnapRoutes />} />
                 <Route path="user/*" element={<UserRoutes />} />
                 <Route path="config/*" element={<ConfigRoutes />} />
@@ -80,6 +85,7 @@ const AuthenticatedRoutes = () => {
                 <Route path="/ppe-detection" element={<DashboardPage module="ppe-detection" />} />
                 <Route path="/content-creation/view/:id" element={<ContentCreationEditor />} />
                 <Route path="/content-creation" element={<DashboardPage module="content-creation" />} />
+                <Route path="/tally" element={<DashboardPage module="tally" />} />
                 <Route path="/" element={<Navigate to={paths[module]} replace />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
