@@ -254,6 +254,13 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                             checked={productType.includes(type.value)}
                                             onChange={e => {
                                                 const newTypes = e.target.checked ? [...productType, type.value] : productType.filter(t => t !== type.value);
+                                                
+                                                if (orderType === 'buy' && newTypes.includes('card')) {
+                                                    if (residentialStatus !== 'resident') {
+                                                        setResidentialStatus('resident');
+                                                    }
+                                                }
+
                                                 setProductType(newTypes);
                                                 if (errors.productType && newTypes.length > 0) {
                                                     setErrors(prev => ({ ...prev, productType: '' }));
@@ -308,12 +315,28 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 onValueChange={val => {
                                     setResidentialStatus(val);
                                     if (errors.residentialStatus) setErrors(prev => ({ ...prev, residentialStatus: '' }));
+                                    
+                                    if (val.trim() === 'foreigner') {
+                                        if (productType.includes('card')) {
+                                            setProductType(prev => {
+                                                const newTypes = prev.filter(t => t !== 'card');
+                                                if (!newTypes.includes('currency')) {
+                                                    return [...newTypes, 'currency'];
+                                                }
+                                                return newTypes;
+                                            });
+                                        }
+                                    }
                                 }}
                                 options={[
                                     { value: 'resident', label: 'Resident' },
                                     { value: 'non-resident', label: 'Non-Resident' },
                                     { value: 'foreigner ', label: 'Foreigner' }
-                                ]}
+                                ].filter(opt => {
+                                    if (productType.includes('card')) return opt.value === 'resident';
+                                    if (productType.includes('currency')) return true;
+                                    return true;
+                                })}
                                 className={`w-full ${errors.residentialStatus ? '[&>button]:border-red-500' : ''}`}
                                 placeholder="Select Residential Status"
                                 position="top"
