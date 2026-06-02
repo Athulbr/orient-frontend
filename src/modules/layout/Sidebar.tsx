@@ -1,4 +1,4 @@
-import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFixed, FileCheck, FileSpreadsheet } from 'lucide-react';
+import { AudioLines, CircuitBoard, FilePenLine, FileText, Settings, X, LocateFixed, FileCheck, FileSpreadsheet, Calculator } from 'lucide-react';
 import { cn } from '../../global-utils/twMerge';
 import { useNavigate } from 'react-router-dom';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
@@ -74,6 +74,14 @@ export const SidebarComponent: React.FC<SidebarComponentIF> = ({ showSidebar = f
             key: 'content-creation',
             permission: 'contentCreation:module',
             description: 'Create and manage content with advanced tools for spreadsheets and data manipulation.'
+        },
+        {
+            name: 'Tally',
+            icon: <Calculator size={26} strokeWidth={2} className="text-white" />,
+            path: '/tally',
+            key: 'tally',
+            permission: 'tally:module',
+            description: 'Track and manage tallies with streamlined workflows and reporting.'
         }
     ];
 

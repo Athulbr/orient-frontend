@@ -13,6 +13,8 @@ import ExcelExportBuilder, { ExcelSheetConfig } from './components/ExcelExportBu
 import { ListRecordCustomTable } from './ListRecordCustomTable';
 import { PromptFieldIF } from '../../prompt-tuning/interface';
 import { useRecordListTour } from '../../../inApp-Tour/hooks/useRecordListTour';
+import { ListRecordTabs, TabOption } from './components/ListRecordTabs';
+import { ListPoCustomTable } from './ListPoCustomTable';
 interface Project {
     _id: string;
     name: string;
@@ -76,9 +78,11 @@ const initialState = {
 
 const ListRecordPage: React.FC = () => {
     const [state, setState] = useState<ListRecordPageStateIF>(initialState);
+    const [activeTab, setActiveTab] = useState<TabOption>('Invoice');
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const { checkPermission, role } = usePermissionStore();
+    const moduleName = sessionStorage.getItem('module');
     const isAdminUser = !!role && ['admin', 'superadmin'].includes((role?.name || '').toLowerCase());
     const selectedFilter = params.get('status') || '' ? { status: params.get('status') || '' } : {};
     const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -93,38 +97,52 @@ const ListRecordPage: React.FC = () => {
         <ListRecordPageStateProvider value={{ state, setState }}>
             <PageContainer className="gap-4 p-6">
                 <Breadcrumbs page="listRecord" />
-                <PageNameComponent
-                    name={`List of ${selectedFilter.status ? selectedFilter.status?.charAt(0).toUpperCase() + selectedFilter.status?.slice(1) : 'All'} Records`}
-                    showBackButton
-                    customGoBackFunction={() => navigate('/')}
-                >
-                    <div className="flex gap-2">
-                        {/* <Button outlined onClick={() => navigate('/config/exportbuilder/quick-report')}>
-                            Quick Report
-                        </Button> */}
-                        {/* {isAdminUser && ( */}
-                            <Button permission="export:record" outlined onClick={() => navigate('/config/exportbuilder/list')}>
-                                Export Records
-                            </Button>
-                        {/* )} */}
-                        <Button outlined onClick={() => navigate('/docsnap/template/list')}>
-                            Manage Templates
-                        </Button>
-                    </div>
-                </PageNameComponent>
-                {/* <ListRecordComponent /> */}
-                <ListRecordCustomTable />
-                <DialogComponent
-                    fullScreen
-                    isOpen={state.showExcelExportDialog}
-                    closeDialog={() => setState(prev => ({ ...prev, showExcelExportDialog: false }))}
-                >
-                    <div className="h-screen w-screen flex flex-col overflow-y-auto">
-                        <ExcelExportDialogNew template={sheets} inputData={[]} />
-                        <ExcelExportBuilder sheets={sheets} setSheets={setSheets} />
-                    </div>
-                    {/* <ExcelPreviewComponent recordData={sampleRecordData} template={sampleExcelTemplate} /> */}
-                </DialogComponent>
+                {moduleName === 'tally' && <ListRecordTabs activeTab={activeTab} onChange={setActiveTab} />}
+                {activeTab === 'Invoice' ? (
+                    <>
+                        <PageNameComponent
+                            name={`List of ${selectedFilter.status ? selectedFilter.status?.charAt(0).toUpperCase() + selectedFilter.status?.slice(1) : 'All'} Records`}
+                            showBackButton
+                            customGoBackFunction={() => navigate('/')}
+                        >
+                            <div className="flex gap-2">
+                                {/* <Button outlined onClick={() => navigate('/config/exportbuilder/quick-report')}>
+                                    Quick Report
+                                </Button> */}
+                                {/* {isAdminUser && ( */}
+                                    <Button permission="export:record" outlined onClick={() => navigate('/config/exportbuilder/list')}>
+                                        Export Records
+                                    </Button>
+                                {/* )} */}
+                                <Button outlined onClick={() => navigate('/docsnap/template/list')}>
+                                    Manage Templates
+                                </Button>
+                            </div>
+                        </PageNameComponent>
+                        {/* <ListRecordComponent /> */}
+                        <ListRecordCustomTable />
+                        <DialogComponent
+                            fullScreen
+                            isOpen={state.showExcelExportDialog}
+                            closeDialog={() => setState(prev => ({ ...prev, showExcelExportDialog: false }))}
+                        >
+                            <div className="h-screen w-screen flex flex-col overflow-y-auto">
+                                <ExcelExportDialogNew template={sheets} inputData={[]} />
+                                <ExcelExportBuilder sheets={sheets} setSheets={setSheets} />
+                            </div>
+                            {/* <ExcelPreviewComponent recordData={sampleRecordData} template={sampleExcelTemplate} /> */}
+                        </DialogComponent>
+                    </>
+                ) : (
+                    <>
+                        <PageNameComponent
+                            name="List of PO"
+                            showBackButton
+                            customGoBackFunction={() => navigate('/')}
+                        />
+                        <ListPoCustomTable />
+                    </>
+                )}
             </PageContainer>
         </ListRecordPageStateProvider>
     );
