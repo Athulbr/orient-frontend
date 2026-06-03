@@ -97,13 +97,14 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
             setResultMessage({ type: 'error', messages: dateErrors });
             return { success: false };
         }
+        const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
 
         // Step 4: Call submit API
         try {
             const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order-3`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: payload })
+                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated })
             });
 
             if (!response.ok) {
@@ -149,7 +150,6 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                     console.log('EONBOOKINGNO: ', eonBookingNo);
 
                                     const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
-                                    console.log('isExtractedDataUpdated: ', isExtractedDataUpdated);
                                     // Update local state with enriched order
                                     if (eonBookingNo && onOrderUpdate) {
                                         const updatedOrder: Order = {
