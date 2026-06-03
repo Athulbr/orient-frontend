@@ -256,7 +256,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         IsEmploymentLetterAvailable: checkIsEmploymentLetterAvailable(),
         IsUniversityLetterAvailable: checkIsUniversityLetterAvailable(),
         IsVisaAvailable: checkIsVisaAvailable(),
-        IsTotalAmountMoreThan50K: order.orderDetails.totalAmount > 50000 ? 'YES' : 'NO'
+        IsTotalAmountMoreThan50K: extractedData?.loan_details?.loan_amount?.value || 0 > 50000 ? 'YES' : 'NO'
     };
 
     const uppercasedPayload = Object.keys(payload).reduce(

@@ -317,23 +317,10 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 onValueChange={val => {
                                     setResidentialStatus(val);
                                     if (errors.residentialStatus) setErrors(prev => ({ ...prev, residentialStatus: '' }));
-
-                                    if (val.trim() === 'foreigner') {
-                                        if (productType.includes('card')) {
-                                            setProductType(prev => {
-                                                const newTypes = prev.filter(t => t !== 'card');
-                                                if (!newTypes.includes('currency')) {
-                                                    return [...newTypes, 'currency'];
-                                                }
-                                                return newTypes;
-                                            });
-                                        }
-                                    }
                                 }}
                                 options={[
                                     { value: 'resident', label: 'Resident' },
-                                    { value: 'non-resident', label: 'Non-Resident' },
-                                    { value: 'foreigner ', label: 'Foreigner' }
+                                    { value: 'non-resident', label: 'Non-Resident' }
                                 ].filter(opt => {
                                     if (productType.includes('card')) return opt.value === 'resident';
                                     if (productType.includes('currency')) return true;
