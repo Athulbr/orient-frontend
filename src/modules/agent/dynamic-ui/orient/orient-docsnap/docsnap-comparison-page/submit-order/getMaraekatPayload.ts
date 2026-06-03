@@ -191,8 +191,8 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         return '';
     };
     const getPaxName = () => {
-        if (orderType === 'sell') return extractedData?.passport?.pax_name?.value || '';
-        if (orderType === 'buy') return extractedData?.pan_card?.pan_card_holder_name?.value || '';
+        if (orderType === 'sell') return extractedData?.pan_card?.pax_name?.value || '';
+        if (orderType === 'buy') return extractedData?.user_identity_details?.pax_name?.value || '';
         return '';
     };
     const getResidentStatus = () => {

@@ -96,13 +96,15 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             // generate random 6 digit user ID
             const userId = Math.floor(100000 + Math.random() * 900000);
 
-            // generate orderNumber: year+month+day+timestamp
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const timestamp = now.getTime().toString().slice(-6);
-            const orderNumber = Number(`${year}${month}${day}${timestamp}`);
+            // generate orderNumber
+            const generateRandomOrderNumber = () => {
+                const timestamp = Math.floor(Date.now() / 1000);
+                const random4Digits = Math.floor(Math.random() * 10000)
+                    .toString()
+                    .padStart(4, '0');
+
+                return Number(`${timestamp}${random4Digits}`);
+            };
 
             const getBranchName = () => {
                 const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
@@ -113,7 +115,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             const newOrder: Order = {
                 orderDetails: {
                     orderId,
-                    orderNumber,
+                    orderNumber: generateRandomOrderNumber(),
                     orderType,
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
@@ -254,7 +256,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                             checked={productType.includes(type.value)}
                                             onChange={e => {
                                                 const newTypes = e.target.checked ? [...productType, type.value] : productType.filter(t => t !== type.value);
-                                                
+
                                                 if (orderType === 'buy' && newTypes.includes('card')) {
                                                     if (residentialStatus !== 'resident') {
                                                         setResidentialStatus('resident');
@@ -315,7 +317,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 onValueChange={val => {
                                     setResidentialStatus(val);
                                     if (errors.residentialStatus) setErrors(prev => ({ ...prev, residentialStatus: '' }));
-                                    
+
                                     if (val.trim() === 'foreigner') {
                                         if (productType.includes('card')) {
                                             setProductType(prev => {

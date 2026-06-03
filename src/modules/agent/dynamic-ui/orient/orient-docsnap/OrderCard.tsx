@@ -328,7 +328,11 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {extractionSeconds > 0 && <span className="text-[13px] font-medium text-green-500 ">{extractionSeconds}s</span>}
+                    {extractionSeconds > 0 ? (
+                        <span className="text-[13px] font-medium text-green-500 ">{extractionSeconds}s</span>
+                    ) : order.extractionDetails?.extractionDuration ? (
+                        <span className="text-[13px] font-medium text-green-500 ">{order.extractionDetails?.extractionDuration}s</span>
+                    ) : null}
                     {!order.extractionDetails?.recordId ? (
                         <Button
                             startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
