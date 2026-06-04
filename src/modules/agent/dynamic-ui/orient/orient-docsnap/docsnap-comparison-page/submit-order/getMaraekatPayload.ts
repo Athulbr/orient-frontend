@@ -228,7 +228,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         MOBILENO: order.userDetails?.phone,
         EMAILID: order.userDetails?.email,
         PARENTNAME: extractedData?.pan_card?.parent_name?.value || '',
-        VOTERCARDNO: extractedData?.voter_id_card?.voter_card_number?.value || '',
+        VOTERCARDNO: extractedData?.user_identity_details?.voter_card_number?.value || '',
         FIRSTNAME: getFirstName(),
         LASTNAME: getLastName(),
         DRIVINGLICNO: extractedData?.user_identity_details?.driving_licence_number?.value || '',
