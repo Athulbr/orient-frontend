@@ -231,7 +231,7 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         VOTERCARDNO: extractedData?.voter_id_card?.voter_card_number?.value || '',
         FIRSTNAME: getFirstName(),
         LASTNAME: getLastName(),
-        DRIVINGLICNO: extractedData?.driving_licence?.driving_licence_number?.value || '',
+        DRIVINGLICNO: extractedData?.user_identity_details?.driving_licence_number?.value || '',
         BuildingFlatNO: extractedData?.user_identity_details?.building_or_flat_number?.value || '',
         STREETNAME: extractedData?.user_identity_details?.street_name?.value || '',
         LOCATION: extractedData?.user_identity_details?.location?.value || '',
