@@ -72,9 +72,10 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
             alert('Only Indian passports are allowed for submission.');
         }
 
-        // ── Email duplicate check ───────────────────────────────────────
+        // ── Email duplicate check (skip if EON number already exists) ──
         const userEmail = order?.userDetails?.email;
-        if (userEmail) {
+        const hasEonNumber = Boolean(order?.maraekatDetails?.eonBookingNumber);
+        if (userEmail && !hasEonNumber) {
             try {
                 const res = await fetch(`${config.workflowService}/api/orders/check-email?email=${encodeURIComponent(userEmail)}`);
                 if (res.ok) {

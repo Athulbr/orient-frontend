@@ -468,6 +468,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     // ── Proceed / Extract (#1 — ref, #2 — dynamic webhook, #6 — log errors, #22 — toast not alert) ──
     const handleProceed = useCallback(
         async (orderNumber: number) => {
+            const extractionStartTime = Date.now();
             const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
             if (!order) return;
 
@@ -515,8 +516,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     body: JSON.stringify({
                         orderNumber: orderNumber,
                         order: order,
-                        templateId: agentSettings?.defaultTemplateId || '',
-                        templateName: agentSettings?.templates?.[0]?.name || 'Orient Document Extractor V1',
+                        templateName: order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY',
                         documents: payloadDocuments
                     })
                 });
@@ -557,13 +557,15 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                     if (finalData.extractedData) {
                                         // Use ref (#1, #16)
                                         const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
+                                        const extractionDuration = Math.floor((Date.now() - extractionStartTime) / 1000);
                                         const updateDetails = {
                                             orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
                                             extractionDetails: {
                                                 extractedData: finalData.extractedData,
                                                 recordId: finalData.recordId,
                                                 templateId: agentSettings?.defaultTemplateId || '',
-                                                templateName: agentSettings?.templates?.[0]?.name
+                                                templateName: agentSettings?.templates?.[0]?.name,
+                                                extractionDuration
                                             }
                                         };
 

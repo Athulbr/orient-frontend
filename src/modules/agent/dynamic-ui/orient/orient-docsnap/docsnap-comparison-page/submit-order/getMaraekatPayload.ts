@@ -68,7 +68,8 @@ export interface MaraekatPayloadResult {
 const DATE_FIELDS: { key: string; label: string; getValue: (extractedData: Record<string, any>) => string }[] = [
     { key: 'PASSPORT_ISSUEDATE', label: 'Passport Issue Date', getValue: d => d?.passport?.passport_issue_date?.value || '' },
     { key: 'PASSPORT_EXPIRYDATE', label: 'Passport Expiry Date', getValue: d => d?.passport?.passport_expiry_date?.value || '' },
-    { key: 'DOB', label: 'Date of Birth', getValue: d => d?.passport?.date_of_birth?.value || '' },
+    { key: 'SELL_DOB', label: 'Date of Birth', getValue: d => d?.passport?.date_of_birth?.value || '' },
+    { key: 'BUY_DOB', label: 'Date of Birth', getValue: d => d?.user_identity_details?.date_of_birth?.value || '' },
     { key: 'DEPARTUREDATE', label: 'Departure Date', getValue: d => d?.travel_itinerary?.departure_date?.value || '' },
     { key: 'ARRIVALDATE', label: 'Arrival Date', getValue: d => d?.travel_itinerary?.arrival_date?.value || '' },
     { key: 'PANDOB', label: 'PAN Date of Birth', getValue: d => d?.pan_card?.pan_date_of_birth?.value || '' }
@@ -111,7 +112,15 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         Emigration: 'I',
         Immigration: 'I'
     };
-    const getPurposeKey = (purpose: string) => {
+    const getPurposeKey = () => {
+        const nationality = getNationality();
+        if (orderType === 'buy') {
+            if (order.orderDetails?.residentialStatus === 'resident') return 'S';
+            if (order.orderDetails?.residentialStatus === 'non-resident') return 'E';
+            if (nationality.trim().toUpperCase() === 'INDIAN') return 'S';
+            if (nationality.trim().toUpperCase() !== 'INDIAN') return 'E';
+        }
+        const purpose = order.orderDetails?.purpose || '';
         if (!purpose) {
             return '';
         }
@@ -139,16 +148,56 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
     };
 
     const getLoanAmount = () => {
-        return order.orderDetails?.purpose === 'Education' && order.orderDetails?.isLoanOrder ? order.orderDetails?.totalAmount : '0';
+        return order.orderDetails?.purpose === 'Education' && extractedData?.loan_details?.is_this_order_with_loan?.value === 'YES' ? extractedData?.loan_details?.loan_amount?.value || '0' : '0';
     };
     const checkIsEmploymentLetterAvailable = () => {
         const value = extractedData?.employment_letter?.is_employment_letter_available?.value || '';
         if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
         return '';
     };
+    const checkIsUniversityLetterAvailable = () => {
+        const value = extractedData?.university_letter?.is_university_letter_available?.value || '';
+        if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
+        return '';
+    };
     const checkIsVisaAvailable = () => {
         const value = extractedData?.visa?.is_visa_available?.value || '';
         if (value.toUpperCase() === 'AVAILABLE') return 'AVAILABLE';
+        return '';
+    };
+    const getDOB = () => {
+        if (orderType === 'sell') return dateValues.SELL_DOB;
+        if (orderType === 'buy') return dateValues.BUY_DOB;
+        return '';
+    };
+    const getGender = () => {
+        if (orderType === 'sell') return extractedData?.passport?.gender?.value || '';
+        if (orderType === 'buy') return extractedData?.user_identity_details?.gender?.value || '';
+        return '';
+    };
+    function getNationality() {
+        if (orderType === 'sell') return extractedData?.passport?.nationality?.value || '';
+        if (orderType === 'buy') return extractedData?.user_identity_details?.nationality?.value || '';
+        return '';
+    }
+    const getFirstName = () => {
+        if (orderType === 'sell') return extractedData?.passport?.first_name?.value || '';
+        if (orderType === 'buy') return extractedData?.user_identity_details?.first_name?.value || '';
+        return '';
+    };
+    const getLastName = () => {
+        if (orderType === 'sell') return extractedData?.passport?.last_name?.value || '';
+        if (orderType === 'buy') return extractedData?.user_identity_details?.last_name?.value || '';
+        return '';
+    };
+    const getPaxName = () => {
+        if (orderType === 'sell') return extractedData?.pan_card?.pax_name?.value || '';
+        if (orderType === 'buy') return extractedData?.user_identity_details?.pax_name?.value || '';
+        return '';
+    };
+    const getResidentStatus = () => {
+        if (orderType === 'sell') return order.orderDetails?.residentialStatus;
+        if (orderType === 'buy') return order.orderDetails?.residentialStatus;
         return '';
     };
 
@@ -161,14 +210,14 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         SOURCEFROM: getSourceFrom(),
         HANDLEDBY: 'SAJI',
         BOOKEDBY: 'SHAILESH',
-        PAXNAME: extractedData?.pan_card?.pax_name?.value || '',
+        PAXNAME: getPaxName(),
         PASSPORTNO: (extractedData?.passport?.passport_number?.value || '').replace(/ /g, ''),
         PASSPORT_ISSUEFROM: extractedData?.passport?.passport_issued_from?.value || '',
         PASSPORT_ISSUEDATE: dateValues.PASSPORT_ISSUEDATE,
         PASSPORT_EXPIRYDATE: dateValues.PASSPORT_EXPIRYDATE,
-        DOB: dateValues.DOB,
-        GENDER: extractedData?.passport?.gender?.value || '',
-        NATIONALITY: extractedData?.passport?.nationality?.value || '',
+        DOB: getDOB(),
+        GENDER: getGender(),
+        NATIONALITY: getNationality(),
         PANNO: extractedData?.pan_card?.pan_number?.value || '',
         PANDOB: dateValues.PANDOB,
         PANCARDHOLDERNAME: extractedData?.pan_card?.pan_card_holder_name?.value || '',
@@ -180,8 +229,8 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         EMAILID: order.userDetails?.email,
         PARENTNAME: extractedData?.pan_card?.parent_name?.value || '',
         VOTERCARDNO: extractedData?.voter_id_card?.voter_card_number?.value || '',
-        FIRSTNAME: extractedData?.passport?.first_name?.value || '',
-        LASTNAME: extractedData?.passport?.last_name?.value || '',
+        FIRSTNAME: getFirstName(),
+        LASTNAME: getLastName(),
         DRIVINGLICNO: extractedData?.driving_licence?.driving_licence_number?.value || '',
         BuildingFlatNO: extractedData?.user_identity_details?.building_or_flat_number?.value || '',
         STREETNAME: extractedData?.user_identity_details?.street_name?.value || '',
@@ -198,14 +247,16 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         TRAVELINGCOUNTRY: extractedData?.travel_itinerary?.traveling_country?.value || '',
         ARRIVALDATE: dateValues.ARRIVALDATE,
         ROUTE: extractedData?.travel_itinerary?.route?.value || '',
-        PurposeofTransaction: getPurposeKey(order.orderDetails?.purpose || ''),
-        ResidentStatus: order.orderDetails?.residentialStatus,
+        PurposeofTransaction: getPurposeKey(),
+        ResidentStatus: getResidentStatus(),
         LoanAmount: getLoanAmount(),
         StudentTravellerPAN: extractedData?.student_pan_card?.student_pan_card_number?.value || '',
         // Fields required for conditions(We are not sending these fields to Maraekat)
         PRODUCT_TYPES: getProductType(),
         IsEmploymentLetterAvailable: checkIsEmploymentLetterAvailable(),
-        IsVisaAvailable: checkIsVisaAvailable()
+        IsUniversityLetterAvailable: checkIsUniversityLetterAvailable(),
+        IsVisaAvailable: checkIsVisaAvailable(),
+        IsTotalAmountMoreThan50K: extractedData?.loan_details?.loan_amount?.value || 0 > 50000 ? 'YES' : 'NO'
     };
 
     const uppercasedPayload = Object.keys(payload).reduce(

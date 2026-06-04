@@ -98,9 +98,13 @@ const HeaderComponent: React.FC<HeaderComponentIF> = ({ showSidebar, setShowSide
     };
 
     const navigateToHome = () => {
-        if(Number(sessionStorage.getItem('branch_id')) > 0 ) return;
+        if (localStorage.getItem('is_developer') === 'true') {
+            navigate('/');
+            return;
+        }
+        if (Number(sessionStorage.getItem('branch_id')) > 0) return;
         navigate('/');
-    }
+    };
 
     return (
         <div className="flex min-h-16 justify-between bg-[#012D56]">

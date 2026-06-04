@@ -11,6 +11,7 @@ import { Order } from '../types';
 import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import Spinner from '../../../../../../components/Spinner';
 import FullScreenLoader from '../../../../../../components/FullScreenLoader';
+import { sampleFinalData } from './sampleFinalData';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -860,6 +861,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                     const fieldValue = row[key];
                                     const fieldId = `${groupKey}-${rowIndex}-${key}`;
                                     const fieldEnums = enumsLookup[key];
+                                    const isValueDiff =
+                                        typeof fieldValue?.initialValue === 'string' &&
+                                        String(fieldValue?.value ?? '')
+                                            .trim()
+                                            .toUpperCase() !== fieldValue?.initialValue.trim().toUpperCase();
                                     return (
                                         <td key={key} className="p-4 align-top">
                                             {fieldEnums ? (
@@ -880,7 +886,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className="min-w-[120px]"
+                                                    className={isValueDiff ? 'bg-yellow-100 min-w-[120px]' : 'min-w-[120px]'}
                                                 />
                                             ) : (
                                                 <input
@@ -900,9 +906,10 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className="w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                    className={`w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''}`}
                                                 />
                                             )}
+                                            {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || <span>" "</span>}</div>}
                                         </td>
                                     );
                                 })}
@@ -1191,6 +1198,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                     <div className="flex flex-col gap-5 p-5">
                                         {Object.entries(groupValue).map(([fieldKey, fieldValue]: [string, any]) => {
                                             const fieldEnums = enumsLookup[fieldKey];
+                                            const isValueDiff =
+                                                typeof fieldValue?.initialValue === 'string' &&
+                                                String(fieldValue?.value ?? '')
+                                                    .trim()
+                                                    .toUpperCase() !== fieldValue?.initialValue.trim().toUpperCase();
                                             return (
                                                 <div key={fieldKey} className="flex flex-col space-y-2">
                                                     <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
@@ -1212,17 +1224,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={
-                                                                fieldValue?.initialValue &&
-                                                                String(fieldValue?.value ?? '')
-                                                                    .trim()
-                                                                    .toUpperCase() !==
-                                                                    String(fieldValue?.initialValue ?? '')
-                                                                        .trim()
-                                                                        .toUpperCase()
-                                                                    ? 'bg-yellow-100'
-                                                                    : ''
-                                                            }
+                                                            className={isValueDiff ? 'bg-yellow-100' : ''}
                                                         />
                                                     ) : (
                                                         <input
@@ -1240,19 +1242,11 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={`w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${
-                                                                fieldValue?.initialValue &&
-                                                                String(fieldValue?.value ?? '')
-                                                                    .trim()
-                                                                    .toUpperCase() !==
-                                                                    String(fieldValue?.initialValue ?? '')
-                                                                        .trim()
-                                                                        .toUpperCase()
-                                                                    ? 'bg-yellow-100 focus:bg-yellow-50'
-                                                                    : 'focus:bg-white'
-                                                            }`}
+                                                            className={`w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'}`}
                                                         />
                                                     )}
+
+                                                    {isValueDiff && <div className="ml-2 text-xs text-orange-500">Extracted Value: {fieldValue?.initialValue || <span>" "</span>}</div>}
                                                 </div>
                                             );
                                         })}

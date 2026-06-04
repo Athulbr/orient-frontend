@@ -17,6 +17,50 @@ export interface KycSubmitResult {
     bookingNumber?: string;
 }
 
+const checkIsExtractedDataUpdated = (extractedData: any): boolean => {
+    try {
+        const isFieldObject = (obj: any): boolean => {
+            try {
+                return obj !== null && typeof obj === 'object' && !Array.isArray(obj) && 'value' in obj && 'initialValue' in obj;
+            } catch {
+                return false;
+            }
+        };
+
+        const isFieldUpdated = (fieldValue: any): boolean => {
+            try {
+                const initial = fieldValue?.initialValue;
+                const current = fieldValue?.value;
+
+                if (!initial || typeof initial !== 'string') return false;
+
+                return (
+                    String(current ?? '')
+                        .trim()
+                        .toUpperCase() !== initial.trim().toUpperCase()
+                );
+            } catch {
+                return false;
+            }
+        };
+
+        const traverse = (node: any): boolean => {
+            try {
+                if (node === null || node === undefined || typeof node !== 'object') return false;
+                if (Array.isArray(node)) return node.some(item => traverse(item));
+                if (isFieldObject(node)) return isFieldUpdated(node);
+                return Object.values(node).some(val => traverse(val));
+            } catch {
+                return false;
+            }
+        };
+
+        return traverse(extractedData);
+    } catch {
+        return false;
+    }
+};
+
 export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubmit }: UseSubmitKycOptions) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
 
@@ -34,7 +78,10 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         }
 
         // Step 2: Validate passenger name against passport
-        if (!(extractedData?.travel_itinerary?.passenger_name?.value || '').toUpperCase().includes(extractedData?.passport?.first_name?.value.toUpperCase())) {
+        if (
+            order.orderDetails?.orderType === 'sell' &&
+            !(extractedData?.travel_itinerary?.passenger_name?.value || '').toUpperCase().includes(extractedData?.passport?.first_name?.value.toUpperCase())
+        ) {
             const accepted = confirm(
                 `Passenger name does not match passport name.\nPassport name: ${extractedData?.passport?.first_name?.value} ${extractedData?.passport?.last_name?.value}\nTicket name: ${extractedData?.travel_itinerary?.passenger_name?.value}\n\nProceed anyway?`
             );
@@ -50,13 +97,14 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
             setResultMessage({ type: 'error', messages: dateErrors });
             return { success: false };
         }
+        const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
 
         // Step 4: Call submit API
         try {
             const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order-3`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: payload })
+                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated })
             });
 
             if (!response.ok) {
@@ -100,8 +148,8 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                     const eonBookingNo = result.EONBOOKINGNO;
                                     const bookingNo = result.BOOKINGNO;
                                     console.log('EONBOOKINGNO: ', eonBookingNo);
-                                    console.log('BOOKINGNO: ', bookingNo);
 
+                                    const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
                                     // Update local state with enriched order
                                     if (eonBookingNo && onOrderUpdate) {
                                         const updatedOrder: Order = {
@@ -113,7 +161,8 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                             maraekatDetails: {
                                                 ...order.maraekatDetails,
                                                 eonBookingNumber: eonBookingNo,
-                                                bookingNumber: bookingNo
+                                                bookingNumber: bookingNo,
+                                                isExtractedDataUpdated: isExtractedDataUpdated
                                             }
                                         };
                                         onOrderUpdate(updatedOrder);
@@ -125,7 +174,8 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                             'orderDetails.orderStatus': 'submitted',
                                             maraekatDetails: {
                                                 eonBookingNumber: eonBookingNo,
-                                                bookingNumber: bookingNo
+                                                bookingNumber: bookingNo,
+                                                isExtractedDataUpdated: isExtractedDataUpdated
                                             }
                                         };
                                         fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {

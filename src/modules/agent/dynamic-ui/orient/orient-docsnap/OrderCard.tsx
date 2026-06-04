@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight, Trash2 } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
@@ -55,6 +55,20 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const [showUploader, setShowUploader] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showRecordDialog, setShowRecordDialog] = useState(false);
+    const [extractionSeconds, setExtractionSeconds] = useState(0);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isProceeding) {
+            setExtractionSeconds(0);
+            interval = setInterval(() => {
+                setExtractionSeconds(prev => prev + 1);
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isProceeding]);
 
     const openRecordDialog = () => {
         setShowRecordDialog(true);
@@ -312,32 +326,45 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         </div>
                     )}
                 </div>
-                {!order.extractionDetails?.recordId ? (
-                    <Button
-                        startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
-                        outlined
-                        onClick={() => onProceed(order.orderDetails?.orderNumber)}
-                        disabled={!hasDocuments || isProceeding}
-                        endIcon={!isProceeding && <ArrowRight size={15} />}
-                    >
-                        {isProceeding ? 'Processing…' : 'Extract Documents'}
-                    </Button>
-                ) : (
-                    <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-3">
+                    {localStorage.getItem('is_developer') === 'true' && (
+                        <div className="w-8">
+                            {extractionSeconds > 0 ? (
+                                <span className="text-[13px] font-medium text-green-500 ">{extractionSeconds}s</span>
+                            ) : order.extractionDetails?.extractionDuration ? (
+                                <span className="text-[13px] font-medium text-green-500 ">{order.extractionDetails?.extractionDuration}s</span>
+                            ) : null}
+                        </div>
+                    )}
+
+                    {!order.extractionDetails?.recordId ? (
                         <Button
-                            hidden={order.orderDetails.orderStatus === 'submitted'}
-                            startIcon={isProceeding ? <Spinner size={12} /> : <RefreshCw size={12} />}
+                            startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
                             outlined
                             onClick={() => onProceed(order.orderDetails?.orderNumber)}
                             disabled={!hasDocuments || isProceeding}
+                            endIcon={!isProceeding && <ArrowRight size={15} />}
                         >
-                            {isProceeding ? 'Processing…' : 'Re-Extract'}
+                            {isProceeding ? 'Processing…' : 'Extract Documents'}
                         </Button>
-                        <Button startIcon={<Eye size={15} />} outlined onClick={openRecordDialog}>
-                            View Extracted Data
-                        </Button>
-                    </div>
-                )}
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <Button
+                                hidden={order.orderDetails.orderStatus === 'submitted'}
+                                startIcon={isProceeding ? <Spinner size={12} /> : <RefreshCw size={12} />}
+                                outlined
+                                onClick={() => onProceed(order.orderDetails?.orderNumber)}
+                                disabled={!hasDocuments || isProceeding}
+                            >
+                                {isProceeding ? 'Processing…' : 'Re-Extract'}
+                            </Button>
+                            <Button startIcon={<Eye size={15} />} outlined onClick={openRecordDialog}>
+                                View Extracted Data
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Delete confirmation dialog */}

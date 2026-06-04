@@ -98,7 +98,6 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
     const [showReceiptComparison, setShowReceiptComparison] = useState(false);
 
     const hasReceipts = (order.receipts?.length || 0) > 0;
-    const hasReceiptExtraction = !!order.receiptExtractionDetails?.recordId;
 
     // ── Extract Receipt handler (webhook + SSE) ───────────────
     const handleExtractReceipt = useCallback(async () => {
@@ -272,7 +271,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                         {onEdit && od.orderStatus !== 'submitted' && (
                             <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
                         )}
-                        {onDelete && od.orderStatus !== 'submitted' && localStorage.getItem('isDeveloper') === 'true' && (
+                        {onDelete && od.orderStatus !== 'submitted' && localStorage.getItem('is_developer') === 'true' && (
                             <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />
                         )}
                     </div>
