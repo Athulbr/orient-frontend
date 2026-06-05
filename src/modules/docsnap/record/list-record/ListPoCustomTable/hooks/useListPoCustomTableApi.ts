@@ -54,7 +54,18 @@ export const useListPoCustomTableApi = () => {
         }
     };
 
-    return { getPoListApi, listSundryCreditorLedgersApi, listPurchaseAccountLedgersApi, listAllStockItemsApi };
+    const listAllUnitsApi = async () => {
+        try {
+            const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/listAllUnits`, {});
+            return response;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to fetch units');
+            return null;
+        }
+    };
+
+    return { getPoListApi, listSundryCreditorLedgersApi, listPurchaseAccountLedgersApi, listAllStockItemsApi, listAllUnitsApi };
 };
 
 export interface CreatePoPayload {

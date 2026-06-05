@@ -1,5 +1,6 @@
 import { memo, useCallback } from 'react';
 import { cn } from '../../../../../global-utils/twMerge';
+import { StatusBadge } from './components/StatusBadge';
 import { useListPoCustomTableState } from './hooks/listPoCustomTableStateContext';
 
 const formatTallyDate = (raw: string) => {
@@ -33,13 +34,12 @@ export const TableBody: React.FC = memo(() => {
     return (
         <tbody className="divide-y divide-gray-200 border-b border-b-gray-200">
             {state.records?.map((row: any) => (
-                <tr key={row.number} className="hover:bg-gray-50 cursor-default">
-                    <td className="px-5 py-4 whitespace-nowrap">
+                <tr key={row.number} className="hover:bg-gray-50 cursor-pointer" onClick={() => setState(prev => ({ ...prev, selectedRecord: row }))}>
+                    <td className="px-5 py-4 whitespace-nowrap" onClick={e => e.stopPropagation()}>
                         <input
                             type="checkbox"
                             checked={state.selectedRows.includes(row.number)}
                             onChange={() => handleRowSelect(row)}
-                            onClick={e => e.stopPropagation()}
                             className="cursor-pointer rounded border-gray-300 p-0 text-blue-600 focus:ring-blue-500"
                         />
                     </td>
@@ -48,6 +48,11 @@ export const TableBody: React.FC = memo(() => {
                     </td>
                     <td className="px-2 py-4 xl:px-5">
                         <div className={cn(rowStyle)}>{row.number || 'N/A'}</div>
+                    </td>
+                    <td className="px-2 py-4 xl:px-5">
+                        <div className={cn(rowStyle)}>
+                            <StatusBadge status={row.status} />
+                        </div>
                     </td>
                     <td className="px-2 py-4 xl:px-5">
                         <div className={cn(rowStyle)} title={row.partyLedgerName}>{row.partyLedgerName || 'N/A'}</div>
@@ -59,16 +64,7 @@ export const TableBody: React.FC = memo(() => {
                         <div className={cn(rowStyle)}>{formatTallyDate(row.closingDate)}</div>
                     </td>
                     <td className="px-2 py-4 xl:px-5">
-                        <div className={cn(rowStyle)}>{row.quantity ?? 'N/A'}</div>
-                    </td>
-                    <td className="px-2 py-4 xl:px-5">
                         <div className={cn(rowStyle)}>{row.balanceQuantity ?? 'N/A'}</div>
-                    </td>
-                    <td className="px-2 py-4 xl:px-5">
-                        <div className={cn(rowStyle)}>{formatCurrency(row.openingBalance)}</div>
-                    </td>
-                    <td className="px-2 py-4 xl:px-5">
-                        <div className={cn(rowStyle)}>{formatCurrency(row.invoicedTotal)}</div>
                     </td>
                     <td className="px-2 py-4 xl:px-5">
                         <div className={cn(rowStyle)}>{formatCurrency(row.remainingBalance)}</div>

@@ -5,13 +5,11 @@ import { useListPoCustomTableState } from './hooks/listPoCustomTableStateContext
 export const columns = [
     { label: 'Reference' },
     { label: 'PO Number' },
+    { label: 'Status' },
     { label: 'Party Ledger' },
     { label: 'Date' },
     { label: 'Closing Date' },
-    { label: 'Qty' },
     { label: 'Balance Qty' },
-    { label: 'Opening Balance' },
-    { label: 'Invoiced Total' },
     { label: 'Remaining Balance' },
 ];
 
