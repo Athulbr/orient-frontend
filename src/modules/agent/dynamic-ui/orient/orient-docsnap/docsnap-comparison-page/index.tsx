@@ -886,7 +886,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className={isValueDiff ? 'bg-yellow-100 min-w-[120px]' : 'min-w-[120px]'}
+                                                    className={`${isValueDiff ? 'bg-yellow-100 min-w-[120px]' : 'min-w-[120px]'} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
                                                 />
                                             ) : (
                                                 <input
@@ -906,7 +906,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className={`w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''}`}
+                                                    className={`w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
                                                 />
                                             )}
                                             {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || <span>" "</span>}</div>}
@@ -1205,9 +1205,24 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                     .toUpperCase() !== fieldValue?.initialValue.trim().toUpperCase();
                                             return (
                                                 <div key={fieldKey} className="flex flex-col space-y-2">
-                                                    <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
-                                                        {fieldKey.replace(/_/g, ' ')}
-                                                    </label>
+                                                    <div className="flex justify-between">
+                                                        <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
+                                                            {fieldKey.replace(/_/g, ' ')}
+                                                        </label>
+                                                        {/* <div
+                                                            className={`text-xs pr-2 ${
+                                                                fieldValue?.confidence != null
+                                                                    ? fieldValue.confidence > 0.75
+                                                                        ? 'text-green-500'
+                                                                        : fieldValue.confidence >= 0.6
+                                                                          ? 'text-orange-500'
+                                                                          : 'text-red-500'
+                                                                    : ''
+                                                            }`}
+                                                        >
+                                                            {fieldValue?.confidence != null ? (fieldValue.confidence * 100).toFixed(0) + '%' : ''}
+                                                        </div> */}
+                                                    </div>
                                                     {fieldEnums ? (
                                                         <SearchableSelect
                                                             id={`input-${groupKey}-${fieldKey}`}
@@ -1224,7 +1239,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={isValueDiff ? 'bg-yellow-100' : ''}
+                                                            className={`${isValueDiff ? 'bg-yellow-100' : ''} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
                                                         />
                                                     ) : (
                                                         <input
@@ -1242,7 +1257,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={`w-full rounded-md border border-gray-400 px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'}`}
+                                                            className={`w-full rounded-md border px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
                                                         />
                                                     )}
 
