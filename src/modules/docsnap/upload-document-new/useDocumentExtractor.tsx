@@ -253,6 +253,8 @@ export const useDocumentExtractor = () => {
 
                 const apiEndPoint = `${config.mlServiceNodejs}/content-creation/create-blog`;
 
+                // const apiEndPoint = `http://localhost:6007/api/webhooks/trigger/blog-gen`;
+
                 const headers: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}`, 'Content-Type': 'application/json' };
                 if (selectedTenant) {
                     headers.tenantId = selectedTenant;
@@ -269,11 +271,35 @@ export const useDocumentExtractor = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
+                // const data = await response.json();
+                // const executionId = data.executionId || data.data?.executionId;
+
+                // const streamHeaders: Record<string, string> = { authorization: `Bearer ${JSON.parse(token)}` };
+                // if (selectedTenant) {
+                //     streamHeaders.tenantId = selectedTenant;
+                // }
+
+                // const streamResponse = await fetch(`http://localhost:6007/api/executions/${executionId}/status-stream?apiKey=secret1`, {
+                //     method: 'GET',
+                //     headers: streamHeaders,
+                //     signal: abortController.signal
+                // });
+
+                // if (!streamResponse.ok) {
+                //     throw new Error(`Stream HTTP error! status: ${streamResponse.status}`);
+                // }
+
+                // if (!streamResponse.body) {
+                //     throw new Error('ReadableStream not supported');
+                // }
+                // const reader = streamResponse.body.getReader();
+
+
                 if (!response.body) {
                     throw new Error('ReadableStream not supported');
                 }
-
                 const reader = response.body.getReader();
+
                 await processStream(reader, rowData.name, timer);
             } catch (error) {
                 console.error('API request error:', error);

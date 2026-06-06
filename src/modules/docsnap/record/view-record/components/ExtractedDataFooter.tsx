@@ -137,137 +137,137 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         try {
             if (state.record?.templateId?.settings?.tally === true) {
                 const tallyHealthResponse = await tallyHealthCheck();
-                if (!tallyHealthResponse || tallyHealthResponse?.success === false ) {
+                if (!tallyHealthResponse || tallyHealthResponse?.success === false) {
                     toast.error('Connection to tally failed, please check the connection string');
                     return;
                 }
 
-            const purchaseOrdersResponse = await listAllPurchaseOrdersApi();
-            const purchaseOrders = purchaseOrdersResponse?.data?.vouchers || [];
-            console.log('all po details are:', purchaseOrders);
-            const poNumberRaw = state.objectFields?.invoice_basic_details?.po_number?.value;
-            const poNumber = poNumberRaw ? `${poNumberRaw}`.trim() : '';
-            if (!poNumber) {
-                toast.error('PO is missing');
-                return;
-            }
-            if (poNumber) {
-                const bestMatchedPO =
-                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim() === poNumber) ||
-                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase() === poNumber.toLowerCase()) ||
-                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase().includes(poNumber.toLowerCase()));
-
-                if (bestMatchedPO) {
-                    //to check the date is valid for the matched PO
-                    const invoiceDateRaw = state.objectFields?.invoice_basic_details?.invoice_date?.value;
-                    let invoiceDate: Date, poStartDate: Date, poClosingDate: Date;
-                    try {
-                        invoiceDate = parseFlexibleDate(invoiceDateRaw);
-                        poStartDate = parseFlexibleDate(bestMatchedPO?.date);
-                        poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
-                    } catch {
-                        toast.error('Invalid date format. Expected date format is YYYYMMDD (e.g. 20240315)');
-                        return;
-                    }
-                    if (invoiceDate! && poStartDate! && poClosingDate!) {
-                        if (invoiceDate < poStartDate || invoiceDate > poClosingDate) {
-                            toast.error('Invoice date is not within PO start and closing date');
-                            return;
-                        }
-                    }
-
-                    const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
-                    const isReconciled = reconcilation(remainingBalance, bestMatchedPO?.balanceQuantity);
-                    if (!isReconciled) return;
-                    setPoDueDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date ?? null);
-                } else {
-                    toast.error(`PO number ${poNumber} is not matched to any of the PO in tally`);
+                const purchaseOrdersResponse = await listAllPurchaseOrdersApi();
+                const purchaseOrders = purchaseOrdersResponse?.data?.vouchers || [];
+                console.log('all po details are:', purchaseOrders);
+                const poNumberRaw = state.objectFields?.invoice_basic_details?.po_number?.value;
+                const poNumber = poNumberRaw ? `${poNumberRaw}`.trim() : '';
+                if (!poNumber) {
+                    toast.error('PO is missing');
                     return;
                 }
-            }
+                if (poNumber) {
+                    const bestMatchedPO =
+                        purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim() === poNumber) ||
+                        purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase() === poNumber.toLowerCase()) ||
+                        purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase().includes(poNumber.toLowerCase()));
 
-            if (!fromTallyDialog) {
-                
+                    if (bestMatchedPO) {
+                        //to check the date is valid for the matched PO
+                        const invoiceDateRaw = state.objectFields?.invoice_basic_details?.invoice_date?.value;
+                        let invoiceDate: Date, poStartDate: Date, poClosingDate: Date;
+                        try {
+                            invoiceDate = parseFlexibleDate(invoiceDateRaw);
+                            poStartDate = parseFlexibleDate(bestMatchedPO?.date);
+                            poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
+                        } catch {
+                            toast.error('Invalid date format. Expected date format is YYYYMMDD (e.g. 20240315)');
+                            return;
+                        }
+                        if (invoiceDate! && poStartDate! && poClosingDate!) {
+                            if (invoiceDate < poStartDate || invoiceDate > poClosingDate) {
+                                toast.error('Invoice date is not within PO start and closing date');
+                                return;
+                            }
+                        }
+
+                        const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
+                        const isReconciled = reconcilation(remainingBalance, bestMatchedPO?.balanceQuantity);
+                        if (!isReconciled) return;
+                        setPoDueDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date ?? null);
+                    } else {
+                        toast.error(`PO number ${poNumber} is not matched to any of the PO in tally`);
+                        return;
+                    }
+                }
+
+                if (!fromTallyDialog) {
+
+                    const ledgerResponse = await getAllLedgerApi();
+                    const ledgers = ledgerResponse?.data?.ledgers || [];
+                    const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
+                    setTallyLedgerOptions(options);
+
+                    const stockItemsResponse = await listAllStockItemsApi();
+                    const stockItems = stockItemsResponse?.data?.stockItems || [];
+                    const stockOptions = stockItems.map((item: any) => {
+                        if (typeof item === 'string') {
+                            return { value: item, label: item };
+                        }
+
+                        const label = item?.name || item?.value || '';
+                        return { value: label, label };
+                    });
+                    setStockItemOptions(stockOptions);
+
+                    const purchaseLedgersResponse = await listPurchaseAccountLedgersApi();
+                    const purchaseLedgers = purchaseLedgersResponse?.data?.ledgers || [];
+                    setPurchaseLedgerOptions(purchaseLedgers.map((l: string) => ({ value: l, label: l })));
+
+                    const cgstOutput = `${state.objectFields?.tax_details?.cgst_output?.value ?? ''}`.trim();
+                    const sgstOutput = `${state.objectFields?.tax_details?.sgst_output?.value ?? ''}`.trim();
+                    const useCgstSgst = !!(cgstOutput && sgstOutput);
+
+                    const cgstPct = `${state.objectFields?.tax_details?.cgst_percentage?.value ?? ''}`.trim();
+                    const sgstPct = `${state.objectFields?.tax_details?.sgst_percentage?.value ?? ''}`.trim();
+                    const igstPct = `${state.objectFields?.tax_details?.igst_percentage?.value ?? ''}`.trim();
+
+                    const autoMatched = new Set<string>();
+                    const updates: Partial<typeof tallySelections> = {};
+
+                    if (useCgstSgst) {
+                        const matchedCgst = cgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('cgst') && l.includes(cgstPct)) ?? '' : '';
+                        const matchedSgst = sgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('sgst') && l.includes(sgstPct)) ?? '' : '';
+                        if (matchedCgst) { autoMatched.add('cgst'); updates.cgstLedgerName = matchedCgst; }
+                        if (matchedSgst) { autoMatched.add('sgst'); updates.sgstLedgerName = matchedSgst; }
+                    } else {
+                        const matchedIgst = igstPct ? ledgers.find((l: string) => l.toLowerCase().includes('igst') && l.includes(igstPct)) ?? '' : '';
+                        if (matchedIgst) { autoMatched.add('igst'); updates.igstLedgerName = matchedIgst; }
+                    }
+
+                    setUseCgstSgstMode(useCgstSgst);
+                    setAutoMatchedTallyFields(autoMatched);
+                    if (Object.keys(updates).length) {
+                        setTallySelections(prev => ({ ...prev, ...updates }));
+                    }
+
+                    setShowTallyDialog(true);
+                    return;
+                }
+                // console.log('tally selections:', tallySelections);
+
                 const ledgerResponse = await getAllLedgerApi();
                 const ledgers = ledgerResponse?.data?.ledgers || [];
-                const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
-                setTallyLedgerOptions(options);
-
-                const stockItemsResponse = await listAllStockItemsApi();
-                const stockItems = stockItemsResponse?.data?.stockItems || [];
-                const stockOptions = stockItems.map((item: any) => {
-                    if (typeof item === 'string') {
-                        return { value: item, label: item };
-                    }
-
-                    const label = item?.name || item?.value || '';
-                    return { value: label, label };
-                });
-                setStockItemOptions(stockOptions);
-
-                const purchaseLedgersResponse = await listPurchaseAccountLedgersApi();
-                const purchaseLedgers = purchaseLedgersResponse?.data?.ledgers || [];
-                setPurchaseLedgerOptions(purchaseLedgers.map((l: string) => ({ value: l, label: l })));
-
-                const cgstOutput = `${state.objectFields?.tax_details?.cgst_output?.value ?? ''}`.trim();
-                const sgstOutput = `${state.objectFields?.tax_details?.sgst_output?.value ?? ''}`.trim();
-                const useCgstSgst = !!(cgstOutput && sgstOutput);
-
-                const cgstPct = `${state.objectFields?.tax_details?.cgst_percentage?.value ?? ''}`.trim();
-                const sgstPct = `${state.objectFields?.tax_details?.sgst_percentage?.value ?? ''}`.trim();
-                const igstPct = `${state.objectFields?.tax_details?.igst_percentage?.value ?? ''}`.trim();
-
-                const autoMatched = new Set<string>();
-                const updates: Partial<typeof tallySelections> = {};
-
-                if (useCgstSgst) {
-                    const matchedCgst = cgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('cgst') && l.includes(cgstPct)) ?? '' : '';
-                    const matchedSgst = sgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('sgst') && l.includes(sgstPct)) ?? '' : '';
-                    if (matchedCgst) { autoMatched.add('cgst'); updates.cgstLedgerName = matchedCgst; }
-                    if (matchedSgst) { autoMatched.add('sgst'); updates.sgstLedgerName = matchedSgst; }
+                const senderName = state.objectFields?.sender_details?.name?.value;
+                const bestMatchedLedger = ledgers.find((ledger: string) => ledger === senderName) || null;
+                if (bestMatchedLedger) {
+                    setMatchedLedger(bestMatchedLedger);
+                    console.log('matchedLedger:', bestMatchedLedger);
+                    const payload = {
+                        extractedData: state.record?.extractedData,
+                        config: {
+                            purchaseLedgerName: bestMatchedLedger,
+                            tallyLedgers: tallySelections,
+                            poDueDate: poDueDate
+                        }
+                    };
+                    // await createJournalVoucherApi(payload);
+                    await createPurchaseVoucher(payload);
                 } else {
-                    const matchedIgst = igstPct ? ledgers.find((l: string) => l.toLowerCase().includes('igst') && l.includes(igstPct)) ?? '' : '';
-                    if (matchedIgst) { autoMatched.add('igst'); updates.igstLedgerName = matchedIgst; }
+                    const sundryResponse = await listSundryCreditorLedgersApi();
+                    const sundryLedgers = sundryResponse?.data?.ledgers || [];
+                    const sundryOptions = sundryLedgers.map((l: string) => ({ value: l, label: l }));
+                    setSundryCreditorOptions(sundryOptions);
+                    setLedgerOptions(sundryOptions);
+                    setSelectedLedger('');
+                    setMatchedLedger(null);
+                    setShowLedgerDialog(true);
                 }
-
-                setUseCgstSgstMode(useCgstSgst);
-                setAutoMatchedTallyFields(autoMatched);
-                if (Object.keys(updates).length) {
-                    setTallySelections(prev => ({ ...prev, ...updates }));
-                }
-
-                setShowTallyDialog(true);
-                return;
-            }
-            // console.log('tally selections:', tallySelections);
-            
-            const ledgerResponse = await getAllLedgerApi();
-            const ledgers = ledgerResponse?.data?.ledgers || [];
-            const senderName = state.objectFields?.sender_details?.name?.value;
-            const bestMatchedLedger = ledgers.find((ledger: string) => ledger === senderName) || null;
-            if (bestMatchedLedger) {
-                setMatchedLedger(bestMatchedLedger);
-                console.log('matchedLedger:', bestMatchedLedger);
-                const payload = {
-                    extractedData: state.record?.extractedData,
-                    config: {
-                        purchaseLedgerName: bestMatchedLedger,
-                        tallyLedgers: tallySelections,
-                        poDueDate : poDueDate
-                    }
-                };
-                // await createJournalVoucherApi(payload);
-                await createPurchaseVoucher(payload);
-            } else {
-                const sundryResponse = await listSundryCreditorLedgersApi();
-                const sundryLedgers = sundryResponse?.data?.ledgers || [];
-                const sundryOptions = sundryLedgers.map((l: string) => ({ value: l, label: l }));
-                setSundryCreditorOptions(sundryOptions);
-                setLedgerOptions(sundryOptions);
-                setSelectedLedger('');
-                setMatchedLedger(null);
-                setShowLedgerDialog(true);
-            }
                 return;
             }
             await submitRecordApi();
@@ -319,7 +319,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             if (selectedTenant) {
                 streamHeaders.tenantId = selectedTenant;
             }
-            
+
             const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(token)}`, {
                 method: 'GET',
                 headers: streamHeaders
@@ -374,7 +374,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
 
     const handleReExtract = async () => {
         setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1, reExtracting: true }));
-        
+
         if (state.record?.templateId?.settings?.extractionEngine !== 'python') {
             await handleNodeReExtraction();
         } else {

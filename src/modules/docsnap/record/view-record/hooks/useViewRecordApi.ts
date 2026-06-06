@@ -494,6 +494,7 @@ export const useViewRecordApi = () => {
         sendRegenerateMessage,
         sendContentCreationContext,
         reExtractDocument,
+        processArrayFields,
     };
 };
 
