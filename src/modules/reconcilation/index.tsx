@@ -91,8 +91,8 @@ function ListReconcilationPage() {
     };
 
     const handleGatewayUpload = async (
-        allBranchesFile: File, hotBookFile: File, statementFile: File, payuFile: File,
-        prevBrsFile: File | null, payuOdFiles: File[], cashfreeFile: File | null, easebuzzFile: File | null
+        allBranchesFile: File, hotBookFile: File, statementFile: File, payuFiles: File[],
+        prevBrsFile: File | null, payuOdFiles: File[], cashfreeFiles: File[], easebuzzFiles: File[]
     ) => {
         setIsLoading(true); setError(null);
         try {
@@ -100,10 +100,10 @@ function ListReconcilationPage() {
             formData.append('all_branches_file', allBranchesFile);
             formData.append('hot_book_file', hotBookFile);
             formData.append('statement_file', statementFile);
-            formData.append('payu_file', payuFile);
+            for (const f of payuFiles) formData.append('payu_file', f);
             for (const f of payuOdFiles) formData.append('payu_od_files', f);
-            if (cashfreeFile) formData.append('cashfree_file', cashfreeFile);
-            if (easebuzzFile) formData.append('easebuzz_file', easebuzzFile);
+            for (const f of cashfreeFiles) formData.append('cashfree_file', f);
+            for (const f of easebuzzFiles) formData.append('easebuzz_file', f);
             if (prevBrsFile) formData.append('previous_brs_file', prevBrsFile);
             const response = await fetch(`${API_BASE_URL}/reconcile-gateway`, { method: 'POST', body: formData });
             if (!response.ok) { const err = await response.json().catch(() => null); throw new Error(err?.detail || `Server error: ${response.statusText}`); }
@@ -116,12 +116,12 @@ function ListReconcilationPage() {
 
     const handleUploadDispatch = (
         bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType,
-        hotBookFile?: File | null, payuOdFiles?: File[], cashfreeFile?: File | null,
-        easebuzzFile?: File | null, payuFile?: File | null
+        hotBookFile?: File | null, payuOdFiles?: File[], cashfreeFiles?: File[],
+        easebuzzFiles?: File[], payuFiles?: File[]
     ) => {
         if (reconType === 'gateway') {
-            if (!payuFile) { setError('PayU Regular file is required for Gateway reconciliation.'); return; }
-            handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFile, prevBrsFile, payuOdFiles || [], cashfreeFile || null, easebuzzFile || null);
+            if (!payuFiles || payuFiles.length === 0) { setError('PayU Regular file is required for Gateway reconciliation.'); return; }
+            handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFiles, prevBrsFile, payuOdFiles || [], cashfreeFiles || [], easebuzzFiles || []);
         } else {
             handleUpload(bookFile, statementFile, prevBrsFile, reconType, hotBookFile);
         }

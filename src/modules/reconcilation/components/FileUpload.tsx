@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import styles from '../styles/FileUpload.module.css';
 import { cx } from '../utils/cx';
+import { DialogComponent } from '../../../components/DialogComponent';
 
 export type ReconType = 'bank' | 'qr' | 'gateway';
 
@@ -12,9 +13,9 @@ interface FileUploadProps {
     reconType: ReconType,
     hotBookFile?: File | null,
     payuOdFiles?: File[],
-    cashfreeFile?: File | null,
-    easebuzzFile?: File | null,
-    payuFile?: File | null,
+    cashfreeFiles?: File[],
+    easebuzzFiles?: File[],
+    payuFiles?: File[],
   ) => void;
   isLoading: boolean;
 }
@@ -51,10 +52,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
   const [hotBookFile,  setHotBookFile] = useState<File | null>(null);
   const [statFile,     setStatFile]    = useState<File | null>(null);
   const [prevBrsFile,  setPrevFile]    = useState<File | null>(null);
-  const [payuFile,     setPayuFile]    = useState<File | null>(null);
-  const [payuOdFiles,  setPayuOdFiles] = useState<File[]>([]);
-  const [cashfreeFile, setCashfree]    = useState<File | null>(null);
-  const [easebuzzFile, setEasebuzz]    = useState<File | null>(null);
+  const [payuFiles,    setPayuFiles]    = useState<File[]>([]);
+  const [payuOdFiles,  setPayuOdFiles]  = useState<File[]>([]);
+  const [cashfreeFiles, setCashfreeFiles] = useState<File[]>([]);
+  const [easebuzzFiles, setEasebuzzFiles] = useState<File[]>([]);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   const [errors,   setErrors]   = useState<string[]>([]);
   const [dragOver, setDragOver] = useState<string | null>(null);
@@ -82,7 +84,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
   const handleSelectType = (type: ReconType) => {
     setReconType(type);
     setBookFile(null); setHotBookFile(null); setStatFile(null); setPrevFile(null);
-    setPayuFile(null); setPayuOdFiles([]); setCashfree(null); setEasebuzz(null);
+    setPayuFiles([]); setPayuOdFiles([]); setCashfreeFiles([]); setEasebuzzFiles([]);
     setErrors([]);
     // collapse step 1, open step 2
     setStep1Open(false);
@@ -96,9 +98,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     if (slot === 'hotbook')  { if (validate(file)) setHotBookFile(file); }
     if (slot === 'stmt')     { if (validate(file, reconType === 'gateway')) setStatFile(file); }
     if (slot === 'prev')     { if (validate(file)) setPrevFile(file); }
-    if (slot === 'payu')     { if (validate(file)) setPayuFile(file); }
-    if (slot === 'cashfree') { if (validate(file)) setCashfree(file); }
-    if (slot === 'easebuzz') { if (validate(file, true)) setEasebuzz(file); }
+
+    const handleMulti = (currentFiles: File[], setFilesFn: React.Dispatch<React.SetStateAction<File[]>>, allowPdf: boolean, label: string) => {
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      const valid = droppedFiles.filter(f => validate(f, allowPdf));
+      if (valid.length) {
+        setFilesFn(prev => {
+          const total = [...prev, ...valid];
+          if (total.length > 4) {
+            setAlertMessage(`Maximum 4 files allowed for ${label}. Taking the first 4 files.`);
+            setErrors([]);
+            return total.slice(0, 4);
+          }
+          setErrors([]);
+          return total;
+        });
+      }
+    };
+
+    if (slot === 'payu')     { handleMulti(payuFiles, setPayuFiles, false, 'PayU Regular'); }
+    if (slot === 'payuod')   { handleMulti(payuOdFiles, setPayuOdFiles, false, 'PayU On-Demand'); }
+    if (slot === 'cashfree') { handleMulti(cashfreeFiles, setCashfreeFiles, false, 'CashFree'); }
+    if (slot === 'easebuzz') { handleMulti(easebuzzFiles, setEasebuzzFiles, true, 'EaseBuzz'); }
   };
 
   const handleSubmit = () => {
@@ -114,18 +135,21 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
       if (!bookFile)    errs.push('All-Branches Book is required.');
       if (!hotBookFile) errs.push('HOT Book is required.');
       if (!statFile)    errs.push('YES Bank Statement (PDF) is required.');
-      if (!payuFile)    errs.push('PayU Regular report is required.');
+      if (payuFiles.length === 0)    errs.push('PayU Regular report is required.');
     }
     if (errs.length) { setErrors(errs); return; }
     setErrors([]);
     onUpload(bookFile!, statFile!, prevBrsFile, reconType!, hotBookFile,
-      payuOdFiles.length > 0 ? payuOdFiles : [], cashfreeFile, easebuzzFile, payuFile);
+      payuOdFiles.length > 0 ? payuOdFiles : [],
+      cashfreeFiles.length > 0 ? cashfreeFiles : [],
+      easebuzzFiles.length > 0 ? easebuzzFiles : [],
+      payuFiles.length > 0 ? payuFiles : []);
   };
 
   const canSubmit = reconType && !isLoading && (() => {
     if (reconType === 'bank')    return !!bookFile && !!statFile;
     if (reconType === 'qr')     return !!bookFile && !!hotBookFile && !!statFile;
-    if (reconType === 'gateway') return !!bookFile && !!hotBookFile && !!statFile && !!payuFile;
+    if (reconType === 'gateway') return !!bookFile && !!hotBookFile && !!statFile && payuFiles.length > 0;
     return false;
   })();
 
@@ -177,103 +201,126 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     );
   };
 
-  // ── PayU OD multi-file slot ────────────────────────────────────────────────
-  const renderPayuOdSlot = () => {
-  const hasFiles = payuOdFiles.length > 0;
+  // ── Multi-file slot ────────────────────────────────────────────────────────
+  const renderMultiSlot = (cfg: {
+    id: string;
+    label: string;
+    sublabel: string;
+    ref: React.RefObject<HTMLInputElement | null>;
+    files: File[];
+    setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+    accent?: 'qr' | 'gateway';
+    accept?: string;
+    allowPdf?: boolean;
+  }) => {
+    const { id, label, sublabel, ref, files, setFiles, accent, accept = '.xlsx,.xls,.csv', allowPdf = false } = cfg;
+    const hasFiles = files.length > 0;
+    const isDragging = dragOver === id;
 
-  return (
-    <div
-      className={cx(styles['upload-slot'], hasFiles && styles['upload-slot--filled'])}
-      onClick={() => !isLoading && payuOdRef.current?.click()}
-    >
-      <input
-        ref={payuOdRef}
-        type="file"
-        accept=".xlsx,.xls,.csv"
-        className={styles['file-input']}
-        multiple
-        disabled={isLoading}
-        onChange={e => {
-          const files = Array.from(e.target.files || []);
-          const valid = files.filter(f => validate(f));
-          if (valid.length) setPayuOdFiles(prev => [...prev, ...valid]);
-          e.target.value = '';
-        }}
-      />
+    return (
+      <div
+        key={id}
+        className={cx(
+          styles['upload-slot'],
+          isDragging && styles['upload-slot--drag'],
+          hasFiles && styles['upload-slot--filled'],
+          accent && hasFiles && styles[`upload-slot--${accent}`]
+        )}
+        onDragOver={e => { e.preventDefault(); setDragOver(id); }}
+        onDragLeave={() => setDragOver(null)}
+        onDrop={e => handleDrop(e, id)}
+        onClick={() => !isLoading && ref.current?.click()}
+      >
+        <input
+          ref={ref as React.RefObject<HTMLInputElement>}
+          type="file"
+          accept={accept}
+          className={styles['file-input']}
+          multiple
+          disabled={isLoading}
+          onChange={e => {
+            const selectedFiles = Array.from(e.target.files || []);
+            const valid = selectedFiles.filter(f => validate(f, allowPdf));
+            if (valid.length) {
+              setFiles(prev => {
+                const total = [...prev, ...valid];
+                if (total.length > 4) {
+                  setAlertMessage(`Maximum 4 files allowed for ${label}. Taking the first 4 files.`);
+                  setErrors([]);
+                  return total.slice(0, 4);
+                }
+                setErrors([]);
+                return total;
+              });
+            }
+            e.target.value = '';
+          }}
+        />
 
-      {!hasFiles ? (
-        
-        <div className={styles['slot-empty']}>
-          <div className={styles['slot-text']}>
-            <p className={styles['slot-label']}>PayU On-Demand</p>
-            <p className={styles['slot-sub']}>Multiple files allowed</p>
-            <p className={styles['slot-formats']}>.xlsx · .xls · .csv</p>
+        {!hasFiles ? (
+          <div className={styles['slot-empty']}>
+            <div className={styles['slot-text']}>
+              <p className={styles['slot-label']}>{label}</p>
+              <p className={styles['slot-sub']}>{sublabel}</p>
+              <p className={styles['slot-formats']}>{accept.split(',').join(' · ')}</p>
+            </div>
+            <div className={styles['slot-cta']}>Click or drag file(s) here</div>
           </div>
-          <div className={styles['slot-cta']}>Click or drag file(s) here</div>
-        </div>
-      ) : (
-        
-        <div
-          className={styles['slot-filled']}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className={styles['slot-filled-icon']} />
-
-          <div className={styles['slot-filled-info']}>
-            <p className={styles['slot-filled-label']}>PayU On-Demand</p>
-
-            
-            {payuOdFiles.map((file, idx) => (
-              <div
-                key={idx}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px'
-                }}
-              >
-                <p
-                  className={styles['slot-filled-name']}
-                  title={file.name}
-                  style={{ margin: 0 }}
-                >
-                  {file.name}
-                </p>
-
-                
-                <button
-                  className={styles['slot-remove']}
-                  disabled={isLoading}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPayuOdFiles(prev =>
-                      prev.filter((_, i) => i !== idx)
-                    );
+        ) : (
+          <div
+            className={styles['slot-filled']}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className={styles['slot-filled-icon']} />
+            <div className={styles['slot-filled-info']}>
+              <p className={styles['slot-filled-label']}>{label}</p>
+              {files.map((file, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '8px'
                   }}
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
+                  <p
+                    className={styles['slot-filled-name']}
+                    title={file.name}
+                    style={{ margin: 0 }}
+                  >
+                    {file.name}
+                  </p>
+                  <button
+                    className={styles['slot-remove']}
+                    disabled={isLoading}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFiles(prev => prev.filter((_, i) => i !== idx));
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            {files.length < 4 && (
+              <button
+                className={styles['slot-add-more']}
+                disabled={isLoading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  ref.current?.click();
+                }}
+              >
+                + Add
+              </button>
+            )}
           </div>
-
-          
-          <button
-            className={styles['slot-add-more']}
-            disabled={isLoading}
-            onClick={(e) => {
-              e.stopPropagation();
-              payuOdRef.current?.click();
-            }}
-          >
-            + Add
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
+        )}
+      </div>
+    );
+  };
 
   // ── Slot grids ─────────────────────────────────────────────────────────────
   const renderSlots = () => {
@@ -298,10 +345,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
         {renderSlot({ id:'book', label:'All-Branches Book', sublabel:'All-branches Gateway book (.xls)', ref:bookRef, file:bookFile, accent:'gateway', onFile:f=>{if(validate(f))setBookFile(f);}, onClear:()=>setBookFile(null) })}
         {renderSlot({ id:'hotbook', label:'HOT Book', sublabel:'HOT Gateway book report (.xls)', ref:hotBookRef, file:hotBookFile, accent:'gateway', onFile:f=>{if(validate(f))setHotBookFile(f);}, onClear:()=>setHotBookFile(null) })}
         {renderSlot({ id:'stmt', label:'YES Bank Statement', sublabel:'YES Bank statement PDF', ref:stmtRef, file:statFile, accent:'gateway', accept:'.pdf,.xlsx,.xls', onFile:f=>{if(validate(f,true))setStatFile(f);}, onClear:()=>setStatFile(null) })}
-        {renderSlot({ id:'payu', label:'PayU Regular', sublabel:'PayU transaction report (.xlsx)', ref:payuRef, file:payuFile, accent:'gateway', onFile:f=>{if(validate(f))setPayuFile(f);}, onClear:()=>setPayuFile(null) })}
-        {renderPayuOdSlot()}
-        {renderSlot({ id:'cashfree', label:'CashFree', sublabel:'CashFree settlement report (.xlsx)', ref:cashfreeRef, file:cashfreeFile, onFile:f=>{if(validate(f))setCashfree(f);}, onClear:()=>setCashfree(null) })}
-        {renderSlot({ id:'easebuzz', label:'EaseBuzz', sublabel:'EaseBuzz settlement report (.csv)', ref:easebuzzRef, file:easebuzzFile, accept:'.csv,.xlsx,.xls', onFile:f=>{if(validate(f,true))setEasebuzz(f);}, onClear:()=>setEasebuzz(null) })}
+        {renderMultiSlot({ id:'payu', label:'PayU Regular', sublabel:'PayU transaction report (.xlsx)', ref:payuRef, files:payuFiles, setFiles:setPayuFiles, accent:'gateway' })}
+        {renderMultiSlot({ id:'payuod', label:'PayU On-Demand', sublabel:'Multiple files allowed', ref:payuOdRef, files:payuOdFiles, setFiles:setPayuOdFiles })}
+        {renderMultiSlot({ id:'cashfree', label:'CashFree', sublabel:'CashFree settlement report (.xlsx)', ref:cashfreeRef, files:cashfreeFiles, setFiles:setCashfreeFiles })}
+        {renderMultiSlot({ id:'easebuzz', label:'EaseBuzz', sublabel:'EaseBuzz settlement report (.csv)', ref:easebuzzRef, files:easebuzzFiles, setFiles:setEasebuzzFiles, accept:'.csv,.xlsx,.xls', allowPdf:true })}
         {renderSlot({ id:'prev', label:'Previous BRS', sublabel:'For carry-forward matching', ref:prevRef, file:prevBrsFile, onFile:f=>{if(validate(f))setPrevFile(f);}, onClear:()=>setPrevFile(null) })}
       </div>
     );
@@ -324,10 +371,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
       { label:'All-Branches Book', done:!!bookFile,             required:true  },
       { label:'HOT Book',          done:!!hotBookFile,          required:true  },
       { label:'YES Bank PDF',      done:!!statFile,             required:true  },
-      { label:'PayU Regular',      done:!!payuFile,             required:true  },
+      { label:'PayU Regular',      done:payuFiles.length > 0,             required:true  },
       { label:'PayU On-Demand',    done:payuOdFiles.length > 0, required:true },
-      { label:'CashFree',          done:!!cashfreeFile,         required:true },
-      { label:'EaseBuzz',          done:!!easebuzzFile,         required:true },
+      { label:'CashFree',          done:cashfreeFiles.length > 0,         required:true },
+      { label:'EaseBuzz',          done:easebuzzFiles.length > 0,         required:true },
       { label:'Previous BRS',      done:!!prevBrsFile,          required:true },
     ];
     return [];
@@ -447,6 +494,19 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
           </div>
         )}
       </div>
+
+      <DialogComponent
+        isOpen={!!alertMessage}
+        closeDialog={() => setAlertMessage(null)}
+        name="File Limit Reached"
+        primaryButtonText="Got it"
+        onPrimaryAction={() => setAlertMessage(null)}
+        className="max-w-md w-full"
+      >
+        <div className="p-6 pt-2 text-gray-600">
+          {alertMessage}
+        </div>
+      </DialogComponent>
 
     </div>
   );
