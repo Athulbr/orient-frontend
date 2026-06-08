@@ -92,6 +92,18 @@ export const useTallyApi = () => {
         }
     };
 
+    const createSoApi = async (payload: any) => {
+        try {
+            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/createSO`, payload);
+            toast.success('Sales Order created successfully');
+            return res;
+        } catch (error) {
+            console.error('error:===========', error);
+            toast.error('Failed to create sales order');
+            return null;
+        }
+    };
+
     return {
         tallyHealthCheck,
         getAllLedgerApi,
@@ -100,6 +112,7 @@ export const useTallyApi = () => {
         listPurchaseAccountLedgersApi,
         listSundryCreditorLedgersApi,
         createPurchaseVoucher,
-        createJournalVoucherApi
+        createJournalVoucherApi,
+        createSoApi
     };
 };

@@ -15,6 +15,7 @@ import { PromptFieldIF } from '../../prompt-tuning/interface';
 import { useRecordListTour } from '../../../inApp-Tour/hooks/useRecordListTour';
 import { ListRecordTabs, TabOption } from './components/ListRecordTabs';
 import { ListPoCustomTable } from './ListPoCustomTable';
+import { ListSoCustomTable } from './ListSoCustomTable';
 interface Project {
     _id: string;
     name: string;
@@ -133,7 +134,7 @@ const ListRecordPage: React.FC = () => {
                             {/* <ExcelPreviewComponent recordData={sampleRecordData} template={sampleExcelTemplate} /> */}
                         </DialogComponent>
                     </>
-                ) : (
+                ) : activeTab === 'PO' ? (
                     <>
                         <PageNameComponent
                             name="List of PO"
@@ -141,6 +142,15 @@ const ListRecordPage: React.FC = () => {
                             customGoBackFunction={() => navigate('/')}
                         />
                         <ListPoCustomTable />
+                    </>
+                ) : (
+                    <>
+                        <PageNameComponent
+                            name="List of Sales Orders"
+                            showBackButton
+                            customGoBackFunction={() => navigate('/')}
+                        />
+                        <ListSoCustomTable />
                     </>
                 )}
             </PageContainer>
