@@ -47,6 +47,9 @@ export const TableBody: React.FC = memo(() => {
                         <div className={cn(rowStyle)}>{row.reference || 'N/A'}</div>
                     </td>
                     <td className="px-2 py-4 xl:px-5">
+                        <div className={cn(rowStyle)}>{row.otherReferences || 'N/A'}</div>
+                    </td>
+                    <td className="px-2 py-4 xl:px-5">
                         <div className={cn(rowStyle)}>{row.number || 'N/A'}</div>
                     </td>
                     <td className="px-2 py-4 xl:px-5">

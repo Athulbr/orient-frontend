@@ -4,6 +4,7 @@ import { useListPoCustomTableState } from './hooks/listPoCustomTableStateContext
 
 export const columns = [
     { label: 'Reference' },
+    { label: 'Other References' },
     { label: 'PO Number' },
     { label: 'Status' },
     { label: 'Party Ledger' },
