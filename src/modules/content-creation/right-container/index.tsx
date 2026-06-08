@@ -589,18 +589,18 @@ ${state.content}
             )}
 
             <div className="sticky bottom-0 z-10 mt-auto flex justify-between gap-2 border-t bg-white px-2 py-4">
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                     <AudioPlayButton audioUrl={audioUrl} isLoading={Boolean(state.loadingData)} onGenerate={generateAudio} isGenerateDisabled={!state.content} />
-                </div>
+                </div> */}
                 <div className="flex gap-2">
                     {/* <Tooltip text="Skip to Next Document">
                         <Button data-tour-id="skip-next-document-button" disabled={isRegenerating || isSaving} onClick={skipToNextDocumentHandler} startIcon={<SkipForward size={16} />}>
                             Next
                         </Button>
                     </Tooltip> */}
-                    <Button disabled={isPublishing} onClick={publishApi} startIcon={isPublishing ? <Spinner size={16} /> : null}>
+                    {/* <Button disabled={isPublishing} onClick={publishApi} startIcon={isPublishing ? <Spinner size={16} /> : null}>
                         {isPublishing ? 'Publishing...' : 'Publish'}
-                    </Button>
+                    </Button> */}
                     <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
                         {isRegenerating ? 'Blog Regenerating...' : 'Blog Regenerate'}
                     </Button>

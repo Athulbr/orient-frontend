@@ -278,7 +278,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         navigate('/docsnap/record/list');
     };
 
-    const handleProceedWithKeywords = async (groups: KeywordGroup[]) => {
+    const handleProceedWithKeywords = async (groups: KeywordGroup[], comment?: string) => {
         setIsSubmittingKeywords(true);
         try {
             const matchingGroup = groups.find(
@@ -287,7 +287,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             const selectedKeywords = matchingGroup
                 ? matchingGroup.keywords.filter(k => k.selected)
                 : groups.flatMap(g => g.keywords.filter(k => k.selected));
-            addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords });
+            addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords, userComment: comment });
             setShowKeywordDialog(false);
             setPendingFormData(null);
         } finally {
@@ -296,9 +296,9 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     };
 
     /** Per-group proceed — does NOT close the dialog */
-    const handleProceedGroupKeywords = (group: KeywordGroup) => {
+    const handleProceedGroupKeywords = (group: KeywordGroup, comment?: string) => {
         const selectedKeywords = group.keywords.filter(k => k.selected);
-        addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords }, undefined, true);
+        addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords, userComment: comment }, undefined, true);
     };
 
     if (!template) return null;

@@ -145,7 +145,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
 
-    const handleProceedWithKeywords = (groups: KeywordGroup[]) => {
+    const handleProceedWithKeywords = (groups: KeywordGroup[], comment?: string) => {
         if (!groups.length) {
             setShowBulkKeywordDialog(false);
             closeDialog();
@@ -161,7 +161,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                           row.name === group.name || row.primary_keyword === group.primary_keyword
                       ) ?? pendingRows[0];
             const selectedKeywords = group.keywords.filter(k => k.selected);
-            addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
+            addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords, userComment: comment }, undefined, true);
         });
         setIsSubmittingBulk(false);
         setShowBulkKeywordDialog(false);
@@ -171,7 +171,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
     /** Per-group proceed for bulk flow — does NOT close the dialog */
-    const handleProceedBulkGroup = (group: KeywordGroup) => {
+    const handleProceedBulkGroup = (group: KeywordGroup, comment?: string) => {
         // Use rowIndex stamped at group-creation time — avoids the name-match
         // fallback that was silently re-uploading pendingRows[0] (Record 1)
         const rowToProcess =
@@ -181,7 +181,7 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
                       row.name === group.name || row.primary_keyword === group.primary_keyword
                   ) ?? pendingRows[0];
         const selectedKeywords = group.keywords.filter(k => k.selected);
-        addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords }, undefined, true);
+        addToDocumentExtractor(latestTemplate, [], { ...rowToProcess, selectedKeywords, userComment: comment }, undefined, true);
     };
 
     let supportedFileTypes = ['application/pdf', 'image/*'];
@@ -302,13 +302,13 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
         }
     };
 
-    const handleManualKeywordProceed = async (groups: KeywordGroup[]) => {
+    const handleManualKeywordProceed = async (groups: KeywordGroup[], comment?: string) => {
         setIsSubmittingManual(true);
         try {
             // Queue each group with skipNavigate=true, then navigate once
             groups.forEach(g => {
                 const selectedKeywords = g.keywords.filter(k => k.selected);
-                addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords }, undefined, true);
+                addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords, userComment: comment }, undefined, true);
             });
             setShowKeywordDialog(false);
             setPendingManualRow(null);
@@ -323,9 +323,9 @@ export const UploadDocumentComponentNew: React.FC<UploadDocumentComponentIF> = (
     };
 
     /** Per-group proceed for manual flow — does NOT close the dialog */
-    const handleManualKeywordProceedGroup = (group: KeywordGroup) => {
+    const handleManualKeywordProceedGroup = (group: KeywordGroup, comment?: string) => {
         const selectedKeywords = group.keywords.filter(k => k.selected);
-        addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords }, undefined, true);
+        addToDocumentExtractor(latestTemplate ?? template, [], { ...pendingManualRow, selectedKeywords, userComment: comment }, undefined, true);
     };
 
     if (showManualInputForm) {

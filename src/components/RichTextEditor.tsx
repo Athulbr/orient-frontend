@@ -82,6 +82,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     // Tooltip DOM element ref — cleaned up on unmount
     const tooltipElRef = useRef<HTMLDivElement | null>(null);
+
+    // Keep value and jodit instance in refs to avoid stale closures and manage placeholder
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    const joditInstanceRef = useRef<any>(null);
     useEffect(() => {
         return () => {
             tooltipElRef.current?.remove();
@@ -101,6 +106,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
      */
     const handleEditorReady = useCallback((joditInstance: any) => {
         if (!joditInstance) return;
+        joditInstanceRef.current = joditInstance;
 
         // Expose save/replace to the parent via editorHandle
         const outerRef = editorHandleRef.current;
@@ -121,6 +127,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         const attachEvents = () => {
             const editorEl: HTMLElement | undefined = joditInstance.editor;
             if (!editorEl) return;
+
+            // Sync placeholder visibility initially when editor is ready
+            const currentVal = valueRef.current;
+            const hasContent = currentVal && typeof currentVal === 'string' && currentVal.trim() !== '' && currentVal !== '<p><br></p>' && currentVal !== '<p></p>';
+            const placeholderEl = joditInstance.container?.querySelector('.jodit-placeholder, .jodit_placeholder');
+            if (placeholderEl) {
+                placeholderEl.style.display = hasContent ? 'none' : '';
+            }
 
             // ── Selection events (existing) ───────────────────────────────────
             const handleSelectionEvent = () => {
@@ -285,6 +299,18 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             joditInstance.waitForReady().then(attachEvents);
         }
     }, []); // stable – all deps accessed via refs
+
+    // Force placeholder to hide/show correctly based on React state updates
+    useEffect(() => {
+        const jodit = joditInstanceRef.current;
+        if (jodit) {
+            const hasContent = value && typeof value === 'string' && value.trim() !== '' && value !== '<p><br></p>' && value !== '<p></p>';
+            const placeholderEl = jodit.container?.querySelector('.jodit-placeholder, .jodit_placeholder');
+            if (placeholderEl) {
+                placeholderEl.style.display = hasContent ? 'none' : '';
+            }
+        }
+    }, [value]);
 
     const config = useMemo(
         () => ({
