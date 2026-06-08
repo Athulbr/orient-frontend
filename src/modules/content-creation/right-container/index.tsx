@@ -8,6 +8,7 @@ import KeywordsSection from '../components/KeywordsSection';
 import EditPromptDialog from '../components/EditPromptDialog';
 import GenerateTitlesDialog from '../components/GenerateTitlesDialog';
 import StyleEditor from '../components/StyleEditor';
+import BlogRegenerateDialog from '../components/BlogRegenerateDialog';
 import { useBlogTheme } from '../hooks/useBlogTheme';
 import { useContentCreationApi } from '../hooks/useContentCreationApi';
 import type { Keyword } from '../types';
@@ -28,7 +29,7 @@ export default function RightContainer() {
     const { state, setState } = useContentCreationEditorState();
     const { regenerateBlog, updateRecordApi, htmlToAudio } = useContentCreationApi();
     const [promptDialogOpen, setPromptDialogOpen] = useState(false);
-    const [isRegenerating, setIsRegenerating] = useState(false);
+    const [isBlogRegenerateDialogOpen, setIsBlogRegenerateDialogOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
@@ -406,26 +407,7 @@ ${state.content}
         }
     };
 
-    const reGenerateContent = async () => {
-        if (!state.content) return;
-        setIsRegenerating(true);
-        try {
-            const filteredKeywords = state.keywords?.filter((keyword: any) => keyword.selected);
-            const res = await regenerateBlog({
-                keywords: filteredKeywords,
-                extractedData: state.extractedData,
-                extractionPrompt: state.extractionPrompt
-            });
-            if (res.data?.htmlContent) {
-                setState(prev => ({ ...prev, content: res.data.htmlContent }));
-                console.log('Regenerated content:', res.data.htmlContent);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsRegenerating(false);
-        }
-    };
+    // BlogRegenerateDialog handles regeneration and updating state via onAccept
 
     const skipToNextDocumentHandler = () => {
         const recordIdList = window?.sessionStorage?.getItem('recordIdList') as string;
@@ -592,7 +574,7 @@ ${state.content}
                 {/* <div className="flex flex-col gap-2">
                     <AudioPlayButton audioUrl={audioUrl} isLoading={Boolean(state.loadingData)} onGenerate={generateAudio} isGenerateDisabled={!state.content} />
                 </div> */}
-                <div className="flex gap-2">
+                <div className="flex w-full justify-end gap-2">
                     {/* <Tooltip text="Skip to Next Document">
                         <Button data-tour-id="skip-next-document-button" disabled={isRegenerating || isSaving} onClick={skipToNextDocumentHandler} startIcon={<SkipForward size={16} />}>
                             Next
@@ -601,8 +583,8 @@ ${state.content}
                     {/* <Button disabled={isPublishing} onClick={publishApi} startIcon={isPublishing ? <Spinner size={16} /> : null}>
                         {isPublishing ? 'Publishing...' : 'Publish'}
                     </Button> */}
-                    <Button permission='blog:regenerate' disabled={!state.content || isRegenerating} onClick={reGenerateContent} startIcon={isRegenerating ? <Spinner size={16} /> : null}>
-                        {isRegenerating ? 'Blog Regenerating...' : 'Blog Regenerate'}
+                    <Button permission='blog:regenerate' disabled={!state.content} onClick={() => setIsBlogRegenerateDialogOpen(true)}>
+                        Blog Regenerate
                     </Button>
                     {/* <Button disabled={!state.content} onClick={downloadHTML}>
                         Download HTML
@@ -618,6 +600,11 @@ ${state.content}
 
             <EditPromptDialog isOpen={promptDialogOpen} onClose={() => setPromptDialogOpen(false)} record={state.record || null} />
             <GenerateTitlesDialog isOpen={isGenerateTitlesOpen} onClose={() => setIsGenerateTitlesOpen(false)} onGenerate={handleGenerateMoreTitles} />
+            <BlogRegenerateDialog 
+                isOpen={isBlogRegenerateDialogOpen} 
+                onClose={() => setIsBlogRegenerateDialogOpen(false)} 
+                onAccept={(newHtml) => setState(prev => ({ ...prev, content: newHtml }))} 
+            />
         </div>
     );
 }

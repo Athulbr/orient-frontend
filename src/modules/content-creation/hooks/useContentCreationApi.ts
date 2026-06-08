@@ -44,7 +44,7 @@ export const useContentCreationApi = () => {
             blogCssWrapperClass: fetchedBlogCssWrapperClass,
         }));
     };
-    const regenerateBlog = async (payload: { keywords?: any[]; extractedData?: any; extractionPrompt?: string }) => {
+    const regenerateBlog = async (payload: { keywords?: any[]; extractedData?: any; extractionPrompt?: string; userComment?: string }) => {
         const res = await httpRequest('POST', `${config.mlServiceNodejs}/content-creation/regenerate-blog`, {
             ...payload,
             blogCss: state.blogCss,

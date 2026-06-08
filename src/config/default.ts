@@ -4,7 +4,8 @@ const globalEnv: any = {
         nodeApiUrl: import.meta.env.VITE_NODE_URL_LOCAL || 'http://localhost:4000',
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_LOCAL || 'http://localhost:4000',
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_LOCAL,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL || 'http://localhost:4000'
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL || 'http://localhost:4000',
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL
     },
     development: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
