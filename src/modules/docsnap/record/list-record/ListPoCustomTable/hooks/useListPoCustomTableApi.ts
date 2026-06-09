@@ -73,6 +73,7 @@ export interface CreatePoPayload {
     poNumber: string;
     poDate: string;
     dueDate: string;
+    otherReferences: string;
     purchaseLedgerName: string;
     items: {
         stockItemName: string;

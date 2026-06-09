@@ -9,6 +9,7 @@ export const emptyPoForm = (): CreatePoPayload => ({
     poNumber: '',
     poDate: '',
     dueDate: '',
+    otherReferences: '',
     purchaseLedgerName: '',
     items: [{ stockItemName: '', quantity: 0, unit: '', rate: 0, amount: 0 }]
 });
@@ -119,6 +120,9 @@ export const CreatePoDialog: React.FC = () => {
                     </PoField>
                     <PoField label="Due Date">
                         <input required type="date" value={createPoForm.dueDate} onChange={e => setForm(p => ({ ...p, dueDate: e.target.value }))} className={poInputClass} />
+                    </PoField>
+                    <PoField label="Other References">
+                        <input value={createPoForm.otherReferences} onChange={e => setForm(p => ({ ...p, otherReferences: e.target.value }))} placeholder="e.g. 7502063829" className={poInputClass} />
                     </PoField>
                     <PoField label="Purchase Ledger Name">
                         <SingleSelect
