@@ -16,6 +16,7 @@ import { useRecordListTour } from '../../../inApp-Tour/hooks/useRecordListTour';
 import { ListRecordTabs, TabOption } from './components/ListRecordTabs';
 import { ListPoCustomTable } from './ListPoCustomTable';
 import { ListSoCustomTable } from './ListSoCustomTable';
+import { ListSalesInvoiceCustomTable } from './ListSalesInvoiceCustomTable';
 interface Project {
     _id: string;
     name: string;
@@ -143,7 +144,7 @@ const ListRecordPage: React.FC = () => {
                         />
                         <ListPoCustomTable />
                     </>
-                ) : (
+                ) : activeTab === 'Sales Order' ? (
                     <>
                         <PageNameComponent
                             name="List of Sales Orders"
@@ -151,6 +152,15 @@ const ListRecordPage: React.FC = () => {
                             customGoBackFunction={() => navigate('/')}
                         />
                         <ListSoCustomTable />
+                    </>
+                ) : (
+                    <>
+                        <PageNameComponent
+                            name="List of Sales Invoices"
+                            showBackButton
+                            customGoBackFunction={() => navigate('/')}
+                        />
+                        <ListSalesInvoiceCustomTable />
                     </>
                 )}
             </PageContainer>
