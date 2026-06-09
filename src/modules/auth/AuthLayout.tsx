@@ -4,9 +4,9 @@ import { MakezLogoAuth } from '../../assets/svg-icons/MakezLogoAuth';
 const BANNER_CONTENT = {
     title: {
         line1: 'We Make',
-        line2: 'AI Easy'
+        line2: 'it Easy'
     },
-    description: 'Work AI for Enterprises with Employee Co-Pilots, Enterprise Search, Document Automation, and Brand Connect AI Tools.​',
+    description: 'Enterprise Agentic AI for autonomous business operations. Build and orchestrate autonomous AI agents that execute enterprise workflows end-to-end.​',
     copyright: '@ 2026 makez.ai. All rights reserved'
 } as const;
 

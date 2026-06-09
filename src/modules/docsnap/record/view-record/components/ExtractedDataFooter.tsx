@@ -2,6 +2,7 @@ import { Button } from '../../../../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import { useViewRecordApi } from '../hooks/useViewRecordApi';
 import { useViewRecordState } from '../hooks/viewRecordContext';
+import { useTallyApi } from '../hooks/useTallyApi';
 import { RefreshCw, SkipForward } from 'lucide-react';
 import Tooltip from '../../../../../components/Tooltip';
 import { convertJSON } from '../../list-record/utils/convertJSON';
@@ -19,16 +20,22 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
     const navigate = useNavigate();
     const toast = useToastStore();
     const { state, setState } = useViewRecordState();
-    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument, getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useViewRecordApi();
+    const { updateRecordApiById, updateExtractedData, getRecordApiById, submitRecordApi, reExtractDocument } = useViewRecordApi();
+    const { getAllLedgerApi, listAllPurchaseOrdersApi, listAllStockItemsApi, listPurchaseAccountLedgersApi, listSundryCreditorLedgersApi, tallyHealthCheck, createPurchaseVoucher, createJournalVoucherApi } = useTallyApi();
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLedgerDialog, setShowLedgerDialog] = useState(false);
     const [ledgerOptions, setLedgerOptions] = useState<SelectOption[]>([]);
     const [selectedLedger, setSelectedLedger] = useState('');
     const [matchedLedger, setMatchedLedger] = useState<string | null>(null);
+    const [poDueDate, setPoDueDate] = useState<string | null>(null);
+    const [autoMatchedTallyFields, setAutoMatchedTallyFields] = useState<Set<string>>(new Set());
+    const [useCgstSgstMode, setUseCgstSgstMode] = useState(false);
     const [showTallyDialog, setShowTallyDialog] = useState(false);
     const [tallyLedgerOptions, setTallyLedgerOptions] = useState<SelectOption[]>([]);
     const [stockItemOptions, setStockItemOptions] = useState<SelectOption[]>([]);
+    const [purchaseLedgerOptions, setPurchaseLedgerOptions] = useState<SelectOption[]>([]);
+    const [sundryCreditorOptions, setSundryCreditorOptions] = useState<SelectOption[]>([]);
     const [tallySelections, setTallySelections] = useState({
         cgstLedgerName: '',
         igstLedgerName: '',
@@ -62,7 +69,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         return true;
     };
 
-    const reconcilation = (remainingBalanceRaw: unknown): boolean => {
+    const reconcilation = (remainingBalanceRaw: unknown, balanceQuantityRaw: unknown): boolean => {
         const taxableAmountRaw = state.objectFields?.summary_totals?.taxable_amount?.value;
         const taxableAmount = Number(`${taxableAmountRaw ?? ''}`.replace(/,/g, '').trim());
         const remainingBalance = Number(`${remainingBalanceRaw ?? ''}`.replace(/,/g, '').trim());
@@ -75,6 +82,19 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         if (Number.isNaN(remainingBalance)) {
             toast.error('Remaining balance is missing');
             return false;
+        }
+
+        const invoiceQty = Number(`${state.objectFields?.tax_details?.quantity?.value ?? ''}`.trim());
+        const balanceQuantity = Number(`${balanceQuantityRaw ?? ''}`.trim());
+        if (!Number.isNaN(invoiceQty) && !Number.isNaN(balanceQuantity)) {
+            if (balanceQuantity <= 0) {
+                toast.error('PO quantity is fully consumed');
+                return false;
+            }
+            if (invoiceQty > balanceQuantity) {
+                toast.error(`Invoice quantity (${invoiceQty}) exceeds PO balance quantity (${balanceQuantity})`);
+                return false;
+            }
         }
 
         if (remainingBalance < taxableAmount) {
@@ -91,66 +111,22 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         return true;
     };
 
-    const parseFlexibleDate = (value: unknown): Date | null => {
+    const parseFlexibleDate = (value: unknown): Date => {
         const normalized = `${value ?? ''}`.trim();
-        if (!normalized) return null;
 
-        if (/^[0-9]{8}$/.test(normalized)) {
-            const year = Number(normalized.slice(0, 4));
-            const month = Number(normalized.slice(4, 6));
-            const day = Number(normalized.slice(6, 8));
-            if (!year || !month || !day) return null;
-            return new Date(year, month - 1, day);
+        if (!/^[0-9]{8}$/.test(normalized)) {
+            throw new Error('Expected date format is YYYYMMDD');
         }
 
-        if (/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/.test(normalized)) {
-            const [yearStr, monthStr, dayStr] = normalized.split('-');
-            const year = Number(yearStr);
-            const month = Number(monthStr);
-            const day = Number(dayStr);
-            if (!year || !month || !day) return null;
-            return new Date(year, month - 1, day);
+        const year = Number(normalized.slice(0, 4));
+        const month = Number(normalized.slice(4, 6));
+        const day = Number(normalized.slice(6, 8));
+
+        if (!year || !month || !day) {
+            throw new Error('Expected date format is YYYYMMDD');
         }
 
-        const monthMap: Record<string, number> = {
-            jan: 1,
-            feb: 2,
-            mar: 3,
-            apr: 4,
-            may: 5,
-            jun: 6,
-            jul: 7,
-            aug: 8,
-            sep: 9,
-            oct: 10,
-            nov: 11,
-            dec: 12
-        };
-
-        const spaceParts = normalized.split(/\s+/);
-        if (spaceParts.length === 3) {
-            const [dayStr, monStr, yearStr] = spaceParts;
-            const day = Number(dayStr);
-            const month = monthMap[monStr.toLowerCase().slice(0, 3)];
-            const year = Number(yearStr);
-            if (!day || !month || !year) return null;
-            return new Date(year, month - 1, day);
-        }
-
-        const dashParts = normalized.split('-');
-        if (dashParts.length === 3) {
-            const [dayStr, monStr, yearStr] = dashParts;
-            const day = Number(dayStr);
-            const month = monthMap[monStr.toLowerCase().slice(0, 3)];
-            let year = Number(yearStr);
-            if (yearStr.length === 2) {
-                year = 2000 + year;
-            }
-            if (!day || !month || !year) return null;
-            return new Date(year, month - 1, day);
-        }
-
-        return null;
+        return new Date(year, month - 1, day);
     };
 
     const handleSubmit = async (fromTallyDialog: boolean = false) => {
@@ -161,94 +137,137 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
         try {
             if (state.record?.templateId?.settings?.tally === true) {
                 const tallyHealthResponse = await tallyHealthCheck();
-                if (!tallyHealthResponse || tallyHealthResponse?.success === false ) {
+                if (!tallyHealthResponse || tallyHealthResponse?.success === false) {
                     toast.error('Connection to tally failed, please check the connection string');
                     return;
                 }
 
-            const purchaseOrdersResponse = await listAllPurchaseOrdersApi();
-            const purchaseOrders = purchaseOrdersResponse?.data?.vouchers || [];
-            console.log('all po details are:', purchaseOrders);
-            const poNumberRaw = state.objectFields?.invoice_basic_details?.po_number?.value;
-            const poNumber = poNumberRaw ? `${poNumberRaw}`.trim() : '';
-            if (!poNumber) {
-                toast.error('PO is missing');
-                return;
-            }
-            if (poNumber) {
-                const bestMatchedPO =
-                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim() === poNumber) ||
-                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase() === poNumber.toLowerCase()) ||
-                    purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase().includes(poNumber.toLowerCase()));
-
-                if (bestMatchedPO) {
-                    //to check the date is valid for the matched PO
-                    const invoiceDateRaw = state.objectFields?.invoice_basic_details?.invoice_date?.value;
-                    const invoiceDate = parseFlexibleDate(invoiceDateRaw);
-                    const poStartDate = parseFlexibleDate(bestMatchedPO?.date);
-                    const poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
-                    if (invoiceDate && poStartDate && poClosingDate) {
-                        if (invoiceDate < poStartDate || invoiceDate > poClosingDate) {
-                            toast.error('Invoice date is not within PO start and closing date');
-                            return;
-                        }
-                    }
-
-                    const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
-                    const isReconciled = reconcilation(remainingBalance);
-                    if (!isReconciled) return;
-                } else {
-                    toast.error(`PO number ${poNumber} is not matched to any of the PO in tally`);
+                const purchaseOrdersResponse = await listAllPurchaseOrdersApi();
+                const purchaseOrders = purchaseOrdersResponse?.data?.vouchers || [];
+                console.log('all po details are:', purchaseOrders);
+                const poNumberRaw = state.objectFields?.invoice_basic_details?.po_number?.value;
+                const poNumber = poNumberRaw ? `${poNumberRaw}`.trim() : '';
+                if (!poNumber) {
+                    toast.error('PO is missing');
                     return;
                 }
-            }
+                if (poNumber) {
+                    const bestMatchedPO =
+                        purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim() === poNumber) ||
+                        purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase() === poNumber.toLowerCase()) ||
+                        purchaseOrders.find((po: any) => `${po?.reference || ''}`.trim().toLowerCase().includes(poNumber.toLowerCase()));
 
-            if (!fromTallyDialog) {
-                
+                    if (bestMatchedPO) {
+                        //to check the date is valid for the matched PO
+                        const invoiceDateRaw = state.objectFields?.invoice_basic_details?.invoice_date?.value;
+                        let invoiceDate: Date, poStartDate: Date, poClosingDate: Date;
+                        try {
+                            invoiceDate = parseFlexibleDate(invoiceDateRaw);
+                            poStartDate = parseFlexibleDate(bestMatchedPO?.date);
+                            poClosingDate = parseFlexibleDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date);
+                        } catch {
+                            toast.error('Invalid date format. Expected date format is YYYYMMDD (e.g. 20240315)');
+                            return;
+                        }
+                        if (invoiceDate! && poStartDate! && poClosingDate!) {
+                            if (invoiceDate < poStartDate || invoiceDate > poClosingDate) {
+                                toast.error('Invoice date is not within PO start and closing date');
+                                return;
+                            }
+                        }
+
+                        const remainingBalance = bestMatchedPO?.remainingBalance ?? bestMatchedPO?.remaining_balance;
+                        const isReconciled = reconcilation(remainingBalance, bestMatchedPO?.balanceQuantity);
+                        if (!isReconciled) return;
+                        setPoDueDate(bestMatchedPO?.closingDate ?? bestMatchedPO?.closing_date ?? null);
+                    } else {
+                        toast.error(`PO number ${poNumber} is not matched to any of the PO in tally`);
+                        return;
+                    }
+                }
+
+                if (!fromTallyDialog) {
+
+                    const ledgerResponse = await getAllLedgerApi();
+                    const ledgers = ledgerResponse?.data?.ledgers || [];
+                    const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
+                    setTallyLedgerOptions(options);
+
+                    const stockItemsResponse = await listAllStockItemsApi();
+                    const stockItems = stockItemsResponse?.data?.stockItems || [];
+                    const stockOptions = stockItems.map((item: any) => {
+                        if (typeof item === 'string') {
+                            return { value: item, label: item };
+                        }
+
+                        const label = item?.name || item?.value || '';
+                        return { value: label, label };
+                    });
+                    setStockItemOptions(stockOptions);
+
+                    const purchaseLedgersResponse = await listPurchaseAccountLedgersApi();
+                    const purchaseLedgers = purchaseLedgersResponse?.data?.ledgers || [];
+                    setPurchaseLedgerOptions(purchaseLedgers.map((l: string) => ({ value: l, label: l })));
+
+                    const cgstOutput = `${state.objectFields?.tax_details?.cgst_output?.value ?? ''}`.trim();
+                    const sgstOutput = `${state.objectFields?.tax_details?.sgst_output?.value ?? ''}`.trim();
+                    const useCgstSgst = !!(cgstOutput && sgstOutput);
+
+                    const cgstPct = `${state.objectFields?.tax_details?.cgst_percentage?.value ?? ''}`.trim();
+                    const sgstPct = `${state.objectFields?.tax_details?.sgst_percentage?.value ?? ''}`.trim();
+                    const igstPct = `${state.objectFields?.tax_details?.igst_percentage?.value ?? ''}`.trim();
+
+                    const autoMatched = new Set<string>();
+                    const updates: Partial<typeof tallySelections> = {};
+
+                    if (useCgstSgst) {
+                        const matchedCgst = cgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('cgst') && l.includes(cgstPct)) ?? '' : '';
+                        const matchedSgst = sgstPct ? ledgers.find((l: string) => l.toLowerCase().includes('sgst') && l.includes(sgstPct)) ?? '' : '';
+                        if (matchedCgst) { autoMatched.add('cgst'); updates.cgstLedgerName = matchedCgst; }
+                        if (matchedSgst) { autoMatched.add('sgst'); updates.sgstLedgerName = matchedSgst; }
+                    } else {
+                        const matchedIgst = igstPct ? ledgers.find((l: string) => l.toLowerCase().includes('igst') && l.includes(igstPct)) ?? '' : '';
+                        if (matchedIgst) { autoMatched.add('igst'); updates.igstLedgerName = matchedIgst; }
+                    }
+
+                    setUseCgstSgstMode(useCgstSgst);
+                    setAutoMatchedTallyFields(autoMatched);
+                    if (Object.keys(updates).length) {
+                        setTallySelections(prev => ({ ...prev, ...updates }));
+                    }
+
+                    setShowTallyDialog(true);
+                    return;
+                }
+                // console.log('tally selections:', tallySelections);
+
                 const ledgerResponse = await getAllLedgerApi();
                 const ledgers = ledgerResponse?.data?.ledgers || [];
-                const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
-                setTallyLedgerOptions(options);
-
-                const stockItemsResponse = await listAllStockItemsApi();
-                const stockItems = stockItemsResponse?.data?.stockItems || [];
-                const stockOptions = stockItems.map((item: any) => {
-                    if (typeof item === 'string') {
-                        return { value: item, label: item };
-                    }
-
-                    const label = item?.name || item?.value || '';
-                    return { value: label, label };
-                });
-                setStockItemOptions(stockOptions);
-                setShowTallyDialog(true);
-                return;
-            }
-            // console.log('tally selections:', tallySelections);
-            
-            const ledgerResponse = await getAllLedgerApi();
-            const ledgers = ledgerResponse?.data?.ledgers || [];
-            const senderName = state.objectFields?.sender_details?.name?.value;
-            const bestMatchedLedger = ledgers.find((ledger: string) => ledger === senderName) || null;
-            if (bestMatchedLedger) {
-                setMatchedLedger(bestMatchedLedger);
-                console.log('matchedLedger:', bestMatchedLedger);
-                const payload = {
-                    extractedData: state.record?.extractedData,
-                    config: {
-                        purchaseLedgerName: bestMatchedLedger,
-                        tallyLedgers :tallySelections
-                    }
-                };
-                // await createJournalVoucherApi(payload);
-                await createPurchaseVoucher(payload);
-            } else {
-                const options = ledgers.map((ledger: string) => ({ value: ledger, label: ledger }));
-                setLedgerOptions(options);
-                setSelectedLedger('');
-                setMatchedLedger(null);
-                setShowLedgerDialog(true);
-            }
+                const senderName = state.objectFields?.sender_details?.name?.value;
+                const bestMatchedLedger = ledgers.find((ledger: string) => ledger === senderName) || null;
+                if (bestMatchedLedger) {
+                    setMatchedLedger(bestMatchedLedger);
+                    console.log('matchedLedger:', bestMatchedLedger);
+                    const payload = {
+                        extractedData: state.record?.extractedData,
+                        config: {
+                            purchaseLedgerName: bestMatchedLedger,
+                            tallyLedgers: tallySelections,
+                            poDueDate: poDueDate
+                        }
+                    };
+                    // await createJournalVoucherApi(payload);
+                    await createPurchaseVoucher(payload);
+                } else {
+                    const sundryResponse = await listSundryCreditorLedgersApi();
+                    const sundryLedgers = sundryResponse?.data?.ledgers || [];
+                    const sundryOptions = sundryLedgers.map((l: string) => ({ value: l, label: l }));
+                    setSundryCreditorOptions(sundryOptions);
+                    setLedgerOptions(sundryOptions);
+                    setSelectedLedger('');
+                    setMatchedLedger(null);
+                    setShowLedgerDialog(true);
+                }
                 return;
             }
             await submitRecordApi();
@@ -300,7 +319,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
             if (selectedTenant) {
                 streamHeaders.tenantId = selectedTenant;
             }
-            
+
             const streamResponse = await fetch(`${config.extractionServicePython}${data.stream_url}?token=Bearer ${JSON.parse(token)}`, {
                 method: 'GET',
                 headers: streamHeaders
@@ -355,7 +374,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
 
     const handleReExtract = async () => {
         setState(prev => ({ ...prev, hoveredFieldId: null, hoveredOnArrayField: false, wire: null, bbox: null, pageNumber: 1, reExtracting: true }));
-        
+
         if (state.record?.templateId?.settings?.extractionEngine !== 'python') {
             await handleNodeReExtraction();
         } else {
@@ -436,32 +455,46 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 closeDialog={() => setShowTallyDialog(false)}
                 primaryButtonText="Done"
                 onPrimaryAction={async () => {
+                    if (!tallySelections.stockItemName) {
+                        toast.error('Please select a stock item name to proceed');
+                        return;
+                    }
+                    if (!tallySelections.purchaseLedgerName) {
+                        toast.error('Please select a purchase ledger name to proceed');
+                        return;
+                    }
                     setShowTallyDialog(false);
                     await handleSubmit(true);
                 }}
             >
                 <div className="flex flex-col gap-4 px-8 py-6">
-                    <SingleSelect
-                        value={tallySelections.cgstLedgerName}
-                        options={tallyLedgerOptions}
-                        onValueChange={value => setTallySelections(prev => ({ ...prev, cgstLedgerName: value }))}
-                        placeholder="Select CGST ledger name"
-                        className="w-full"
-                    />
-                    <SingleSelect
-                        value={tallySelections.sgstLedgerName}
-                        options={tallyLedgerOptions}
-                        onValueChange={value => setTallySelections(prev => ({ ...prev, sgstLedgerName: value }))}
-                        placeholder="Select SGST ledger name"
-                        className="w-full"
-                    />
-                    <SingleSelect
-                        value={tallySelections.igstLedgerName}
-                        options={tallyLedgerOptions}
-                        onValueChange={value => setTallySelections(prev => ({ ...prev, igstLedgerName: value }))}
-                        placeholder="Select IGST ledger name"
-                        className="w-full"
-                    />
+                    {useCgstSgstMode && !autoMatchedTallyFields.has('cgst') && (
+                        <SingleSelect
+                            value={tallySelections.cgstLedgerName}
+                            options={tallyLedgerOptions}
+                            onValueChange={value => setTallySelections(prev => ({ ...prev, cgstLedgerName: value }))}
+                            placeholder="Select CGST ledger name"
+                            className="w-full"
+                        />
+                    )}
+                    {useCgstSgstMode && !autoMatchedTallyFields.has('sgst') && (
+                        <SingleSelect
+                            value={tallySelections.sgstLedgerName}
+                            options={tallyLedgerOptions}
+                            onValueChange={value => setTallySelections(prev => ({ ...prev, sgstLedgerName: value }))}
+                            placeholder="Select SGST ledger name"
+                            className="w-full"
+                        />
+                    )}
+                    {!useCgstSgstMode && !autoMatchedTallyFields.has('igst') && (
+                        <SingleSelect
+                            value={tallySelections.igstLedgerName}
+                            options={tallyLedgerOptions}
+                            onValueChange={value => setTallySelections(prev => ({ ...prev, igstLedgerName: value }))}
+                            placeholder="Select IGST ledger name"
+                            className="w-full"
+                        />
+                    )}
                     <SingleSelect
                         value={tallySelections.stockItemName}
                         options={stockItemOptions}
@@ -471,7 +504,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                     />
                     <SingleSelect
                         value={tallySelections.purchaseLedgerName}
-                        options={tallyLedgerOptions}
+                        options={purchaseLedgerOptions}
                         onValueChange={value => setTallySelections(prev => ({ ...prev, purchaseLedgerName: value }))}
                         placeholder="Select purchase ledger name"
                         className="w-full"
@@ -484,11 +517,16 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                 closeDialog={() => setShowLedgerDialog(false)}
                 primaryButtonText="Done"
                 onPrimaryAction={async () => {
+                    if (!selectedLedger) {
+                        toast.error('Please select a ledger to proceed');
+                        return;
+                    }
                     const payload = {
                         extractedData: state.record?.extractedData,
                         config: {
                             ledger: selectedLedger,
-                            tallySelections
+                            tallyLedgers: tallySelections,
+                            poDueDate: poDueDate
                         }
                     };
                     await createPurchaseVoucher(payload);
@@ -502,7 +540,7 @@ const ExtractedDataFooter: React.FC<ExtractedDataFooterIF> = () => {
                         options={ledgerOptions}
                         onValueChange={value => {
                             setSelectedLedger(value);
-                            console.log('selectedLedger:', value);
+                            // console.log('selectedLedger:', value);
                         }}
                         placeholder="Select a ledger"
                         className="w-full"

@@ -320,67 +320,6 @@ export const useViewRecordApi = () => {
             setState(prev => ({ ...prev, loadingData: false }));
         }
     };
-    const getAllLedgerApi = async () => {
-        try {
-            const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/listAllLedgers`, {});
-            return response;
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to fetch ledger list');
-            return null;
-        }
-    };
-    const listAllPurchaseOrdersApi = async () => {
-        try {
-            const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/listAllPurchaseOrders`, {});
-            return response;
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to fetch purchase orders');
-            return null;
-        }
-    };
-    const listAllStockItemsApi = async () => {
-        try {
-            const response = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/listAllStockItems`, {});
-            return response;
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to fetch stock items');
-            return null;
-        }
-    };
-    const tallyHealthCheck = async () => {
-        try {
-            const response = await httpRequest('GET', `${config.nodeApiUrl}/idp/tally/check`);
-            return response;
-        } catch (error) {
-            // console.error('error:===========', error);
-            // toast.error('Failed to check tally health');
-            return null;
-        }
-    };
-    const createPurchaseVoucher = async (payload: any) => {
-        try {
-            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/createPurchaseVoucher`, payload);
-            toast.success('successfully store with PO partially consumed');
-            return res;
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to create purchase voucher');
-            return null;
-        }
-    };
-    const createJournalVoucherApi = async (payload: any) => {
-        try {
-            const res: any = await httpRequest('POST', `${config.nodeApiUrl}/idp/tally/createJournalVoucher`, payload);
-            return res;
-        } catch (error) {
-            console.error('error:===========', error);
-            toast.error('Failed to create journal voucher');
-            return null;
-        }
-    };
     const generateInvoiceWithAI = async () => {
         try {
             const filteredData = filterExtractedDataForInvoiceGeneration(state.record?.extractedData);
@@ -555,12 +494,7 @@ export const useViewRecordApi = () => {
         sendRegenerateMessage,
         sendContentCreationContext,
         reExtractDocument,
-        getAllLedgerApi,
-        listAllPurchaseOrdersApi,
-        listAllStockItemsApi,
-        tallyHealthCheck,
-        createPurchaseVoucher,
-        createJournalVoucherApi
+        processArrayFields,
     };
 };
 

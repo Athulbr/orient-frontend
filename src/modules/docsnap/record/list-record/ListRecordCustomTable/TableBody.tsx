@@ -96,6 +96,9 @@ export const TableBody: React.FC = memo(() => {
                         <td className="px-2 py-4 xl:px-5">
                             <div className={cn(rowStyle)}>{formatDate(row.updatedAt)}</div>
                         </td>
+                        <td className="px-2 py-4 xl:px-5">
+                            <div className={cn(rowStyle)}>{row.documentconfidence ? `${row.documentconfidence}%` : 'N/A'}</div>
+                        </td>
                         <td className="px-2 py-4 xl:px-5 flex items-center justify-center">
                             <ActionButtons row={row} />
                         </td>

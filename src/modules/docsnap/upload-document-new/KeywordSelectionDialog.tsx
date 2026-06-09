@@ -28,9 +28,9 @@ interface KeywordSelectionDialogProps {
     keywordGroups: KeywordGroup[];
     isFetching: boolean;
     onClose: () => void;
-    onProceed: (groups: KeywordGroup[]) => void;
+    onProceed: (groups: KeywordGroup[], comment?: string) => void;
     /** Called when user clicks Proceed inside a single group — should NOT close the dialog */
-    onProceedGroup?: (group: KeywordGroup) => void | Promise<void>;
+    onProceedGroup?: (group: KeywordGroup, comment?: string) => void | Promise<void>;
     isSubmitting?: boolean;
 }
 
@@ -63,6 +63,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
 
     // Tracks which groups have had Proceed clicked (so we can look them up in extractionQueue)
     const [proceededGroups, setProceededGroups] = useState<Set<number>>(new Set());
+    const [userComment, setUserComment] = useState('');
 
     // Sync when initialGroups changes (e.g. after fetch)
     const [lastGroups, setLastGroups] = useState(initialGroups);
@@ -71,6 +72,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
         setGroups(initialGroups);
         setCollapsedGroups(new Set(initialGroups.map((_, i) => i).slice(1)));
         setProceededGroups(new Set());
+        setUserComment('');
     }
 
     const toggleGroupCollapse = (gi: number) => {
@@ -144,9 +146,9 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
         });
 
         if (onProceedGroup) {
-            await Promise.resolve(onProceedGroup(groups[gi]));
+            await Promise.resolve(onProceedGroup(groups[gi], userComment));
         } else {
-            await Promise.resolve(onProceed([groups[gi]]));
+            await Promise.resolve(onProceed([groups[gi]], userComment));
         }
     };
 
@@ -420,6 +422,20 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                             })}
                         </div>
 
+                        {/* User comment/instructions textarea */}
+                        <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-3.5 shrink-0">
+                            <label htmlFor="userComment" className="text-xs font-semibold text-gray-700">
+                                Additional Instructions / Comments (Optional)
+                            </label>
+                            <textarea
+                                id="userComment"
+                                value={userComment}
+                                onChange={e => setUserComment(e.target.value)}
+                                placeholder="Enter specific instructions or paste reference links (e.g. Tone: formal, reference: https://example.com/blog)..."
+                                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 resize-none h-18"
+                            />
+                        </div>
+
                         {/* Footer — state machine */}
                         {(() => {
                             const allProceeded = proceededGroups.size === groups.length && groups.length > 0;
@@ -477,7 +493,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                                     // (keeps the dialog open, re-triggers extraction)
                                                     failedGroups.forEach(group => {
                                                         if (onProceedGroup) {
-                                                            onProceedGroup(group);
+                                                            onProceedGroup(group, userComment);
                                                         }
                                                     });
                                                 }}
@@ -502,7 +518,7 @@ export const KeywordSelectionDialog: React.FC<KeywordSelectionDialogProps> = ({
                                         <Button
                                             onClick={() => {
                                                 const remaining = groups.filter((_, gi) => !proceededGroups.has(gi));
-                                                onProceed(remaining.length > 0 ? remaining : groups);
+                                                onProceed(remaining.length > 0 ? remaining : groups, userComment);
                                             }}
                                             disabled={isSubmitting}
                                             startIcon={isSubmitting ? <Spinner size={14} /> : null}

@@ -67,7 +67,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
 
     const handleDropdownOptionChange = async (option: string) => {
         const deleteTemplateApi = async (id: string) => {
-                try {
+            try {
                 const res = await httpRequest('DELETE', `${config.nodeApiUrl}/idp/template/delete/${id}`);
 
                 const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
@@ -121,7 +121,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         const currentTenant = window?.sessionStorage?.getItem('selectedTenant');
         try {
             setIsDuplicating(true);
-            
+
             // First fetch the full template details since the list item might not have fields
             let fullTemplate = template;
             try {
@@ -132,7 +132,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             } catch (err) {
                 console.error('Failed to fetch full template details structure', err);
             }
-            
+
             const requestBody = {
                 name: duplicateTemplateName,
                 templateId: fullTemplate._id,
@@ -157,10 +157,10 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             }
 
             window?.sessionStorage?.setItem('templates', JSON.stringify(resp?.data));
-            
+
             toast.success('Template duplicated successfully');
             setShowDuplicateDialog(false);
-            
+
             if (refreshPage) {
                 refreshPage();
             } else {
@@ -278,7 +278,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
         navigate('/docsnap/record/list');
     };
 
-    const handleProceedWithKeywords = async (groups: KeywordGroup[]) => {
+    const handleProceedWithKeywords = async (groups: KeywordGroup[], comment?: string) => {
         setIsSubmittingKeywords(true);
         try {
             const matchingGroup = groups.find(
@@ -287,7 +287,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
             const selectedKeywords = matchingGroup
                 ? matchingGroup.keywords.filter(k => k.selected)
                 : groups.flatMap(g => g.keywords.filter(k => k.selected));
-            addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords });
+            addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords, userComment: comment });
             setShowKeywordDialog(false);
             setPendingFormData(null);
         } finally {
@@ -296,9 +296,9 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
     };
 
     /** Per-group proceed — does NOT close the dialog */
-    const handleProceedGroupKeywords = (group: KeywordGroup) => {
+    const handleProceedGroupKeywords = (group: KeywordGroup, comment?: string) => {
         const selectedKeywords = group.keywords.filter(k => k.selected);
-        addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords }, undefined, true);
+        addToDocumentExtractor(template, [], { ...pendingFormData, selectedKeywords, userComment: comment }, undefined, true);
     };
 
     if (!template) return null;
@@ -398,7 +398,7 @@ export const TemplateCardComponent: React.FC<PropsIF> = ({
                     </Button>
                 )}
                 <Button
-                    permission="update:template"
+                    permission="create:blog"
                     outlined
                     startIcon={<FileText size={14} className="text-gray-500" />}
                     onClick={onClickManualButtonHandler}
@@ -518,7 +518,7 @@ const PromptTabContent = ({ closeDialog, template, refreshPage }: { closeDialog:
         };
         try {
             await httpRequest('PATCH', `${config.nodeApiUrl}/idp/template/update/${template._id}`, requestBody);
-            
+
             const prevSelectedTenant = window?.sessionStorage?.getItem('selectedTenant');
             window?.sessionStorage?.removeItem('selectedTenant');
 
@@ -788,18 +788,16 @@ const CssVisualEditor: React.FC<CssVisualEditorProps> = ({ parsed, onChange, hig
                     <div
                         key={sel}
                         ref={el => { rowRefs.current[sel] = el; }}
-                        className={`border rounded-md overflow-hidden transition-all ${
-                            isHighlighted
+                        className={`border rounded-md overflow-hidden transition-all ${isHighlighted
                                 ? 'border-blue-400 ring-2 ring-blue-200'
                                 : 'border-gray-200'
-                        }`}
+                            }`}
                     >
                         {/* Accordion header */}
                         <button
                             onClick={() => toggle(sel)}
-                            className={`w-full flex items-center justify-between px-3 py-2 transition-colors ${
-                                isHighlighted ? 'bg-blue-50 hover:bg-blue-100' : 'bg-gray-50 hover:bg-gray-100'
-                            }`}
+                            className={`w-full flex items-center justify-between px-3 py-2 transition-colors ${isHighlighted ? 'bg-blue-50 hover:bg-blue-100' : 'bg-gray-50 hover:bg-gray-100'
+                                }`}
                         >
                             <div className="flex items-center gap-2 min-w-0">
                                 {isOpen
@@ -971,7 +969,7 @@ const buildIframeSrcdoc = (htmlBody: string) => `<!DOCTYPE html>
  * Infer the HTML tag name from a CSS class name.
  * e.g. "blog-h2" → "h2", "blog-p" → "p", "content-blockquote" → "blockquote"
  */
-const KNOWN_TAGS = ['h1','h2','h3','h4','h5','h6','p','ul','ol','li','blockquote','a','strong','em','table','tr','td','th','img','span','div'];
+const KNOWN_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'blockquote', 'a', 'strong', 'em', 'table', 'tr', 'td', 'th', 'img', 'span', 'div'];
 const CLASS_ALIASES: Record<string, string> = {
     'para': 'p', 'paragraph': 'p', 'quote': 'blockquote', 'link': 'a',
     'image': 'img', 'list': 'ul', 'listitem': 'li', 'list-item': 'li',
