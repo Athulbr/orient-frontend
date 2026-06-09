@@ -101,7 +101,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
 
         // Step 4: Call submit API
         try {
-            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/submit-order-3`, {
+            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/maraekat-submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated })
