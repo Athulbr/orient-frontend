@@ -12,7 +12,7 @@ export const TableHeader: FC<TableHeaderIF> = () => {
     const { state, setState } = useListRecordCustomTableState();
     const { getRecordsApi } = useListRecordCustomTableApi();
     const { user, checkPermission } = usePermissionStore();
-    
+
     // Get tour function
     const startRecordViewTour = useRecordViewTour();
 
@@ -34,6 +34,7 @@ export const TableHeader: FC<TableHeaderIF> = () => {
             },
             { label: 'Extracted By', visible: true },
             { label: 'Processed Date', visible: true },
+            { label: 'Confidence', visible: true },
             { label: 'Actions', visible: checkPermission('delete:record') || checkPermission('update:record') }
         ],
         []
@@ -71,11 +72,7 @@ export const TableHeader: FC<TableHeaderIF> = () => {
                 {columns.map((column: any, index: number) => {
                     if (!column.visible) return null;
                     return (
-                        <th
-                            key={index}
-                            scope="col"
-                            className={`sticky top-0 z-1 h-14 bg-gray-50 px-2 py-3 text-left text-xs font-medium tracking-wider text-nowrap text-gray-500 uppercase xl:px-5`}
-                        >
+                        <th key={index} scope="col" className={`sticky top-0 z-1 h-14 bg-gray-50 px-2 py-3 text-left text-xs font-medium tracking-wider text-nowrap text-gray-500 uppercase xl:px-5`}>
                             <div className="flex items-center gap-2 md:text-xs lg:text-sm">{column.label}</div>
                         </th>
                     );
