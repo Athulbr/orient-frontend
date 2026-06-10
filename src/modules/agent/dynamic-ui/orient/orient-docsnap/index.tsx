@@ -20,20 +20,18 @@ const user = JSON.parse(window?.sessionStorage?.getItem('user') || '{}');
 
 // ── Helper: parse initial search from URL once (#9) ───────────
 const getInitialSearch = (): string => (typeof window !== 'undefined' ? sessionStorage.getItem('order_no') || '' : '');
-const getInitialOrderType = (): string => (typeof window !== 'undefined' ? sessionStorage.getItem('order_type') || '' : '');
 const getInitialBranchId = (): string => (typeof window !== 'undefined' ? sessionStorage.getItem('branch_id') || '' : '');
 
 const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ agentSettings }) => {
     // ── Filter & Pagination state ─────────────────────────────
     const initialSearch = React.useMemo(getInitialSearch, []);
-    const initialOrderType = React.useMemo(getInitialOrderType, []);
     const initialBranchId = React.useMemo(getInitialBranchId, []);
 
     const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
     const [statusFilter, setStatusFilter] = useState('all');
     const [branchFilter, setBranchFilter] = useState(initialBranchId || 'all');
-    const [orderTypeFilter, setOrderTypeFilter] = useState(initialOrderType || 'all');
+    const [orderTypeFilter, setOrderTypeFilter] = useState('all');
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
     const [perPage, setPerPage] = useState('10');
     const [currentPage, setCurrentPage] = useState(1);
@@ -153,7 +151,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);
-    }, [initialOrderType]);
+    }, []);
 
     // ── Render ────────────────────────────────────────────────
     return (
