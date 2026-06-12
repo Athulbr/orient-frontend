@@ -9,6 +9,8 @@ interface OrderFiltersBarProps {
     onSearchChange: (value: string) => void;
     statusFilter: string;
     onStatusChange: (value: string) => void;
+    orderTypeFilter: string;
+    onOrderTypeChange: (value: string) => void;
     branchFilter: string;
     onBranchChange: (value: string) => void;
     dateRange: { startDate: string; endDate: string };
@@ -17,7 +19,18 @@ interface OrderFiltersBarProps {
     onCreateOrder: () => void;
 }
 
-const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({ searchQuery, onSearchChange, statusFilter, onStatusChange, dateRange, onDateRangeChange, onReset, onCreateOrder }) => {
+const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
+    searchQuery,
+    onSearchChange,
+    statusFilter,
+    onStatusChange,
+    orderTypeFilter,
+    onOrderTypeChange,
+    dateRange,
+    onDateRangeChange,
+    onReset,
+    onCreateOrder
+}) => {
     return (
         <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
@@ -47,6 +60,16 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({ searchQuery, onSearch
                             { label: 'Review Pending', value: 'extracted', color: 'orange' },
                             { label: 'Maraekat Submitted', value: 'submitted', color: 'green' },
                             { label: 'Extraction Failed', value: 'failed', color: 'red' }
+                        ]}
+                    />
+                    <SingleSelect
+                        className="min-w-32"
+                        value={orderTypeFilter}
+                        onValueChange={onOrderTypeChange}
+                        options={[
+                            { label: 'All Orders', value: 'all' },
+                            { label: 'Sell', value: 'sell' },
+                            { label: 'Buy', value: 'buy' }
                         ]}
                     />
                     <div className="flex flex-col gap-1">
