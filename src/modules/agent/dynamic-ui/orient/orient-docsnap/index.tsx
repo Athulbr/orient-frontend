@@ -147,7 +147,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         setDebouncedSearchQuery('');
         setStatusFilter('all');
         // setBranchFilter('');
-        // setOrderTypeFilter(initialOrderType || 'all');
+        setOrderTypeFilter('all');
         setDateRange({ startDate: '', endDate: '' });
         setPerPage('10');
         setCurrentPage(1);
@@ -164,6 +164,8 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                 onStatusChange={setStatusFilter}
                 branchFilter={branchFilter}
                 onBranchChange={setBranchFilter}
+                orderTypeFilter={orderTypeFilter}
+                onOrderTypeChange={setOrderTypeFilter}
                 dateRange={dateRange}
                 onDateRangeChange={setDateRange}
                 onReset={handleResetFilters}
