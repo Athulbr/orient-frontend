@@ -34,7 +34,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
     onCreateOrder
 }) => {
     const navigate = useNavigate();
-    const menuOptions = [{ label: "Scanned Documents", value: "scannedDocuments" }];
+    const menuOptions = [{ label: 'Scanned Documents', value: 'scannedDocuments' }];
 
     return (
         <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
@@ -86,14 +86,14 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
                             initialEndDate={dateRange.endDate}
                         />
                     </div>
-                    <Button startIcon={<X size={16} />} onClick={onReset} outlined></Button>
+                    <Button title="Reset Filters" startIcon={<X size={16} />} onClick={onReset} outlined></Button>
                     <Button startIcon={<RotateCw size={16} />} onClick={onReset} outlined>
                         Refresh
                     </Button>
                     <Button onClick={onCreateOrder}>Create Order</Button>
                     <Dropdown
                         options={menuOptions.map(opt => opt.label)}
-                        onChange={(label) => {
+                        onChange={label => {
                             const option = menuOptions.find(o => o.label === label);
                             if (option?.value === 'scannedDocuments') {
                                 navigate('/agent/scanned-documents');
