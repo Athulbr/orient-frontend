@@ -7,7 +7,7 @@ const RunAgentPage = lazy(() => import('../../modules/agent/run-agent'));
 const ViewAgentPage = lazy(() => import('../../modules/agent/view-agent'));
 const ListAgentTemplatePage = lazy(() => import('../../modules/agent/agent-template/list-agent-template'));
 const ViewAgentTemplatePage = lazy(() => import('../../modules/agent/agent-template/view-agent-template'));
-const ScannedDocuments = lazy(() => import('../../modules/agent/dynamic-ui/orient/orient-docsnap/ScannedDocuments'));
+const ScannedDocuments = lazy(() => import('../../modules/agent/dynamic-ui/orient/orient-docsnap/scanned-documents'));
 
 const AgentRoutes = () => {
     return (
