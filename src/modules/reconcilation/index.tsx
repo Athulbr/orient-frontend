@@ -10,26 +10,53 @@ interface SheetMetadata {
     [sheetName: string]: { rows: number; columns: number; column_names: string[] };
 }
 interface BRSData {
-    book_closing_bal: number; bank_closing_bal: number; add_issued: number;
-    less_deposited: number; less_debited_nb: number; add_credited_nb: number;
-    reconciled_balance: number; brs_difference: number;
+    book_closing_bal: number;
+    bank_closing_bal: number;
+    add_issued: number;
+    less_deposited: number;
+    less_debited_nb: number;
+    add_credited_nb: number;
+    reconciled_balance: number;
+    brs_difference: number;
 }
 interface GatewaySummaryItem {
-    name: string; gw_net: number; bank_total: number; gross: number;
-    fees: number; tax: number; difference: number; matched: number; unmatched: number;
+    name: string;
+    gw_net: number;
+    bank_total: number;
+    gross: number;
+    fees: number;
+    tax: number;
+    difference: number;
+    matched: number;
+    unmatched: number;
 }
 interface ReconciliationResult {
-    matched: any[]; book_only: any[]; bank_only: any[];
-    recon_type?: string; brs?: BRSData;
-    company_name?: string; account_info?: string; brs_date?: string;
-    gateway_summary?: GatewaySummaryItem[]; books_match?: boolean; reconciled?: boolean;
+    matched: any[];
+    book_only: any[];
+    bank_only: any[];
+    recon_type?: string;
+    brs?: BRSData;
+    company_name?: string;
+    account_info?: string;
+    brs_date?: string;
+    gateway_summary?: GatewaySummaryItem[];
+    books_match?: boolean;
+    reconciled?: boolean;
     summary: {
-        book_entries: number; bank_entries: number; matched: number;
-        matched_perfect: number; matched_with_diff: number;
-        book_only: number; bank_only: number; difference: number;
+        book_entries: number;
+        bank_entries: number;
+        matched: number;
+        matched_perfect: number;
+        matched_with_diff: number;
+        book_only: number;
+        bank_only: number;
+        difference: number;
     };
-    download_url: string; book_file_name: string; statement_file_name: string;
-    book_sheets: SheetMetadata; statement_sheets: SheetMetadata;
+    download_url: string;
+    book_file_name: string;
+    statement_file_name: string;
+    book_sheets: SheetMetadata;
+    statement_sheets: SheetMetadata;
 }
 
 const hexToBlob = (hex: string): Blob => {
@@ -39,10 +66,17 @@ const hexToBlob = (hex: string): Blob => {
 };
 
 const buildResult = (data: any, reconType: string, blob: Blob): ReconciliationResult => ({
-    matched: data.matched || [], book_only: data.book_only || [], bank_only: data.bank_only || [],
-    recon_type: data.recon_type || reconType, brs: data.brs || null,
-    company_name: data.company_name || '', account_info: data.account_info || '', brs_date: data.brs_date || '',
-    gateway_summary: data.gateway_summary || [], books_match: data.books_match, reconciled: data.reconciled,
+    matched: data.matched || [],
+    book_only: data.book_only || [],
+    bank_only: data.bank_only || [],
+    recon_type: data.recon_type || reconType,
+    brs: data.brs || null,
+    company_name: data.company_name || '',
+    account_info: data.account_info || '',
+    brs_date: data.brs_date || '',
+    gateway_summary: data.gateway_summary || [],
+    books_match: data.books_match,
+    reconciled: data.reconciled,
     summary: data.summary || { book_entries: 0, bank_entries: 0, matched: 0, matched_perfect: 0, matched_with_diff: 0, book_only: 0, bank_only: 0, difference: 0 },
     download_url: URL.createObjectURL(blob),
     book_file_name: data.book_file_name || data.all_branches_file || '',
@@ -58,15 +92,12 @@ function ListReconcilationPage() {
     const [results, setResults] = useState<ReconciliationResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const API_BASE_URL = 'http://172.16.0.240:8000';
+    const API_BASE_URL = 'http://172.16.0.47:8000';
     // const API_BASE_URL = 'http://localhost:8000';
-    
 
-    const handleUpload = async (
-        bookFile: File, statementFile: File, prevBrsFile: File | null,
-        reconType: ReconType, hotBookFile?: File | null
-    ) => {
-        setIsLoading(true); setError(null);
+    const handleUpload = async (bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType, hotBookFile?: File | null) => {
+        setIsLoading(true);
+        setError(null);
         try {
             const formData = new FormData();
             const placeholder = new File([], 'placeholder.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -82,19 +113,32 @@ function ListReconcilationPage() {
             }
             const endpoint = reconType === 'qr' ? '/reconcile-qr' : '/reconcile';
             const response = await fetch(`${API_BASE_URL}${endpoint}`, { method: 'POST', body: formData });
-            if (!response.ok) { const err = await response.json().catch(() => null); throw new Error(err?.detail || `Server error: ${response.statusText}`); }
+            if (!response.ok) {
+                const err = await response.json().catch(() => null);
+                throw new Error(err?.detail || `Server error: ${response.statusText}`);
+            }
             const data = await response.json();
             setResults(buildResult(data, reconType, hexToBlob(data.file_bytes)));
             setStage('results');
-        } catch (err) { setError(err instanceof Error ? err.message : 'An unexpected error occurred.'); }
-        finally { setIsLoading(false); }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleGatewayUpload = async (
-        allBranchesFile: File, hotBookFile: File, statementFile: File, payuFiles: File[],
-        prevBrsFile: File | null, payuOdFiles: File[], cashfreeFiles: File[], easebuzzFiles: File[]
+        allBranchesFile: File,
+        hotBookFile: File,
+        statementFile: File,
+        payuFiles: File[],
+        prevBrsFile: File | null,
+        payuOdFiles: File[],
+        cashfreeFiles: File[],
+        easebuzzFiles: File[]
     ) => {
-        setIsLoading(true); setError(null);
+        setIsLoading(true);
+        setError(null);
         try {
             const formData = new FormData();
             formData.append('all_branches_file', allBranchesFile);
@@ -106,21 +150,36 @@ function ListReconcilationPage() {
             for (const f of easebuzzFiles) formData.append('easebuzz_file', f);
             if (prevBrsFile) formData.append('previous_brs_file', prevBrsFile);
             const response = await fetch(`${API_BASE_URL}/reconcile-gateway`, { method: 'POST', body: formData });
-            if (!response.ok) { const err = await response.json().catch(() => null); throw new Error(err?.detail || `Server error: ${response.statusText}`); }
+            if (!response.ok) {
+                const err = await response.json().catch(() => null);
+                throw new Error(err?.detail || `Server error: ${response.statusText}`);
+            }
             const data = await response.json();
             setResults(buildResult(data, 'gateway', hexToBlob(data.file_bytes)));
             setStage('results');
-        } catch (err) { setError(err instanceof Error ? err.message : 'An unexpected error occurred.'); }
-        finally { setIsLoading(false); }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleUploadDispatch = (
-        bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType,
-        hotBookFile?: File | null, payuOdFiles?: File[], cashfreeFiles?: File[],
-        easebuzzFiles?: File[], payuFiles?: File[]
+        bookFile: File,
+        statementFile: File,
+        prevBrsFile: File | null,
+        reconType: ReconType,
+        hotBookFile?: File | null,
+        payuOdFiles?: File[],
+        cashfreeFiles?: File[],
+        easebuzzFiles?: File[],
+        payuFiles?: File[]
     ) => {
         if (reconType === 'gateway') {
-            if (!payuFiles || payuFiles.length === 0) { setError('PayU Regular file is required for Gateway reconciliation.'); return; }
+            if (!payuFiles || payuFiles.length === 0) {
+                setError('PayU Regular file is required for Gateway reconciliation.');
+                return;
+            }
             handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFiles, prevBrsFile, payuOdFiles || [], cashfreeFiles || [], easebuzzFiles || []);
         } else {
             handleUpload(bookFile, statementFile, prevBrsFile, reconType, hotBookFile);
@@ -132,9 +191,15 @@ function ListReconcilationPage() {
         setIsDL(true);
         try {
             const filename = results.recon_type === 'qr' ? 'QR_Reconciliation.xlsx' : results.recon_type === 'gateway' ? 'Gateway_Reconcilation.xlsx' : 'Bank_Reconciliation.xlsx';
-            const a = document.createElement('a'); a.href = results.download_url; a.download = filename;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        } finally { setIsDL(false); }
+            const a = document.createElement('a');
+            a.href = results.download_url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } finally {
+            setIsDL(false);
+        }
     };
 
     const reconPillLabel = () => {
@@ -152,16 +217,18 @@ function ListReconcilationPage() {
         // Match the exact PageContainer usage of other pages: gap-4 p-6
         // NO overflow-y here — the parent layout (AuthenticatedLayout) is the single scroller
         <PageContainer className="gap-4 p-6">
-
             {/* Results action bar — only shown when viewing results */}
             {stage === 'results' && (
                 <div className={styles.pageHeader}>
-                    {results?.recon_type && (
-                        <span className={cx(styles.reconModePill, reconPillClass())}>
-                            {reconPillLabel()}
-                        </span>
-                    )}
-                    <button className={styles.btnOutline} onClick={() => { setStage('upload'); setResults(null); setError(null); }}>
+                    {results?.recon_type && <span className={cx(styles.reconModePill, reconPillClass())}>{reconPillLabel()}</span>}
+                    <button
+                        className={styles.btnOutline}
+                        onClick={() => {
+                            setStage('upload');
+                            setResults(null);
+                            setError(null);
+                        }}
+                    >
                         ← New Reconciliation
                     </button>
                 </div>
@@ -174,16 +241,14 @@ function ListReconcilationPage() {
                         <span className={styles.appErrorTitle}>Error</span>
                         <span className={styles.appErrorMsg}>{error}</span>
                     </div>
-                    <button className={styles.appErrorClose} onClick={() => setError(null)}>Dismiss</button>
+                    <button className={styles.appErrorClose} onClick={() => setError(null)}>
+                        Dismiss
+                    </button>
                 </div>
             )}
 
             {/* Content — flows naturally, no inner scroll container */}
-            {stage === 'upload'
-                ? <FileUpload onUpload={handleUploadDispatch} isLoading={isLoading} />
-                : <Results data={results!} onDownload={handleDownload} isDownloading={isDownloading} />
-            }
-
+            {stage === 'upload' ? <FileUpload onUpload={handleUploadDispatch} isLoading={isLoading} /> : <Results data={results!} onDownload={handleDownload} isDownloading={isDownloading} />}
         </PageContainer>
     );
 }
