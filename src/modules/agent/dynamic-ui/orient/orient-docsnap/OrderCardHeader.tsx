@@ -174,7 +174,6 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
 
                                 if (finalData.extractedData || finalData.recordId) {
                                     const receiptExtractionDetails = {
-                                        extractedData: finalData.extractedData,
                                         recordId: finalData.recordId
                                     };
 
