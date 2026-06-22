@@ -517,7 +517,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 const metaData = {
                     currentDateTime,
                     isoDateTime,
-                    orderNumber,
+                    orderNumber: `${orderNumber}`,
                     branchCode: order.orderDetails?.branchCode || '',
                     orderType: order.orderDetails?.orderType || '',
                     orderCategory: order.orderDetails?.documentSubmitStatus || '',
