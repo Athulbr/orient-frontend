@@ -197,7 +197,7 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc }) => {
                             Preview
                         </button>
 
-                        {doc.status === 'extracted' && (
+                        {(doc.status === 'extracted' || doc.status === 'failed') && (
                             <button
                                 onClick={handleRetry}
                                 disabled={isRetrying}
