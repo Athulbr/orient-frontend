@@ -93,16 +93,16 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
                             <div
                                 onClick={e => {
                                     e.stopPropagation();
-                                    edit.startEditing('branchCode');
+                                    if (doc.status !== 'success') edit.startEditing('branchCode');
                                 }}
-                                className="cursor-pointer"
+                                className={doc.status === 'success' ? '' : 'cursor-pointer'}
                             >
                                 {edit.branch.value ? (
                                     <MetaPill icon={<Building2 size={12} className="text-blue-500" />} colorClass="bg-blue-50 text-blue-700 border-blue-100 hover:border-blue-300 transition-colors">
                                         Branch: {edit.branch.value}
                                     </MetaPill>
                                 ) : (
-                                    <EmptyFieldInput placeholder="Add Branch" colorClass="border-blue-500 text-blue-700 placeholder-blue-600" />
+                                    <EmptyFieldInput placeholder="Add Branch" colorClass="border-blue-500 text-blue-700 placeholder-blue-600" disabled={doc.status === 'success'} />
                                 )}
                             </div>
                         )}
@@ -122,9 +122,9 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
                             <div
                                 onClick={e => {
                                     e.stopPropagation();
-                                    edit.startEditing('invoiceNumber');
+                                    if (doc.status !== 'success') edit.startEditing('invoiceNumber');
                                 }}
-                                className="cursor-pointer"
+                                className={doc.status === 'success' ? '' : 'cursor-pointer'}
                             >
                                 {edit.invoice.value ? (
                                     <MetaPill
@@ -134,7 +134,7 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
                                         Invoice No: {edit.invoice.value}
                                     </MetaPill>
                                 ) : (
-                                    <EmptyFieldInput placeholder="Add Invoice No" colorClass="border-violet-500 text-violet-700 placeholder-violet-600" />
+                                    <EmptyFieldInput placeholder="Add Invoice No" colorClass="border-violet-500 text-violet-700 placeholder-violet-600" disabled={doc.status === 'success'} />
                                 )}
                             </div>
                         )}
@@ -154,16 +154,16 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
                             <div
                                 onClick={e => {
                                     e.stopPropagation();
-                                    edit.startEditing('orderType');
+                                    if (doc.status !== 'success') edit.startEditing('orderType');
                                 }}
-                                className="cursor-pointer"
+                                className={doc.status === 'success' ? '' : 'cursor-pointer'}
                             >
                                 {edit.orderType.value ? (
                                     <MetaPill icon={<Tag size={12} className="text-gray-500" />} colorClass="bg-gray-50 text-gray-700 border-gray-100 hover:border-gray-300 transition-colors">
                                         {edit.orderType.value}
                                     </MetaPill>
                                 ) : (
-                                    <EmptyFieldInput placeholder="Add Order Type" colorClass="border-gray-500 text-gray-700 placeholder-emerald-600" />
+                                    <EmptyFieldInput placeholder="Add Order Type" colorClass="border-gray-500 text-gray-700 placeholder-emerald-600" disabled={doc.status === 'success'} />
                                 )}
                             </div>
                         )}
@@ -247,8 +247,8 @@ const InlineEditRow: React.FC<{
 );
 
 /** Dashed placeholder shown when a field has no value yet. */
-const EmptyFieldInput: React.FC<{ placeholder: string; colorClass: string }> = ({ placeholder, colorClass }) => (
-    <input type="text" placeholder={placeholder} readOnly className={`h-6 px-2 text-[11px] border border-dashed rounded focus:outline-none w-28 bg-transparent cursor-pointer ${colorClass}`} />
+const EmptyFieldInput: React.FC<{ placeholder: string; colorClass: string; disabled?: boolean }> = ({ placeholder, colorClass, disabled }) => (
+    <input type="text" placeholder={placeholder} readOnly className={`h-6 px-2 text-[11px] border border-dashed rounded focus:outline-none w-28 bg-transparent ${disabled ? 'cursor-default' : 'cursor-pointer'} ${colorClass}`} />
 );
 
 export default ScannedDocumentCard;

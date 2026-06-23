@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Loader2, AlertCircle, X } from 'lucide-react';
 import { config } from '../../../../../../config/default';
 import { API_KEY } from './constants';
 
@@ -7,22 +7,51 @@ interface InvoicePreviewIconProps {
     invoicePagePath?: string;
 }
 
+const ZoomableImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+    const [isZoomed, setIsZoomed] = useState(false);
+    const [position, setPosition] = useState({ x: 50, y: 50 });
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - left) / width) * 100;
+        const y = ((e.clientY - top) / height) * 100;
+        setPosition({ x, y });
+    };
+
+    return (
+        <div 
+            className="flex-1 h-full w-full bg-gray-100 flex items-center justify-center overflow-hidden relative cursor-zoom-in"
+            onMouseEnter={() => setIsZoomed(true)}
+            onMouseLeave={() => setIsZoomed(false)}
+            onMouseMove={handleMouseMove}
+        >
+            <img 
+                src={src} 
+                alt={alt} 
+                className="w-full h-full object-contain transition-transform duration-100 ease-out pointer-events-none"
+                style={{
+                    transform: isZoomed ? 'scale(2.5)' : 'scale(1)',
+                    transformOrigin: `${position.x}% ${position.y}%`
+                }}
+            />
+        </div>
+    );
+};
+
 /**
  * Displays a document icon.
- * On hover, fetches and shows a thumbnail popup of the invoice page image.
- * The image is fetched lazily on first hover and the object URL is revoked on unmount.
+ * On click, fetches and shows a full page preview of the invoice page image.
+ * The image is fetched lazily on first open and the object URL is revoked on unmount.
  */
 const InvoicePreviewIcon: React.FC<InvoicePreviewIconProps> = ({ invoicePagePath }) => {
-    const [hover, setHover] = useState(false);
-    const [hasHovered, setHasHovered] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [hasOpened, setHasOpened] = useState(false);
     const [thumbUrl, setThumbUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const iconRef = useRef<HTMLDivElement>(null);
-    const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
 
-    // Fetch preview image on first hover
+    // Fetch preview image on first open
     useEffect(() => {
-        if (!invoicePagePath || !hasHovered) return;
+        if (!invoicePagePath || !hasOpened) return;
 
         let objectUrl: string;
 
@@ -48,58 +77,66 @@ const InvoicePreviewIcon: React.FC<InvoicePreviewIconProps> = ({ invoicePagePath
             }
         };
 
-        fetchImage();
+        if (!thumbUrl) {
+            fetchImage();
+        }
 
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
-    }, [invoicePagePath, hasHovered]);
+    }, [invoicePagePath, hasOpened]);
 
-    const handleMouseEnter = () => {
-        setHover(true);
-        setHasHovered(true);
+    const handleOpen = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsOpen(true);
+        setHasOpened(true);
+    };
 
-        if (iconRef.current) {
-            const cardEl = iconRef.current.closest('.scanned-document-card');
-            const rect = cardEl ? cardEl.getBoundingClientRect() : iconRef.current.getBoundingClientRect();
-            const isLowerHalf = rect.top > window.innerHeight / 2;
-
-            setPopupStyle({
-                position: 'fixed',
-                left: rect.left + rect.width / 2,
-                transform: 'translateX(-50%)',
-                ...(isLowerHalf ? { bottom: window.innerHeight - rect.top + 10 } : { top: rect.bottom + 10 }),
-                zIndex: 999
-            });
-        }
+    const handleClose = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsOpen(false);
     };
 
     return (
         <div
-            ref={iconRef}
-            className="relative flex-shrink-0 w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center cursor-pointer"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={() => setHover(false)}
+            className="relative flex-shrink-0 w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors"
+            onClick={handleOpen}
         >
             <FileText size={18} className="text-blue-500" />
 
-            {hover && invoicePagePath && (
-                <div style={popupStyle} className="pointer-events-none p-2 bg-white rounded-2xl shadow-[0_10px_40px_rgb(0,0,0,0.15)] border border-gray-200">
-                    {loading && !thumbUrl ? (
-                        <div className="flex flex-col gap-3 items-center justify-center bg-gray-50 rounded-xl" style={{ width: '40vw', height: '35vh' }}>
-                            <Loader2 size={36} className="animate-spin text-blue-500" />
-                            <span className="text-sm text-gray-500 font-medium">Loading preview...</span>
-                        </div>
-                    ) : thumbUrl ? (
-                        <div className="w-[40vw] h-[35vh] rounded-xl overflow-hidden shadow-sm bg-gray-50 relative">
-                            <img src={thumbUrl} alt="Invoice Preview" className="absolute top-0 left-0 w-[80vw] max-w-none h-auto object-left-top -translate-y-[10%]" />
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center text-red-400 bg-red-50 p-10 rounded-xl" style={{ width: '40vw', height: '35vh' }}>
-                            <AlertCircle size={36} className="mb-3" />
-                            <span className="text-sm font-medium">Preview failed</span>
-                        </div>
-                    )}
+            {isOpen && invoicePagePath && (
+                <div 
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    onClick={handleClose}
+                >
+                    <div 
+                        className="relative bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"
+                        style={{ height: '95vh', width: 'max-content', maxWidth: '95vw' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Close button inside the modal */}
+                        <button 
+                            className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 transition-colors z-10 cursor-pointer"
+                            onClick={handleClose}
+                            title="Close Preview"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        {loading && !thumbUrl ? (
+                            <div className="flex-1 flex flex-col gap-3 items-center justify-center min-w-[300px] min-h-[300px] bg-gray-50">
+                                <Loader2 size={36} className="animate-spin text-blue-500" />
+                                <span className="text-sm text-gray-500 font-medium">Loading full preview...</span>
+                            </div>
+                        ) : thumbUrl ? (
+                            <ZoomableImage src={thumbUrl} alt="Invoice Full Preview" />
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center text-red-400 bg-red-50 p-10 min-w-[300px] min-h-[300px]">
+                                <AlertCircle size={36} className="mb-3" />
+                                <span className="text-sm font-medium">Preview failed</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
