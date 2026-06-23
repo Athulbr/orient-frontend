@@ -11,6 +11,7 @@ import type { ScannedDocument } from './types';
 
 interface ScannedDocumentCardProps {
     doc: ScannedDocument;
+    onRefresh?: () => void;
 }
 
 /**
@@ -20,12 +21,12 @@ interface ScannedDocumentCardProps {
  * - Metadata pills (size, date, error)
  * - Status badge, preview button, and retry button
  */
-const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc }) => {
+const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefresh }) => {
     const statusCfg = STATUS_CONFIG[doc.status] ?? STATUS_CONFIG['pending'];
     const [isPreviewing, setIsPreviewing] = useState(false);
 
     const edit = useDocumentEdit(doc);
-    const { isRetrying, handleRetry } = useRetry(doc);
+    const { isRetrying, handleRetry } = useRetry(doc, onRefresh);
 
     // ── Document preview (opens in new tab) ───────────────────
     const handlePreviewClick = (e?: React.MouseEvent) => {

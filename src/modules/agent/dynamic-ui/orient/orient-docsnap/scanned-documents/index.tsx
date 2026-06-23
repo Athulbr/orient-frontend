@@ -69,7 +69,7 @@ const ScannedDocuments: React.FC = () => {
                 ) : (
                     <div className="flex flex-col gap-2">
                         {documents.map((doc, idx) => (
-                            <ScannedDocumentCard key={doc._id || idx} doc={doc} />
+                            <ScannedDocumentCard key={doc._id || idx} doc={doc} onRefresh={fetchDocuments} />
                         ))}
                     </div>
                 )}

@@ -14,7 +14,7 @@ const TERMINAL_STATUSES = ['completed', 'failed', 'error', 'cancelled', 'timeout
  *
  * Returns `isRetrying` so the UI can show a loading state.
  */
-export const useRetry = (doc: ScannedDocument) => {
+export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
     const [isRetrying, setIsRetrying] = useState(false);
     const toast = useToastStore();
 
@@ -82,6 +82,7 @@ export const useRetry = (doc: ScannedDocument) => {
                             const finalData = parsed.finalData?.[0];
                             if (finalData?.success === true) {
                                 toast.success('Retry completed successfully');
+                                onSuccess?.();
                             } else {
                                 toast.error(finalData?.errorMessage || 'Retry failed');
                             }
