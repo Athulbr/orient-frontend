@@ -92,7 +92,7 @@ function ListReconcilationPage() {
     const [results, setResults] = useState<ReconciliationResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const API_BASE_URL = 'http://172.16.0.47:8000';
+    const API_BASE_URL = 'http://172.16.0.240:8000';
     // const API_BASE_URL = 'http://localhost:8000';
 
     const handleUpload = async (bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType, hotBookFile?: File | null) => {
