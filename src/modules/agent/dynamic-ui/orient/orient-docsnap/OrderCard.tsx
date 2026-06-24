@@ -107,6 +107,45 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const status = STATUS_CONFIG[order.orderDetails.orderStatus.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
     const isOnline = (order.orderDetails?.documentSubmitStatus || '').toLowerCase() === 'online';
 
+    // ── Handlers ──────────────────────────────────────────────
+    const handleRemovePage = (docType: 'web' | 'email' | 'manual', fileIndex: number, pageIndex: number) => {
+        const updatedOrder = { ...order };
+        let docsArray: any[];
+        let backendField: string;
+        let removeWholeHandler: any;
+
+        if (docType === 'web') {
+            docsArray = updatedOrder.webDocuments = [...(order.webDocuments || [])];
+            backendField = 'webDocuments';
+            removeWholeHandler = onRemoveWebDocument;
+        } else if (docType === 'email') {
+            docsArray = updatedOrder.emailDocuments = [...(order.emailDocuments || [])];
+            backendField = 'emailDocuments';
+            removeWholeHandler = onRemoveEmailDocument;
+        } else {
+            docsArray = updatedOrder.manualDocuments = [...(order.manualDocuments || [])];
+            backendField = 'manualDocuments';
+            removeWholeHandler = onRemoveUploadedFile;
+        }
+
+        const doc = { ...docsArray[fileIndex] };
+        docsArray[fileIndex] = doc;
+        doc.documentPages = [...(doc.documentPages || [])];
+        
+        doc.documentPages.splice(pageIndex, 1);
+
+        if (doc.documentPages.length === 0) {
+            removeWholeHandler?.(order.orderDetails.orderNumber, fileIndex);
+        } else {
+            onOrderUpdate?.(updatedOrder);
+            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [backendField]: docsArray })
+            }).catch(err => console.error(`Failed to remove ${docType} document page`, err));
+        }
+    };
+
     // ── Render ────────────────────────────────────────────────
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] bg-white border border-gray-200 rounded-2xl overflow-hidden w-full shadow-lg shadow-gray-200/80">
@@ -168,6 +207,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     key={i}
                                     file={f}
                                     onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined}
+                                    onRemovePage={onRemoveWebDocument ? (pageIndex) => handleRemovePage('web', f.index, pageIndex) : undefined}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}
@@ -224,6 +264,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     key={i}
                                     file={f}
                                     onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined}
+                                    onRemovePage={onRemoveEmailDocument ? (pageIndex) => handleRemovePage('email', f.index, pageIndex) : undefined}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}
@@ -287,7 +328,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     {uploadedFileItems.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px] p-2">
                             {uploadedFileItems.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)} orderStatus={order.orderDetails.orderStatus} />
+                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)} onRemovePage={(pageIndex) => handleRemovePage('manual', f.index, pageIndex)} orderStatus={order.orderDetails.orderStatus} />
                             ))}
                         </div>
                     ) : (

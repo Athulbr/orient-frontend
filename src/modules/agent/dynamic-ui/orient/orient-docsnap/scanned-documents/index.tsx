@@ -41,6 +41,14 @@ const ScannedDocuments: React.FC = () => {
         handleReset
     } = useScannedDocuments();
 
+    React.useEffect(() => {
+        const intervalId = setInterval(() => {
+            fetchDocuments(true);
+        }, 30000);
+
+        return () => clearInterval(intervalId);
+    }, [fetchDocuments]);
+
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] h-full flex-1 w-full bg-gray-50 flex flex-col">
 
@@ -54,7 +62,7 @@ const ScannedDocuments: React.FC = () => {
                 onStatusChange={setStatusFilter}
                 onBranchChange={setBranchFilter}
                 onDateRangeChange={setDateRange}
-                onRefresh={fetchDocuments}
+                onRefresh={() => fetchDocuments()}
                 onReset={handleReset}
             />
 
@@ -63,13 +71,13 @@ const ScannedDocuments: React.FC = () => {
                 {isLoading ? (
                     <LoadingState />
                 ) : error ? (
-                    <ErrorState message={error} onRetry={fetchDocuments} />
+                    <ErrorState message={error} onRetry={() => fetchDocuments()} />
                 ) : documents.length === 0 ? (
                     <EmptyState onReset={handleReset} />
                 ) : (
                     <div className="flex flex-col gap-2">
                         {documents.map((doc, idx) => (
-                            <ScannedDocumentCard key={doc._id || idx} doc={doc} onRefresh={fetchDocuments} />
+                            <ScannedDocumentCard key={doc._id || idx} doc={doc} onRefresh={() => fetchDocuments()} />
                         ))}
                     </div>
                 )}

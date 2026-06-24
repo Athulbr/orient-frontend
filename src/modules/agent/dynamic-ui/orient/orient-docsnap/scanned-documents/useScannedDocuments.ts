@@ -18,7 +18,7 @@ interface UseScannedDocumentsReturn {
     setStatusFilter: (status: StatusFilter) => void;
     setBranchFilter: (branch: string) => void;
     setDateRange: (range: DateRange) => void;
-    fetchDocuments: () => void;
+    fetchDocuments: (silent?: boolean) => void;
     handleReset: () => void;
 }
 
@@ -48,8 +48,8 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         setCurrentPage(1);
     }, [statusFilter, branchFilter, dateRange]);
 
-    const fetchDocuments = useCallback(async () => {
-        setIsLoading(true);
+    const fetchDocuments = useCallback(async (silent = false) => {
+        if (!silent) setIsLoading(true);
         setError(null);
         try {
             const params = new URLSearchParams({
@@ -76,7 +76,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         } catch (err: any) {
             setError(err?.message || 'Failed to load scanned documents.');
         } finally {
-            setIsLoading(false);
+            if (!silent) setIsLoading(false);
         }
     }, [currentPage, perPage, statusFilter, branchFilter, dateRange]);
 
