@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { FileText, ExternalLink, X, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, ExternalLink, X, Eye, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { FileItem } from './types';
 import Spinner from '../../../../../components/Spinner';
 import { DialogComponent } from '../../../../../components/DialogComponent';
@@ -47,15 +47,15 @@ export const getPreviewUrl = (url: string) => {
 
 // ── DocTile Component ─────────────────────────────────────────
 
-const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void; orderStatus?: string }> = ({ file, onRemove, orderStatus }) => {
+const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void; onRemovePage?: (pageIndex: number) => void; orderStatus?: string }> = ({ file, onRemove, onRemovePage, orderStatus }) => {
     const [hover, setHover] = useState(false);
     const [preview, setPreview] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
     const [thumbUrl, setThumbUrl] = useState<string | null>(null);
     const [thumbLoading, setThumbLoading] = useState(file.type === 'image');
     const [thumbError, setThumbError] = useState(false);
-    const [pageBlobUrls, setPageBlobUrls] = useState<Record<number, string>>({});
-    const pageBlobUrlsRef = useRef<Record<number, string>>({});
+    const [pageBlobUrls, setPageBlobUrls] = useState<Record<string, string>>({});
+    const pageBlobUrlsRef = useRef<Record<string, string>>({});
     const [pageLoading, setPageLoading] = useState(false);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
@@ -95,17 +95,16 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
     // Fetch a specific page blob for the lightbox
     const fetchPageBlob = useCallback(
         async (pageIndex: number) => {
-            if (pageBlobUrlsRef.current[pageIndex]) return;
+            const url = pageApiUrls[pageIndex];
+            if (!url || pageBlobUrlsRef.current[url]) return;
             setPageLoading(true);
             try {
-                const url = pageApiUrls[pageIndex];
-                if (!url) return;
                 const res = await fetch(url);
                 if (!res.ok) throw new Error('Failed to fetch page');
                 const blob = await res.blob();
                 const blobUrl = URL.createObjectURL(blob);
-                pageBlobUrlsRef.current[pageIndex] = blobUrl;
-                setPageBlobUrls(prev => ({ ...prev, [pageIndex]: blobUrl }));
+                pageBlobUrlsRef.current[url] = blobUrl;
+                setPageBlobUrls(prev => ({ ...prev, [url]: blobUrl }));
             } catch (err) {
                 console.error('Error fetching page:', err);
             } finally {
@@ -232,10 +231,10 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                         style={{ minWidth: 256, minHeight: 256 }}
                         onClick={e => e.stopPropagation()}
                     >
-                        {pageLoading && !pageBlobUrls[currentPage] ? (
+                        {pageLoading && !pageBlobUrls[pageApiUrls[currentPage]] ? (
                             <Spinner size={28} />
-                        ) : pageBlobUrls[currentPage] ? (
-                            <img src={pageBlobUrls[currentPage]} alt={`${file.name} - page ${currentPage + 1}`} className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl" />
+                        ) : pageBlobUrls[pageApiUrls[currentPage]] ? (
+                            <img src={pageBlobUrls[pageApiUrls[currentPage]]} alt={`${file.name} - page ${currentPage + 1}`} className="max-w-[90vw] max-h-[85vh] object-contain rounded-2xl" />
                         ) : (
                             <div className="flex flex-col items-center justify-center text-gray-400">
                                 <FileText size={32} className="mb-2 opacity-50 text-red-500" />
@@ -249,6 +248,27 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                         >
                             <X size={15} className="text-white" />
                         </button>
+
+                        {onRemovePage && orderStatus !== 'submitted' && (
+                            <button
+                                onClick={e => {
+                                    e.stopPropagation();
+                                   
+                                        onRemovePage(currentPage);
+                                        if (currentPage === totalPages - 1 && currentPage > 0) {
+                                            setCurrentPage(currentPage - 1);
+                                        }
+                                        if (totalPages === 1) {
+                                            setPreview(false);
+                                        }
+                                    
+                                }}
+                                className="absolute top-14 right-3 w-8 h-8 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center transition-colors"
+                                title="Remove this page"
+                            >
+                                <Trash2 size={14} className="text-white" />
+                            </button>
+                        )}
 
                         {totalPages > 1 && (
                             <>

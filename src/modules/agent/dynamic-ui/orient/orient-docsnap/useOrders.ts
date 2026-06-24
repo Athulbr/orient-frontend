@@ -3,6 +3,7 @@ import { Order, Email, DocumentDetail } from './types';
 import { config } from '../../../../../config/default';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { rearrangeDocuments } from './upload-receipt/functions';
+import clientLogger from '../../../../../global-utils/clientLog';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -468,7 +469,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     // ── Proceed / Extract (#1 — ref, #2 — dynamic webhook, #6 — log errors, #22 — toast not alert) ──
     const handleProceed = useCallback(
         async (orderNumber: number) => {
-            const extractionStartTime = Date.now();
             const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
             if (!order) return;
 
@@ -510,14 +510,33 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const webhookSlug = agentSettings?.webhookEndpoint || 'orient-document-extractor';
 
             try {
+                const templateName = order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY';
+                const currentDateTime = new Date().toLocaleString();
+                const isoDateTime = new Date().toISOString();
+
+                const metaData = {
+                    currentDateTime,
+                    isoDateTime,
+                    orderNumber: `${orderNumber}`,
+                    branchCode: order.orderDetails?.branchCode || '',
+                    orderType: order.orderDetails?.orderType || '',
+                    orderCategory: order.orderDetails?.documentSubmitStatus || '',
+                    userName: order.userDetails?.name || ''
+                };
+
+                try {
+                    clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: '', data: { metaData: JSON.stringify(metaData) } });
+                } catch (error) {}
+
                 const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookSlug}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         orderNumber: orderNumber,
-                        order: order,
-                        templateName: order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY',
-                        documents: payloadDocuments
+                        order: { orderDetails: order.orderDetails, userDetails: order.userDetails, extractionDetails: order.extractionDetails },
+                        templateName,
+                        documents: payloadDocuments,
+                        metaData
                     })
                 });
 
@@ -537,6 +556,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     return;
                 }
+                const extractionStartTime = Date.now();
 
                 // #8 — apiKey from constant
                 const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
@@ -554,14 +574,13 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                 setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0];
-                                    if (finalData.extractedData) {
+                                    if (finalData.recordId) {
                                         // Use ref (#1, #16)
                                         const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
                                         const extractionDuration = Math.floor((Date.now() - extractionStartTime) / 1000);
                                         const updateDetails = {
                                             orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
                                             extractionDetails: {
-                                                extractedData: finalData.extractedData,
                                                 recordId: finalData.recordId,
                                                 templateId: agentSettings?.defaultTemplateId || '',
                                                 templateName: agentSettings?.templates?.[0]?.name,

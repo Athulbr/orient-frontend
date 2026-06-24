@@ -174,7 +174,6 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
 
                                 if (finalData.extractedData || finalData.recordId) {
                                     const receiptExtractionDetails = {
-                                        extractedData: finalData.extractedData,
                                         recordId: finalData.recordId
                                     };
 
@@ -327,6 +326,25 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                                 pages: receipt.documentPages
                                             }}
                                             onRemove={() => onRemoveReceipt?.(idx)}
+                                            onRemovePage={(pageIndex) => {
+                                                const updatedReceipts = [...(order.receipts || [])];
+                                                const receiptToUpdate = { ...updatedReceipts[idx] };
+                                                receiptToUpdate.documentPages = [...(receiptToUpdate.documentPages || [])];
+                                                receiptToUpdate.documentPages.splice(pageIndex, 1);
+                                                
+                                                if (receiptToUpdate.documentPages.length === 0) {
+                                                    onRemoveReceipt?.(idx);
+                                                } else {
+                                                    updatedReceipts[idx] = receiptToUpdate;
+                                                    const updatedOrder = { ...order, receipts: updatedReceipts };
+                                                    onOrderUpdate?.(updatedOrder);
+                                                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                                        method: 'PUT',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ receipts: updatedReceipts })
+                                                    }).catch(err => console.error('Failed to update receipt page', err));
+                                                }
+                                            }}
                                             orderStatus={order.orderDetails.orderStatus}
                                         />
                                     );
