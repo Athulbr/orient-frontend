@@ -73,8 +73,8 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
                         onValueChange={onOrderTypeChange}
                         options={[
                             { label: 'All Orders', value: 'all' },
-                            { label: 'Sell', value: 'sell' },
-                            { label: 'Buy', value: 'buy' }
+                            { label: 'Sell Orders', value: 'sell' },
+                            { label: 'Buy Orders', value: 'buy' }
                         ]}
                     />
                     <div className="flex flex-col gap-1">
