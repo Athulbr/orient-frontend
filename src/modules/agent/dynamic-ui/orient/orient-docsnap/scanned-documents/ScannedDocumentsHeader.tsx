@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCw, X, ScanLine } from 'lucide-react';
+import { RotateCw, X, ScanLine, Search } from 'lucide-react';
 import DateTimePicker from '../../../../../../components/DateTimePicker';
 import { STATIC_BRANCHES } from './constants';
 import type { StatusFilter, DateRange } from './types';
@@ -10,9 +10,11 @@ interface ScannedDocumentsHeaderProps {
     statusFilter: StatusFilter;
     branchFilter: string;
     dateRange: DateRange;
+    searchQuery: string;
     onStatusChange: (status: StatusFilter) => void;
     onBranchChange: (branch: string) => void;
     onDateRangeChange: (range: DateRange) => void;
+    onSearchChange: (query: string) => void;
     onRefresh: () => void;
     onReset: () => void;
 }
@@ -30,9 +32,11 @@ const ScannedDocumentsHeader: React.FC<ScannedDocumentsHeaderProps> = ({
     statusFilter,
     branchFilter,
     dateRange,
+    searchQuery,
     onStatusChange,
     onBranchChange,
     onDateRangeChange,
+    onSearchChange,
     onRefresh,
     onReset
 }) => (
@@ -51,6 +55,18 @@ const ScannedDocumentsHeader: React.FC<ScannedDocumentsHeaderProps> = ({
 
             {/* Controls — pushed to the right */}
             <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
+                {/* Search field */}
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        className="h-9 pl-8 pr-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-700 w-48"
+                    />
+                </div>
+
                 {/* Date range picker */}
                 <div className="flex items-center justify-end" style={{ width: 170 }}>
                     <DateTimePicker onChange={onDateRangeChange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />

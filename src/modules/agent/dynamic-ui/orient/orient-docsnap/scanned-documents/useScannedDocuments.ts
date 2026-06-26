@@ -18,6 +18,8 @@ interface UseScannedDocumentsReturn {
     setStatusFilter: (status: StatusFilter) => void;
     setBranchFilter: (branch: string) => void;
     setDateRange: (range: DateRange) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
     fetchDocuments: (silent?: boolean) => void;
     handleReset: () => void;
 }
@@ -36,6 +38,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [branchFilter, setBranchFilter] = useState(() => sessionStorage.getItem('branch_code') || 'all');
     const [dateRange, setDateRange] = useState<DateRange>({ startDate: '', endDate: '' });
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,7 +49,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
     // Reset to page 1 whenever any filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [statusFilter, branchFilter, dateRange]);
+    }, [statusFilter, branchFilter, dateRange, searchQuery]);
 
     const fetchDocuments = useCallback(async (silent = false) => {
         if (!silent) setIsLoading(true);
@@ -61,6 +64,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
             if (branchFilter !== 'all') params.append('branchCode', branchFilter);
             if (dateRange.startDate) params.append('startDate', dateRange.startDate);
             if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+            if (searchQuery.trim()) params.append('searchQuery', searchQuery.trim());
 
             const token = localStorage.getItem('token');
             const response = await fetch(`${config.workflowService}/api/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -78,7 +82,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         } finally {
             if (!silent) setIsLoading(false);
         }
-    }, [currentPage, perPage, statusFilter, branchFilter, dateRange]);
+    }, [currentPage, perPage, statusFilter, branchFilter, dateRange, searchQuery]);
 
     // Refetch whenever dependencies change
     useEffect(() => {
@@ -89,6 +93,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         setStatusFilter('all');
         setBranchFilter(sessionStorage.getItem('branch_code') || 'all');
         setDateRange({ startDate: '', endDate: '' });
+        setSearchQuery('');
         setCurrentPage(1);
     };
 
@@ -103,10 +108,12 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         statusFilter,
         branchFilter,
         dateRange,
+        searchQuery,
         setCurrentPage,
         setStatusFilter,
         setBranchFilter,
         setDateRange,
+        setSearchQuery,
         fetchDocuments,
         handleReset
     };
