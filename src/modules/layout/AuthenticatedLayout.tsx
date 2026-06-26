@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import HeaderComponent from './Header';
 import { usePermissionStore } from '../../zustand-store/PermissionStore';
 import { SidebarComponent } from './Sidebar';
@@ -12,6 +13,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     const [logoutWarningSeconds, setLogoutWarningSeconds] = useState<number | null>(null);
     const [showExpiredModal, setShowExpiredModal] = useState<boolean>(false);
     const { setPermissions } = usePermissionStore();
+    const location = useLocation();
 
     const updateRolePermission = async () => {
         const permissions: any = sessionStorage.getItem('permissions');
@@ -22,7 +24,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     };
     const updateUserSettingsHandler = async () => {};
 
-    const agentRoute = window.location.pathname.includes('agent') || window.location.pathname.includes('reconcilation');
+    const agentRoute = location.pathname.includes('agent') || location.pathname.includes('reconcilation');
 
     useEffect(() => {
         updateRolePermission();
