@@ -59,8 +59,8 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
                 window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
                 window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
-                window?.sessionStorage?.setItem('branch_code', 'KOLM');
-                window?.sessionStorage?.setItem('branch_id', '12');
+                // window?.sessionStorage?.setItem('branch_code', 'KOLM');
+                // window?.sessionStorage?.setItem('branch_id', '12');
 
                 toast.success('Logged in successfully');
                 const permission: any = JSON.parse(window?.sessionStorage?.getItem('permissions') || '[]');
@@ -171,17 +171,17 @@ export const useLoginPageApi = () => {
                 window?.sessionStorage?.setItem('user', JSON.stringify(res?.data?.user));
                 window?.sessionStorage?.setItem('permissions', JSON.stringify(res?.data?.permissions));
 
-                const resp = await Promise.all([
-                    httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
-                    httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
-                    httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
-                ]);
-                window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
-                window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
-                window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
-                window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
-                window?.location?.replace('/agent/run/Orient Document Extractor V1');
+                // const resp = await Promise.all([
+                //     httpRequest('POST', `${config.nodeApiUrl}/builder/tablebuilder/query`, { pageSize: 1000 }),
+                //     httpRequest('POST', `${config.nodeApiUrl}/builder/formbuilder/query`, { pageSize: 1000 }),
+                //     httpRequest('POST', `${config.nodeApiUrl}/idp/pre-template`, { pageSize: 1000, custom: true, filters: { deleted: false } }),
+                //     httpRequest('POST', `${config.nodeApiUrl}/idp/template`, { pageSize: 1000, custom: true, filters: { deleted: false } })
+                // ]);
+                // window?.sessionStorage?.setItem('tablebuilder', JSON.stringify(resp[0]?.data));
+                // window?.sessionStorage?.setItem('formbuilder', JSON.stringify(resp[1]?.data));
+                // window?.sessionStorage?.setItem('predefinedTemplates', JSON.stringify(resp[2]?.data));
+                // window?.sessionStorage?.setItem('templates', JSON.stringify(resp[3]?.data));
+                window?.location?.replace('/agent/run/Document Extractor');
             } else {
                 setState(prev => ({ ...prev, authError: 'Authentication with Orient session failed.', oAuthLoading: false }));
             }
