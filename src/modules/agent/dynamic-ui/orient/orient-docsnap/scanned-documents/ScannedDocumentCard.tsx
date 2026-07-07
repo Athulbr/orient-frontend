@@ -58,7 +58,7 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
         <div className="scanned-document-card font-[DM_Sans,Segoe_UI,sans-serif] bg-white border border-gray-200 rounded-xl w-full shadow-sm shadow-gray-100 transition-all duration-150 hover:shadow-md hover:border-gray-300 cursor-pointer">
             <div className="flex items-stretch h-full">
                 {/* Left status accent bar */}
-                <div className={`w-[3px] flex-shrink-0 bg-gradient-to-b ${statusCfg.stripe} to-transparent rounded-l-xl`} />
+                <div className={`w-[3px] flex-shrink-0 bg-gradient-to-b ${statusCfg.stripe} to-transparent rounded-l-4xl relative top-1`} />
 
                 <div className="flex-1 flex items-center gap-4 px-5 py-5 min-w-0">
                     {/* Invoice hover-preview icon */}
@@ -248,7 +248,12 @@ const InlineEditRow: React.FC<{
 
 /** Dashed placeholder shown when a field has no value yet. */
 const EmptyFieldInput: React.FC<{ placeholder: string; colorClass: string; disabled?: boolean }> = ({ placeholder, colorClass, disabled }) => (
-    <input type="text" placeholder={placeholder} readOnly className={`h-6 px-2 text-[11px] border border-dashed rounded focus:outline-none w-28 bg-transparent ${disabled ? 'cursor-default' : 'cursor-pointer'} ${colorClass}`} />
+    <input
+        type="text"
+        placeholder={placeholder}
+        readOnly
+        className={`h-6 px-2 text-[11px] border border-dashed rounded focus:outline-none w-28 bg-transparent ${disabled ? 'cursor-default' : 'cursor-pointer'} ${colorClass}`}
+    />
 );
 
 export default ScannedDocumentCard;

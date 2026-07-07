@@ -1,6 +1,8 @@
-import React from 'react';
-import { RotateCw, X, ScanLine, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { RotateCw, X, ScanLine, Search, Download } from 'lucide-react';
 import DateTimePicker from '../../../../../../components/DateTimePicker';
+import { SingleSelect } from '../../../../../../components/SingleSelect';
+import { Button } from '../../../../../../components/Button';
 import { STATIC_BRANCHES } from './constants';
 import type { StatusFilter, DateRange } from './types';
 
@@ -17,6 +19,8 @@ interface ScannedDocumentsHeaderProps {
     onSearchChange: (query: string) => void;
     onRefresh: () => void;
     onReset: () => void;
+    onExport: () => void;
+    isExporting: boolean;
 }
 
 /**
@@ -38,92 +42,165 @@ const ScannedDocumentsHeader: React.FC<ScannedDocumentsHeaderProps> = ({
     onDateRangeChange,
     onSearchChange,
     onRefresh,
-    onReset
-}) => (
-    <div className="px-5 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4">
-            {/* Title */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-200">
-                    <ScanLine size={18} className="text-white" />
-                </div>
-                <div>
-                    <h1 className="text-[17px] font-bold text-gray-900 leading-tight">Scanned Documents</h1>
-                    <p className="text-[11px] text-gray-400">{documentCount} total documents</p>
-                </div>
-            </div>
+    onReset,
+    onExport,
+    isExporting
+}) => {
+    const [localSearch, setLocalSearch] = useState(searchQuery);
 
-            {/* Controls — pushed to the right */}
-            <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
-                {/* Search field */}
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="h-9 pl-8 pr-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-700 w-48"
+    useEffect(() => {
+        setLocalSearch(searchQuery);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localSearch !== searchQuery) {
+                onSearchChange(localSearch);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [localSearch, onSearchChange, searchQuery]);
+
+    const setQuickDate = (days: number, isYesterday = false) => {
+        const end = new Date();
+        const start = new Date();
+
+        if (isYesterday) {
+            start.setDate(start.getDate() - 1);
+            start.setHours(0, 0, 0, 0);
+            end.setDate(end.getDate() - 1);
+            end.setHours(23, 59, 59, 999);
+        } else if (days === 0) {
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+        } else {
+            start.setDate(start.getDate() - days);
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        const toLocalISOStringWithOffset = (date: Date): string => {
+            const pad = (num: number): string => String(num).padStart(2, '0');
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hours = pad(date.getHours());
+            const minutes = pad(date.getMinutes());
+            const seconds = pad(date.getSeconds());
+            const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+
+            const tzOffset = -date.getTimezoneOffset();
+            const sign = tzOffset >= 0 ? '+' : '-';
+            const tzHours = pad(Math.floor(Math.abs(tzOffset) / 60));
+            const tzMinutes = pad(Math.abs(tzOffset) % 60);
+            const offsetString = `${sign}${tzHours}:${tzMinutes}`;
+
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetString}`;
+        };
+
+        onDateRangeChange({
+            startDate: toLocalISOStringWithOffset(start),
+            endDate: toLocalISOStringWithOffset(end)
+        });
+    };
+
+    return (
+        <div className="px-5 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+            <div className="flex items-center gap-4">
+                {/* Title */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-200">
+                        <ScanLine size={18} className="text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-[17px] font-bold text-gray-900 leading-tight">Scanned Documents</h1>
+                        <p className="text-[11px] text-gray-400">{documentCount} total documents</p>
+                    </div>
+                </div>
+
+                {/* Controls — pushed to the right */}
+                <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
+                    {/* Search field */}
+                    <div className="relative w-40">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={localSearch}
+                            onChange={e => setLocalSearch(e.target.value)}
+                            className="w-full h-10 pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-0.5 focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-700"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    </div>
+
+                    {/* Date range picker */}
+                    <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center gap-0.5 py-1.5 bg-gray-100 p-1 rounded-md border border-gray-200">
+                            <button
+                                onClick={() => setQuickDate(0)}
+                                className="px-2 py-1 text-[12px] font-medium text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm rounded transition-all"
+                            >
+                                Today
+                            </button>
+                            <button
+                                onClick={() => setQuickDate(0, true)}
+                                className="px-2 py-1 text-[12px] font-medium text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm rounded transition-all"
+                            >
+                                Yesterday
+                            </button>
+                            <button
+                                onClick={() => setQuickDate(7)}
+                                className="px-2 py-1 text-[12px] font-medium text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm rounded transition-all"
+                            >
+                                7D
+                            </button>
+                            <button
+                                onClick={() => setQuickDate(30)}
+                                className="px-2 py-1 text-[12px] font-medium text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm rounded transition-all"
+                            >
+                                30D
+                            </button>
+                        </div>
+                        <DateTimePicker onChange={onDateRangeChange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
+                    </div>
+
+                    {/* Status filter */}
+                    <SingleSelect
+                        className="min-w-32"
+                        value={statusFilter}
+                        onValueChange={val => onStatusChange(val as StatusFilter)}
+                        options={[
+                            { label: 'All Status', value: 'all' },
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Extracted', value: 'extracted' },
+                            { label: 'Success', value: 'success' },
+                            { label: 'Failed', value: 'failed' }
+                        ]}
                     />
+
+                    {/* Branch filter */}
+                    <SingleSelect
+                        className="min-w-32"
+                        value={branchFilter}
+                        onValueChange={onBranchChange}
+                        options={[{ label: 'All Branches', value: 'all' }, ...STATIC_BRANCHES.map(b => ({ label: b, value: b }))]}
+                    />
+
+                    {/* Reset filters */}
+                    <Button title="Reset Filters" startIcon={<X size={16} />} onClick={onReset} outlined></Button>
+
+                    {/* Export */}
+                    <Button onClick={onExport} disabled={isLoading || isExporting} outlined startIcon={<Download size={16} className={isExporting ? 'animate-bounce' : ''} />}>
+                        Export
+                    </Button>
+
+                    {/* Refresh */}
+                    <Button onClick={onRefresh} disabled={isLoading} outlined startIcon={<RotateCw size={16} className={isLoading ? 'animate-spin' : ''} />}>
+                        Refresh
+                    </Button>
                 </div>
-
-                {/* Date range picker */}
-                <div className="flex items-center justify-end" style={{ width: 170 }}>
-                    <DateTimePicker onChange={onDateRangeChange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
-                </div>
-
-                {/* Status filter */}
-                <select
-                    id="scanned-docs-status-filter"
-                    value={statusFilter}
-                    onChange={e => onStatusChange(e.target.value as StatusFilter)}
-                    className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-700 cursor-pointer"
-                >
-                    <option value="all">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="extracted">Extracted</option>
-                    <option value="success">Success</option>
-                    <option value="failed">Failed</option>
-                </select>
-
-                {/* Branch filter */}
-                <select
-                    id="scanned-docs-branch-filter"
-                    value={branchFilter}
-                    onChange={e => onBranchChange(e.target.value)}
-                    className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-700 cursor-pointer"
-                >
-                    <option value="all">All Branches</option>
-                    {STATIC_BRANCHES.map(b => (
-                        <option key={b} value={b}>
-                            {b}
-                        </option>
-                    ))}
-                </select>
-
-                {/* Refresh */}
-                <button
-                    id="scanned-docs-refresh"
-                    onClick={onRefresh}
-                    disabled={isLoading}
-                    className="h-9 px-3 flex items-center gap-1.5 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors cursor-pointer bg-white"
-                >
-                    <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
-                    Refresh
-                </button>
-
-                {/* Reset filters */}
-                <button
-                    id="scanned-docs-reset"
-                    onClick={onReset}
-                    title="Reset filters"
-                    className="h-9 w-9 flex items-center justify-center text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer bg-white"
-                >
-                    <X size={14} />
-                </button>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 export default ScannedDocumentsHeader;

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { config } from '../../../../../../config/default';
 import { DEFAULT_PAGE_SIZE } from './constants';
 import type { ScannedDocument, StatusFilter, DateRange } from './types';
@@ -22,6 +23,8 @@ interface UseScannedDocumentsReturn {
     setSearchQuery: (query: string) => void;
     fetchDocuments: (silent?: boolean) => void;
     handleReset: () => void;
+    handleExport: () => void;
+    isExporting: boolean;
 }
 
 /**
@@ -32,6 +35,7 @@ interface UseScannedDocumentsReturn {
 export const useScannedDocuments = (): UseScannedDocumentsReturn => {
     const [documents, setDocuments] = useState<ScannedDocument[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Filters
@@ -97,6 +101,49 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         setCurrentPage(1);
     };
 
+    const handleExport = useCallback(async () => {
+        setIsExporting(true);
+        try {
+            const params = new URLSearchParams({
+                page: '1',
+                limit: '100000'
+            });
+
+            if (statusFilter !== 'all') params.append('status', statusFilter);
+            if (branchFilter !== 'all') params.append('branchCode', branchFilter);
+            if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+            if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+            if (searchQuery.trim()) params.append('searchQuery', searchQuery.trim());
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${config.workflowService}/api/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
+
+            const result = await response.json();
+            if (result.success) {
+                const dataToExport = result.data.map((doc: ScannedDocument) => ({
+                    'Document Name': doc.name,
+                    'Status': doc.status,
+                    'Branch Code': doc.branchCode,
+                    'Invoice Number': doc.invoiceNumber,
+                    'Order Type': doc.orderType || '-',
+                    'Added At': doc.fileAddedAt ? new Date(doc.fileAddedAt).toLocaleString() : '-',
+                    'Error Message': doc.errorMessage || '-',
+                }));
+
+                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Scanned Documents');
+                XLSX.writeFile(workbook, `Scanned_Documents_${new Date().getTime()}.xlsx`);
+            } else {
+                throw new Error(result.error || 'Failed to fetch for export');
+            }
+        } catch (err: any) {
+            console.error('Export failed', err);
+        } finally {
+            setIsExporting(false);
+        }
+    }, [statusFilter, branchFilter, dateRange, searchQuery]);
+
     return {
         documents,
         isLoading,
@@ -115,6 +162,8 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         setDateRange,
         setSearchQuery,
         fetchDocuments,
-        handleReset
+        handleReset,
+        handleExport,
+        isExporting
     };
 };

@@ -40,7 +40,9 @@ const ScannedDocuments: React.FC = () => {
         setDateRange,
         setSearchQuery,
         fetchDocuments,
-        handleReset
+        handleReset,
+        handleExport,
+        isExporting
     } = useScannedDocuments();
 
     React.useEffect(() => {
@@ -68,6 +70,8 @@ const ScannedDocuments: React.FC = () => {
                 onSearchChange={setSearchQuery}
                 onRefresh={() => fetchDocuments()}
                 onReset={handleReset}
+                onExport={handleExport}
+                isExporting={isExporting}
             />
 
             {/* ── Content ─────────────────────────────────────────── */}
