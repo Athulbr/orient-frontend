@@ -55,38 +55,41 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
         setCurrentPage(1);
     }, [statusFilter, branchFilter, dateRange, searchQuery]);
 
-    const fetchDocuments = useCallback(async (silent = false) => {
-        if (!silent) setIsLoading(true);
-        setError(null);
-        try {
-            const params = new URLSearchParams({
-                page: currentPage.toString(),
-                limit: perPage.toString()
-            });
+    const fetchDocuments = useCallback(
+        async (silent = false) => {
+            if (!silent) setIsLoading(true);
+            setError(null);
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage.toString(),
+                    limit: perPage.toString()
+                });
 
-            if (statusFilter !== 'all') params.append('status', statusFilter);
-            if (branchFilter !== 'all') params.append('branchCode', branchFilter);
-            if (dateRange.startDate) params.append('startDate', dateRange.startDate);
-            if (dateRange.endDate) params.append('endDate', dateRange.endDate);
-            if (searchQuery.trim()) params.append('searchQuery', searchQuery.trim());
+                if (statusFilter !== 'all') params.append('status', statusFilter);
+                if (branchFilter !== 'all') params.append('branchCode', branchFilter);
+                if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+                if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+                if (searchQuery.trim()) params.append('searchQuery', searchQuery.trim());
 
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${config.workflowService}/api/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${config.workflowService}/api/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
 
-            const result = await response.json();
-            if (result.success) {
-                setDocuments(result.data);
-                setTotal(result.total);
-                setTotalPages(result.totalPages);
-            } else {
-                throw new Error(result.error || 'Failed to fetch');
+                const result = await response.json();
+                if (result.success) {
+                    setDocuments(result.data);
+                    setTotal(result.total);
+                    setTotalPages(result.totalPages);
+                } else {
+                    throw new Error(result.error || 'Failed to fetch');
+                }
+            } catch (err: any) {
+                setError(err?.message || 'Failed to load scanned documents.');
+            } finally {
+                if (!silent) setIsLoading(false);
             }
-        } catch (err: any) {
-            setError(err?.message || 'Failed to load scanned documents.');
-        } finally {
-            if (!silent) setIsLoading(false);
-        }
-    }, [currentPage, perPage, statusFilter, branchFilter, dateRange, searchQuery]);
+        },
+        [currentPage, perPage, statusFilter, branchFilter, dateRange, searchQuery]
+    );
 
     // Refetch whenever dependencies change
     useEffect(() => {
@@ -122,12 +125,11 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
             if (result.success) {
                 const dataToExport = result.data.map((doc: ScannedDocument) => ({
                     'Document Name': doc.name,
-                    'Status': doc.status,
+                    Status: doc.status,
                     'Branch Code': doc.branchCode,
                     'Invoice Number': doc.invoiceNumber,
                     'Order Type': doc.orderType || '-',
-                    'Added At': doc.fileAddedAt ? new Date(doc.fileAddedAt).toLocaleString() : '-',
-                    'Error Message': doc.errorMessage || '-',
+                    'Added At': doc.fileAddedAt ? new Date(doc.fileAddedAt).toLocaleString() : '-'
                 }));
 
                 const worksheet = XLSX.utils.json_to_sheet(dataToExport);
