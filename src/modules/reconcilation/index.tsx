@@ -5,6 +5,7 @@ import Results from './components/Results';
 import PageContainer from '../../components/PageContainer';
 import { cx } from './utils/cx';
 import styles from './app.module.css';
+import { config } from '../../config/default';
 
 interface SheetMetadata {
     [sheetName: string]: { rows: number; columns: number; column_names: string[] };
@@ -92,7 +93,7 @@ function ListReconcilationPage() {
     const [results, setResults] = useState<ReconciliationResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const API_BASE_URL = 'http://172.16.0.240:8000';
+    const API_BASE_URL = config.reconcillationService;
     // const API_BASE_URL = 'http://localhost:8000';
 
     const handleUpload = async (bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType, hotBookFile?: File | null) => {
@@ -216,7 +217,7 @@ function ListReconcilationPage() {
     return (
         // Match the exact PageContainer usage of other pages: gap-4 p-6
         // NO overflow-y here — the parent layout (AuthenticatedLayout) is the single scroller
-        <PageContainer className="gap-4 p-6">
+        <PageContainer className="gap-4 p-4">
             {/* Results action bar — only shown when viewing results */}
             {stage === 'results' && (
                 <div className={styles.pageHeader}>

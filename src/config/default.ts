@@ -5,7 +5,8 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_LOCAL || 'http://localhost:4000',
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_LOCAL,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL || 'http://localhost:4000',
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL,
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL
     },
     development: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
@@ -29,7 +30,8 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL,
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL
     },
     vinayak_local_orient: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
@@ -50,13 +52,15 @@ const globalEnv: any = {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_PRODUCTION,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_PRODUCTION,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_PRODUCTION,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_PRODUCTION
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_PRODUCTION,
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_ORIENT_PRODUCTION
     },
     orientDev: {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_DEV,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_DEV,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_DEV
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_DEV,
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_ORIENT_DEV
     }
 };
 const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || ''];
@@ -68,6 +72,7 @@ export const config = {
     extractionServicePython: envConfig.extractionServicePython,
     chatbotServicePython: envConfig.chatbotServicePython,
     mlServiceNodejs: envConfig.mlServiceNodejs,
+    reconcillationService: envConfig.reconcillationService,
     azure: {
         tenantId: import.meta.env.VITE_AZURE_TENANT_ID,
         clientId: import.meta.env.VITE_AZURE_CLIENT_ID

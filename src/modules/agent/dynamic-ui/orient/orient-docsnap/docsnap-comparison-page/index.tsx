@@ -76,6 +76,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
     const [imageRotations, setImageRotations] = useState<number[]>([]);
     const [imageDimensions, setImageDimensions] = useState<Array<{ w: number; h: number }>>([]);
+    const [ignorePassportError, setIgnorePassportError] = useState(false);
 
     // console.log('record====>>', record);
 
@@ -1197,6 +1198,38 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                     </div>
                                     <div className="flex flex-col gap-5 p-5">
                                         {Object.entries(groupValue).map(([fieldKey, fieldValue]: [string, any]) => {
+                                            if (groupKey === 'passport' && fieldKey === 'is_valid_passport') {
+                                                if (fieldValue.value === 'NO' && !ignorePassportError) {
+                                                    return (
+                                                        <div key="invalid-passport-modal" className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-900/50 backdrop-blur-sm">
+                                                            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl flex flex-col items-center text-center border border-red-100">
+                                                                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 border-4 border-red-100">
+                                                                    <AlertTriangle className="h-8 w-8 text-red-600" />
+                                                                </div>
+                                                                <h2 className="mb-3 text-xl font-bold text-zinc-900">Passport Mismatch</h2>
+                                                                <p className="mb-8 text-sm leading-relaxed text-zinc-500">
+                                                                    The ID page and address page are from different passports. Please upload both pages from the same passport.
+                                                                </p>
+                                                                <div className="flex w-full gap-3">
+                                                                    <button
+                                                                        onClick={handleClose}
+                                                                        className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 active:scale-[0.98] cursor-pointer"
+                                                                    >
+                                                                        Close
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setIgnorePassportError(true)}
+                                                                        className="flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 active:scale-[0.98] cursor-pointer"
+                                                                    >
+                                                                        Proceed Anyway
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }
                                             const fieldEnums = enumsLookup[fieldKey];
                                             const isValueDiff =
                                                 typeof fieldValue?.initialValue === 'string' &&

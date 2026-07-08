@@ -1,9 +1,0 @@
-/* Add this to your CSS file */
-.react-flow__edge.selected .react-flow__edge-path {
-    stroke: #ef4444 !important; /* Turns red when clicked */
-    stroke-width: 3;
-}
-
-.dark-flow {
-    background-color: #020617;
-}

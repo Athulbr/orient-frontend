@@ -131,7 +131,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
         const doc = { ...docsArray[fileIndex] };
         docsArray[fileIndex] = doc;
         doc.documentPages = [...(doc.documentPages || [])];
-        
+
         doc.documentPages.splice(pageIndex, 1);
 
         if (doc.documentPages.length === 0) {
@@ -207,7 +207,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     key={i}
                                     file={f}
                                     onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined}
-                                    onRemovePage={onRemoveWebDocument ? (pageIndex) => handleRemovePage('web', f.index, pageIndex) : undefined}
+                                    onRemovePage={onRemoveWebDocument ? pageIndex => handleRemovePage('web', f.index, pageIndex) : undefined}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}
@@ -264,7 +264,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     key={i}
                                     file={f}
                                     onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined}
-                                    onRemovePage={onRemoveEmailDocument ? (pageIndex) => handleRemovePage('email', f.index, pageIndex) : undefined}
+                                    onRemovePage={onRemoveEmailDocument ? pageIndex => handleRemovePage('email', f.index, pageIndex) : undefined}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}
@@ -328,7 +328,13 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     {uploadedFileItems.length > 0 ? (
                         <div className="flex flex-wrap gap-[7px] p-2">
                             {uploadedFileItems.map((f, i) => (
-                                <DocTile key={i} file={f} onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)} onRemovePage={(pageIndex) => handleRemovePage('manual', f.index, pageIndex)} orderStatus={order.orderDetails.orderStatus} />
+                                <DocTile
+                                    key={i}
+                                    file={f}
+                                    onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)}
+                                    onRemovePage={pageIndex => handleRemovePage('manual', f.index, pageIndex)}
+                                    orderStatus={order.orderDetails.orderStatus}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -346,7 +352,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 dropText="Drag & drop files here"
                                 browseText="browse"
                                 className="h-[80vh] bg-white border-2 border-dashed border-emerald-300"
-                                accept=".png,.jpeg,.jpg,.pdf,.webp"
+                                accept=".png,.jpeg,.jpg,.pdf,.webp,.heic"
                             />
                         </div>
                     </DialogComponent>

@@ -33,12 +33,16 @@ const ScannedDocuments: React.FC = () => {
         statusFilter,
         branchFilter,
         dateRange,
+        searchQuery,
         setCurrentPage,
         setStatusFilter,
         setBranchFilter,
         setDateRange,
+        setSearchQuery,
         fetchDocuments,
-        handleReset
+        handleReset,
+        handleExport,
+        isExporting
     } = useScannedDocuments();
 
     React.useEffect(() => {
@@ -59,11 +63,15 @@ const ScannedDocuments: React.FC = () => {
                 statusFilter={statusFilter}
                 branchFilter={branchFilter}
                 dateRange={dateRange}
+                searchQuery={searchQuery}
                 onStatusChange={setStatusFilter}
                 onBranchChange={setBranchFilter}
                 onDateRangeChange={setDateRange}
+                onSearchChange={setSearchQuery}
                 onRefresh={() => fetchDocuments()}
                 onReset={handleReset}
+                onExport={handleExport}
+                isExporting={isExporting}
             />
 
             {/* ── Content ─────────────────────────────────────────── */}
