@@ -30,7 +30,8 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL,
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL
     },
     vinayak_local_orient: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
@@ -71,6 +72,7 @@ export const config = {
     extractionServicePython: envConfig.extractionServicePython,
     chatbotServicePython: envConfig.chatbotServicePython,
     mlServiceNodejs: envConfig.mlServiceNodejs,
+    reconcillationService: envConfig.reconcillationService,
     azure: {
         tenantId: import.meta.env.VITE_AZURE_TENANT_ID,
         clientId: import.meta.env.VITE_AZURE_CLIENT_ID
