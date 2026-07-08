@@ -216,7 +216,7 @@ function ListReconcilationPage() {
     return (
         // Match the exact PageContainer usage of other pages: gap-4 p-6
         // NO overflow-y here — the parent layout (AuthenticatedLayout) is the single scroller
-        <PageContainer className="gap-4 p-6">
+        <PageContainer className="gap-4 p-4">
             {/* Results action bar — only shown when viewing results */}
             {stage === 'results' && (
                 <div className={styles.pageHeader}>
