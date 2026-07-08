@@ -285,9 +285,13 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             if (files.length === 0) return;
 
             setUploadingOrders(prev => ({ ...prev, [orderNumber]: true }));
+            const currentDateTime = new Date().toLocaleString();
+            const isoDateTime = new Date().toISOString();
 
             const formData = new FormData();
             formData.append('orderNumber', orderNumber.toString());
+            formData.append('currentDateTime', currentDateTime);
+            formData.append('isoDateTime', isoDateTime);
             files.forEach(file => formData.append('file', file));
 
             try {
