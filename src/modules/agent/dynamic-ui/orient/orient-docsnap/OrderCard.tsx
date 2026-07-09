@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight, Trash2 } from 'lucide-react';
+import { FileText, Mail, UploadCloud, Link2, ArrowRight, Plus, Zap, Eye, RefreshCw, ArrowLeftRight, Trash2, AlertCircle } from 'lucide-react';
 import GenericFileInput from '../../../../../components/DragAndDropFileInput';
 import { DialogComponent } from '../../../../../components/DialogComponent';
 import { Button } from '../../../../../components/Button';
@@ -28,6 +28,7 @@ interface OrderCardProps {
     onDelete?: (orderNumber: number) => void;
     isProceeding: boolean;
     isUploading?: boolean;
+    isRetrying?: boolean;
     onDocsnapOpen?: () => void;
     onDocsnapClose?: () => void;
     onOrderUpdate?: (updatedOrder: Order) => void;
@@ -47,6 +48,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     onDelete,
     isProceeding,
     isUploading,
+    isRetrying,
     onDocsnapOpen,
     onDocsnapClose,
     onOrderUpdate
@@ -56,6 +58,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showRecordDialog, setShowRecordDialog] = useState(false);
     const [extractionSeconds, setExtractionSeconds] = useState(0);
+    const [showRetryDialog, setShowRetryDialog] = useState(false);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -68,6 +71,20 @@ const OrderCard: React.FC<OrderCardProps> = ({
         return () => {
             if (interval) clearInterval(interval);
         };
+    }, [isProceeding]);
+
+    // Show/hide retry info dialog when isRetrying changes
+    useEffect(() => {
+        if (isRetrying) {
+            setShowRetryDialog(true);
+        }
+    }, [isRetrying]);
+
+    // Auto-dismiss retry dialog when extraction finishes (isProceeding becomes false)
+    useEffect(() => {
+        if (!isProceeding) {
+            setShowRetryDialog(false);
+        }
     }, [isProceeding]);
 
     const openRecordDialog = () => {
@@ -443,6 +460,26 @@ const OrderCard: React.FC<OrderCardProps> = ({
             {/* Fullscreen docsnap comparison dialog */}
             <DialogComponent disableBlurCloseDialog isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
                 <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} onOrderUpdate={onOrderUpdate} />
+            </DialogComponent>
+
+            {/* Extraction retry info dialog */}
+            <DialogComponent isOpen={showRetryDialog} closeDialog={() => setShowRetryDialog(false)} name="Re-Extracting Documents" className="max-w-[480px]">
+                <div className="p-6 flex flex-col items-center text-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center">
+                        <AlertCircle size={24} className="text-amber-500" />
+                    </div>
+                    <div>
+                        <p className="text-[15px] font-semibold text-gray-800 mb-1">Extraction is taking longer than expected</p>
+                        <p className="text-[13px] text-gray-500">
+                            The extraction for order <strong>{order.orderDetails.orderNumber}</strong> exceeded 100 seconds.
+                            The system is automatically retrying the extraction. Please wait...
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-amber-600">
+                        <Spinner size={16} />
+                        <span className="text-[13px] font-medium">Re-extracting...</span>
+                    </div>
+                </div>
             </DialogComponent>
         </div>
     );

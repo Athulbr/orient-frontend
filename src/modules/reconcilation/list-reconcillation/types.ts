@@ -12,7 +12,6 @@ export interface Reconciliation {
     rowCount: number;
     transactionCount: number;
     transactionType: 'bank' | 'qr' | 'gateway';
-    status: string;
     createdAt: string;
     updatedAt: string;
 }

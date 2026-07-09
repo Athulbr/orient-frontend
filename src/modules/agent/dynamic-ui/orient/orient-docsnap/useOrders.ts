@@ -38,6 +38,7 @@ export interface UseOrdersReturn {
     uploadingOrders: Record<number, boolean>;
     proceedingOrders: Record<number, boolean>;
     linkingEmails: Record<string, boolean>;
+    retryingOrders: Record<number, boolean>;
 
     // Actions
     fetchData: () => Promise<void>;
@@ -68,11 +69,16 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
     const [proceedingOrders, setProceedingOrders] = useState<Record<number, boolean>>({});
     const [linkingEmails, setLinkingEmails] = useState<Record<string, boolean>>({});
+    const [retryingOrders, setRetryingOrders] = useState<Record<number, boolean>>({});
     const [isLoadingOrders, setIsLoadingOrders] = useState(false);
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const toast = useToastStore();
+
+    // ── Refs for extraction timeout/retry ──
+    const extractionRetryCountRef = useRef<Record<number, number>>({});
+    const activeExtractionRef = useRef<Record<number, { eventSource: EventSource; timeout: NodeJS.Timeout }>>({});
 
     // ── Refs for SSE callbacks (avoid stale closures — #1, #16) ──
     const ordersRef = useRef(orders);
@@ -476,6 +482,14 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const order = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
             if (!order) return;
 
+            // Clean up any previous active extraction for this order
+            const prev = activeExtractionRef.current[orderNumber];
+            if (prev) {
+                prev.eventSource.close();
+                clearTimeout(prev.timeout);
+                delete activeExtractionRef.current[orderNumber];
+            }
+
             setProceedingOrders(prev => ({ ...prev, [orderNumber]: true }));
 
             const emailDocuments = order.emailDocuments || [];
@@ -548,6 +562,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     console.error('Extraction API response error:', response.status);
                     toast.error(`Extraction failed. Status: ${response.status}`);
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     return;
                 }
 
@@ -558,6 +573,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     console.error('No executionId found in response');
                     toast.error('Extraction failed — no execution ID returned');
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     return;
                 }
                 const extractionStartTime = Date.now();
@@ -565,6 +581,42 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 // #8 — apiKey from constant
                 const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
                 const eventSource = new EventSource(streamUrl);
+
+                // ── 100-second extraction timeout with auto-retry (max 1) ──
+                const cleanupExtraction = () => {
+                    const active = activeExtractionRef.current[orderNumber];
+                    if (active) {
+                        clearTimeout(active.timeout);
+                        delete activeExtractionRef.current[orderNumber];
+                    }
+                };
+
+                const extractionTimeout = setTimeout(() => {
+                    console.warn(`Extraction timeout (100s) for order ${orderNumber}`);
+                    eventSource.close();
+                    cleanupExtraction();
+
+                    const currentRetryCount = extractionRetryCountRef.current[orderNumber] || 0;
+                    if (currentRetryCount < 1) {
+                        // Mark as retrying and re-trigger extraction
+                        extractionRetryCountRef.current[orderNumber] = currentRetryCount + 1;
+                        setRetryingOrders(prev => ({ ...prev, [orderNumber]: true }));
+                        toast.info(`Extraction is taking too long. Retrying extraction for order ${orderNumber}...`);
+                        // Re-call handleProceed after a brief delay to allow state updates
+                        setTimeout(() => {
+                            handleProceed(orderNumber);
+                        }, 500);
+                    } else {
+                        // Already retried once, give up
+                        setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                        setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                        extractionRetryCountRef.current[orderNumber] = 0;
+                        toast.error(`Extraction timed out for order ${orderNumber} after retry.`);
+                    }
+                }, 100_000);
+
+                // Store active extraction reference for cleanup
+                activeExtractionRef.current[orderNumber] = { eventSource, timeout: extractionTimeout };
 
                 eventSource.onmessage = event => {
                     try {
@@ -575,7 +627,12 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         if (parsed.status) {
                             if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
                                 eventSource.close();
+                                cleanupExtraction();
                                 setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                                setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                                // Reset retry count on completion
+                                extractionRetryCountRef.current[orderNumber] = 0;
+
                                 if (parsed.status === 'completed') {
                                     const finalData = parsed.finalData[0];
                                     if (finalData.recordId) {
@@ -622,12 +679,17 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 eventSource.onerror = err => {
                     console.error('SSE EventSource error:', err);
                     eventSource.close();
+                    cleanupExtraction();
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    extractionRetryCountRef.current[orderNumber] = 0;
                     toast.error('Extraction stream disconnected');
                 };
             } catch (err) {
                 console.error('Extraction API error:', err);
                 setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                extractionRetryCountRef.current[orderNumber] = 0;
                 toast.error('Extraction failed');
             }
         },
@@ -693,6 +755,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         uploadingOrders,
         proceedingOrders,
         linkingEmails,
+        retryingOrders,
         fetchData,
         handleDeleteOrder,
         handleLinkEmail,

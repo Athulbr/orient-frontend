@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-    Loader2,
-    AlertCircle,
-    Filter,
-    ChevronLeft,
-    ChevronRight,
-    ChevronsLeft,
-    ChevronsRight
-} from 'lucide-react';
+import { Loader2, AlertCircle, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useReconciliations } from './useReconciliations';
 import ReconciliationHeader from './ReconciliationHeader';
 import ReconciliationCard from './ReconciliationCard';
@@ -22,39 +14,34 @@ const ListReconcillation: React.FC = () => {
         totalPages,
         currentPage,
         perPage,
-        statusFilter,
         transactionTypeFilter,
         dateRange,
         searchQuery,
         setCurrentPage,
-        setStatusFilter,
         setTransactionTypeFilter,
         setDateRange,
         setSearchQuery,
         fetchReconciliations,
-        handleReset,
+        handleReset
     } = useReconciliations();
 
-    React.useEffect(() => {
-        const intervalId = setInterval(() => {
-            fetchReconciliations(true);
-        }, 30000);
+    // React.useEffect(() => {
+    //     const intervalId = setInterval(() => {
+    //         fetchReconciliations(true);
+    //     }, 30000);
 
-        return () => clearInterval(intervalId);
-    }, [fetchReconciliations]);
+    //     return () => clearInterval(intervalId);
+    // }, [fetchReconciliations]);
 
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] h-full flex-1 w-full bg-gray-50 flex flex-col">
-
             {/* ── Header / Filter bar ─────────────────────────────── */}
             <ReconciliationHeader
                 reconciliationCount={total}
                 isLoading={isLoading}
-                statusFilter={statusFilter}
                 transactionTypeFilter={transactionTypeFilter}
                 dateRange={dateRange}
                 searchQuery={searchQuery}
-                onStatusChange={setStatusFilter}
                 onTransactionTypeChange={setTransactionTypeFilter}
                 onDateRangeChange={setDateRange}
                 onSearchChange={setSearchQuery}
@@ -72,7 +59,7 @@ const ListReconcillation: React.FC = () => {
                     <EmptyState onReset={handleReset} />
                 ) : (
                     <div className="flex flex-col gap-2">
-                        {reconciliations.map((rec) => (
+                        {reconciliations.map(rec => (
                             <ReconciliationCard key={rec._id} reconciliation={rec} />
                         ))}
                     </div>
@@ -96,7 +83,12 @@ const ListReconcillation: React.FC = () => {
                         <span className="px-3 py-1 text-xs font-semibold text-gray-600">
                             Page {currentPage} of {totalPages}
                         </span>
-                        <PaginationButton onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} icon={<ChevronRight size={15} />} title="Next page" />
+                        <PaginationButton
+                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages}
+                            icon={<ChevronRight size={15} />}
+                            title="Next page"
+                        />
                         <PaginationButton onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} icon={<ChevronsRight size={15} />} title="Last page" />
                     </div>
                 </div>
@@ -119,10 +111,7 @@ const ErrorState: React.FC<{ message: string; onRetry: () => void }> = ({ messag
         <AlertCircle size={28} />
         <p className="font-semibold">Failed to load reconciliations</p>
         <p className="text-sm text-red-500">{message}</p>
-        <button
-            onClick={onRetry}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer"
-        >
+        <button onClick={onRetry} className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer">
             Retry
         </button>
     </div>

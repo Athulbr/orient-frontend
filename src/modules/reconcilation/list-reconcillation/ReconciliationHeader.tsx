@@ -3,16 +3,14 @@ import { RotateCw, X, LayoutList, Search } from 'lucide-react';
 import DateTimePicker from '../../../components/DateTimePicker';
 import { SingleSelect } from '../../../components/SingleSelect';
 import { Button } from '../../../components/Button';
-import type { StatusFilter, TransactionTypeFilter, DateRange } from './types';
+import type { TransactionTypeFilter, DateRange } from './types';
 
 interface ReconciliationHeaderProps {
     reconciliationCount: number;
     isLoading: boolean;
-    statusFilter: StatusFilter;
     transactionTypeFilter: TransactionTypeFilter;
     dateRange: DateRange;
     searchQuery: string;
-    onStatusChange: (status: StatusFilter) => void;
     onTransactionTypeChange: (type: TransactionTypeFilter) => void;
     onDateRangeChange: (range: DateRange) => void;
     onSearchChange: (query: string) => void;
@@ -23,11 +21,9 @@ interface ReconciliationHeaderProps {
 const ReconciliationHeader: React.FC<ReconciliationHeaderProps> = ({
     reconciliationCount,
     isLoading,
-    statusFilter,
     transactionTypeFilter,
     dateRange,
     searchQuery,
-    onStatusChange,
     onTransactionTypeChange,
     onDateRangeChange,
     onSearchChange,
@@ -151,18 +147,7 @@ const ReconciliationHeader: React.FC<ReconciliationHeaderProps> = ({
                         <DateTimePicker onChange={onDateRangeChange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
                     </div>
 
-                    {/* Status filter */}
-                    <SingleSelect
-                        className="min-w-32"
-                        value={statusFilter}
-                        onValueChange={(val: string) => onStatusChange(val as StatusFilter)}
-                        options={[
-                            { label: 'All Status', value: 'all' },
-                            { label: 'Pending', value: 'pending' },
-                            { label: 'Completed', value: 'completed' },
-                            { label: 'Failed', value: 'failed' }
-                        ]}
-                    />
+
 
                     {/* Transaction Type filter */}
                     <SingleSelect
