@@ -22,10 +22,12 @@ export const GBtn: React.FC<{
     icon: React.ReactNode;
     label: string;
     onClick: () => void;
-}> = ({ colorClass, borderClass, hoverClass, icon, label, onClick }) => (
+    disabled?: boolean;
+}> = ({ colorClass, borderClass, hoverClass, icon, label, onClick, disabled }) => (
     <button
         onClick={onClick}
-        className={`inline-flex items-center gap-1 px-[12px] py-[6px] rounded-md cursor-pointer text-xs font-bold border bg-transparent font-[inherit] transition-colors duration-150 ${colorClass} ${borderClass} ${hoverClass}`}
+        disabled={disabled}
+        className={`inline-flex items-center gap-1 px-[12px] py-[6px] rounded-md ${disabled ? 'cursor-not-allowed opacity-50' : `cursor-pointer ${hoverClass}`} text-xs font-bold border bg-transparent font-[inherit] transition-colors duration-150 ${colorClass} ${borderClass}`}
     >
         {icon}
         {label}

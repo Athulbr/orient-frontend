@@ -81,6 +81,10 @@ export interface Order {
         templateName?: string;
         extractionDuration?: number;
         extractedData?: Record<string, unknown>;
+        executions?: {
+            executionId: string;
+            recordId?: string;
+        }[];
     };
     receiptExtractionDetails?: {
         recordId?: string;

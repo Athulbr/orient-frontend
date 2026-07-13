@@ -80,6 +80,7 @@ interface OrderCardHeaderProps {
     onUploadComplete?: (docs: { documentName: string; documentPages: string[] }[]) => void;
     onRemoveReceipt?: (index: number) => void;
     onOrderUpdate?: (updatedOrder: Order) => void;
+    isProceeding?: boolean;
 }
 
 import DocTile, { getFileType } from './DocTile';
@@ -87,7 +88,7 @@ import { formatDate } from '../../../../../builders/tablebuilder/render-tablebui
 
 // ── Component ─────────────────────────────────────────────────
 
-const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCounts, showOnline, onEdit, onDelete, onUploadComplete, onRemoveReceipt, onOrderUpdate }) => {
+const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCounts, showOnline, onEdit, onDelete, onUploadComplete, onRemoveReceipt, onOrderUpdate, isProceeding }) => {
     const od = order.orderDetails;
     const chips = buildInfoChips(order);
     const toast = useToastStore();
@@ -268,10 +269,10 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                 <div className="flex flex-col items-end gap-3 flex-shrink-0">
                     <div className="flex items-center gap-2">
                         {onEdit && od.orderStatus !== 'submitted' && (
-                            <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} />
+                            <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} disabled={isProceeding} />
                         )}
                         {onDelete && od.orderStatus !== 'submitted' && localStorage.getItem('is_developer') === 'true' && (
-                            <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} />
+                            <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} disabled={isProceeding} />
                         )}
                     </div>
                     <div className="flex gap-[7px]">

@@ -59,6 +59,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     const [showRecordDialog, setShowRecordDialog] = useState(false);
     const [extractionSeconds, setExtractionSeconds] = useState(0);
     const [showRetryDialog, setShowRetryDialog] = useState(false);
+    const [showLimitErrorDialog, setShowLimitErrorDialog] = useState(false);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -120,11 +121,23 @@ const OrderCard: React.FC<OrderCardProps> = ({
     });
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
+    const totalPages =
+        orderFiles.reduce((acc, f) => acc + (f.pages?.length || 0), 0) +
+        emailFiles.reduce((acc, f) => acc + (f.pages?.length || 0), 0) +
+        uploadedFileItems.reduce((acc, f) => acc + (f.pages?.length || 0), 0);
     const hasDocuments = totalDocs > 0;
     const status = STATUS_CONFIG[order.orderDetails.orderStatus.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
     const isOnline = (order.orderDetails?.documentSubmitStatus || '').toLowerCase() === 'online';
 
     // ── Handlers ──────────────────────────────────────────────
+    const handleProceed = () => {
+        if (totalPages > 25) {
+            setShowLimitErrorDialog(true);
+            return;
+        }
+        onProceed(order.orderDetails?.orderNumber);
+    };
+
     const handleRemovePage = (docType: 'web' | 'email' | 'manual', fileIndex: number, pageIndex: number) => {
         const updatedOrder = { ...order };
         let docsArray: any[];
@@ -174,6 +187,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                 status={status}
                 docCounts={{ online: orderFiles.length, email: emailFiles.length, manual: uploadedFileItems.length, total: totalDocs }}
                 showOnline={isOnline}
+                isProceeding={isProceeding}
                 onEdit={onEdit}
                 onDelete={onDelete ? () => setShowDeleteConfirm(true) : undefined}
                 onUploadComplete={newDocs => {
@@ -405,7 +419,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         <Button
                             startIcon={isProceeding ? <Spinner size={16} /> : <Zap size={15} />}
                             outlined
-                            onClick={() => onProceed(order.orderDetails?.orderNumber)}
+                            onClick={handleProceed}
                             disabled={!hasDocuments || isProceeding}
                             endIcon={!isProceeding && <ArrowRight size={15} />}
                         >
@@ -417,7 +431,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 hidden={order.orderDetails.orderStatus === 'submitted'}
                                 startIcon={isProceeding ? <Spinner size={12} /> : <RefreshCw size={12} />}
                                 outlined
-                                onClick={() => onProceed(order.orderDetails?.orderNumber)}
+                                onClick={handleProceed}
                                 disabled={!hasDocuments || isProceeding}
                             >
                                 {isProceeding ? 'Processing…' : 'Re-Extract'}
@@ -471,13 +485,33 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     <div>
                         <p className="text-[15px] font-semibold text-gray-800 mb-1">Extraction is taking longer than expected</p>
                         <p className="text-[13px] text-gray-500">
-                            The extraction for order <strong>{order.orderDetails.orderNumber}</strong> exceeded 100 seconds.
-                            The system is automatically retrying the extraction. Please wait...
+                            The extraction for order <strong>{order.orderDetails.orderNumber}</strong> exceeded 100 seconds. The system is automatically retrying the extraction. Please wait...
                         </p>
                     </div>
                     <div className="flex items-center gap-2 text-amber-600">
                         <Spinner size={16} />
                         <span className="text-[13px] font-medium">Re-extracting...</span>
+                    </div>
+                </div>
+            </DialogComponent>
+
+            {/* Limit error dialog */}
+            <DialogComponent isOpen={showLimitErrorDialog} closeDialog={() => setShowLimitErrorDialog(false)} name="Page Limit Exceeded" className="min-w-[480px]">
+                <div className="p-6 flex flex-col items-center text-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200 flex items-center justify-center">
+                        <AlertCircle size={24} className="text-red-500" />
+                    </div>
+                    <div>
+                        {/* <p className="text-[15px] font-semibold text-gray-800 mb-1">Limit Exceeded</p> */}
+                        <p className="text-[13px] text-gray-500">
+                            Maximum 25 pages limit exceeded.
+                            <br /> Please remove unnecessary pages and try again.
+                        </p>
+                    </div>
+                    <div className="flex justify-center mt-2 w-full">
+                        <Button onClick={() => setShowLimitErrorDialog(false)} className="bg-red-600 hover:bg-red-700 text-white border-red-600 px-6">
+                            Close
+                        </Button>
                     </div>
                 </div>
             </DialogComponent>

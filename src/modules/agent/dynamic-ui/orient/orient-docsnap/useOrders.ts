@@ -509,7 +509,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             console.log('allDocDetails', arrangedDocuments);
 
             const payloadDocuments = arrangedDocuments.flatMap(doc => {
-                const pages = doc.documentPages || [];
+                const pages = (doc.documentPages || []).filter((pageUrl: string) => pageUrl.endsWith('.webp'));
                 if (pages.length === 0) return [];
 
                 const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'document';
@@ -523,9 +523,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     }));
                 }
             });
-
-            // #2 — use agentSettings?.webhookUrl instead of hardcoding
-            const webhookSlug = agentSettings?.webhookEndpoint || 'orient-document-extractor';
 
             try {
                 const templateName = order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY';
@@ -546,7 +543,9 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: '', data: { metaData: JSON.stringify(metaData) } });
                 } catch (error) {}
 
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookSlug}`, {
+                const webhookEndpoint = 'orient-document-extractor';
+
+                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookEndpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -645,7 +644,11 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                                 recordId: finalData.recordId,
                                                 templateId: agentSettings?.defaultTemplateId || '',
                                                 templateName: agentSettings?.templates?.[0]?.name,
-                                                extractionDuration
+                                                extractionDuration,
+                                                executions: [
+                                                    ...(currentOrder?.extractionDetails?.executions || []),
+                                                    { executionId, recordId: finalData.recordId }
+                                                ]
                                             }
                                         };
 
