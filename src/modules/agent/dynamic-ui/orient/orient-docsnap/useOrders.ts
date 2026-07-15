@@ -427,7 +427,10 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 clearTimeout(uploadTimeoutId);
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
                 if (err?.name === 'AbortError') {
-                    toast.error('Upload initiation failed. Please check your internet connection and VPN connection, Please retry once again', { duration: 1200000 });
+                    toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team', {
+                        duration: 1200000,
+                        title: 'Connection Error'
+                    });
                 } else {
                     console.error('Upload API error:', err);
                     toast.error('Upload failed');
@@ -637,7 +640,10 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 } catch (error: any) {
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     if (error.name === 'AbortError') {
-                        toast.error('Please check your internet connection and VPN connection. The extraction request is taking longer than expected, Please retry once again', { duration: 1200000 });
+                        toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team', {
+                            duration: 1200000,
+                            title: 'Connection Error'
+                        });
                         setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                         setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                         return;

@@ -11,6 +11,7 @@ import PageInput from '../../../../../builders/tablebuilder/render-tablebuilder/
 import OrderFiltersBar from './OrderFilters';
 import { useOrders, AgentSettings } from './useOrders';
 import FullScreenLoader from '../../../../../components/FullScreenLoader';
+import clientLoggerNew from '../../../../../global-utils/clientLoggerNew';
 
 // ── Props (#19 — properly typed instead of `any`) ─────────────
 interface OrientDocsnapUserInterfaceIF {
@@ -39,6 +40,25 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
     // ── Dialog state ──────────────────────────────────────────
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+
+    useEffect(() => {
+        const checkQueue = () => {
+            try {
+                const queueData = localStorage.getItem('clientLoggerQueue');
+                if (queueData) {
+                    const queue = JSON.parse(queueData);
+                    if (Array.isArray(queue) && queue.length > 0) {
+                        clientLoggerNew();
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to parse clientLoggerQueue', error);
+            }
+        };
+
+        const intervalId = setInterval(checkQueue, 5 * 60 * 1000); // 5 minutes
+        return () => clearInterval(intervalId);
+    }, []);
 
     // Track fullscreen docsnap dialog for back-button handling
     const [docsnapOpen, setDocsnapOpen] = useState(false);

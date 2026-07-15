@@ -131,10 +131,13 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                 } catch (error) {}
 
                 // Fire toast and result directly from the timeout — don't rely on catch chain
-                useToastStore.getState().error('Submit initiation failed. Please check your internet connection and VPN connection, Please retry once again', { duration: 1200000 });
+                useToastStore.getState().error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team', {
+                    duration: 1200000,
+                    title: 'Connection Error'
+                });
                 setResultMessage({
                     type: 'error',
-                    messages: ['Please check your internet connection and VPN connection. The KYC submit request is taking longer than expected, Please retry once again']
+                    messages: ['Connection Error']
                 });
                 setIsInitiatingKyc(false);
 
