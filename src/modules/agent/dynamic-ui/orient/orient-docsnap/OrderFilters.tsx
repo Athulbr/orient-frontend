@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCcw, RefreshCwOff, RotateCw, Search, X, MoreVertical } from 'lucide-react';
+import { RotateCw, Search, X, MoreVertical } from 'lucide-react';
 import { Button } from '../../../../../components/Button';
 import { Dropdown } from '../../../../../components/Dropdown';
 import { SingleSelect } from '../../../../../components/SingleSelect';
@@ -34,7 +34,20 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
     onCreateOrder
 }) => {
     const navigate = useNavigate();
-    const menuOptions = [{ label: 'Scanned Documents', value: 'scannedDocuments' }];
+
+    const menuOptions = [
+        { label: 'Scanned Documents', value: 'scannedDocuments' },
+        { label: 'Server Status', value: 'ServerStatus' }
+    ];
+
+    const handleMenuSelect = (label: string) => {
+        const option = menuOptions.find(o => o.label === label);
+        if (option?.value === 'scannedDocuments') {
+            navigate('/agent/scanned-documents');
+        } else if (option?.value === 'ServerStatus') {
+            navigate('/agent/server-status');
+        }
+    };
 
     return (
         <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
@@ -94,12 +107,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
                     <Button onClick={onCreateOrder}>Create Order</Button>
                     <Dropdown
                         options={menuOptions.map(opt => opt.label)}
-                        onChange={label => {
-                            const option = menuOptions.find(o => o.label === label);
-                            if (option?.value === 'scannedDocuments') {
-                                navigate('/agent/scanned-documents');
-                            }
-                        }}
+                        onChange={handleMenuSelect}
                     >
                         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 hover:bg-gray-100 cursor-pointer">
                             <MoreVertical size={16} />

@@ -4,6 +4,7 @@ import { config } from '../../../../../config/default';
 import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { rearrangeDocuments } from './upload-receipt/functions';
 import clientLogger from '../../../../../global-utils/clientLog';
+import clientLoggerNew from '../../../../../global-utils/clientLoggerNew';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -37,6 +38,7 @@ export interface UseOrdersReturn {
     ordersError: string | null;
     uploadingOrders: Record<number, boolean>;
     proceedingOrders: Record<number, boolean>;
+    initiatingOrders: Record<number, boolean>;
     linkingEmails: Record<string, boolean>;
     retryingOrders: Record<number, boolean>;
 
@@ -68,6 +70,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const [emails, setEmails] = useState<Email[]>([]);
     const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
     const [proceedingOrders, setProceedingOrders] = useState<Record<number, boolean>>({});
+    const [initiatingOrders, setInitiatingOrders] = useState<Record<number, boolean>>({});
     const [linkingEmails, setLinkingEmails] = useState<Record<string, boolean>>({});
     const [retryingOrders, setRetryingOrders] = useState<Record<number, boolean>>({});
     const [isLoadingOrders, setIsLoadingOrders] = useState(false);
@@ -540,22 +543,68 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 };
 
                 try {
-                    clientLogger('POST', `${config.nodeApiUrl}/log-client-error`, { error: '', data: { metaData: JSON.stringify(metaData) } });
+                    clientLoggerNew(metaData);
                 } catch (error) {}
 
                 const webhookEndpoint = 'orient-document-extractor';
 
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookEndpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderNumber: orderNumber,
-                        order: { orderDetails: order.orderDetails, userDetails: order.userDetails, extractionDetails: order.extractionDetails },
-                        templateName,
-                        documents: payloadDocuments,
-                        metaData
-                    })
-                });
+                let isApiCompleted = false;
+                const controller = new AbortController();
+
+                const timeoutId = setTimeout(async () => {
+                    if (!isApiCompleted) {
+                        let healthResponseData = null;
+                        try {
+                            const healthRes = await Promise.race([
+                                fetch(`${config.workflowService}/api/health`),
+                                new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
+                            ]);
+                            healthResponseData = await healthRes.json();
+                        } catch (err) {
+                            healthResponseData = { error: 'Failed to fetch health API' };
+                        }
+
+                        try {
+                            clientLoggerNew({
+                                ...metaData,
+                                message: `Initiating the extraction request API is taking more than 15 seconds (still pending)`,
+                                healthResponse: healthResponseData
+                            });
+                        } catch (error) {}
+
+                        controller.abort();
+                    }
+                }, 14000);
+
+                let response;
+                setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
+                try {
+                    response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookEndpoint}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderNumber: orderNumber,
+                            order: { orderDetails: order.orderDetails, userDetails: order.userDetails, extractionDetails: order.extractionDetails },
+                            templateName,
+                            documents: payloadDocuments,
+                            metaData
+                        }),
+                        signal: controller.signal
+                    });
+                } catch (error: any) {
+                    setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    if (error.name === 'AbortError') {
+                        toast.error('Please check your internet connection and VPN connection. The extraction request is taking longer than expected and might have timed out.', { duration: 1200000 });
+                        setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                        setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                        return;
+                    }
+                    throw error;
+                }
+
+                isApiCompleted = true;
+                setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     console.error('Extraction API response error:', response.status);
@@ -581,42 +630,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
                 const eventSource = new EventSource(streamUrl);
 
-                // ── 100-second extraction timeout with auto-retry (max 1) ──
-                const cleanupExtraction = () => {
-                    const active = activeExtractionRef.current[orderNumber];
-                    if (active) {
-                        clearTimeout(active.timeout);
-                        delete activeExtractionRef.current[orderNumber];
-                    }
-                };
-
-                const extractionTimeout = setTimeout(() => {
-                    console.warn(`Extraction timeout (100s) for order ${orderNumber}`);
-                    eventSource.close();
-                    cleanupExtraction();
-
-                    const currentRetryCount = extractionRetryCountRef.current[orderNumber] || 0;
-                    if (currentRetryCount < 1) {
-                        // Mark as retrying and re-trigger extraction
-                        extractionRetryCountRef.current[orderNumber] = currentRetryCount + 1;
-                        setRetryingOrders(prev => ({ ...prev, [orderNumber]: true }));
-                        toast.info(`Extraction is taking too long. Retrying extraction for order ${orderNumber}...`);
-                        // Re-call handleProceed after a brief delay to allow state updates
-                        setTimeout(() => {
-                            handleProceed(orderNumber);
-                        }, 500);
-                    } else {
-                        // Already retried once, give up
-                        setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                        setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                        extractionRetryCountRef.current[orderNumber] = 0;
-                        toast.error(`Extraction timed out for order ${orderNumber} after retry.`);
-                    }
-                }, 100_000);
-
-                // Store active extraction reference for cleanup
-                activeExtractionRef.current[orderNumber] = { eventSource, timeout: extractionTimeout };
-
                 eventSource.onmessage = event => {
                     try {
                         const jsonString = event.data;
@@ -626,7 +639,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         if (parsed.status) {
                             if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
                                 eventSource.close();
-                                cleanupExtraction();
                                 setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                                 setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                                 // Reset retry count on completion
@@ -645,10 +657,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                                 templateId: agentSettings?.defaultTemplateId || '',
                                                 templateName: agentSettings?.templates?.[0]?.name,
                                                 extractionDuration,
-                                                executions: [
-                                                    ...(currentOrder?.extractionDetails?.executions || []),
-                                                    { executionId, recordId: finalData.recordId }
-                                                ]
+                                                executions: [...(currentOrder?.extractionDetails?.executions || []), { executionId, recordId: finalData.recordId }]
                                             }
                                         };
 
@@ -682,7 +691,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 eventSource.onerror = err => {
                     console.error('SSE EventSource error:', err);
                     eventSource.close();
-                    cleanupExtraction();
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     extractionRetryCountRef.current[orderNumber] = 0;
@@ -757,6 +765,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         ordersError,
         uploadingOrders,
         proceedingOrders,
+        initiatingOrders,
         linkingEmails,
         retryingOrders,
         fetchData,

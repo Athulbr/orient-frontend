@@ -113,6 +113,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         ordersError,
         uploadingOrders,
         proceedingOrders,
+        initiatingOrders,
         retryingOrders,
         fetchData,
         handleDeleteOrder,
@@ -200,6 +201,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                                 onEdit={order => setEditingOrder(order)}
                                 onDelete={handleDeleteOrder}
                                 isProceeding={proceedingOrders[order.orderDetails.orderNumber] || false}
+                                isInitiating={initiatingOrders[order.orderDetails.orderNumber] || false}
                                 isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
                                 isRetrying={retryingOrders[order.orderDetails.orderNumber] || false}
                                 onDocsnapOpen={() => setDocsnapOpen(true)}

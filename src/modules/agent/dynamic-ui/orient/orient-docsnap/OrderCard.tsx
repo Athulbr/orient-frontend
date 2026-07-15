@@ -27,6 +27,7 @@ interface OrderCardProps {
     onEdit?: (order: Order) => void;
     onDelete?: (orderNumber: number) => void;
     isProceeding: boolean;
+    isInitiating?: boolean;
     isUploading?: boolean;
     isRetrying?: boolean;
     onDocsnapOpen?: () => void;
@@ -47,6 +48,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     onEdit,
     onDelete,
     isProceeding,
+    isInitiating,
     isUploading,
     isRetrying,
     onDocsnapOpen,
@@ -423,7 +425,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             disabled={!hasDocuments || isProceeding}
                             endIcon={!isProceeding && <ArrowRight size={15} />}
                         >
-                            {isProceeding ? 'Processing…' : 'Extract Documents'}
+                            {isInitiating ? 'Initiating…' : isProceeding ? 'Processing…' : 'Extract Documents'}
                         </Button>
                     ) : (
                         <div className="flex items-center gap-2">
@@ -434,7 +436,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 onClick={handleProceed}
                                 disabled={!hasDocuments || isProceeding}
                             >
-                                {isProceeding ? 'Processing…' : 'Re-Extract'}
+                                {isInitiating ? 'Initiating…' : isProceeding ? 'Processing…' : 'Re-Extract'}
                             </Button>
                             <Button startIcon={<Eye size={15} />} outlined onClick={openRecordDialog}>
                                 View Extracted Data

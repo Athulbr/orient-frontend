@@ -5,6 +5,8 @@ import httpRequest from '../../../global-utils/httpRequest';
 import { config } from '../../../config/default';
 import Spinner from '../../../components/Spinner';
 import { Button } from '../../../components/Button';
+import clientLogger from '../../../global-utils/clientLog';
+import clientLoggerNew from '../../../global-utils/clientLoggerNew';
 
 interface Agent {
     _id: string;
@@ -48,13 +50,19 @@ const ListAgentsPage = () => {
         fetchAgents();
     }, []);
 
+    const tempFunction = () => {
+        clientLoggerNew({ message: 'Total agents card clicked 1' });
+
+        // alert('Test');
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 text-zinc-900 min-w-screen">
             <main className="mx-auto px-4 py-8 sm:px-6 lg:px-8">
                 {/* Stats Row */}
                 <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                        <div className="flex items-center gap-4">
+                        <div onClick={tempFunction} className="flex items-center gap-4">
                             <div className="rounded-lg bg-indigo-50 p-3 text-indigo-600">
                                 <Bot size={24} />
                             </div>
