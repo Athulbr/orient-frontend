@@ -31,6 +31,7 @@ type SubmitPhase = 'idle' | 'kyc' | 'receipts' | 'currency';
  */
 const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrderUpdate, onBeforeSubmit, isKycSubmitted, isRecPaySubmitted, isCurrencySubmitted }) => {
     const [phase, setPhase] = useState<SubmitPhase>('idle');
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
     const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
     const [duplicateOrder, setDuplicateOrder] = useState<any | null>(null);
     const continueSubmitRef = useRef<(() => void) | null>(null);
@@ -44,7 +45,7 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
         onOrderUpdate?.(updatedOrder);
     };
 
-    const { resultMessage, setResultMessage, submitKyc } = useSubmitKyc({
+    const { resultMessage, setResultMessage, submitKyc, isInitiatingKyc } = useSubmitKyc({
         order,
         extractedData,
         onOrderUpdate: wrappedOnOrderUpdate,
@@ -61,7 +62,7 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
         onOrderUpdate: wrappedOnOrderUpdate
     });
 
-    const isSubmitting = phase !== 'idle';
+    const isSubmitting = phase !== 'idle' || isCheckingEmail;
     const allDone = isKycSubmitted && isRecPaySubmitted && isCurrencySubmitted;
 
     const handleSubmit = async () => {
@@ -76,11 +77,18 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
         const userEmail = order?.userDetails?.email;
         const hasEonNumber = Boolean(order?.maraekatDetails?.eonBookingNumber);
         if (userEmail && !hasEonNumber) {
+            setIsCheckingEmail(true);
             try {
-                const res = await fetch(`${config.workflowService}/api/orders/check-email?email=${encodeURIComponent(userEmail)}`);
+                const emailCheckController = new AbortController();
+                const emailCheckTimeoutId = setTimeout(() => emailCheckController.abort(), 3000);
+                const res = await fetch(`${config.workflowService}/api/orders/check-email?email=${encodeURIComponent(userEmail)}`, {
+                    signal: emailCheckController.signal
+                });
+                clearTimeout(emailCheckTimeoutId);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.exists) {
+                        setIsCheckingEmail(false);
                         // Show warning dialog and wait for user decision
                         setDuplicateOrder(data.order ?? null);
                         setShowDuplicateWarning(true);
@@ -91,8 +99,9 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
                 }
             } catch (err) {
                 console.error('Failed to check duplicate email:', err);
-                // Non-blocking: allow submission to proceed on check failure
+                // Non-blocking: allow submission to proceed on check failure or timeout
             }
+            setIsCheckingEmail(false);
         }
 
         await runSubmission();
@@ -143,7 +152,8 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
 
     const getLabel = () => {
         if (allDone) return 'Submitted';
-        if (phase === 'kyc') return 'Submitting KYC...';
+        if (isCheckingEmail) return 'Initiating...';
+        if (phase === 'kyc') return isInitiatingKyc ? 'Initiating...' : 'Submitting KYC...';
         if (phase === 'receipts') return 'Submitting Receipts...';
         if (phase === 'currency') return 'Adding Currency...';
         return 'Submit';

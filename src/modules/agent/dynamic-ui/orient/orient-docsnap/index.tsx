@@ -112,6 +112,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
         isLoadingOrders,
         ordersError,
         uploadingOrders,
+        initiatingUploadOrders,
         proceedingOrders,
         initiatingOrders,
         retryingOrders,
@@ -203,6 +204,7 @@ const OrientDocsnapUserInterface: React.FC<OrientDocsnapUserInterfaceIF> = ({ ag
                                 isProceeding={proceedingOrders[order.orderDetails.orderNumber] || false}
                                 isInitiating={initiatingOrders[order.orderDetails.orderNumber] || false}
                                 isUploading={uploadingOrders[order.orderDetails.orderNumber] || false}
+                                isInitiatingUpload={initiatingUploadOrders[order.orderDetails.orderNumber] || false}
                                 isRetrying={retryingOrders[order.orderDetails.orderNumber] || false}
                                 onDocsnapOpen={() => setDocsnapOpen(true)}
                                 onDocsnapClose={() => setDocsnapOpen(false)}

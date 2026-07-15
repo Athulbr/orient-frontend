@@ -29,6 +29,7 @@ interface OrderCardProps {
     isProceeding: boolean;
     isInitiating?: boolean;
     isUploading?: boolean;
+    isInitiatingUpload?: boolean;
     isRetrying?: boolean;
     onDocsnapOpen?: () => void;
     onDocsnapClose?: () => void;
@@ -50,6 +51,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
     isProceeding,
     isInitiating,
     isUploading,
+    isInitiatingUpload,
     isRetrying,
     onDocsnapOpen,
     onDocsnapClose,
@@ -323,7 +325,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                             <ColIcon bg="bg-emerald-50" border="border-emerald-200">
                                 {isUploading ? <Spinner size={15} /> : <UploadCloud size={15} className="text-emerald-500" />}
                             </ColIcon>
-                            <span className="text-[15px] font-bold text-gray-700">{isUploading ? 'Uploading...' : 'Manual Documents'}</span>
+                            <span className="text-[15px] font-bold text-gray-700">{isInitiatingUpload ? 'Initiating...' : isUploading ? 'Uploading...' : 'Manual Documents'}</span>
                             {/* <ColCount colorClass="text-emerald-800" bgClass="bg-emerald-100" borderClass="border-emerald-300" n={uploadedFileItems.length} /> */}
                         </div>
                         <div className="flex items-center gap-2">
@@ -352,7 +354,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                 borderClass="border-emerald-300/50"
                                 hoverClass="hover:bg-emerald-50"
                                 icon={isUploading ? <Spinner size={11} /> : <Plus size={11} />}
-                                label={isUploading ? 'Uploading' : 'Add Files'}
+                                label={isInitiatingUpload ? 'Initiating' : isUploading ? 'Uploading' : 'Add Files'}
                                 onClick={() => !isUploading && setShowUploader(true)}
                             />
                         </div>

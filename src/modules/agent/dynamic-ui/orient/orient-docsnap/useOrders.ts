@@ -37,6 +37,7 @@ export interface UseOrdersReturn {
     isLoadingOrders: boolean;
     ordersError: string | null;
     uploadingOrders: Record<number, boolean>;
+    initiatingUploadOrders: Record<number, boolean>;
     proceedingOrders: Record<number, boolean>;
     initiatingOrders: Record<number, boolean>;
     linkingEmails: Record<string, boolean>;
@@ -69,6 +70,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const [orders, setOrders] = useState<Order[]>([]);
     const [emails, setEmails] = useState<Email[]>([]);
     const [uploadingOrders, setUploadingOrders] = useState<Record<number, boolean>>({});
+    const [initiatingUploadOrders, setInitiatingUploadOrders] = useState<Record<number, boolean>>({});
     const [proceedingOrders, setProceedingOrders] = useState<Record<number, boolean>>({});
     const [initiatingOrders, setInitiatingOrders] = useState<Record<number, boolean>>({});
     const [linkingEmails, setLinkingEmails] = useState<Record<string, boolean>>({});
@@ -294,6 +296,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             if (files.length === 0) return;
 
             setUploadingOrders(prev => ({ ...prev, [orderNumber]: true }));
+            setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: true }));
             const currentDateTime = new Date().toLocaleString();
             const isoDateTime = new Date().toISOString();
 
@@ -303,11 +306,44 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             formData.append('isoDateTime', isoDateTime);
             files.forEach(file => formData.append('file', file));
 
+            let isUploadApiCompleted = false;
+            const uploadController = new AbortController();
+
+            const uploadTimeoutId = setTimeout(async () => {
+                if (!isUploadApiCompleted) {
+                    let healthResponseData = null;
+                    try {
+                        const healthRes = await Promise.race([
+                            fetch(`${config.workflowService}/api/health`),
+                            new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
+                        ]);
+                        healthResponseData = await healthRes.json();
+                    } catch (err) {
+                        healthResponseData = { error: 'Failed to fetch health API' };
+                    }
+
+                    try {
+                        clientLoggerNew({
+                            message: `File upload request API is taking more than 15 seconds (still pending)`,
+                            orderNumber,
+                            healthResponse: healthResponseData
+                        });
+                    } catch (error) {}
+
+                    uploadController.abort();
+                }
+            }, 10000);
+
             try {
                 const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-file-upload`, {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    signal: uploadController.signal
                 });
+
+                isUploadApiCompleted = true;
+                clearTimeout(uploadTimeoutId);
+                setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
 
                 if (!response.ok) {
                     console.error('Upload API response error:', response.status);
@@ -386,10 +422,17 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     toast.error('Upload stream disconnected');
                 };
-            } catch (err) {
-                console.error('Upload API error:', err);
+            } catch (err: any) {
+                isUploadApiCompleted = true;
+                clearTimeout(uploadTimeoutId);
+                setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
+                if (err?.name === 'AbortError') {
+                    toast.error('Upload initiation failed. Please check your internet connection and VPN connection, Please retry once again', { duration: 1200000 });
+                } else {
+                    console.error('Upload API error:', err);
+                    toast.error('Upload failed');
+                }
                 setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                toast.error('Upload failed');
             }
         },
         [toast]
@@ -574,7 +617,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                         controller.abort();
                     }
-                }, 14000);
+                }, 10000);
 
                 let response;
                 setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
@@ -594,7 +637,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 } catch (error: any) {
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     if (error.name === 'AbortError') {
-                        toast.error('Please check your internet connection and VPN connection. The extraction request is taking longer than expected and might have timed out.', { duration: 1200000 });
+                        toast.error('Please check your internet connection and VPN connection. The extraction request is taking longer than expected, Please retry once again', { duration: 1200000 });
                         setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                         setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                         return;
@@ -764,6 +807,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
         isLoadingOrders,
         ordersError,
         uploadingOrders,
+        initiatingUploadOrders,
         proceedingOrders,
         initiatingOrders,
         linkingEmails,

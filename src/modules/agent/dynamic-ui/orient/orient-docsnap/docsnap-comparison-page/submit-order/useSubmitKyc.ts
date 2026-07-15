@@ -3,6 +3,8 @@ import { config } from '../../../../../../../config/default';
 import { Order } from '../../types';
 import { getMaraekatPayload } from './getMaraekatPayload';
 import { ResultMessage } from './DraggableResultCard';
+import clientLoggerNew from '../../../../../../../global-utils/clientLoggerNew';
+import { useToastStore } from '../../../../../../../components/toast/ToastStore';
 
 export interface UseSubmitKycOptions {
     order: Order;
@@ -63,14 +65,16 @@ const checkIsExtractedDataUpdated = (extractedData: any): boolean => {
 
 export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubmit }: UseSubmitKycOptions) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
+    const [isInitiatingKyc, setIsInitiatingKyc] = useState(false);
 
     const submitKyc = async (): Promise<KycSubmitResult> => {
         setResultMessage(null);
+        setIsInitiatingKyc(true);
 
         // Step 1: Silently save the latest extracted data before submitting
         if (onBeforeSubmit) {
             try {
-                await onBeforeSubmit();
+                await Promise.race([onBeforeSubmit(), new Promise<void>(resolve => setTimeout(resolve, 3000))]);
             } catch (err) {
                 console.error('Silent save before submit failed:', err);
                 // Do not block submission on save failure
@@ -86,6 +90,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                 `Passenger name does not match passport name.\nPassport name: ${extractedData?.passport?.first_name?.value} ${extractedData?.passport?.last_name?.value}\nTicket name: ${extractedData?.travel_itinerary?.passenger_name?.value}\n\nProceed anyway?`
             );
             if (!accepted) {
+                setIsInitiatingKyc(false);
                 return { success: false };
             }
         }
@@ -94,35 +99,92 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         const { payload, dateErrors } = getMaraekatPayload(order, extractedData);
 
         if (dateErrors.length > 0) {
+            setIsInitiatingKyc(false);
             setResultMessage({ type: 'error', messages: dateErrors });
             return { success: false };
         }
         const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
 
         // Step 4: Call submit API
+        let isKycApiCompleted = false;
+        const kycController = new AbortController();
+
+        const kycTimeoutId = setTimeout(async () => {
+            if (!isKycApiCompleted) {
+                let healthResponseData = null;
+                try {
+                    const healthRes = await Promise.race([
+                        fetch(`${config.workflowService}/api/health`),
+                        new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
+                    ]);
+                    healthResponseData = await healthRes.json();
+                } catch (err) {
+                    healthResponseData = { error: 'Failed to fetch health API' };
+                }
+
+                try {
+                    clientLoggerNew({
+                        message: `KYC submit request API is taking more than 10 seconds (still pending)`,
+                        orderNumber: order.orderDetails?.orderNumber,
+                        healthResponse: healthResponseData
+                    });
+                } catch (error) {}
+
+                // Fire toast and result directly from the timeout — don't rely on catch chain
+                useToastStore.getState().error('Submit initiation failed. Please check your internet connection and VPN connection, Please retry once again', { duration: 1200000 });
+                setResultMessage({
+                    type: 'error',
+                    messages: ['Please check your internet connection and VPN connection. The KYC submit request is taking longer than expected, Please retry once again']
+                });
+                setIsInitiatingKyc(false);
+
+                kycController.abort();
+            }
+        }, 10000);
+
+        setIsInitiatingKyc(true);
+        let response;
         try {
-            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/maraekat-submit`, {
+            response = await fetch(`${config.workflowService}/api/webhooks/trigger/maraekat-submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated })
+                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated }),
+                signal: kycController.signal
             });
-
-            if (!response.ok) {
-                console.error('Submission API response error:', response.status);
-                setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: ' + response.status] });
+        } catch (error: any) {
+            isKycApiCompleted = true;
+            clearTimeout(kycTimeoutId);
+            setIsInitiatingKyc(false);
+            if (error.name === 'AbortError') {
+                // Toast already fired from the timeout callback
                 return { success: false };
             }
+            console.error('Submit KYC error:', error);
+            setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: An unexpected error occurred'] });
+            return { success: false };
+        }
 
-            const responseData = await response.json();
-            const executionId = responseData?.data?.executionId;
+        isKycApiCompleted = true;
+        clearTimeout(kycTimeoutId);
+        setIsInitiatingKyc(false);
 
-            if (!executionId) {
-                console.error('No executionId found in response');
-                setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: No executionId in response'] });
-                return { success: false };
-            }
+        if (!response.ok) {
+            console.error('Submission API response error:', response.status);
+            setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: ' + response.status] });
+            return { success: false };
+        }
 
-            // Step 5: Listen to SSE Stream for completion
+        const responseData = await response.json();
+        const executionId = responseData?.data?.executionId;
+
+        if (!executionId) {
+            console.error('No executionId found in response');
+            setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: No executionId in response'] });
+            return { success: false };
+        }
+
+        // Step 5: Listen to SSE Stream for completion
+        try {
             return await new Promise<KycSubmitResult>(resolve => {
                 const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=secret1`;
                 const eventSource = new EventSource(streamUrl);
@@ -210,11 +272,11 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                 };
             });
         } catch (error) {
-            console.error('Submit KYC error:', error);
+            console.error('SSE stream error:', error);
             setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: An unexpected error occurred'] });
             return { success: false };
         }
     };
 
-    return { resultMessage, setResultMessage, submitKyc };
+    return { resultMessage, setResultMessage, submitKyc, isInitiatingKyc };
 };
