@@ -45,7 +45,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
         if (option?.value === 'scannedDocuments') {
             navigate('/agent/scanned-documents');
         } else if (option?.value === 'ServerStatus') {
-            navigate('/agent/server-status');
+            navigate('/agent/health');
         }
     };
 
@@ -105,10 +105,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
                         Refresh
                     </Button>
                     <Button onClick={onCreateOrder}>Create Order</Button>
-                    <Dropdown
-                        options={menuOptions.map(opt => opt.label)}
-                        onChange={handleMenuSelect}
-                    >
+                    <Dropdown options={menuOptions.map(opt => opt.label)} onChange={handleMenuSelect}>
                         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-800 hover:bg-gray-100 cursor-pointer">
                             <MoreVertical size={16} />
                         </div>

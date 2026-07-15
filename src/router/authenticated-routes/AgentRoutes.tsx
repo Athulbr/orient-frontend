@@ -20,7 +20,7 @@ const AgentRoutes = () => {
             <Route path="template/create" element={<ViewAgentTemplatePage isCreate={true} />} />
             <Route path="template/:id" element={<ViewAgentTemplatePage />} />
             <Route path="scanned-documents" element={<ScannedDocuments />} />
-            <Route path="server-status" element={<ServerStatusPage />} />
+            <Route path="health" element={<ServerStatusPage />} />
         </Routes>
     );
 };
