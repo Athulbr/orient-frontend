@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, ArrowLeft, CheckCircle2, XCircle, AlertCircle, Clock, Server, Zap, Database, Cpu, MemoryStick, RefreshCw, Wifi, WifiOff, BarChart2 } from 'lucide-react';
+import { Activity, ArrowLeft, CheckCircle2, XCircle, AlertCircle, Clock, Server, Zap, Database, Cpu, MemoryStick, RefreshCw, Wifi, WifiOff, BarChart2, Bot, UploadCloud, Send } from 'lucide-react';
 import { config } from '../../../../../../config/default';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -51,12 +51,14 @@ const formatUptime = (seconds: number) => {
 const statusColor = (s: string) => {
     if (s === 'ok' || s === 'healthy' || s === 'operational') return { bg: '#f0fdf4', text: '#15803d', border: '#bbf7d0', dot: '#22c55e', light: '#dcfce7' };
     if (s === 'degraded') return { bg: '#fefce8', text: '#854d0e', border: '#fde68a', dot: '#f59e0b', light: '#fef9c3' };
+    if (s === 'fetching') return { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe', dot: '#3b82f6', light: '#dbeafe' };
     return { bg: '#fff1f2', text: '#b91c1c', border: '#fecaca', dot: '#ef4444', light: '#fee2e2' };
 };
 
 const statusLabel = (s: string) => {
     if (s === 'ok' || s === 'healthy' || s === 'operational') return 'Operational';
     if (s === 'degraded') return 'Degraded';
+    if (s === 'fetching') return 'Fetching...';
     return 'Unavailable';
 };
 
@@ -64,7 +66,7 @@ const statusLabel = (s: string) => {
 
 const StatusPill: React.FC<{ status: string }> = ({ status }) => {
     const c = statusColor(status);
-    const Icon = status === 'ok' || status === 'healthy' || status === 'operational' ? CheckCircle2 : status === 'degraded' ? AlertCircle : XCircle;
+    const Icon = status === 'ok' || status === 'healthy' || status === 'operational' ? CheckCircle2 : status === 'degraded' ? AlertCircle : status === 'fetching' ? RefreshCw : XCircle;
     return (
         <span
             style={{
@@ -175,9 +177,9 @@ const ServerStatusPage: React.FC = () => {
         };
     }, [fetchHealth, fetchGeminiHealth]);
 
-    const serverStatus = health?.status ?? 'error';
-    const geminiStatus = geminiHealth?.status ?? 'error';
-    const dbStatus = health?.database?.status ?? 'error';
+    const serverStatus = health?.status ?? 'fetching';
+    const geminiStatus = geminiHealth?.status ?? 'fetching';
+    const dbStatus = health?.database?.status ?? 'fetching';
     const isOnline = serverStatus === 'ok';
 
     return (
@@ -263,7 +265,7 @@ const ServerStatusPage: React.FC = () => {
                         </div>
                         <div>
                             <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em' }}>Service Health</div>
-                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>Workflow Service · Real-time monitoring</div>
+                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>Real-time monitoring</div>
                         </div>
                     </div>
                 </div>
@@ -299,7 +301,7 @@ const ServerStatusPage: React.FC = () => {
             </header>
 
             {/* ── Body ── */}
-            <main style={{ flex: 1, padding: '32px 40px 56px', width: '100%', boxSizing: 'border-box' }}>
+            <main style={{ flex: 1, padding: '20px 20px', width: '100%', boxSizing: 'border-box' }}>
                 {loading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, gap: 16 }}>
                         <div
@@ -324,15 +326,53 @@ const ServerStatusPage: React.FC = () => {
                         {/* ── Service Cards ── */}
                         <div className="ss-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28, animationDelay: '0.05s' }}>
                             <ServiceCard
-                                icon={<Server size={20} />}
-                                title="Server Health"
+                                icon={<Bot size={20} />}
+                                title="Document Extractor Agent"
                                 status={serverStatus}
                                 description={
                                     serverStatus === 'ok'
-                                        ? 'Workflow service is running normally with no issues.'
+                                        ? 'Document extractor agent is running normally with no issues.'
                                         : serverStatus === 'degraded'
-                                          ? 'Service is running but experiencing some issues.'
-                                          : (health?.error ?? 'Workflow service is unreachable.')
+                                          ? 'Agent is running but experiencing some issues.'
+                                          : serverStatus === 'fetching'
+                                            ? 'Fetching agent status...'
+                                            : (health?.error ?? 'Agent is unreachable.')
+                                }
+                                meta={[
+                                    { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
+                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
+                                ]}
+                            />
+                            <ServiceCard
+                                icon={<UploadCloud size={20} />}
+                                title="Document Upload Agent"
+                                status={serverStatus}
+                                description={
+                                    serverStatus === 'ok'
+                                        ? 'Document upload agent is running normally with no issues.'
+                                        : serverStatus === 'degraded'
+                                          ? 'Agent is running but experiencing some issues.'
+                                          : serverStatus === 'fetching'
+                                            ? 'Fetching agent status...'
+                                            : (health?.error ?? 'Agent is unreachable.')
+                                }
+                                meta={[
+                                    { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
+                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
+                                ]}
+                            />
+                            <ServiceCard
+                                icon={<Send size={20} />}
+                                title="Submit Order Agent"
+                                status={serverStatus}
+                                description={
+                                    serverStatus === 'ok'
+                                        ? 'Submit order agent is running normally with no issues.'
+                                        : serverStatus === 'degraded'
+                                          ? 'Agent is running but experiencing some issues.'
+                                          : serverStatus === 'fetching'
+                                            ? 'Fetching agent status...'
+                                            : (health?.error ?? 'Agent is unreachable.')
                                 }
                                 meta={[
                                     { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
@@ -341,7 +381,7 @@ const ServerStatusPage: React.FC = () => {
                             />
                             <ServiceCard
                                 icon={<Zap size={20} />}
-                                title="Gemini Health"
+                                title="LLM Health"
                                 status={geminiStatus}
                                 description={
                                     geminiHealth?.message ??
@@ -349,7 +389,9 @@ const ServerStatusPage: React.FC = () => {
                                         ? 'Gemini AI service is reachable and responding to requests.'
                                         : geminiStatus === 'degraded'
                                           ? 'Gemini AI service is experiencing some degradation.'
-                                          : 'Gemini AI service status could not be determined.')
+                                          : geminiStatus === 'fetching'
+                                            ? 'Fetching Gemini AI service status...'
+                                            : 'Gemini AI service status could not be determined.')
                                 }
                                 meta={[
                                     { label: 'Source', value: geminiHealth?.source === 'redis' ? 'Cached (Redis)' : 'Real-time API', icon: <Wifi size={12} /> },

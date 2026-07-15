@@ -123,15 +123,19 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                 }
 
                 try {
+                    const currentDateTime = new Date().toLocaleString();
+                    const isoDateTime = new Date().toISOString();
                     clientLoggerNew({
                         message: `KYC submit request API is taking more than 10 seconds (still pending)`,
                         orderNumber: order.orderDetails?.orderNumber,
+                        currentDateTime,
+                        isoDateTime,
                         healthResponse: healthResponseData
                     });
                 } catch (error) {}
 
                 // Fire toast and result directly from the timeout — don't rely on catch chain
-                useToastStore.getState().error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team', {
+                useToastStore.getState().error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team.', {
                     duration: 1200000,
                     title: 'Connection Error'
                 });

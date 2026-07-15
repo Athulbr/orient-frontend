@@ -326,6 +326,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         clientLoggerNew({
                             message: `File upload request API is taking more than 15 seconds (still pending)`,
                             orderNumber,
+                            currentDateTime,
+                            isoDateTime,
                             healthResponse: healthResponseData
                         });
                     } catch (error) {}
@@ -427,7 +429,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 clearTimeout(uploadTimeoutId);
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
                 if (err?.name === 'AbortError') {
-                    toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team', {
+                    toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team.', {
                         duration: 1200000,
                         title: 'Connection Error'
                     });
@@ -640,7 +642,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 } catch (error: any) {
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     if (error.name === 'AbortError') {
-                        toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team', {
+                        toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team.', {
                             duration: 1200000,
                             title: 'Connection Error'
                         });

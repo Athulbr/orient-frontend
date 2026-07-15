@@ -36,8 +36,8 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
     const navigate = useNavigate();
 
     const menuOptions = [
-        { label: 'Scanned Documents', value: 'scannedDocuments' },
-        { label: 'Server Status', value: 'ServerStatus' }
+        { label: 'Scanned Documents', value: 'scannedDocuments' }
+        // { label: 'Server Status', value: 'ServerStatus' }
     ];
 
     const handleMenuSelect = (label: string) => {
