@@ -1,6 +1,27 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, ArrowLeft, CheckCircle2, XCircle, AlertCircle, Clock, Server, Zap, Database, Cpu, MemoryStick, RefreshCw, Wifi, WifiOff, BarChart2, Bot, UploadCloud, Send } from 'lucide-react';
+import {
+    Activity,
+    ArrowLeft,
+    CheckCircle2,
+    XCircle,
+    AlertCircle,
+    Clock,
+    Server,
+    Zap,
+    Database,
+    Cpu,
+    MemoryStick,
+    RefreshCw,
+    Wifi,
+    WifiOff,
+    BarChart2,
+    Bot,
+    UploadCloud,
+    Send,
+    FileCheck,
+    FileCheck2
+} from 'lucide-react';
 import { config } from '../../../../../../config/default';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -35,6 +56,12 @@ interface GeminiHealthData {
 interface HistoryEntry {
     ts: Date;
     status: 'ok' | 'degraded' | 'error';
+}
+
+interface LastExecutions {
+    documentExtractor?: string;
+    invoiceUpload?: string;
+    submitOrder?: string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -117,9 +144,11 @@ const ServerStatusPage: React.FC = () => {
     const [countdown, setCountdown] = useState(10);
     const [geminiHealth, setGeminiHealth] = useState<GeminiHealthData | null>(null);
     const [geminiLastUpdated, setGeminiLastUpdated] = useState<Date | null>(null);
+    const [lastExecutions, setLastExecutions] = useState<LastExecutions | null>(null);
     const [history, setHistory] = useState<HistoryEntry[]>([]);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const geminiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const lastExecutionsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const fetchHealth = useCallback(async () => {
@@ -159,23 +188,39 @@ const ServerStatusPage: React.FC = () => {
         }
     }, []);
 
+    const fetchLastExecutions = useCallback(async () => {
+        try {
+            const res = await fetch(`${config.workflowService}/api/orient/last-executions`);
+            const json = await res.json();
+            if (json.success && json.data) {
+                setLastExecutions(json.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch last executions', error);
+        }
+    }, []);
+
     const handleRefreshAll = useCallback(() => {
         fetchHealth();
         fetchGeminiHealth();
-    }, [fetchHealth, fetchGeminiHealth]);
+        fetchLastExecutions();
+    }, [fetchHealth, fetchGeminiHealth, fetchLastExecutions]);
 
     useEffect(() => {
         fetchHealth();
         fetchGeminiHealth();
+        fetchLastExecutions();
         intervalRef.current = setInterval(fetchHealth, 10000);
         geminiIntervalRef.current = setInterval(fetchGeminiHealth, 60000);
+        lastExecutionsIntervalRef.current = setInterval(fetchLastExecutions, 10000);
         countdownRef.current = setInterval(() => setCountdown(p => (p <= 1 ? 10 : p - 1)), 1000);
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
             if (geminiIntervalRef.current) clearInterval(geminiIntervalRef.current);
+            if (lastExecutionsIntervalRef.current) clearInterval(lastExecutionsIntervalRef.current);
             if (countdownRef.current) clearInterval(countdownRef.current);
         };
-    }, [fetchHealth, fetchGeminiHealth]);
+    }, [fetchHealth, fetchGeminiHealth, fetchLastExecutions]);
 
     const serverStatus = health?.status ?? 'fetching';
     const geminiStatus = geminiHealth?.status ?? 'fetching';
@@ -340,16 +385,17 @@ const ServerStatusPage: React.FC = () => {
                                 }
                                 meta={[
                                     { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
-                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
+                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> },
+                                    { label: 'Last Extracted At', value: lastExecutions?.documentExtractor || '—', icon: <FileCheck size={12} color="green" /> }
                                 ]}
                             />
                             <ServiceCard
                                 icon={<UploadCloud size={20} />}
-                                title="Document Upload Agent"
+                                title="Invoice Upload Agent"
                                 status={serverStatus}
                                 description={
                                     serverStatus === 'ok'
-                                        ? 'Document upload agent is running normally with no issues.'
+                                        ? 'Invoice upload agent is running normally with no issues.'
                                         : serverStatus === 'degraded'
                                           ? 'Agent is running but experiencing some issues.'
                                           : serverStatus === 'fetching'
@@ -358,16 +404,17 @@ const ServerStatusPage: React.FC = () => {
                                 }
                                 meta={[
                                     { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
-                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
+                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> },
+                                    { label: 'Last Uploaded At', value: lastExecutions?.invoiceUpload || '—', icon: <FileCheck size={12} color="green" /> }
                                 ]}
                             />
                             <ServiceCard
                                 icon={<Send size={20} />}
-                                title="Submit Order Agent"
+                                title="Maraekat Submit Order Agent"
                                 status={serverStatus}
                                 description={
                                     serverStatus === 'ok'
-                                        ? 'Submit order agent is running normally with no issues.'
+                                        ? 'Maraekat Submit Order Agent is running normally with no issues.'
                                         : serverStatus === 'degraded'
                                           ? 'Agent is running but experiencing some issues.'
                                           : serverStatus === 'fetching'
@@ -376,7 +423,8 @@ const ServerStatusPage: React.FC = () => {
                                 }
                                 meta={[
                                     { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
-                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
+                                    { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> },
+                                    { label: 'Last Submitted At', value: lastExecutions?.submitOrder || '—', icon: <FileCheck size={12} color="green" /> }
                                 ]}
                             />
                             <ServiceCard
@@ -394,7 +442,7 @@ const ServerStatusPage: React.FC = () => {
                                             : 'Gemini AI service status could not be determined.')
                                 }
                                 meta={[
-                                    { label: 'Source', value: geminiHealth?.source === 'redis' ? 'Cached (Redis)' : 'Real-time API', icon: <Wifi size={12} /> },
+                                    { label: 'Source', value: geminiHealth?.source === 'redis' ? 'Real-time API.' : 'Real-time API', icon: <Wifi size={12} /> },
                                     { label: 'Checked', value: geminiLastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
                                 ]}
                             />
