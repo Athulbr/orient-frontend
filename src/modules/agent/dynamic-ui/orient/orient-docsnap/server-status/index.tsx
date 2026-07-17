@@ -7,7 +7,6 @@ import {
     XCircle,
     AlertCircle,
     Clock,
-    Server,
     Zap,
     Database,
     Cpu,
@@ -15,12 +14,12 @@ import {
     RefreshCw,
     Wifi,
     WifiOff,
-    BarChart2,
     Bot,
     UploadCloud,
     Send,
     FileCheck,
-    FileCheck2
+    HardDrive,
+    Layers
 } from 'lucide-react';
 import { config } from '../../../../../../config/default';
 
@@ -53,6 +52,11 @@ interface GeminiHealthData {
     source?: 'api' | 'redis';
 }
 
+interface MaraekatHealthData {
+    status: 'operational' | 'degraded' | 'error' | 'unknown';
+    message?: string;
+}
+
 interface HistoryEntry {
     ts: Date;
     status: 'ok' | 'degraded' | 'error';
@@ -63,7 +67,43 @@ interface LastExecutions {
     invoiceUpload?: string;
     submitOrder?: string;
 }
+interface SystemCpu {
+    usage: string;
+    cores: number;
+    loadAverage: number[];
+}
 
+interface SystemMemory {
+    heapUsed: string;
+    heapTotal: string;
+    rss: string;
+    external: string;
+    systemUsed: string;
+    systemTotal: string;
+}
+
+interface EventLoopData {
+    delay: string;
+    status: string;
+}
+
+interface DatabaseData {
+    status: string;
+    responseTime: string;
+    connections: number;
+    maxConnections: number;
+}
+
+interface RedisData {
+    status: string;
+    responseTime: string;
+    memory: string;
+}
+
+interface QueueData {
+    waiting: number;
+    active: number;
+}
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const formatUptime = (seconds: number) => {
@@ -75,11 +115,18 @@ const formatUptime = (seconds: number) => {
     return `${s}s`;
 };
 
-const statusColor = (s: string) => {
-    if (s === 'ok' || s === 'healthy' || s === 'operational') return { bg: '#f0fdf4', text: '#15803d', border: '#bbf7d0', dot: '#22c55e', light: '#dcfce7' };
-    if (s === 'degraded') return { bg: '#fefce8', text: '#854d0e', border: '#fde68a', dot: '#f59e0b', light: '#fef9c3' };
-    if (s === 'fetching') return { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe', dot: '#3b82f6', light: '#dbeafe' };
-    return { bg: '#fff1f2', text: '#b91c1c', border: '#fecaca', dot: '#ef4444', light: '#fee2e2' };
+// Tailwind class sets keyed by status, replacing the old hex-based statusColor()
+const statusClasses = (s: string) => {
+    if (s === 'ok' || s === 'healthy' || s === 'operational') {
+        return { light: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', dot: 'bg-green-500' };
+    }
+    if (s === 'degraded') {
+        return { light: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200', dot: 'bg-amber-500' };
+    }
+    if (s === 'fetching') {
+        return { light: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' };
+    }
+    return { light: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-red-500' };
 };
 
 const statusLabel = (s: string) => {
@@ -92,44 +139,21 @@ const statusLabel = (s: string) => {
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 const StatusPill: React.FC<{ status: string }> = ({ status }) => {
-    const c = statusColor(status);
+    const c = statusClasses(status);
     const Icon = status === 'ok' || status === 'healthy' || status === 'operational' ? CheckCircle2 : status === 'degraded' ? AlertCircle : status === 'fetching' ? RefreshCw : XCircle;
     return (
-        <span
-            style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '4px 12px',
-                borderRadius: 999,
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: '0.02em',
-                backgroundColor: c.light,
-                color: c.text,
-                border: `1.5px solid ${c.border}`
-            }}
-        >
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide border ${c.light} ${c.text} ${c.border}`}>
             <Icon size={12} /> {statusLabel(status)}
         </span>
     );
 };
 
 const PulseDot: React.FC<{ status: string }> = ({ status }) => {
-    const c = statusColor(status);
+    const c = statusClasses(status);
     return (
-        <span style={{ position: 'relative', display: 'inline-flex', width: 12, height: 12 }}>
-            <span
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: '50%',
-                    backgroundColor: c.dot,
-                    opacity: 0.35,
-                    animation: 'ping 1.4s cubic-bezier(0,0,0.2,1) infinite'
-                }}
-            />
-            <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: c.dot, display: 'inline-block' }} />
+        <span className="relative inline-flex w-3 h-3">
+            <span className={`absolute inset-0 rounded-full opacity-35 animate-ping ${c.dot}`} />
+            <span className={`w-3 h-3 rounded-full inline-block ${c.dot}`} />
         </span>
     );
 };
@@ -141,23 +165,50 @@ const ServerStatusPage: React.FC = () => {
     const [health, setHealth] = useState<HealthData | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-    const [countdown, setCountdown] = useState(10);
+    const [countdown, setCountdown] = useState(20);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [geminiHealth, setGeminiHealth] = useState<GeminiHealthData | null>(null);
+    const [maraekatHealth, setMaraekatHealth] = useState<MaraekatHealthData | null>(null);
+    const [cpu, setCpu] = useState<SystemCpu | null>(null);
+    const [memory, setMemory] = useState<SystemMemory | null>(null);
+    const [eventLoop, setEventLoop] = useState<EventLoopData | null>(null);
+    const [database, setDatabase] = useState<DatabaseData | null>(null);
+    const [redis, setRedis] = useState<RedisData | null>(null);
+    const [queue, setQueue] = useState<QueueData | null>(null);
     const [geminiLastUpdated, setGeminiLastUpdated] = useState<Date | null>(null);
     const [lastExecutions, setLastExecutions] = useState<LastExecutions | null>(null);
     const [history, setHistory] = useState<HistoryEntry[]>([]);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const geminiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const lastExecutionsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    const fetchHealth = useCallback(async () => {
+    const fetchAllDetails = useCallback(async (refresh = false) => {
+        setIsRefreshing(true);
         try {
-            const res = await fetch(`${config.workflowService}/api/health`);
-            const data: HealthData = await res.json();
-            setHealth(data);
+            const res = await fetch(`${config.workflowService}/api/health/details${refresh ? '?refresh=true' : ''}`);
+            const data = await res.json();
+
+            // Set health
+            setHealth(data.health);
             setLastUpdated(new Date());
-            setHistory(prev => [{ ts: new Date(), status: data.status }, ...prev.slice(0, 29)]);
+            setHistory(prev => [{ ts: new Date(), status: data.health?.status || 'error' }, ...prev.slice(0, 29)]);
+
+            // Detailed System Metrics
+            setCpu(data.cpu);
+            setMemory(data.memory);
+            setEventLoop(data.eventLoop);
+            setDatabase(data.database);
+            setRedis(data.redis);
+            setQueue(data.queue);
+
+            // Set gemini health
+            setGeminiHealth(data.gemini);
+            setGeminiLastUpdated(new Date());
+
+            // Set maraekat health
+            setMaraekatHealth(data.maraekat);
+
+            // Set last executions
+            setLastExecutions(data.lastExecutions);
         } catch {
             const errData: HealthData = {
                 status: 'error',
@@ -168,263 +219,166 @@ const ServerStatusPage: React.FC = () => {
                 error: 'Failed to connect to workflow service'
             };
             setHealth(errData);
+            setCpu(null);
+            setMemory(null);
+            setEventLoop(null);
+            setDatabase(null);
+            setRedis(null);
+            setQueue(null);
+            setGeminiHealth({ status: 'error', message: 'Could not reach Gemini health API' });
+            setMaraekatHealth({ status: 'error', message: 'Could not reach Maraekat API' });
             setLastUpdated(new Date());
+            setGeminiLastUpdated(new Date());
             setHistory(prev => [{ ts: new Date(), status: 'error' }, ...prev.slice(0, 29)]);
         } finally {
+            setIsRefreshing(false);
             setLoading(false);
-            setCountdown(10);
-        }
-    }, []);
-
-    const fetchGeminiHealth = useCallback(async () => {
-        try {
-            const res = await fetch(`${config.workflowService}/api/health/gemini`);
-            const data: GeminiHealthData = await res.json();
-            setGeminiHealth(data);
-            setGeminiLastUpdated(new Date());
-        } catch {
-            setGeminiHealth({ status: 'error', message: 'Could not reach Gemini health API' });
-            setGeminiLastUpdated(new Date());
-        }
-    }, []);
-
-    const fetchLastExecutions = useCallback(async () => {
-        try {
-            const res = await fetch(`${config.workflowService}/api/orient/last-executions`);
-            const json = await res.json();
-            if (json.success && json.data) {
-                setLastExecutions(json.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch last executions', error);
+            setCountdown(20);
         }
     }, []);
 
     const handleRefreshAll = useCallback(() => {
-        fetchHealth();
-        fetchGeminiHealth();
-        fetchLastExecutions();
-    }, [fetchHealth, fetchGeminiHealth, fetchLastExecutions]);
+        fetchAllDetails(true);
+    }, [fetchAllDetails]);
 
     useEffect(() => {
-        fetchHealth();
-        fetchGeminiHealth();
-        fetchLastExecutions();
-        intervalRef.current = setInterval(fetchHealth, 10000);
-        geminiIntervalRef.current = setInterval(fetchGeminiHealth, 60000);
-        lastExecutionsIntervalRef.current = setInterval(fetchLastExecutions, 10000);
-        countdownRef.current = setInterval(() => setCountdown(p => (p <= 1 ? 10 : p - 1)), 1000);
+        fetchAllDetails(false);
+        intervalRef.current = setInterval(() => fetchAllDetails(false), 20000);
+        countdownRef.current = setInterval(() => setCountdown(p => (p <= 1 ? 20 : p - 1)), 1000);
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
-            if (geminiIntervalRef.current) clearInterval(geminiIntervalRef.current);
-            if (lastExecutionsIntervalRef.current) clearInterval(lastExecutionsIntervalRef.current);
             if (countdownRef.current) clearInterval(countdownRef.current);
         };
-    }, [fetchHealth, fetchGeminiHealth, fetchLastExecutions]);
+    }, [fetchAllDetails]);
 
     const serverStatus = health?.status ?? 'fetching';
     const geminiStatus = geminiHealth?.status ?? 'fetching';
+    const maraekatStatus = maraekatHealth?.status ?? 'fetching';
     const dbStatus = health?.database?.status ?? 'fetching';
     const isOnline = serverStatus === 'ok';
 
     return (
-        <div
-            style={{
-                minHeight: '100vh',
-                backgroundColor: '#f8fafc',
-                color: '#1e293b',
-                fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-                display: 'flex',
-                flexDirection: 'column',
-                width: '100%'
-            }}
-        >
+        <div className="min-h-screen bg-slate-50 text-slate-800 font-[Inter,system-ui,-apple-system,sans-serif] flex flex-col w-full">
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-                @keyframes ping { 75%,100%{transform:scale(2.2);opacity:0} }
-                @keyframes spin { to{transform:rotate(360deg)} }
                 @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
                 .ss-in { animation: fadeUp 0.35s ease both; }
-                .ss-back:hover { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
-                .ss-refresh:hover { background: #ede9fe !important; color: #4f46e5 !important; }
-                .ss-card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
-                .ss-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08) !important; transform: translateY(-2px); }
             `}</style>
 
             {/* ── Header ── */}
-            <header
-                style={{
-                    background: '#ffffff',
-                    borderBottom: '1px solid #e2e8f0',
-                    padding: '0 20px',
-                    height: 64,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 100,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                    width: '100%',
-                    boxSizing: 'border-box'
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <header className="bg-white border-b border-slate-200 px-5 py-2 h-16 flex items-center justify-between sticky top-0 z-[100] shadow-sm w-full box-border">
+                <div className="flex items-center gap-4">
                     <button
-                        className="ss-back"
                         onClick={() => navigate(-1)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            background: '#f8fafc',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: 8,
-                            color: '#64748b',
-                            cursor: 'pointer',
-                            padding: '10px 14px',
-                            fontSize: 13,
-                            fontWeight: 500,
-                            transition: 'all 0.15s'
-                        }}
+                        className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 cursor-pointer px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150 hover:bg-slate-100 hover:border-slate-300"
                     >
                         <ArrowLeft size={14} />
                     </button>
 
-                    <div style={{ width: 1, height: 24, background: '#e2e8f0' }} />
+                    <div className="w-px h-6 bg-slate-200" />
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div
-                            style={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: 9,
-                                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: '0 2px 8px rgba(99,102,241,0.3)'
-                            }}
-                        >
-                            <Activity size={17} color="#fff" />
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-[9px] bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
+                            <Activity size={17} className="text-white" />
                         </div>
                         <div>
-                            <div style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.01em' }}>Service Health</div>
-                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 1 }}>Real-time monitoring</div>
+                            <div className="text-[15px] font-bold text-slate-900 tracking-tight">Service Health</div>
+                            <div className="text-[11px] text-slate-400 mt-px">Real-time monitoring</div>
                         </div>
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    {!loading && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                            <PulseDot status={serverStatus} />
-                            <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{isOnline ? 'All systems operational' : 'Service issues detected'}</span>
-                        </div>
-                    )}
+                <div className="flex items-center gap-3.5">
                     <button
-                        className="ss-refresh"
                         onClick={handleRefreshAll}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            background: '#eef2ff',
-                            border: '1px solid #c7d2fe',
-                            borderRadius: 8,
-                            color: '#6366f1',
-                            cursor: 'pointer',
-                            padding: '7px 16px',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            transition: 'all 0.15s'
-                        }}
+                        disabled={isRefreshing}
+                        className={`flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-500 px-4 py-[7px] text-[13px] font-semibold transition-all duration-150 ${
+                            isRefreshing ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-violet-100 hover:text-indigo-600'
+                        }`}
                     >
-                        <RefreshCw size={13} /> Refresh
+                        <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
                     </button>
                 </div>
             </header>
 
             {/* ── Body ── */}
-            <main style={{ flex: 1, padding: '20px 20px', width: '100%', boxSizing: 'border-box' }}>
+            <main className="flex-1 px-5 py-5 w-full box-border">
                 {loading ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, gap: 16 }}>
-                        <div
-                            style={{
-                                width: 44,
-                                height: 44,
-                                border: '3px solid #e2e8f0',
-                                borderTop: '3px solid #6366f1',
-                                borderRadius: '50%',
-                                animation: 'spin 0.8s linear infinite'
-                            }}
-                        />
-                        <p style={{ color: '#94a3b8', fontSize: 14 }}>Fetching service health…</p>
+                    <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                        <div className="w-11 h-11 border-[3px] border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+                        <p className="text-slate-400 text-sm">Fetching service health…</p>
                     </div>
                 ) : (
                     <>
                         {/* ── Section label ── */}
-                        <div className="ss-in" style={{ marginBottom: 20 }}>
-                            <h2 style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Service Overview</h2>
+                        <div className="ss-in mb-5">
+                            <h2 className="text-[13px] font-semibold text-slate-400 uppercase tracking-wider m-0">Service Overview</h2>
                         </div>
 
                         {/* ── Service Cards ── */}
-                        <div className="ss-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28, animationDelay: '0.05s' }}>
+                        <div className="ss-in grid grid-cols-2 gap-5 mb-7 [animation-delay:0.05s]">
                             <ServiceCard
                                 icon={<Bot size={20} />}
                                 title="Document Extractor Agent"
-                                status={serverStatus}
+                                status={geminiStatus !== 'operational' && geminiStatus !== 'fetching' ? 'error' : serverStatus}
                                 description={
-                                    serverStatus === 'ok'
-                                        ? 'Document extractor agent is running normally with no issues.'
-                                        : serverStatus === 'degraded'
-                                          ? 'Agent is running but experiencing some issues.'
-                                          : serverStatus === 'fetching'
-                                            ? 'Fetching agent status...'
-                                            : (health?.error ?? 'Agent is unreachable.')
+                                    geminiStatus !== 'operational' && geminiStatus !== 'fetching'
+                                        ? 'LLM is not operational so this agent is also not operational.'
+                                        : serverStatus === 'ok'
+                                          ? 'Document extractor agent is running normally with no issues.'
+                                          : serverStatus === 'degraded'
+                                            ? 'Agent is running but experiencing some issues.'
+                                            : serverStatus === 'fetching'
+                                              ? 'Fetching agent status...'
+                                              : (health?.error ?? 'Agent is unreachable.')
                                 }
                                 meta={[
                                     { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
                                     { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> },
-                                    { label: 'Last Extracted At', value: lastExecutions?.documentExtractor || '—', icon: <FileCheck size={12} color="green" /> }
+                                    { label: 'Last Extracted At', value: lastExecutions?.documentExtractor || '—', icon: <FileCheck size={12} className="text-green-600" /> }
                                 ]}
                             />
                             <ServiceCard
                                 icon={<UploadCloud size={20} />}
                                 title="Invoice Upload Agent"
-                                status={serverStatus}
+                                status={geminiStatus !== 'operational' && geminiStatus !== 'fetching' ? 'error' : serverStatus}
                                 description={
-                                    serverStatus === 'ok'
-                                        ? 'Invoice upload agent is running normally with no issues.'
-                                        : serverStatus === 'degraded'
-                                          ? 'Agent is running but experiencing some issues.'
-                                          : serverStatus === 'fetching'
-                                            ? 'Fetching agent status...'
-                                            : (health?.error ?? 'Agent is unreachable.')
+                                    geminiStatus !== 'operational' && geminiStatus !== 'fetching'
+                                        ? 'LLM is not operational so this agent is also not operational.'
+                                        : serverStatus === 'ok'
+                                          ? 'Invoice upload agent is running normally with no issues.'
+                                          : serverStatus === 'degraded'
+                                            ? 'Agent is running but experiencing some issues.'
+                                            : serverStatus === 'fetching'
+                                              ? 'Fetching agent status...'
+                                              : (health?.error ?? 'Agent is unreachable.')
                                 }
                                 meta={[
                                     { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
                                     { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> },
-                                    { label: 'Last Uploaded At', value: lastExecutions?.invoiceUpload || '—', icon: <FileCheck size={12} color="green" /> }
+                                    { label: 'Last Uploaded At', value: lastExecutions?.invoiceUpload || '—', icon: <FileCheck size={12} className="text-green-600" /> }
                                 ]}
                             />
                             <ServiceCard
                                 icon={<Send size={20} />}
                                 title="Maraekat Health"
-                                status={serverStatus}
+                                status={maraekatStatus}
                                 description={
-                                    serverStatus === 'ok'
-                                        ? 'Maraekat is running normally with no issues.'
-                                        : serverStatus === 'degraded'
-                                          ? 'Agent is running but experiencing some issues.'
-                                          : serverStatus === 'fetching'
-                                            ? 'Fetching agent status...'
-                                            : (health?.error ?? 'Agent is unreachable.')
+                                    maraekatHealth?.message ??
+                                    (maraekatStatus === 'operational'
+                                        ? 'Maraekat is reachable and functioning properly.'
+                                        : maraekatStatus === 'degraded'
+                                          ? 'Maraekat is running but experiencing issues.'
+                                          : maraekatStatus === 'fetching'
+                                            ? 'Fetching Maraekat status...'
+                                            : 'Maraekat is unreachable.')
                                 }
                                 meta={[
-                                    { label: 'Uptime', value: health?.uptime ? formatUptime(health.uptime) : '—', icon: <Clock size={12} /> },
                                     { label: 'Checked', value: lastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> },
-                                    { label: 'Last Submitted At', value: lastExecutions?.submitOrder || '—', icon: <FileCheck size={12} color="green" /> }
+                                    { label: 'Source', value: 'Real-time API', icon: <Wifi size={12} /> },
+
+                                    { label: 'Last Submitted At', value: lastExecutions?.submitOrder || '—', icon: <FileCheck size={12} className="text-green-600" /> }
                                 ]}
                             />
                             <ServiceCard
@@ -448,135 +402,128 @@ const ServerStatusPage: React.FC = () => {
                             />
                         </div>
 
-                        {/* ── Metrics ── */}
-                        <div className="ss-in" style={{ marginBottom: 12, animationDelay: '0.1s' }}>
-                            <h2 style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>System Metrics</h2>
+                        {/* ── Detailed Metrics ── */}
+                        <div className="ss-in mb-3 [animation-delay:0.1s]">
+                            <h2 className="text-[13px] font-semibold text-slate-400 uppercase tracking-wider m-0 mb-4">Detailed System Metrics</h2>
                         </div>
-                        <div className="ss-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 32, animationDelay: '0.15s' }}>
-                            <MetricTile
-                                icon={<Database size={18} color="#6366f1" />}
-                                label="Database"
-                                accentColor="#6366f1"
-                                value={<StatusPill status={dbStatus} />}
-                                sub={health?.database?.responseTime ? `${health.database.responseTime}ms response` : (health?.database?.message ?? '—')}
-                            />
-                            <MetricTile
-                                icon={<Cpu size={18} color="#8b5cf6" />}
-                                label="Heap Used"
-                                accentColor="#8b5cf6"
-                                value={<span style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{health?.memory?.heapUsed ?? '—'}</span>}
-                                sub={`of ${health?.memory?.heapTotal ?? '—'} total`}
-                            />
-                            <MetricTile
-                                icon={<MemoryStick size={18} color="#0891b2" />}
-                                label="RSS Memory"
-                                accentColor="#0891b2"
-                                value={<span style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{health?.memory?.rss ?? '—'}</span>}
-                                sub="Resident Set Size"
-                            />
-                            <MetricTile
-                                icon={<Clock size={18} color="#f59e0b" />}
-                                label="Uptime"
-                                accentColor="#f59e0b"
-                                value={<span style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>{health?.uptime ? formatUptime(health.uptime) : '—'}</span>}
-                                sub={health?.timestamp && health?.uptime ? `Since ${new Date(new Date(health.timestamp).getTime() - health.uptime * 1000).toLocaleString()}` : '—'}
-                            />
-                        </div>
+                        <div className="ss-in grid grid-cols-3 gap-5 mb-8 [animation-delay:0.15s]">
+                            <MetricCard title="CPU" icon={<Cpu size={16} />}>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Usage</span>
+                                    <span className="font-semibold">{cpu?.usage ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Cores</span>
+                                    <span className="font-semibold">{cpu?.cores ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1">
+                                    <span className="text-slate-500">Load Average</span>
+                                    <span className="font-semibold">{cpu?.loadAverage?.join(', ') ?? '—'}</span>
+                                </div>
+                            </MetricCard>
 
-                        {/* ── Poll History ── */}
-                        {/* {history.length > 0 && (
-                            <>
-                                <div className="ss-in" style={{ marginBottom: 16, animationDelay: '0.2s' }}>
-                                    <h2 style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-                                        Poll History
-                                    </h2>
+                            <MetricCard title="Memory" icon={<MemoryStick size={16} />}>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Heap Used</span>
+                                    <span className="font-semibold">
+                                        {memory?.heapUsed ?? '—'} / {memory?.heapTotal ?? '—'}
+                                    </span>
                                 </div>
-                                <div className="ss-in" style={{
-                                    background: '#ffffff', border: '1px solid #e2e8f0',
-                                    borderRadius: 16, padding: '24px 28px',
-                                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                                    animationDelay: '0.25s',
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <BarChart2 size={16} color="#6366f1" />
-                                            <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>Check History</span>
-                                        </div>
-                                        <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
-                                            Last {history.length} polls · every 10s
-                                        </span>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 56 }}>
-                                        {[...history].reverse().map((h, i) => {
-                                            const c = statusColor(h.status);
-                                            const opacity = 0.25 + (i / history.length) * 0.75;
-                                            return (
-                                                <div
-                                                    key={i}
-                                                    title={`${h.ts.toLocaleTimeString()} — ${statusLabel(h.status)}`}
-                                                    style={{
-                                                        flex: 1, minWidth: 6, borderRadius: 4,
-                                                        height: '100%', backgroundColor: c.dot,
-                                                        opacity, transition: 'opacity 0.2s', cursor: 'default',
-                                                    }}
-                                                />
-                                            );
-                                        })}
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-                                        <span style={{ fontSize: 10, color: '#cbd5e1', fontWeight: 500 }}>Oldest</span>
-                                        <span style={{ fontSize: 10, color: '#cbd5e1', fontWeight: 500 }}>Latest</span>
-                                    </div>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">RSS / Ext</span>
+                                    <span className="font-semibold">
+                                        {memory?.rss ?? '—'} / {memory?.external ?? '—'}
+                                    </span>
                                 </div>
-                            </>
-                        )} */}
+                                <div className="flex justify-between py-1">
+                                    <span className="text-slate-500">System</span>
+                                    <span className="font-semibold">
+                                        {memory?.systemUsed ?? '—'} / {memory?.systemTotal ?? '—'}
+                                    </span>
+                                </div>
+                            </MetricCard>
+
+                            <MetricCard title="Event Loop" icon={<Activity size={16} />}>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Status</span>
+                                    <span className="font-semibold">{eventLoop?.status ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1">
+                                    <span className="text-slate-500">Delay</span>
+                                    <span className="font-semibold">{eventLoop?.delay ?? '—'}</span>
+                                </div>
+                            </MetricCard>
+
+                            <MetricCard title="Database" icon={<Database size={16} />}>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Status</span>
+                                    <span className="font-semibold">{database?.status ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Response</span>
+                                    <span className="font-semibold">{database?.responseTime ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1">
+                                    <span className="text-slate-500">Connections</span>
+                                    <span className="font-semibold">
+                                        {database?.connections ?? '—'} / {database?.maxConnections ?? '—'}
+                                    </span>
+                                </div>
+                            </MetricCard>
+
+                            <MetricCard title="Redis" icon={<HardDrive size={16} />}>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Status</span>
+                                    <span className="font-semibold">{redis?.status ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Response</span>
+                                    <span className="font-semibold">{redis?.responseTime ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1">
+                                    <span className="text-slate-500">Memory</span>
+                                    <span className="font-semibold">{redis?.memory ?? '—'}</span>
+                                </div>
+                            </MetricCard>
+
+                            <MetricCard title="Queue" icon={<Layers size={16} />}>
+                                <div className="flex justify-between py-1 border-b border-slate-100">
+                                    <span className="text-slate-500">Waiting</span>
+                                    <span className="font-semibold">{queue?.waiting ?? '—'}</span>
+                                </div>
+                                <div className="flex justify-between py-1">
+                                    <span className="text-slate-500">Active</span>
+                                    <span className="font-semibold">{queue?.active ?? '—'}</span>
+                                </div>
+                            </MetricCard>
+                        </div>
                     </>
                 )}
             </main>
 
             {/* ── Footer ── */}
-            <footer
-                style={{
-                    background: '#ffffff',
-                    borderTop: '1px solid #e2e8f0',
-                    padding: '14px 40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    boxSizing: 'border-box'
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: '#64748b' }}>
+            <footer className="bg-white border-t border-slate-200 px-10 py-3.5 flex items-center justify-between w-full box-border sticky bottom-0 z-[100]">
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     {isOnline ? (
                         <>
-                            <Wifi size={13} color="#22c55e" />
+                            <Wifi size={13} className="text-green-500" />
                             <span>
-                                Connected to <strong style={{ color: '#475569' }}>{config.workflowService}</strong>
+                                Connected to <strong className="text-slate-600">{config.workflowService}</strong>
                             </span>
                         </>
                     ) : (
                         <>
-                            <WifiOff size={13} color="#ef4444" />
+                            <WifiOff size={13} className="text-red-500" />
                             <span>
-                                Cannot reach <strong style={{ color: '#475569' }}>{config.workflowService}</strong>
+                                Cannot reach <strong className="text-slate-600">{config.workflowService}</strong>
                             </span>
                         </>
                     )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: '#94a3b8' }}>
-                    <span
-                        style={{
-                            display: 'inline-block',
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            background: '#6366f1',
-                            animation: 'ping 1.6s ease-in-out infinite'
-                        }}
-                    />
-                    Auto-refreshing in <strong style={{ color: '#6366f1', marginLeft: 2 }}>{countdown}s</strong>
-                    {lastUpdated && <span style={{ color: '#cbd5e1', marginLeft: 10 }}>· Updated {lastUpdated.toLocaleTimeString()}</span>}
+                <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+                    Auto-refreshing in <strong className="text-indigo-500 ml-0.5">{countdown}s</strong>
+                    {lastUpdated && <span className="text-slate-300 ml-2.5">· Updated {lastUpdated.toLocaleTimeString()}</span>}
                 </div>
             </footer>
         </div>
@@ -598,52 +545,30 @@ const ServiceCard: React.FC<{
     description: string;
     meta?: MetaItem[];
 }> = ({ icon, title, status, description, meta }) => {
-    const c = statusColor(status);
+    const c = statusClasses(status);
     return (
         <div
-            className="ss-card"
-            style={{
-                background: '#ffffff',
-                borderRadius: 16,
-                padding: '24px 28px',
-                border: '1px solid #e2e8f0',
-                borderLeft: `4px solid ${c.dot}`,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
-            }}
+            className={`bg-white rounded-2xl px-7 py-6 border border-slate-200 shadow-sm transition-shadow transition-transform duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-4 ${c.dot.replace('bg-', 'border-l-')}`}
         >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div
-                        style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 12,
-                            background: c.light,
-                            border: `1px solid ${c.border}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: c.text
-                        }}
-                    >
-                        {icon}
-                    </div>
+            <div className="flex items-start justify-between mb-3.5">
+                <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-xl border flex items-center justify-center ${c.light} ${c.border} ${c.text}`}>{icon}</div>
                     <div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>{title}</div>
+                        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">{title}</div>
                         <StatusPill status={status} />
                     </div>
                 </div>
                 <PulseDot status={status} />
             </div>
 
-            <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.65, margin: '0 0 16px' }}>{description}</p>
+            <p className="text-[13px] text-slate-500 leading-relaxed mb-4">{description}</p>
 
             {meta && meta.length > 0 && (
-                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', paddingTop: 14, borderTop: '1px solid #f1f5f9' }}>
+                <div className="flex gap-5 flex-wrap pt-3.5 border-t border-slate-100">
                     {meta.map((m, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#64748b' }}>
-                            <span style={{ color: '#94a3b8' }}>{m.icon}</span>
-                            {m.label}:&nbsp;<strong style={{ color: '#334155' }}>{m.value}</strong>
+                        <div key={i} className="flex items-center gap-1.5 text-xs text-slate-500">
+                            <span className="text-slate-400">{m.icon}</span>
+                            {m.label}:&nbsp;<strong className="text-slate-700">{m.value}</strong>
                         </div>
                     ))}
                 </div>
@@ -652,32 +577,14 @@ const ServiceCard: React.FC<{
     );
 };
 
-// ── MetricTile ────────────────────────────────────────────────────────────────
+// ── MetricCard ────────────────────────────────────────────────────────────────
 
-const MetricTile: React.FC<{
-    icon: React.ReactNode;
-    label: string;
-    value: React.ReactNode;
-    sub?: string;
-    accentColor: string;
-}> = ({ icon, label, value, sub, accentColor }) => (
-    <div
-        className="ss-card"
-        style={{
-            background: '#ffffff',
-            borderRadius: 14,
-            padding: '20px 22px',
-            border: '1px solid #e2e8f0',
-            borderTop: `3px solid ${accentColor}`,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
-        }}
-    >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-            {icon}
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</span>
+const MetricCard: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
+    <div className="bg-white rounded-[14px] px-6 py-5 border border-slate-200 shadow-sm transition-shadow transition-transform duration-200 hover:shadow-lg hover:-translate-y-0.5 border-t-[3px] border-t-indigo-500">
+        <div className="flex items-center gap-2 mb-4 text-[13px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-indigo-500">{icon}</span> {title}
         </div>
-        <div style={{ marginBottom: sub ? 6 : 0 }}>{value}</div>
-        {sub && <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.5 }}>{sub}</div>}
+        <div className="text-[13px] text-slate-600 space-y-2">{children}</div>
     </div>
 );
 
