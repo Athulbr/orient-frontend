@@ -256,7 +256,7 @@ const ServerStatusPage: React.FC = () => {
                 style={{
                     background: '#ffffff',
                     borderBottom: '1px solid #e2e8f0',
-                    padding: '0 40px',
+                    padding: '0 20px',
                     height: 64,
                     display: 'flex',
                     alignItems: 'center',
@@ -282,13 +282,13 @@ const ServerStatusPage: React.FC = () => {
                             borderRadius: 8,
                             color: '#64748b',
                             cursor: 'pointer',
-                            padding: '6px 14px',
+                            padding: '10px 14px',
                             fontSize: 13,
                             fontWeight: 500,
                             transition: 'all 0.15s'
                         }}
                     >
-                        <ArrowLeft size={14} /> Back
+                        <ArrowLeft size={14} />
                     </button>
 
                     <div style={{ width: 1, height: 24, background: '#e2e8f0' }} />
@@ -410,11 +410,11 @@ const ServerStatusPage: React.FC = () => {
                             />
                             <ServiceCard
                                 icon={<Send size={20} />}
-                                title="Maraekat Submit Order Agent"
+                                title="Maraekat Health"
                                 status={serverStatus}
                                 description={
                                     serverStatus === 'ok'
-                                        ? 'Maraekat Submit Order Agent is running normally with no issues.'
+                                        ? 'Maraekat is running normally with no issues.'
                                         : serverStatus === 'degraded'
                                           ? 'Agent is running but experiencing some issues.'
                                           : serverStatus === 'fetching'
@@ -442,7 +442,7 @@ const ServerStatusPage: React.FC = () => {
                                             : 'Gemini AI service status could not be determined.')
                                 }
                                 meta={[
-                                    { label: 'Source', value: geminiHealth?.source === 'redis' ? 'Real-time API.' : 'Real-time API', icon: <Wifi size={12} /> },
+                                    { label: 'Source', value: geminiHealth?.source === 'redis' ? 'Real-time API' : 'Real-time API', icon: <Wifi size={12} /> },
                                     { label: 'Checked', value: geminiLastUpdated?.toLocaleTimeString() ?? '—', icon: <RefreshCw size={12} /> }
                                 ]}
                             />
