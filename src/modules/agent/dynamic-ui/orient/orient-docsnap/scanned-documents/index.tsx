@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-    Loader2,
-    AlertCircle,
-    Filter,
-    ChevronLeft,
-    ChevronRight,
-    ChevronsLeft,
-    ChevronsRight
-} from 'lucide-react';
+import { Loader2, AlertCircle, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useScannedDocuments } from './useScannedDocuments';
 import ScannedDocumentsHeader from './ScannedDocumentsHeader';
 import ScannedDocumentCard from './ScannedDocumentCard';
@@ -45,17 +37,8 @@ const ScannedDocuments: React.FC = () => {
         isExporting
     } = useScannedDocuments();
 
-    React.useEffect(() => {
-        const intervalId = setInterval(() => {
-            fetchDocuments(true);
-        }, 30000);
-
-        return () => clearInterval(intervalId);
-    }, [fetchDocuments]);
-
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] h-full flex-1 w-full bg-gray-50 flex flex-col">
-
             {/* ── Header / Filter bar ─────────────────────────────── */}
             <ScannedDocumentsHeader
                 documentCount={documents.length}
@@ -108,7 +91,12 @@ const ScannedDocuments: React.FC = () => {
                         <span className="px-3 py-1 text-xs font-semibold text-gray-600">
                             Page {currentPage} of {totalPages}
                         </span>
-                        <PaginationButton onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} icon={<ChevronRight size={15} />} title="Next page" />
+                        <PaginationButton
+                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages}
+                            icon={<ChevronRight size={15} />}
+                            title="Next page"
+                        />
                         <PaginationButton onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} icon={<ChevronsRight size={15} />} title="Last page" />
                     </div>
                 </div>
@@ -131,10 +119,7 @@ const ErrorState: React.FC<{ message: string; onRetry: () => void }> = ({ messag
         <AlertCircle size={28} />
         <p className="font-semibold">Failed to load documents</p>
         <p className="text-sm text-red-500">{message}</p>
-        <button
-            onClick={onRetry}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer"
-        >
+        <button onClick={onRetry} className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer">
             Retry
         </button>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Activity,
@@ -165,7 +165,6 @@ const ServerStatusPage: React.FC = () => {
     const [health, setHealth] = useState<HealthData | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-    const [countdown, setCountdown] = useState(20);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [geminiHealth, setGeminiHealth] = useState<GeminiHealthData | null>(null);
     const [maraekatHealth, setMaraekatHealth] = useState<MaraekatHealthData | null>(null);
@@ -178,8 +177,6 @@ const ServerStatusPage: React.FC = () => {
     const [geminiLastUpdated, setGeminiLastUpdated] = useState<Date | null>(null);
     const [lastExecutions, setLastExecutions] = useState<LastExecutions | null>(null);
     const [history, setHistory] = useState<HistoryEntry[]>([]);
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const fetchAllDetails = useCallback(async (refresh = false) => {
         setIsRefreshing(true);
@@ -233,7 +230,6 @@ const ServerStatusPage: React.FC = () => {
         } finally {
             setIsRefreshing(false);
             setLoading(false);
-            setCountdown(20);
         }
     }, []);
 
@@ -243,12 +239,6 @@ const ServerStatusPage: React.FC = () => {
 
     useEffect(() => {
         fetchAllDetails(false);
-        intervalRef.current = setInterval(() => fetchAllDetails(false), 20000);
-        countdownRef.current = setInterval(() => setCountdown(p => (p <= 1 ? 20 : p - 1)), 1000);
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-            if (countdownRef.current) clearInterval(countdownRef.current);
-        };
     }, [fetchAllDetails]);
 
     const serverStatus = health?.status ?? 'fetching';
@@ -521,9 +511,7 @@ const ServerStatusPage: React.FC = () => {
                     )}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                    <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
-                    Auto-refreshing in <strong className="text-indigo-500 ml-0.5">{countdown}s</strong>
-                    {lastUpdated && <span className="text-slate-300 ml-2.5">· Updated {lastUpdated.toLocaleTimeString()}</span>}
+                    {lastUpdated && <span>Updated {lastUpdated.toLocaleTimeString()}</span>}
                 </div>
             </footer>
         </div>
