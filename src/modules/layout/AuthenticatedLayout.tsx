@@ -24,7 +24,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
     };
     const updateUserSettingsHandler = async () => {};
 
-    const agentRoute = location.pathname.includes('agent') || location.pathname.includes('reconcilation');
+    const agentRoute = location.pathname.includes('agent') || location.pathname.includes('reconcilation') || location.pathname.includes('ardex');
 
     useEffect(() => {
         updateRolePermission();
@@ -38,7 +38,9 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         };
 
         let lastUserActivityTime = Date.now();
-        const updateActivity = () => { lastUserActivityTime = Date.now(); };
+        const updateActivity = () => {
+            lastUserActivityTime = Date.now();
+        };
         window.addEventListener('mousemove', updateActivity);
         window.addEventListener('keydown', updateActivity);
         window.addEventListener('click', updateActivity);
@@ -70,9 +72,9 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
 
             const makezSessionLimitMs = config.sessionTTLSeconds * 1000;
             const elapsedMs = Date.now() - parseInt(loginTime, 10);
-            
+
             // Check if user was actively interacting with Makez during the local timeout window
-            const isUserActiveLocally = (Date.now() - lastUserActivityTime) < makezSessionLimitMs;
+            const isUserActiveLocally = Date.now() - lastUserActivityTime < makezSessionLimitMs;
 
             // Just before expiry of makez session, OR if forced by a visibility change ping
             if ((forceCheck || elapsedMs >= makezSessionLimitMs - 15000) && config.usePhpSessionApi) {
@@ -80,17 +82,17 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
                     const orientClientId = window.sessionStorage.getItem('orientClientId') || '';
                     const currentUser = JSON.parse(window.sessionStorage.getItem('user') || '{}');
                     const userEmail = currentUser.email || '';
-                    
+
                     // Ping Orient to retrieve session status dynamically mapping Orient architecture
                     const baseUrl = config.orientSessionApi || 'http://localhost:8085/auth/session-status.php';
                     const url = `${baseUrl}?client_id=${orientClientId}`;
-                    
+
                     console.log('Session Status URL:', url);
                     const res = await fetch(url, {
                         method: 'GET',
                         credentials: 'omit' // No longer strictly need cookies since we explicitly pass session_id
                     });
-                    
+
                     const data = await res.json().catch(() => ({}));
 
                     if (res.ok && data?.active) {
@@ -140,7 +142,7 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
         };
         document.addEventListener('visibilitychange', visibilityHandler);
 
-        // Layer 3: Fallback Poller safety net 
+        // Layer 3: Fallback Poller safety net
         // using 1 second (1000ms) frequency check allowing precise sub-second bounds evaluations flawlessly before actual expiry bounds
         const fallBackPollerId = setInterval(executeSessionCheck, 1000);
 
@@ -164,14 +166,16 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutIF> = ({ children }) => {
                     <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-xl bg-white p-8 text-center shadow-2xl">
                         <div className="mb-2 rounded-full bg-red-100 p-3 text-red-600">
                             <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                />
                             </svg>
                         </div>
                         <h2 className="text-xl font-bold text-slate-800">Session Expired</h2>
-                        <p className="mb-4 text-sm text-slate-600">
-                            Orient Session expired. Please go back to orient and login.
-                        </p>
-                        <button 
+                        <p className="mb-4 text-sm text-slate-600">Orient Session expired. Please go back to orient and login.</p>
+                        <button
                             className="w-full rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
                             onClick={() => {
                                 const isOrientSSO = !!window.sessionStorage.getItem('orientClientId');
