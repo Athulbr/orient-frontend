@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { htmlData } from './data/html';
+import { config } from '../../../config/default';
 
 const dummyCards = Array.from({ length: 15 }).map((_, i) => ({
     id: i,
@@ -20,6 +21,15 @@ const dummyCards = Array.from({ length: 15 }).map((_, i) => ({
 const ArdexReconcillation: React.FC = () => {
     const [leftWidth, setLeftWidth] = useState(25);
     const [selectedCard, setSelectedCard] = useState(dummyCards[0]);
+    const [proposals, setProposals] = useState<any>(null);
+    const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
+    const [dashboardData, setDashboardData] = useState<any>(null);
+    const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
+    const [reconcileData, setReconcileData] = useState<any>(null);
+    const [isReconcileLoading, setIsReconcileLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
 
@@ -53,6 +63,126 @@ const ArdexReconcillation: React.FC = () => {
         };
     }, []);
 
+    const fetchReconcileData = async (propId: string, vendId: string) => {
+        if (!propId || !vendId) return;
+        setIsReconcileLoading(true);
+        try {
+            let token = '';
+            const sessionToken = sessionStorage.getItem('accessToken');
+            if (sessionToken) {
+                try {
+                    token = JSON.parse(sessionToken);
+                } catch {
+                    token = sessionToken;
+                }
+            }
+            if (!token) {
+                token = localStorage.getItem('token') || '';
+            }
+
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const baseUrl = config.nodeApiUrl || 'http://localhost:4000';
+            const url = `${baseUrl}/idp/proposal-line/reconcile/${propId}/${vendId}`;
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers,
+            });
+
+            const result = await response.json();
+            console.log(`Reconcile API (GET /idp/proposal-line/reconcile/${propId}/${vendId}) response:`, result);
+            setReconcileData(result?.data || null);
+        } catch (err: any) {
+            console.error('Error fetching reconcile data:', err);
+        } finally {
+            setIsReconcileLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const fetchProposalAndDashboard = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                let token = '';
+                const sessionToken = sessionStorage.getItem('accessToken');
+                if (sessionToken) {
+                    try {
+                        token = JSON.parse(sessionToken);
+                    } catch {
+                        console.log('Failed to fetch session token');
+                    }
+                }
+                const headers: Record<string, string> = {
+                    'Content-Type': 'application/json',
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const baseUrl = config.nodeApiUrl || 'http://localhost:4000';
+                const postResponse = await fetch(`${baseUrl}/idp/proposal`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ page: 1, pageSize: 10 }),
+                });
+
+                const postData = await postResponse.json();
+                console.log('(POST /idp/proposal) response:', postData);
+                const proposalsList = postData?.data;
+                const proposalId = Array.isArray(proposalsList)
+                    ? proposalsList[0]?._id
+                    : proposalsList?._id;
+
+                if (proposalId) {
+                    setProposals(proposalsList);
+                    setActiveProposalId(proposalId);
+
+                    const getResponse = await fetch(`${baseUrl}/idp/proposal/${proposalId}/dashboard`, {
+                        method: 'GET',
+                        headers,
+                    });
+
+                    const getData = await getResponse.json();
+                    console.log('(GET /idp/proposal/:id/dashboard) response:', getData);
+                    const fetchedVendors = getData?.data?.vendors || [];
+                    setDashboardData(getData?.data || null);
+                    if (fetchedVendors.length > 0) {
+                        const firstVendorId = fetchedVendors[0].vendorId;
+                        setSelectedVendorId(firstVendorId);
+                        // Fetch Reconcile data for the first vendor
+                        fetchReconcileData(proposalId, firstVendorId);
+                    }
+                } else {
+                    console.warn('No proposal ID found in API 1 response');
+                }
+            } catch (err: any) {
+                console.error('Error fetching proposal data:', err);
+                setError(err?.message || 'Failed to fetch proposal data');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProposalAndDashboard();
+    }, []);
+
+    const handleVendorSelect = (vendorId: string) => {
+        setSelectedVendorId(vendorId);
+        if (activeProposalId) {
+            fetchReconcileData(activeProposalId, vendorId);
+        }
+    };
+
+    const vendors = dashboardData?.vendors || [];
+    const selectedVendor = vendors.find((v: any) => v.vendorId === selectedVendorId) || vendors[0];
+
     return (
         <div className="flex flex-col h-full w-full bg-gray-50 overflow-hidden">
             {/* Page Header */}
@@ -72,17 +202,36 @@ const ArdexReconcillation: React.FC = () => {
                 <div style={{ width: `${leftWidth}%` }} className="h-full flex flex-col border-r border-gray-200 bg-white">
                     <div className="p-4 border-b border-gray-200 bg-gray-100 font-semibold text-lg">Reconciliation List</div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                        {dummyCards.map(card => (
-                            <div
-                                key={card.id}
-                                onClick={() => setSelectedCard(card)}
-                                className={`p-4 rounded-lg cursor-pointer border transition-all duration-200 shadow-sm
-                                ${selectedCard.id === card.id ? 'bg-blue-50 border-blue-400 ring-1 ring-blue-400' : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'}`}
-                            >
-                                <h3 className="font-bold text-gray-800">{card.name}</h3>
-                                <p className="text-sm text-gray-500 mt-1">{card.subName}</p>
-                            </div>
-                        ))}
+                        {vendors.length > 0 ? (
+                            vendors.map((vendor: any) => {
+                                const isSelected = selectedVendorId === vendor.vendorId;
+                                return (
+                                    <div
+                                        key={vendor.vendorId || vendor.vendorCode}
+                                        onClick={() => handleVendorSelect(vendor.vendorId)}
+                                        className={`p-4 rounded-lg cursor-pointer border transition-all duration-200 shadow-sm
+                                        ${isSelected ? 'bg-blue-50 border-blue-400 ring-1 ring-blue-400' : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'}`}
+                                    >
+                                        <h3 className="font-bold text-gray-800">{vendor.vendorName}</h3>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {vendor.invoiceCount} {vendor.invoiceCount === 1 ? 'Invoice' : 'Invoices'}
+                                        </p>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            dummyCards.map(card => (
+                                <div
+                                    key={card.id}
+                                    onClick={() => setSelectedCard(card)}
+                                    className={`p-4 rounded-lg cursor-pointer border transition-all duration-200 shadow-sm
+                                    ${selectedCard.id === card.id ? 'bg-blue-50 border-blue-400 ring-1 ring-blue-400' : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'}`}
+                                >
+                                    <h3 className="font-bold text-gray-800">{card.name}</h3>
+                                    <p className="text-sm text-gray-500 mt-1">{card.subName}</p>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -101,7 +250,7 @@ const ArdexReconcillation: React.FC = () => {
                 {/* Right Container */}
                 <div style={{ width: `calc(${100 - leftWidth}% - 8px)` }} className="h-full flex flex-col bg-gray-50">
                     <div className="p-4 border-b border-gray-200 bg-white shadow-sm font-semibold text-lg sticky top-0 z-10 flex items-center justify-between">
-                        <span>Details for {selectedCard.name}</span>
+                        <span>Details for {selectedVendor ? selectedVendor.vendorName : selectedCard.name}</span>
                     </div>
                     <div>
                         <div className="w-full" dangerouslySetInnerHTML={{ __html: htmlData }} />
