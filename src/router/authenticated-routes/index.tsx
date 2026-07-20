@@ -6,6 +6,7 @@ import DocumentCreationEditor from '../../modules/documentCreation/create-docume
 import ContentCreationEditor from '../../modules/content-creation';
 import AgentRoutes from './AgentRoutes';
 import ReconcilationRoutes from './ReconcilationRoutes';
+import ArdexRoutes from './ArdexRoutes';
 
 const ConfigRoutes = lazy(() => import('./config-routes'));
 const DashboardPage = lazy(() => import('../../modules/dashboard'));
@@ -64,6 +65,7 @@ const AuthenticatedRoutes = () => {
         <Suspense fallback={<FullScreenLoader />}>
             <Routes>
                 <Route path="agent/*" element={<AgentRoutes />} />
+                <Route path="ardex/*" element={<ArdexRoutes />} />
                 <Route path="reconcilation/*" element={<ReconcilationRoutes />} />
                 <Route path="docsnap/*" element={<DocSnapRoutes />} />
                 <Route path="data-entry/*" element={<DocSnapRoutes />} />
