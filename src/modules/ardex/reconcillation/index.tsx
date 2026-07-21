@@ -7,7 +7,7 @@ import { Button } from '../../../components/Button';
 import { ArrowRight, ArrowRightLeft, Eye, Upload } from 'lucide-react';
 
 const ArdexReconcillation: React.FC = () => {
-    const [leftWidth, setLeftWidth] = useState(24);
+    const [leftWidth, setLeftWidth] = useState(20);
     const [proposals, setProposals] = useState<any>(null);
     const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
     const [dashboardData, setDashboardData] = useState<any>(null);
