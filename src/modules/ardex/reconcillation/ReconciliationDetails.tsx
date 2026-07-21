@@ -33,7 +33,7 @@ const DataCard = ({
         id={id}
         onMouseEnter={() => compareKey && onHover?.(compareKey)}
         onMouseLeave={() => compareKey && onHover?.(null)}
-        className={`bg-white p-4 rounded-xl shadow-sm flex flex-col gap-2 transition-all duration-300 ${hasBorder ? 'border border-gray-100' : ''} ${isHighlighted ? 'ring-2 ring-indigo-500 shadow-lg scale-[1.02] relative z-10' : ''}`}
+        className={`bg-white px-4 py-3 rounded-xl shadow-sm flex flex-col gap-2 transition-all duration-300 ${hasBorder ? 'border border-gray-100' : ''} ${isHighlighted ? 'ring-2 ring-indigo-500 shadow-lg scale-[1.02] relative z-10' : ''}`}
     >
         <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             {title} {badge && <span className={`ml-1 ${badgeClassName}`}>{badge}</span>}
@@ -97,17 +97,26 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
 
     const { vendor, proposalTable = [], aiVerificationTable = [] } = data;
 
+    const vendorDetails = [
+        { label: 'Code', value: vendor?.vendorCode || '-' },
+        { label: 'Account', value: vendor?.accountNumber || '-', icon: <CreditCard size={14} className="text-indigo-500" />, compareKey: 'accountNumber' },
+        { label: 'Bank', value: vendor?.bankKey || '-', icon: <Landmark size={14} className="text-indigo-500" />, compareKey: 'bankKey' },
+        { label: 'GSTIN', value: vendor?.gstin || '-', compareKey: 'gstin' },
+        { label: 'TDS', value: vendor?.tdsRate ? `${(vendor.tdsRate * 100).toFixed(4)}%` : '-', icon: <Percent size={14} className="text-orange-500" /> },
+        { label: 'CD', value: vendor?.cdRate ? `${(vendor.cdRate * 100).toFixed(2)}%` : '-', icon: <Percent size={14} className="text-rose-500" /> }
+    ];
+
     const selectedProposal = proposalTable?.find((item: any) => item.proposalLineId === selectedInvoiceId) || proposalTable?.[0];
     const selectedAiVerification = aiVerificationTable?.find((item: any) => item.proposalLineId === selectedInvoiceId || item.recordId === selectedInvoiceId) || aiVerificationTable?.[0];
 
     const proposalCards = selectedProposal
         ? [
-              {
-                  title: 'MSME',
-                  badge: 'MASTER',
-                  badgeClassName: 'text-[10px] text-gray-400',
-                  children: vendor?.msme ? 'Yes' : 'No'
-              },
+              //   {
+              //       title: 'MSME',
+              //       badge: 'MASTER',
+              //       badgeClassName: 'text-[10px] text-gray-400',
+              //       children: vendor?.msme ? 'Yes' : 'No'
+              //   },
               {
                   title: 'Invoice No',
                   badge: 'PROPOSAL',
@@ -125,11 +134,14 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   children: selectedProposal.invoiceDate ? new Date(selectedProposal.invoiceDate).toLocaleDateString('en-GB').replace(/\//g, '.') : '-'
               },
               {
-                  title: 'SAP Document No',
+                  title: 'CD Deducted',
                   badge: 'PROPOSAL',
                   badgeClassName: 'text-[8px] text-blue-500',
-                  children: selectedProposal.sapDocumentNo || '-'
+                  id: 'proposal-cdDeducted',
+                  compareKey: 'cdDeducted',
+                  children: selectedProposal.cdDeducted !== undefined ? formatCurrency(selectedProposal.cdDeducted).replace('₹', '').trim() : '0.00'
               },
+
               {
                   title: 'Invoice Gross Value',
                   badge: 'PROPOSAL',
@@ -137,6 +149,12 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   id: 'proposal-grossValue',
                   compareKey: 'grossValue',
                   children: selectedProposal.invoiceValue !== undefined ? formatCurrency(selectedProposal.invoiceValue).replace('₹', '').trim() : '-'
+              },
+              {
+                  title: 'SAP Document No',
+                  badge: 'PROPOSAL',
+                  badgeClassName: 'text-[8px] text-blue-500',
+                  children: selectedProposal.sapDocumentNo || '-'
               },
               {
                   title: 'Agreed Days',
@@ -162,14 +180,7 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   badgeClassName: 'text-[8px] text-blue-500',
                   children: selectedProposal.cdPercentage !== undefined ? `${selectedProposal.cdPercentage}%` : '0%'
               },
-              {
-                  title: 'CD Deducted',
-                  badge: 'PROPOSAL',
-                  badgeClassName: 'text-[8px] text-blue-500',
-                  id: 'proposal-cdDeducted',
-                  compareKey: 'cdDeducted',
-                  children: selectedProposal.cdDeducted !== undefined ? formatCurrency(selectedProposal.cdDeducted).replace('₹', '').trim() : '0.00'
-              },
+
               {
                   title: 'Net Value',
                   badge: 'PROPOSAL',
@@ -189,14 +200,30 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
 
     const aiVerificationCards = selectedAiVerification
         ? [
-              //   {
-              //       title: 'SAP Document No',
-              //       badge: 'PROPOSAL',
-              //       badgeClassName: 'text-[8px] text-blue-500',
-              //       id: 'ai-sapDocumentNo',
-              //       compareKey: 'sapDocumentNo',
-              //       children: selectedAiVerification.sapDocumentNo || '-'
-              //   },
+              {
+                  title: 'Bank Account',
+                  badge: 'INVOICE',
+                  badgeClassName: 'text-[10px] text-gray-400',
+                  id: 'ai-accountNumber',
+                  compareKey: 'accountNumber',
+                  children: vendor?.accountNumber || '-'
+              },
+              {
+                  title: 'Bank IFSC',
+                  badge: 'INVOICE',
+                  badgeClassName: 'text-[10px] text-gray-400',
+                  id: 'ai-bankKey',
+                  compareKey: 'bankKey',
+                  children: vendor?.bankKey || '-'
+              },
+              {
+                  title: 'Vendor GSTIN',
+                  badge: 'INVOICE',
+                  badgeClassName: 'text-[10px] text-gray-400',
+                  id: 'ai-gstin',
+                  compareKey: 'gstin',
+                  children: vendor?.gstin || '-'
+              },
               {
                   title: 'Invoice No',
 
@@ -295,34 +322,6 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                       </>
                   )
               },
-              //   {
-              //       title: 'CD Deducted (f)',
-              //       badge: 'PROPOSAL (-)',
-              //       badgeClassName: 'text-[8px] text-blue-500',
-              //       hasBorder: true,
-              //       id: 'ai-cdDeducted',
-              //       compareKey: 'cdDeducted',
-              //       children: (
-              //           <>
-              //               {selectedAiVerification.cdDeducted !== undefined ? formatCurrency(selectedAiVerification.cdDeducted).replace('₹', '').trim() : '0.00'}
-              //               <span className="text-[11px] text-gray-400 ml-1.5 font-normal">({selectedAiVerification.cdPercentage || 0}%)</span>
-              //           </>
-              //       )
-              //   },
-              {
-                  title: 'Adjustments',
-                  badge: 'INPUT (+/-)',
-                  badgeClassName: 'text-[10px] text-gray-400',
-                  hasBorder: true,
-                  valueClassName: '',
-                  children: (
-                      <input
-                          type="text"
-                          className="w-24 h-8 px-2 text-base font-semibold text-gray-900 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm"
-                          defaultValue={selectedAiVerification.adjustments || 0}
-                      />
-                  )
-              },
               {
                   title: 'Net Value (d-e-f)',
                   badge: 'MATCHED',
@@ -339,29 +338,25 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   )
               },
               {
-                  title: 'Bank Account',
-                  badge: 'INVOICE',
+                  title: 'Adjustments',
+                  badge: 'INPUT (+/-)',
                   badgeClassName: 'text-[10px] text-gray-400',
-                  children: vendor?.accountNumber || '-'
-              },
-              {
-                  title: 'Bank IFSC',
-                  badge: 'INVOICE',
-                  badgeClassName: 'text-[10px] text-gray-400',
-                  children: vendor?.bankKey || '-'
-              },
-              {
-                  title: 'Vendor GSTIN',
-                  badge: 'INVOICE',
-                  badgeClassName: 'text-[10px] text-gray-400',
-                  children: vendor?.gstin || '-'
+                  hasBorder: true,
+                  valueClassName: '',
+                  children: (
+                      <input
+                          type="text"
+                          className="w-24 h-8 px-2 text-base font-semibold text-gray-900 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm"
+                          defaultValue={selectedAiVerification.adjustments || 0}
+                      />
+                  )
               }
           ]
         : [];
 
     return (
         <div className="flex flex-col h-full bg-[#f8fafc] overflow-y-auto w-full">
-            <div ref={containerRef} className="p-3 mx-auto w-full space-y-3 relative">
+            <div ref={containerRef} className="p-3 mx-auto w-full space-y-2 relative">
                 {lineCoords && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none z-50">
                         <path
@@ -393,7 +388,7 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
 
                         {/* Amount */}
                         <div className="flex items-center gap-2 rounded-lg bg-blue-50 border border-blue-100 px-4 py-2 text-right shrink-0">
-                            <p className="text-[11px] uppercase tracking-wide text-gray-500">Total Payable</p>
+                            <p className="text-[11px] uppercase tracking-wide text-gray-500">Total Payable:</p>
 
                             <p className="text-xl font-bold text-blue-700">{formatCurrency(vendor?.vendorPayableAmount)}</p>
                         </div>
@@ -402,39 +397,19 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                     {/* Full Width Info Bar */}
                     <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center justify-around text-sm">
-                            <div className="flex items-center gap-1">
-                                <span className="text-gray-500">Code</span>
-                                <span className="font-semibold text-gray-900">{vendor?.vendorCode || '-'}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <span className="text-gray-500">GSTIN</span>
-                                <span className="font-semibold text-gray-900">{vendor?.gstin || '-'}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <Landmark size={14} className="text-indigo-500" />
-                                <span className="text-gray-500">Bank</span>
-                                <span className="font-semibold text-gray-900">{vendor?.bankKey || '-'}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <CreditCard size={14} className="text-indigo-500" />
-                                <span className="text-gray-500">Account</span>
-                                <span className="font-semibold text-gray-900">{vendor?.accountNumber || '-'}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <Percent size={14} className="text-orange-500" />
-                                <span className="text-gray-500">TDS</span>
-                                <span className="font-semibold text-gray-900">{vendor?.tdsRate ? `${(vendor.tdsRate * 100).toFixed(4)}%` : '-'}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                                <Percent size={14} className="text-rose-500" />
-                                <span className="text-gray-500">CD</span>
-                                <span className="font-semibold text-gray-900">{vendor?.cdRate ? `${(vendor.cdRate * 100).toFixed(2)}%` : '-'}</span>
-                            </div>
+                            {vendorDetails.map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    id={item.compareKey ? `proposal-${item.compareKey}` : undefined}
+                                    className={`flex items-center gap-1 p-1.5 rounded-md transition-colors cursor-default ${hoveredCompareKey === item.compareKey ? 'bg-indigo-50 ring-1 ring-indigo-200' : 'hover:bg-gray-50'}`}
+                                    onMouseEnter={() => item.compareKey && setHoveredCompareKey(item.compareKey)}
+                                    onMouseLeave={() => setHoveredCompareKey(null)}
+                                >
+                                    {item.icon}
+                                    <span className={`text-gray-500 ${hoveredCompareKey === item.compareKey ? 'text-indigo-600' : ''}`}>{item.label}</span>
+                                    <span className={`font-semibold text-gray-900 ${hoveredCompareKey === item.compareKey ? 'text-indigo-900' : ''}`}>{item.value}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
