@@ -425,8 +425,8 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                                 <h3 className="text-md font-bold text-gray-900">Proposal Details</h3>
                             </div>
                             <div className="group relative">
-                                <button className="p-1.5 rounded-md text-sm text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center gap-2">
-                                    View <Eye size={20} />
+                                <button className="py-1 px-2 rounded-md text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors">
+                                    <Eye size={18} />
                                 </button>
                                 <div className="absolute right-0 bottom-full mb-2 w-[740px] max-h-[400px] overflow-auto bg-white rounded-xl shadow-2xl border border-gray-200 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 origin-bottom-right">
                                     <div className="p-4" dangerouslySetInnerHTML={{ __html: htmlData }} />
@@ -453,7 +453,7 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                                 <h3 className="text-md font-bold text-gray-900">AI Verification Details</h3>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button className="p-1 rounded-md text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors">
+                                <button className="py-1 px-2 rounded-md text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors">
                                     <Eye size={18} />
                                 </button>
                                 <button className="px-4 py-1 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md text-sm font-semibold hover:bg-emerald-100 transition-colors">

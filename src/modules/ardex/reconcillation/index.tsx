@@ -208,6 +208,11 @@ const ArdexReconcillation: React.FC = () => {
     );
     const selectedVendor = vendors.find((v: any) => v.vendorId === selectedVendorId) || vendors[0];
 
+    const totalNetValue = reconcileData?.proposalTable?.reduce((sum: number, item: any) => sum + (Number(item.netValue) || 0), 0) || 0;
+    const formattedNetValue = `Rs. ${totalNetValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+    const invoiceCount = reconcileData?.proposalTable?.length || 0;
+    const hasMismatch = reconcileData?.proposalTable?.some((item: any) => item.hasMismatch) || false;
+
     return (
         <div className="flex flex-col h-full w-full bg-gray-50 overflow-hidden p-1 pt-0">
             {/* Page Header */}
@@ -259,7 +264,7 @@ const ArdexReconcillation: React.FC = () => {
                         />
                         <input type="file" accept=".html,.htm" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileUpload} />
                         <Button outlined endIcon={<Upload size={16} />} onClick={() => fileInputRef.current?.click()}>
-                            Upload Proposal
+                            {uploadedProposalUrl ? 'Update' : 'Upload'} Proposal
                         </Button>
                         {uploadedProposalUrl && (
                             <Button outlined endIcon={<Eye size={16} />} onClick={() => window.open(uploadedProposalUrl, '_blank')}>
@@ -386,9 +391,13 @@ const ArdexReconcillation: React.FC = () => {
                     <div className="px-4 py-3 border-t border-gray-200 bg-white shrink-0 flex items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-10">
                         <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600">
                             <span>Net Value to be paid &middot;</span>
-                            <span className="bg-[#fef3c7] text-[#92400e] px-2 py-0.5 rounded border border-[#fde68a] font-bold text-[13px]">Rs. 2,49,569 *</span>
-                            <span className="ml-0.5">across 1 invoice &middot;</span>
-                            <span className="text-[#ea580c] font-bold text-xs tracking-wide">FLAGGED</span>
+                            <span className="bg-[#fef3c7] text-[#92400e] px-2 py-0.5 rounded border border-[#fde68a] font-bold text-[13px]">
+                                {formattedNetValue}{hasMismatch ? ' *' : ''}
+                            </span>
+                            <span className="ml-0.5">
+                                across {invoiceCount} invoice{invoiceCount !== 1 ? 's' : ''} {hasMismatch ? <>&middot;</> : null}
+                            </span>
+                            {hasMismatch && <span className="text-[#ea580c] font-bold text-xs tracking-wide">FLAGGED</span>}
                         </div>
                         <Button small endIcon={<ArrowRight size={16} />} outlined>
                             Summary
