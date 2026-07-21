@@ -774,7 +774,7 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
     useEffect(() => {
         if (!isCreate && id) {
             setIsLoadingTemplate(true);
-            httpRequest('GET', `${config.workflowService}/api/agent-templates/${id}`)
+            httpRequest('GET', `${config.workflowService}/workflow/agent-templates/${id}`)
                 .then((res: any) => {
                     if (res?.success && res.template) {
                         const t = res.template;
@@ -947,9 +947,9 @@ export default function TemplateBuilder({ isCreate }: { isCreate?: boolean }) {
             const payload = { name: templateName, settings, sections };
             let res: any;
             if (isCreate) {
-                res = await httpRequest('POST', `${config.workflowService}/api/agent-templates`, payload);
+                res = await httpRequest('POST', `${config.workflowService}/workflow/agent-templates`, payload);
             } else if (id) {
-                res = await httpRequest('PATCH', `${config.workflowService}/api/agent-templates/${id}`, payload);
+                res = await httpRequest('PATCH', `${config.workflowService}/workflow/agent-templates/${id}`, payload);
             }
             if (res?.template?.updatedAt) {
                 setUpdatedAt(res.template.updatedAt);

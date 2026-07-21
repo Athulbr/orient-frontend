@@ -81,7 +81,7 @@ const SubmitOrder: React.FC<SubmitOrderProps> = ({ order, extractedData, onOrder
             try {
                 const emailCheckController = new AbortController();
                 const emailCheckTimeoutId = setTimeout(() => emailCheckController.abort(), 3000);
-                const res = await fetch(`${config.workflowService}/api/orders/check-email?email=${encodeURIComponent(userEmail)}`, {
+                const res = await fetch(`${config.workflowService}/workflow/orders/check-email?email=${encodeURIComponent(userEmail)}`, {
                     signal: emailCheckController.signal
                 });
                 clearTimeout(emailCheckTimeoutId);

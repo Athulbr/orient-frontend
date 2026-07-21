@@ -41,7 +41,7 @@ const ImportDialogComponent: React.FC<ImportDialogComponentProps> = ({ isOpen, o
                 sections: parsedData.sections || []
             };
 
-            const response: any = await httpRequest('POST', `${config.workflowService}/api/agent-templates`, payload);
+            const response: any = await httpRequest('POST', `${config.workflowService}/workflow/agent-templates`, payload);
 
             if (response?.success) {
                 toast.success('Template imported successfully');

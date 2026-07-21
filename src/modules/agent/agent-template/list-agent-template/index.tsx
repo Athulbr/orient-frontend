@@ -46,7 +46,7 @@ const ListAgentTemplatePage = () => {
         setIsLoading(true);
         setError('');
         try {
-            const response: any = await httpRequest('GET', `${config.workflowService}/api/agent-templates`);
+            const response: any = await httpRequest('GET', `${config.workflowService}/workflow/agent-templates`);
             if (response?.success && response.templates) {
                 setTemplates(response.templates);
             } else {
@@ -70,7 +70,7 @@ const ListAgentTemplatePage = () => {
 
         setDeletingId(id);
         try {
-            await httpRequest('DELETE', `${config.workflowService}/api/agent-templates/${id}`);
+            await httpRequest('DELETE', `${config.workflowService}/workflow/agent-templates/${id}`);
             setTemplates(prev => prev.filter(t => t._id !== id));
             toast.success('Template deleted successfully');
         } catch (err) {
@@ -85,7 +85,7 @@ const ListAgentTemplatePage = () => {
         e.stopPropagation();
         setExportingId(id);
         try {
-            const response: any = await httpRequest('GET', `${config.workflowService}/api/agent-templates/${id}`);
+            const response: any = await httpRequest('GET', `${config.workflowService}/workflow/agent-templates/${id}`);
             if (response?.success && response.template) {
                 const data = {
                     name: response.template.name,

@@ -181,7 +181,7 @@ const ServerStatusPage: React.FC = () => {
     const fetchAllDetails = useCallback(async (refresh = false) => {
         setIsRefreshing(true);
         try {
-            const res = await fetch(`${config.workflowService}/api/health/details${refresh ? '?refresh=true' : ''}`);
+            const res = await fetch(`${config.workflowService}/workflow/health/details${refresh ? '?refresh=true' : ''}`);
             const data = await res.json();
 
             // Set health
@@ -510,9 +510,7 @@ const ServerStatusPage: React.FC = () => {
                         </>
                     )}
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                    {lastUpdated && <span>Updated {lastUpdated.toLocaleTimeString()}</span>}
-                </div>
+                <div className="flex items-center gap-1.5 text-xs text-slate-400">{lastUpdated && <span>Updated {lastUpdated.toLocaleTimeString()}</span>}</div>
             </footer>
         </div>
     );

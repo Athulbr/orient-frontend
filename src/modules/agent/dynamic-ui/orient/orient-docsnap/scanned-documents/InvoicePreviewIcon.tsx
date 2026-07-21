@@ -19,15 +19,15 @@ const ZoomableImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => 
     };
 
     return (
-        <div 
+        <div
             className="flex-1 h-full w-full bg-gray-100 flex items-center justify-center overflow-hidden relative cursor-zoom-in"
             onMouseEnter={() => setIsZoomed(true)}
             onMouseLeave={() => setIsZoomed(false)}
             onMouseMove={handleMouseMove}
         >
-            <img 
-                src={src} 
-                alt={alt} 
+            <img
+                src={src}
+                alt={alt}
                 className="w-full h-full object-contain transition-transform duration-100 ease-out pointer-events-none"
                 style={{
                     transform: isZoomed ? 'scale(2.5)' : 'scale(1)',
@@ -58,7 +58,7 @@ const InvoicePreviewIcon: React.FC<InvoicePreviewIconProps> = ({ invoicePagePath
         const fetchImage = async () => {
             setLoading(true);
             try {
-                const url = `${config.workflowService}/api/executions/files?path=${encodeURIComponent(invoicePagePath)}`;
+                const url = `${config.workflowService}/workflow/executions/files?path=${encodeURIComponent(invoicePagePath)}`;
                 const token = localStorage.getItem('token');
                 const res = await fetch(url, {
                     headers: {
@@ -105,17 +105,14 @@ const InvoicePreviewIcon: React.FC<InvoicePreviewIconProps> = ({ invoicePagePath
             <FileText size={18} className="text-blue-500" />
 
             {isOpen && invoicePagePath && (
-                <div 
-                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    onClick={handleClose}
-                >
-                    <div 
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+                    <div
                         className="relative bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"
                         style={{ height: '95vh', width: 'max-content', maxWidth: '95vw' }}
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Close button inside the modal */}
-                        <button 
+                        <button
                             className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 transition-colors z-10 cursor-pointer"
                             onClick={handleClose}
                             title="Close Preview"

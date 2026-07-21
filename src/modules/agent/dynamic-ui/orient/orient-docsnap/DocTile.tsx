@@ -42,12 +42,17 @@ export const getPreviewUrl = (url: string) => {
         .split('/')
         .map(seg => encodeURIComponent(seg))
         .join('/');
-    return `${config.workflowService}/api/temp-storage/preview/${encodedPath}?apiKey=${API_KEY}`;
+    return `${config.workflowService}/workflow/temp-storage/preview/${encodedPath}?apiKey=${API_KEY}`;
 };
 
 // ── DocTile Component ─────────────────────────────────────────
 
-const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void; onRemovePage?: (pageIndex: number) => void; orderStatus?: string }> = ({ file, onRemove, onRemovePage, orderStatus }) => {
+const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => void; onRemovePage?: (pageIndex: number) => void; orderStatus?: string }> = ({
+    file,
+    onRemove,
+    onRemovePage,
+    orderStatus
+}) => {
     const [hover, setHover] = useState(false);
     const [preview, setPreview] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
@@ -253,15 +258,14 @@ const DocTile: React.FC<{ file: FileItem & { index?: number }; onRemove?: () => 
                             <button
                                 onClick={e => {
                                     e.stopPropagation();
-                                   
-                                        onRemovePage(currentPage);
-                                        if (currentPage === totalPages - 1 && currentPage > 0) {
-                                            setCurrentPage(currentPage - 1);
-                                        }
-                                        if (totalPages === 1) {
-                                            setPreview(false);
-                                        }
-                                    
+
+                                    onRemovePage(currentPage);
+                                    if (currentPage === totalPages - 1 && currentPage > 0) {
+                                        setCurrentPage(currentPage - 1);
+                                    }
+                                    if (totalPages === 1) {
+                                        setPreview(false);
+                                    }
                                 }}
                                 className="absolute top-14 right-3 w-8 h-8 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center transition-colors"
                                 title="Remove this page"

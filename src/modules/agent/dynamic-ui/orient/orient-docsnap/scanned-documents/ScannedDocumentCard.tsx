@@ -37,7 +37,7 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
         setTimeout(() => setIsPreviewing(false), 3000);
 
         const token = localStorage.getItem('token');
-        const previewUrl = `${config.workflowService}/api/executions/files?path=${encodeURIComponent(doc.path)}`;
+        const previewUrl = `${config.workflowService}/workflow/executions/files?path=${encodeURIComponent(doc.path)}`;
 
         fetch(previewUrl, {
             headers: { Authorization: `Bearer ${token}`, 'x-api-key': API_KEY }

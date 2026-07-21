@@ -35,7 +35,7 @@ const UploadReceipt: React.FC<UploadReceiptProps> = ({ orderNumber, onUploadComp
             files.forEach(file => formData.append('file', file));
 
             try {
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-file-upload`, {
+                const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/orient-file-upload`, {
                     method: 'POST',
                     body: formData
                 });
@@ -61,7 +61,7 @@ const UploadReceipt: React.FC<UploadReceiptProps> = ({ orderNumber, onUploadComp
 
                 setUploadProgress('Processing...');
 
-                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+                const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
                 const eventSource = new EventSource(streamUrl);
 
                 eventSource.onmessage = async event => {

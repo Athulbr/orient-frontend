@@ -41,7 +41,7 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
         // ── Trigger webhook ────────────────────────────────────
         setIsRetrying(true);
         try {
-            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/webhook-upload-scanned-documents-to-maraekat`, {
+            const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/webhook-upload-scanned-documents-to-maraekat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...doc, recordId: doc._id })
@@ -63,7 +63,7 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
             }
 
             // ── Listen on SSE status stream ────────────────────
-            const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+            const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
             const eventSource = new EventSource(streamUrl);
 
             eventSource.onmessage = event => {

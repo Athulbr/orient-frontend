@@ -14,7 +14,7 @@ const RunAgentPage: React.FC = () => {
     useEffect(() => {
         const fetchWorkflow = async () => {
             try {
-                const data = await httpRequest('GET', `${config.workflowService}/api/workflows/name/${name}`);
+                const data = await httpRequest('GET', `${config.workflowService}/workflow/workflows/name/${name}`);
                 setWorkflow(data.data);
             } catch (error) {
                 console.error('Error fetching workflow:', error);

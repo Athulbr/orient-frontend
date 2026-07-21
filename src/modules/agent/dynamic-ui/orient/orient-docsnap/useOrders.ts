@@ -100,7 +100,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     useEffect(() => {
         const fetchEmails = async () => {
             try {
-                const res = await fetch(`${config.workflowService}/api/emails`);
+                const res = await fetch(`${config.workflowService}/workflow/emails`);
                 if (res.ok) {
                     const data = await res.json();
                     setEmails(Array.isArray(data) ? data : (data.data ?? []));
@@ -129,7 +129,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             params.append('page', filters.currentPage.toString());
             params.append('limit', filters.perPage);
 
-            const res = await fetch(`${config.workflowService}/api/orders?${params.toString()}`);
+            const res = await fetch(`${config.workflowService}/workflow/orders?${params.toString()}`);
             if (res.ok) {
                 const responseData = await res.json();
                 if (Array.isArray(responseData)) {
@@ -160,7 +160,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 // Fetch email details to get attachments
                 let email = emailsRef.current.find(e => e.emailId === emailId);
                 if (!email) {
-                    const emailDetailRes = await fetch(`${config.workflowService}/api/emails/${emailId}`);
+                    const emailDetailRes = await fetch(`${config.workflowService}/workflow/emails/${emailId}`);
                     if (!emailDetailRes.ok) throw new Error('Failed to fetch email');
                     email = await emailDetailRes.json();
                     setEmails(prev => [...prev, email!]);
@@ -182,12 +182,12 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                 // Persist: update order emailDocuments + email linked flag
                 const [orderRes, emailRes] = await Promise.all([
-                    fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                    fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ emailDocuments: updatedEmailDocuments })
                     }),
-                    fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                    fetch(`${config.workflowService}/workflow/emails/${emailId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ linked: true })
@@ -221,7 +221,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const handleDeleteOrder = useCallback(
         async (orderNumber: number) => {
             try {
-                const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, { method: 'DELETE' });
+                const res = await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, { method: 'DELETE' });
                 if (!res.ok) {
                     toast.error(`Failed to delete order. Status: ${res.status}`);
                     return;
@@ -256,12 +256,12 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             try {
                 const [orderRes, emailRes] = await Promise.all([
-                    fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                    fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ emailDocuments: updatedEmailDocuments })
                     }),
-                    fetch(`${config.workflowService}/api/emails/${emailId}`, {
+                    fetch(`${config.workflowService}/workflow/emails/${emailId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ linked: false })
@@ -314,7 +314,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     let healthResponseData = null;
                     try {
                         const healthRes = await Promise.race([
-                            fetch(`${config.workflowService}/api/health`),
+                            fetch(`${config.workflowService}/workflow/health`),
                             new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
                         ]);
                         healthResponseData = await healthRes.json();
@@ -337,7 +337,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             }, 10000);
 
             try {
-                const response = await fetch(`${config.workflowService}/api/webhooks/trigger/orient-file-upload`, {
+                const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/orient-file-upload`, {
                     method: 'POST',
                     body: formData,
                     signal: uploadController.signal
@@ -364,7 +364,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     return;
                 }
 
-                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+                const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
                 const eventSource = new EventSource(streamUrl);
 
                 eventSource.onmessage = async event => {
@@ -399,7 +399,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                                         setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
 
-                                        await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                                        await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                                             method: 'PUT',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ manualDocuments: updatedManualDocuments })
@@ -455,7 +455,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
 
             try {
-                const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                const res = await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ manualDocuments: updatedManualDocuments })
@@ -483,7 +483,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, webDocuments: updatedWebDocuments } : o)));
 
             try {
-                const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                const res = await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ webDocuments: updatedWebDocuments })
@@ -511,7 +511,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, emailDocuments: updatedEmailDocuments } : o)));
 
             try {
-                const res = await fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                const res = await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ emailDocuments: updatedEmailDocuments })
@@ -604,7 +604,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         let healthResponseData = null;
                         try {
                             const healthRes = await Promise.race([
-                                fetch(`${config.workflowService}/api/health`),
+                                fetch(`${config.workflowService}/workflow/health`),
                                 new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
                             ]);
                             healthResponseData = await healthRes.json();
@@ -627,7 +627,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 let response;
                 setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
                 try {
-                    response = await fetch(`${config.workflowService}/api/webhooks/trigger/${webhookEndpoint}`, {
+                    response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/${webhookEndpoint}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -678,7 +678,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 const extractionStartTime = Date.now();
 
                 // #8 — apiKey from constant
-                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+                const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
                 const eventSource = new EventSource(streamUrl);
 
                 eventSource.onmessage = event => {
@@ -712,7 +712,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                             }
                                         };
 
-                                        fetch(`${config.workflowService}/api/orders/${orderNumber}`, {
+                                        fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
                                             method: 'PUT',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updateDetails)
@@ -762,7 +762,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const handleCreateOrder = useCallback(
         async (newOrder: Partial<Order>) => {
             try {
-                const response = await fetch(`${config.workflowService}/api/orders`, {
+                const response = await fetch(`${config.workflowService}/workflow/orders`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newOrder)
@@ -787,7 +787,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
     const handleUpdateOrder = useCallback(
         async (updatedOrder: Order) => {
             try {
-                const response = await fetch(`${config.workflowService}/api/orders/${updatedOrder.orderDetails.orderNumber}`, {
+                const response = await fetch(`${config.workflowService}/workflow/orders/${updatedOrder.orderDetails.orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedOrder)

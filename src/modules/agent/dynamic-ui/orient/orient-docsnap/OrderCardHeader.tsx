@@ -125,7 +125,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
         });
 
         try {
-            const response = await fetch(`${config.workflowService}/api/webhooks/trigger/extract-receipt`, {
+            const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/extract-receipt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -157,7 +157,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
             setExtractionProgress('Processing...');
 
             // Listen for SSE events
-            const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+            const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
             const eventSource = new EventSource(streamUrl);
 
             eventSource.onmessage = async event => {
@@ -183,7 +183,7 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                     onOrderUpdate?.(updatedOrder);
 
                                     // Persist to backend
-                                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                    fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                                         method: 'PUT',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ receiptExtractionDetails })
@@ -269,10 +269,26 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                 <div className="flex flex-col items-end gap-3 flex-shrink-0">
                     <div className="flex items-center gap-2">
                         {onEdit && od.orderStatus !== 'submitted' && (
-                            <GBtn colorClass="text-blue-600" borderClass="border-blue-200" hoverClass="hover:bg-blue-50" icon={<Edit size={11} />} label="Edit" onClick={() => onEdit(order)} disabled={isProceeding} />
+                            <GBtn
+                                colorClass="text-blue-600"
+                                borderClass="border-blue-200"
+                                hoverClass="hover:bg-blue-50"
+                                icon={<Edit size={11} />}
+                                label="Edit"
+                                onClick={() => onEdit(order)}
+                                disabled={isProceeding}
+                            />
                         )}
                         {onDelete && od.orderStatus !== 'submitted' && localStorage.getItem('is_developer') === 'true' && (
-                            <GBtn colorClass="text-red-600" borderClass="border-red-200" hoverClass="hover:bg-red-50" icon={<Trash2 size={11} />} label="Delete" onClick={onDelete} disabled={isProceeding} />
+                            <GBtn
+                                colorClass="text-red-600"
+                                borderClass="border-red-200"
+                                hoverClass="hover:bg-red-50"
+                                icon={<Trash2 size={11} />}
+                                label="Delete"
+                                onClick={onDelete}
+                                disabled={isProceeding}
+                            />
                         )}
                     </div>
                     <div className="flex gap-[7px]">
@@ -327,19 +343,19 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                                 pages: receipt.documentPages
                                             }}
                                             onRemove={() => onRemoveReceipt?.(idx)}
-                                            onRemovePage={(pageIndex) => {
+                                            onRemovePage={pageIndex => {
                                                 const updatedReceipts = [...(order.receipts || [])];
                                                 const receiptToUpdate = { ...updatedReceipts[idx] };
                                                 receiptToUpdate.documentPages = [...(receiptToUpdate.documentPages || [])];
                                                 receiptToUpdate.documentPages.splice(pageIndex, 1);
-                                                
+
                                                 if (receiptToUpdate.documentPages.length === 0) {
                                                     onRemoveReceipt?.(idx);
                                                 } else {
                                                     updatedReceipts[idx] = receiptToUpdate;
                                                     const updatedOrder = { ...order, receipts: updatedReceipts };
                                                     onOrderUpdate?.(updatedOrder);
-                                                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                                    fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                                                         method: 'PUT',
                                                         headers: { 'Content-Type': 'application/json' },
                                                         body: JSON.stringify({ receipts: updatedReceipts })

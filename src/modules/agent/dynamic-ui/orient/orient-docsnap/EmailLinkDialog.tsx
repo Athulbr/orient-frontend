@@ -60,7 +60,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
             if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
             if (daysFilter !== null) params.set('days', daysFilter.toString());
 
-            const res = await fetch(`${config.workflowService}/api/emails?${params.toString()}`);
+            const res = await fetch(`${config.workflowService}/workflow/emails?${params.toString()}`);
             if (res.ok) {
                 const json: PaginatedEmailResponse = await res.json();
                 setEmails(json.data ?? []);
@@ -79,7 +79,7 @@ const EmailLinkDialog: React.FC<EmailLinkDialogProps> = ({ onLink }) => {
         if (!confirm('Are you sure you want to delete this email?')) return;
 
         try {
-            const res = await fetch(`${config.workflowService}/api/emails/${emailId}`, {
+            const res = await fetch(`${config.workflowService}/workflow/emails/${emailId}`, {
                 method: 'DELETE'
             });
             if (res.ok) {

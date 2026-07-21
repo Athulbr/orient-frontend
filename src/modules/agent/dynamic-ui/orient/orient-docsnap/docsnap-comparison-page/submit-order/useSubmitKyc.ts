@@ -114,7 +114,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                 let healthResponseData = null;
                 try {
                     const healthRes = await Promise.race([
-                        fetch(`${config.workflowService}/api/health`),
+                        fetch(`${config.workflowService}/workflow/health`),
                         new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
                     ]);
                     healthResponseData = await healthRes.json();
@@ -152,7 +152,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         setIsInitiatingKyc(true);
         let response;
         try {
-            response = await fetch(`${config.workflowService}/api/webhooks/trigger/maraekat-submit`, {
+            response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/maraekat-submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated }),
@@ -193,7 +193,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         // Step 5: Listen to SSE Stream for completion
         try {
             return await new Promise<KycSubmitResult>(resolve => {
-                const streamUrl = `${config.workflowService}/api/executions/${executionId}/status-stream?apiKey=secret1`;
+                const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=secret1`;
                 const eventSource = new EventSource(streamUrl);
 
                 eventSource.onmessage = event => {
@@ -247,7 +247,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                                                 isExtractedDataUpdated: isExtractedDataUpdated
                                             }
                                         };
-                                        fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                        fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                                             method: 'PUT',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updatePayload)

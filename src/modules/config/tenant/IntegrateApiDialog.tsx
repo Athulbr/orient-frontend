@@ -118,14 +118,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ onSaveAuth, savedAuth }) => {
             });
             const result = await response.json();
             if (response.ok) {
-                const token =
-                    result?.token ||
-                    result?.access_token ||
-                    result?.accessToken ||
-                    result?.data?.token ||
-                    result?.data?.access_token ||
-                    result?.data?.accessToken ||
-                    '';
+                const token = result?.token || result?.access_token || result?.accessToken || result?.data?.token || result?.data?.access_token || result?.data?.accessToken || '';
                 setStatus('success');
                 setStatusMessage('JWT authentication successful — token received');
                 onSaveAuth({ method: 'jwt', token });
@@ -196,7 +189,7 @@ const AuthTab: React.FC<AuthTabProps> = ({ onSaveAuth, savedAuth }) => {
 
             {/* JWT fields */}
             <div className={`flex flex-col gap-4 rounded-lg border border-gray-200 bg-gray-50 p-5 ${method !== 'jwt' ? 'hidden' : ''}`}>
-                <Field label="Endpoint URL" value={jwtUrl} onChange={setJwtUrl} placeholder="https://example.com/api/v1/authenticate" />
+                <Field label="Endpoint URL" value={jwtUrl} onChange={setJwtUrl} placeholder="https://example.com/workflow/v1/authenticate" />
                 <Field label="Username" value={username} onChange={setUsername} placeholder="Enter username" />
                 <Field label="Password" value={password} onChange={setPassword} placeholder="Enter password" type="password" />
             </div>
@@ -536,11 +529,12 @@ const PreparePayloadTab: React.FC<PreparePayloadTabProps> = ({ onSave, savedPayl
 
             {/* 3-panel mapping area — always visible */}
             <div className="grid grid-cols-[220px_240px_1fr] gap-3" style={{ height: 360 }}>
-                    {/* Panel 1 — Field list from extractedData */}
-                    <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
-                        <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Fields</div>
-                        <div className="flex-1 divide-y divide-gray-100 overflow-y-auto">
-                            {fieldList.length > 0 ? fieldList.map(field => (
+                {/* Panel 1 — Field list from extractedData */}
+                <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
+                    <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Fields</div>
+                    <div className="flex-1 divide-y divide-gray-100 overflow-y-auto">
+                        {fieldList.length > 0 ? (
+                            fieldList.map(field => (
                                 <button
                                     key={field.path}
                                     type="button"
@@ -555,102 +549,81 @@ const PreparePayloadTab: React.FC<PreparePayloadTabProps> = ({ onSave, savedPayl
                                     style={{ paddingLeft: `${0.75 + field.level * 1}rem` }}
                                 >
                                     <span
-                                        className={[
-                                            'truncate text-xs',
-                                            field.isGroup ? 'font-semibold text-gray-600' : 'text-gray-700',
-                                            mappings[field.path] ? 'text-blue-600' : ''
-                                        ]
+                                        className={['truncate text-xs', field.isGroup ? 'font-semibold text-gray-600' : 'text-gray-700', mappings[field.path] ? 'text-blue-600' : '']
                                             .filter(Boolean)
                                             .join(' ')}
                                     >
                                         {field.label}
-                                        {field.isGroup && (
-                                            <span className="ml-1 text-[9px] text-gray-400">
-                                                [{Array.isArray(getValueAtPath(extractedData, field.path)) ? 'array' : 'object'}]
-                                            </span>
-                                        )}
+                                        {field.isGroup && <span className="ml-1 text-[9px] text-gray-400">[{Array.isArray(getValueAtPath(extractedData, field.path)) ? 'array' : 'object'}]</span>}
                                         {mappings[field.path] && <span className="ml-1 text-[9px] text-blue-400">→ {mappings[field.path]}</span>}
                                     </span>
                                 </button>
-                            )) : (
-                                <div className="flex flex-1 items-center justify-center p-4 text-center">
-                                    <p className="text-xs italic text-gray-400">
-                                        {loadingRecord
-                                            ? 'Fetching fields…'
-                                            : selectedTemplateId
-                                              ? 'No record data found for this template'
-                                              : 'Select a tenant, module and template to see fields'}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Panel 2 — Target API key input + mapped fields summary */}
-                    <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
-                        <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Target API Key
-                        </div>
-                        <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
-                            {selectedFieldPath ? (
-                                <div className="flex flex-col gap-1.5">
-                                    <span className="truncate font-mono text-[10px] text-gray-500">{selectedFieldPath}</span>
-                                    <input
-                                        type="text"
-                                        value={mappings[selectedFieldPath] ?? ''}
-                                        onChange={e => setMappings(prev => ({ ...prev, [selectedFieldPath]: e.target.value }))}
-                                        placeholder="e.g. order.customer.name"
-                                        autoFocus
-                                        className="rounded-md border border-blue-300 px-3 py-2 text-sm ring-1 ring-blue-200 focus:border-blue-500 focus:ring-blue-400 focus:outline-none"
-                                    />
-                                    <div className="rounded bg-gray-50 p-2 text-[9px] leading-relaxed text-gray-400">
-                                        <span className="font-semibold text-gray-500">Syntax</span>
-                                        <br />
-                                        <span className="font-mono">name</span> → flat key
-                                        <br />
-                                        <span className="font-mono">order.customer</span> → nested object
-                                        <br />
-                                        <span className="font-mono">items[0].price</span> → array of objects
-                                    </div>
-                                </div>
-                            ) : (
-                                <p className="text-xs italic text-gray-400">Select a field to set its target key</p>
-                            )}
-
-                            {/* Configured mappings summary */}
-                            {configuredMappings.length > 0 && (
-                                <div className="flex flex-col gap-1 border-t border-gray-100 pt-3">
-                                    <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                                        Mapped ({configuredMappings.length})
-                                    </span>
-                                    <div className="flex flex-col gap-0.5">
-                                        {configuredMappings.map(([src, tgt]) => (
-                                            <div key={src} className="flex items-center gap-1 rounded bg-gray-50 px-2 py-1">
-                                                <span className="min-w-0 flex-1 truncate font-mono text-[9px] text-gray-500">{src.split('.').pop()}</span>
-                                                <span className="shrink-0 text-[9px] text-gray-400">→</span>
-                                                <span className="min-w-0 flex-1 truncate font-mono text-[9px] font-semibold text-blue-600">{tgt}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Panel 3 — Final JSON payload preview */}
-                    <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
-                        <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            JSON Preview
-                        </div>
-                        <pre className="flex-1 overflow-y-auto whitespace-pre-wrap break-all bg-white p-4 font-mono text-[11px] text-gray-700">
-                            {finalPayload ? (
-                                JSON.stringify(finalPayload, null, 2)
-                            ) : (
-                                <span className="italic text-gray-400">Map fields to see the final payload</span>
-                            )}
-                        </pre>
+                            ))
+                        ) : (
+                            <div className="flex flex-1 items-center justify-center p-4 text-center">
+                                <p className="text-xs italic text-gray-400">
+                                    {loadingRecord ? 'Fetching fields…' : selectedTemplateId ? 'No record data found for this template' : 'Select a tenant, module and template to see fields'}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* Panel 2 — Target API key input + mapped fields summary */}
+                <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
+                    <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Target API Key</div>
+                    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
+                        {selectedFieldPath ? (
+                            <div className="flex flex-col gap-1.5">
+                                <span className="truncate font-mono text-[10px] text-gray-500">{selectedFieldPath}</span>
+                                <input
+                                    type="text"
+                                    value={mappings[selectedFieldPath] ?? ''}
+                                    onChange={e => setMappings(prev => ({ ...prev, [selectedFieldPath]: e.target.value }))}
+                                    placeholder="e.g. order.customer.name"
+                                    autoFocus
+                                    className="rounded-md border border-blue-300 px-3 py-2 text-sm ring-1 ring-blue-200 focus:border-blue-500 focus:ring-blue-400 focus:outline-none"
+                                />
+                                <div className="rounded bg-gray-50 p-2 text-[9px] leading-relaxed text-gray-400">
+                                    <span className="font-semibold text-gray-500">Syntax</span>
+                                    <br />
+                                    <span className="font-mono">name</span> → flat key
+                                    <br />
+                                    <span className="font-mono">order.customer</span> → nested object
+                                    <br />
+                                    <span className="font-mono">items[0].price</span> → array of objects
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-xs italic text-gray-400">Select a field to set its target key</p>
+                        )}
+
+                        {/* Configured mappings summary */}
+                        {configuredMappings.length > 0 && (
+                            <div className="flex flex-col gap-1 border-t border-gray-100 pt-3">
+                                <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Mapped ({configuredMappings.length})</span>
+                                <div className="flex flex-col gap-0.5">
+                                    {configuredMappings.map(([src, tgt]) => (
+                                        <div key={src} className="flex items-center gap-1 rounded bg-gray-50 px-2 py-1">
+                                            <span className="min-w-0 flex-1 truncate font-mono text-[9px] text-gray-500">{src.split('.').pop()}</span>
+                                            <span className="shrink-0 text-[9px] text-gray-400">→</span>
+                                            <span className="min-w-0 flex-1 truncate font-mono text-[9px] font-semibold text-blue-600">{tgt}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Panel 3 — Final JSON payload preview */}
+                <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
+                    <div className="border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">JSON Preview</div>
+                    <pre className="flex-1 overflow-y-auto whitespace-pre-wrap break-all bg-white p-4 font-mono text-[11px] text-gray-700">
+                        {finalPayload ? JSON.stringify(finalPayload, null, 2) : <span className="italic text-gray-400">Map fields to see the final payload</span>}
+                    </pre>
+                </div>
+            </div>
 
             {/* Save footer */}
             {extractedData && (
@@ -835,7 +808,7 @@ const HttpRequestTab: React.FC<HttpRequestTabProps> = ({ savedAuth, savedPayload
                         type="text"
                         value={apiUrl}
                         onChange={e => setApiUrl(e.target.value)}
-                        placeholder="https://example.com/api/v1/data"
+                        placeholder="https://example.com/workflow/v1/data"
                         className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                     />
                     <button
@@ -855,7 +828,9 @@ const HttpRequestTab: React.FC<HttpRequestTabProps> = ({ savedAuth, savedPayload
             {sent && (
                 <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-2.5">
                     <CheckCircle size={14} className="shrink-0 text-green-500" />
-                    <span className="text-xs text-green-700">Request sent — view the response in the <strong>Handle Response</strong> tab</span>
+                    <span className="text-xs text-green-700">
+                        Request sent — view the response in the <strong>Handle Response</strong> tab
+                    </span>
                 </div>
             )}
         </div>
@@ -877,11 +852,7 @@ const HandleResponseTab: React.FC<HandleResponseTabProps> = ({ apiResponse }) =>
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [saveError, setSaveError] = useState('');
 
-    const bodyText = apiResponse
-        ? typeof apiResponse.body === 'string'
-            ? apiResponse.body
-            : JSON.stringify(apiResponse.body, null, 2)
-        : '';
+    const bodyText = apiResponse ? (typeof apiResponse.body === 'string' ? apiResponse.body : JSON.stringify(apiResponse.body, null, 2)) : '';
 
     const copyToClipboard = async () => {
         await navigator.clipboard.writeText(bodyText);
@@ -947,9 +918,7 @@ const HandleResponseTab: React.FC<HandleResponseTabProps> = ({ apiResponse }) =>
         <div className="flex flex-col gap-4 p-6">
             {/* Status banner */}
             <div className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${isSuccess ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
-                {isSuccess
-                    ? <CheckCircle size={16} className="shrink-0 text-green-500" />
-                    : <XCircle size={16} className="shrink-0 text-red-500" />}
+                {isSuccess ? <CheckCircle size={16} className="shrink-0 text-green-500" /> : <XCircle size={16} className="shrink-0 text-red-500" />}
                 <div className="flex flex-col">
                     <span className={`text-sm font-semibold ${isSuccess ? 'text-green-700' : 'text-red-700'}`}>
                         HTTP {apiResponse.status} — {isSuccess ? 'Success' : 'Error'}
@@ -963,19 +932,11 @@ const HandleResponseTab: React.FC<HandleResponseTabProps> = ({ apiResponse }) =>
                 <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Response Body</label>
                     <div className="flex gap-2">
-                        <button
-                            type="button"
-                            onClick={copyToClipboard}
-                            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
-                        >
+                        <button type="button" onClick={copyToClipboard} className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50">
                             <Copy size={12} />
                             {copied ? 'Copied!' : 'Copy'}
                         </button>
-                        <button
-                            type="button"
-                            onClick={downloadJson}
-                            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
-                        >
+                        <button type="button" onClick={downloadJson} className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50">
                             <Download size={12} />
                             Download JSON
                         </button>
@@ -995,13 +956,18 @@ const HandleResponseTab: React.FC<HandleResponseTabProps> = ({ apiResponse }) =>
                         onChange={e => setSaveMethod(e.target.value)}
                         className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium focus:border-blue-500 focus:outline-none"
                     >
-                        {['POST', 'PUT', 'PATCH'].map(m => <option key={m}>{m}</option>)}
+                        {['POST', 'PUT', 'PATCH'].map(m => (
+                            <option key={m}>{m}</option>
+                        ))}
                     </select>
                     <input
                         type="text"
                         value={saveUrl}
-                        onChange={e => { setSaveUrl(e.target.value); setSaveStatus('idle'); }}
-                        placeholder="https://example.com/api/v1/save"
+                        onChange={e => {
+                            setSaveUrl(e.target.value);
+                            setSaveStatus('idle');
+                        }}
+                        placeholder="https://example.com/workflow/v1/save"
                         className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                     />
                     <button
@@ -1045,12 +1011,7 @@ export const IntegrateApiDialog: React.FC = () => {
         setActiveTab('Handle Response');
     };
 
-    const enabledTabs: Tab[] = [
-        'Auth',
-        'Prepare Payload',
-        ...(savedPayload ? ['HTTP Request' as Tab] : []),
-        ...(apiResponse ? ['Handle Response' as Tab] : [])
-    ];
+    const enabledTabs: Tab[] = ['Auth', 'Prepare Payload', ...(savedPayload ? ['HTTP Request' as Tab] : []), ...(apiResponse ? ['Handle Response' as Tab] : [])];
 
     return (
         <DialogComponent name="API Integration" isOpen={state.showIntegrateApiDialog} closeDialog={close} className="w-[920px]" disableBlurCloseDialog>
@@ -1074,10 +1035,7 @@ export const IntegrateApiDialog: React.FC = () => {
                                 .join(' ')}
                         >
                             <span
-                                className={[
-                                    'flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
-                                    isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
-                                ].join(' ')}
+                                className={['flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold', isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'].join(' ')}
                             >
                                 {i + 1}
                             </span>

@@ -27,7 +27,7 @@ const ListAgentsPage = () => {
     const fetchAgents = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response: any = await httpRequest('GET', `${config.workflowService}/api/workflows?limit=100&category=main`);
+            const response: any = await httpRequest('GET', `${config.workflowService}/workflow/workflows?limit=100&category=main`);
 
             // Assume the response structure is PaginatedResponse or just an array
             if (response && response.data) {

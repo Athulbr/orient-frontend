@@ -29,7 +29,7 @@ export const useSubmitCurrency = ({ extractedData, onOrderUpdate }: UseSubmitCur
         // Step 1: Login
         let authToken: string | null = null;
         try {
-            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+            const loginRes = await fetch(`${config.workflowService}/workflow/orient/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -55,7 +55,7 @@ export const useSubmitCurrency = ({ extractedData, onOrderUpdate }: UseSubmitCur
             items.map(async (item: any) => {
                 const exchangeType = item.product === 'cash' ? 'CN' : payload.BOOKINGTYPE === 'PURCHASE' ? 'EM' : payload.BOOKINGTYPE === 'SALE' ? 'CM' : item.product;
 
-                const exchangeRes = await fetch(`${config.workflowService}/api/orient/exchange`, {
+                const exchangeRes = await fetch(`${config.workflowService}/workflow/orient/exchange`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ export const useSubmitCurrency = ({ extractedData, onOrderUpdate }: UseSubmitCur
                 const updatePayload = {
                     maraekatDetails: { ...order.maraekatDetails, currencySubmitted: true }
                 };
-                const res = await fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                const res = await fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatePayload)

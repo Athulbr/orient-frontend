@@ -115,7 +115,7 @@ export const useSubmitReceipts = ({ extractedData, onOrderUpdate }: UseSubmitRec
         // Login
         let authToken: string | null = null;
         try {
-            const loginRes = await fetch(`${config.workflowService}/api/orient/login`, {
+            const loginRes = await fetch(`${config.workflowService}/workflow/orient/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -161,7 +161,7 @@ export const useSubmitReceipts = ({ extractedData, onOrderUpdate }: UseSubmitRec
             };
 
             try {
-                const response = await fetch(`${config.workflowService}/api/orient/receipt-submit`, {
+                const response = await fetch(`${config.workflowService}/workflow/orient/receipt-submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
                     body: JSON.stringify(payload)
@@ -192,7 +192,7 @@ export const useSubmitReceipts = ({ extractedData, onOrderUpdate }: UseSubmitRec
             toast.success(`Successfully submitted ${successCount} receipt(s) to Maraekat!`);
             try {
                 const updatePayload = { maraekatDetails: { ...order.maraekatDetails, receiptPayStatus: 'submitted' } };
-                const res = await fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                const res = await fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatePayload)

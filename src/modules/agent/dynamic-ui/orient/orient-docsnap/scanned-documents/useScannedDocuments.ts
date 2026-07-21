@@ -72,7 +72,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
                 if (searchQuery.trim()) params.append('searchQuery', searchQuery.trim());
 
                 const token = localStorage.getItem('token');
-                const response = await fetch(`${config.workflowService}/api/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
+                const response = await fetch(`${config.workflowService}/workflow/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
 
                 const result = await response.json();
                 if (result.success) {
@@ -119,7 +119,7 @@ export const useScannedDocuments = (): UseScannedDocumentsReturn => {
             if (searchQuery.trim()) params.append('searchQuery', searchQuery.trim());
 
             const token = localStorage.getItem('token');
-            const response = await fetch(`${config.workflowService}/api/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
+            const response = await fetch(`${config.workflowService}/workflow/scanned-documents?${params.toString()}`, { headers: { Authorization: `Bearer ${token}` } });
 
             const result = await response.json();
             if (result.success) {

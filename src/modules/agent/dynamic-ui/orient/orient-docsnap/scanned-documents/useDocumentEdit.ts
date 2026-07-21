@@ -78,7 +78,7 @@ export const useDocumentEdit = (doc: ScannedDocument): UseDocumentEditReturn => 
         setSaving(true, true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${config.workflowService}/api/scanned-documents/${docId}`, {
+            const res = await fetch(`${config.workflowService}/workflow/scanned-documents/${docId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

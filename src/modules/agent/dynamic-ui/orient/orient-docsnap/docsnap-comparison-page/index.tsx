@@ -27,7 +27,7 @@ const getPreviewUrl = (url: string) => {
         .split('/')
         .map(seg => encodeURIComponent(seg))
         .join('/');
-    return `${config.workflowService}/api/temp-storage/preview/${encodedPath}?apiKey=secret1`;
+    return `${config.workflowService}/workflow/temp-storage/preview/${encodedPath}?apiKey=secret1`;
 };
 
 interface BBox {
@@ -139,7 +139,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         if (!recordId) return;
         setIsSaving(true);
         try {
-            const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`, {
+            const res = await fetch(`${config.workflowService}/workflow/agent-records/${recordId}?apiKey=secret1`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
@@ -165,7 +165,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     /** Silently persist the latest extractedData before submitting — no toasts, no spinner */
     const silentSave = async () => {
         if (!recordId) return;
-        await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`, {
+        await fetch(`${config.workflowService}/workflow/agent-records/${recordId}?apiKey=secret1`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ finalOutput: extractedData })
@@ -178,7 +178,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
             try {
                 if (!recordId) return;
                 setIsLoadingRecord(true);
-                const res = await fetch(`${config.workflowService}/api/agent-records/${recordId}?apiKey=secret1`);
+                const res = await fetch(`${config.workflowService}/workflow/agent-records/${recordId}?apiKey=secret1`);
                 if (res.ok) {
                     const data = await res.json();
                     if (isMounted && data.success && data.record) {
@@ -188,7 +188,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
 
                         if (data.record.templateId) {
                             try {
-                                const templateRes = await fetch(`${config.workflowService}/api/agent-templates/${data.record.templateId}?apiKey=secret1`);
+                                const templateRes = await fetch(`${config.workflowService}/workflow/agent-templates/${data.record.templateId}?apiKey=secret1`);
                                 if (templateRes.ok) {
                                     const templateData = await templateRes.json();
                                     if (templateData?.success && templateData?.template) {

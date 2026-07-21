@@ -172,7 +172,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
             removeWholeHandler?.(order.orderDetails.orderNumber, fileIndex);
         } else {
             onOrderUpdate?.(updatedOrder);
-            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+            fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [backendField]: docsArray })
@@ -200,7 +200,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         const updatedOrder = { ...order, receipts: updatedReceipts };
                         onOrderUpdate?.(updatedOrder);
                         // Persist to backend
-                        fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                        fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ receipts: updatedReceipts })
@@ -213,7 +213,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                     const updatedOrder = { ...order, receipts: updatedReceipts };
                     onOrderUpdate?.(updatedOrder);
                     // Persist to backend
-                    fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                    fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ receipts: updatedReceipts })
@@ -272,7 +272,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                         if (window.confirm('Are you sure you want to remove all email documents?')) {
                                             const updatedOrder = { ...order, emailDocuments: [] };
                                             onOrderUpdate?.(updatedOrder);
-                                            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                            fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                                                 method: 'PUT',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({ emailDocuments: [] })
@@ -340,7 +340,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                         if (window.confirm('Are you sure you want to remove all manual documents?')) {
                                             const updatedOrder = { ...order, manualDocuments: [] };
                                             onOrderUpdate?.(updatedOrder);
-                                            fetch(`${config.workflowService}/api/orders/${order.orderDetails.orderNumber}`, {
+                                            fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
                                                 method: 'PUT',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify({ manualDocuments: [] })
