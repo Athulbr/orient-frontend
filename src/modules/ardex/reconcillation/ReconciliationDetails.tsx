@@ -109,14 +109,6 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   children: vendor?.msme ? 'Yes' : 'No'
               },
               {
-                  title: 'SAP Document No',
-                  badge: 'PROPOSAL',
-                  badgeClassName: 'text-[8px] text-blue-500',
-                  id: 'proposal-sapDocumentNo',
-                  compareKey: 'sapDocumentNo',
-                  children: selectedProposal.sapDocumentNo || '-'
-              },
-              {
                   title: 'Invoice No',
                   badge: 'PROPOSAL',
                   badgeClassName: 'text-[8px] text-blue-500',
@@ -131,6 +123,12 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   id: 'proposal-invoiceDate',
                   compareKey: 'invoiceDate',
                   children: selectedProposal.invoiceDate ? new Date(selectedProposal.invoiceDate).toLocaleDateString('en-GB').replace(/\//g, '.') : '-'
+              },
+              {
+                  title: 'SAP Document No',
+                  badge: 'PROPOSAL',
+                  badgeClassName: 'text-[8px] text-blue-500',
+                  children: selectedProposal.sapDocumentNo || '-'
               },
               {
                   title: 'Invoice Gross Value',
@@ -201,6 +199,7 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
               //   },
               {
                   title: 'Invoice No',
+
                   badge: 'MATCHED',
                   badgeClassName: 'text-[10px] text-emerald-500',
                   id: 'ai-invoiceNo',
@@ -216,6 +215,28 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   children: selectedAiVerification.invoiceDate ? new Date(selectedAiVerification.invoiceDate).toLocaleDateString('en-GB').replace(/\//g, '.') : '-'
               },
               {
+                  title: 'CD Deducted',
+                  badge: 'INVOICE (-)',
+                  badgeClassName: 'text-[10px] text-gray-400',
+                  id: 'ai-cdDeducted',
+                  compareKey: 'cdDeducted',
+                  children: (
+                      <>
+                          {selectedAiVerification.invoiceCdDeducted !== undefined ? formatCurrency(selectedAiVerification.invoiceCdDeducted).replace('₹', '').trim() : '0.00'}
+                          <span className="text-[11px] text-gray-400 ml-1.5 font-normal">({selectedAiVerification.invoiceCdPercentage || 2}%)</span>
+                      </>
+                  )
+              },
+              {
+                  title: 'Gross Value',
+                  badge: 'INVOICE',
+                  badgeClassName: 'text-[10px] text-gray-400',
+                  hasBorder: true,
+                  id: 'ai-grossValue',
+                  compareKey: 'grossValue',
+                  children: selectedAiVerification.grossValueOfInvoice !== undefined ? formatCurrency(selectedAiVerification.grossValueOfInvoice).replace('₹', '').trim() : '-'
+              },
+              {
                   title: 'Basic Invoice Value (a)',
                   badge: 'INVOICE (+)',
                   badgeClassName: 'text-[10px] text-gray-400',
@@ -227,17 +248,7 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   badgeClassName: 'text-[10px] text-gray-400',
                   children: selectedAiVerification.freightInwardValue !== undefined ? formatCurrency(selectedAiVerification.freightInwardValue).replace('₹', '').trim() : '0.00'
               },
-              {
-                  title: 'CD Deducted',
-                  badge: 'INVOICE (-)',
-                  badgeClassName: 'text-[10px] text-gray-400',
-                  children: (
-                      <>
-                          {selectedAiVerification.invoiceCdDeducted !== undefined ? formatCurrency(selectedAiVerification.invoiceCdDeducted).replace('₹', '').trim() : '0.00'}
-                          <span className="text-[11px] text-gray-400 ml-1.5 font-normal">({selectedAiVerification.invoiceCdPercentage || 2}%)</span>
-                      </>
-                  )
-              },
+
               {
                   title: 'Others',
                   badge: 'INVOICE (+)',
@@ -250,15 +261,7 @@ export const ReconciliationDetails: React.FC<ReconciliationDetailsProps> = ({ da
                   badgeClassName: 'text-[10px] text-gray-400',
                   children: selectedAiVerification.gst !== undefined ? formatCurrency(selectedAiVerification.gst).replace('₹', '').trim() : '0.00'
               },
-              {
-                  title: 'Gross Value',
-                  badge: 'INVOICE',
-                  badgeClassName: 'text-[10px] text-gray-400',
-                  hasBorder: true,
-                  id: 'ai-grossValue',
-                  compareKey: 'grossValue',
-                  children: selectedAiVerification.grossValueOfInvoice !== undefined ? formatCurrency(selectedAiVerification.grossValueOfInvoice).replace('₹', '').trim() : '-'
-              },
+
               {
                   title: 'Invoice Value',
                   badge: 'COMPUTED (a+b+c-CD=d)',
