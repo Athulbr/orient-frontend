@@ -21,7 +21,7 @@ const ReconciliationCard: React.FC<ReconciliationCardProps> = ({ reconciliation 
         if (isDialogOpen && transactions.length === 0) {
             setIsLoadingTransactions(true);
             setFetchError(null);
-            fetch(`${config.workflowService}/api/reconciliations/${reconciliation._id}/transactions`)
+            fetch(`${config.workflowService}/workflow/reconciliations/${reconciliation._id}/transactions`)
                 .then(res => {
                     if (!res.ok) throw new Error('Failed to fetch transactions');
                     return res.json();
