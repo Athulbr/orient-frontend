@@ -11,7 +11,8 @@ export default defineConfig({
             'devapi.makez.ai',
             'dev.makez.ai',
             'app.makez.ai',
-            '[IP_ADDRESS]'
+            '[IP_ADDRESS]',
+            'frontend-v2'
         ]
     },
     test: {
