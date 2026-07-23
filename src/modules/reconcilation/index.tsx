@@ -112,7 +112,7 @@ function ListReconcilationPage() {
                 formData.append('statement_file', statementFile);
                 formData.append('previous_brs_file', prevBrsFile || placeholder);
             }
-            const endpoint = reconType === 'qr' ? '/workflow/reconcile-qr' : '/workflow/reconcile';
+            const endpoint = reconType === 'qr' ? '/reconcile-qr' : '/reconcile';
             const response = await fetch(`${API_BASE_URL}${endpoint}`, { method: 'POST', body: formData });
             if (!response.ok) {
                 const err = await response.json().catch(() => null);
@@ -150,7 +150,7 @@ function ListReconcilationPage() {
             for (const f of cashfreeFiles) formData.append('cashfree_file', f);
             for (const f of easebuzzFiles) formData.append('easebuzz_file', f);
             if (prevBrsFile) formData.append('previous_brs_file', prevBrsFile);
-            const response = await fetch(`${API_BASE_URL}/workflow/reconcile-gateway`, { method: 'POST', body: formData });
+            const response = await fetch(`${API_BASE_URL}/reconcile-gateway`, { method: 'POST', body: formData });
             if (!response.ok) {
                 const err = await response.json().catch(() => null);
                 throw new Error(err?.detail || `Server error: ${response.statusText}`);
