@@ -14,7 +14,6 @@ jobs:
     with:
       app_name: "frontend-v2"
       app_port: "8080"
-      publish_port: false
       branch: "orient-dev"
 
     secrets:
