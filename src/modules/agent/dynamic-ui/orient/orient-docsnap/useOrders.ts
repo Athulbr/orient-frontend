@@ -5,6 +5,7 @@ import { useToastStore } from '../../../../../components/toast/ToastStore';
 import { rearrangeDocuments } from './upload-receipt/functions';
 import clientLogger from '../../../../../global-utils/clientLog';
 import clientLoggerNew from '../../../../../global-utils/clientLoggerNew';
+import { triggerWebhook } from './webhookApi';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -83,7 +84,20 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
     // ── Refs for extraction timeout/retry ──
     const extractionRetryCountRef = useRef<Record<number, number>>({});
-    const activeExtractionRef = useRef<Record<number, { eventSource: EventSource; timeout: NodeJS.Timeout }>>({});
+    const activeExtractionRef = useRef<Record<number, { eventSource: EventSource }>>({});
+    const activeUploadRef = useRef<Record<number, { eventSource: EventSource }>>({});
+
+    // Cleanup active streams on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(activeExtractionRef.current).forEach(({ eventSource }) => {
+                eventSource.close();
+            });
+            Object.values(activeUploadRef.current).forEach(({ eventSource }) => {
+                eventSource.close();
+            });
+        };
+    }, []);
 
     // ── Refs for SSE callbacks (avoid stale closures — #1, #16) ──
     const ordersRef = useRef(orders);
@@ -306,139 +320,94 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             formData.append('isoDateTime', isoDateTime);
             files.forEach(file => formData.append('file', file));
 
-            let isUploadApiCompleted = false;
             const uploadController = new AbortController();
 
-            const uploadTimeoutId = setTimeout(async () => {
-                if (!isUploadApiCompleted) {
-                    let healthResponseData = null;
-                    try {
-                        const healthRes = await Promise.race([
-                            fetch(`${config.workflowService}/workflow/health`),
-                            new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
-                        ]);
-                        healthResponseData = await healthRes.json();
-                    } catch (err) {
-                        healthResponseData = { error: 'Failed to fetch health API' };
-                    }
-
-                    try {
-                        clientLoggerNew({
-                            message: `File upload request API is taking more than 15 seconds (still pending)`,
-                            orderNumber,
-                            currentDateTime,
-                            isoDateTime,
-                            healthResponse: healthResponseData
-                        });
-                    } catch (error) {}
-
-                    uploadController.abort();
-                }
-            }, 10000);
-
+            let executionId: string;
             try {
-                const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/orient-file-upload`, {
-                    method: 'POST',
+                executionId = await triggerWebhook({
+                    webhookPath: 'orient-file-upload',
                     body: formData,
                     signal: uploadController.signal
                 });
-
-                isUploadApiCompleted = true;
-                clearTimeout(uploadTimeoutId);
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
-
-                if (!response.ok) {
-                    console.error('Upload API response error:', response.status);
-                    toast.error(`Upload failed. Status: ${response.status}`);
-                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    return;
-                }
-
-                const responseData = await response.json();
-                const executionId = responseData?.data?.executionId;
-
-                if (!executionId) {
-                    console.error('No executionId found in response');
-                    toast.error('Upload failed — no execution ID returned');
-                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    return;
-                }
-
-                const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
-                const eventSource = new EventSource(streamUrl);
-
-                eventSource.onmessage = async event => {
-                    try {
-                        const jsonString = event.data;
-                        if (!jsonString || jsonString.trim() === '' || jsonString === '{}') return;
-
-                        const parsed = JSON.parse(jsonString);
-                        if (parsed.status) {
-                            if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
-                                eventSource.close();
-                                setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-
-                                if (parsed.status === 'completed') {
-                                    const finalData = parsed.finalData[0] || {};
-                                    console.log('parsed', parsed);
-                                    const newDocs: DocumentDetail[] = [];
-
-                                    finalData.manualDocuments.forEach((doc: string[]) => {
-                                        if (doc && doc.length > 0) {
-                                            newDocs.push({
-                                                documentName: doc[0].split('/').pop() || new Date().toISOString(),
-                                                documentPages: doc
-                                            });
-                                        }
-                                    });
-
-                                    if (newDocs.length > 0) {
-                                        // Use ref to get the freshest order state (#1, #16)
-                                        const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
-                                        const updatedManualDocuments = [...(currentOrder?.manualDocuments || []), ...newDocs];
-
-                                        setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
-
-                                        await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
-                                            method: 'PUT',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ manualDocuments: updatedManualDocuments })
-                                        });
-
-                                        toast.success(`${newDocs.length} document(s) uploaded`);
-                                    }
-                                } else {
-                                    toast.error(`Upload ${parsed.status}`);
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        // #5 — log SSE parse errors instead of silently swallowing
-                        console.error('Error processing upload SSE message:', e);
-                    }
-                };
-
-                eventSource.onerror = err => {
-                    console.error('SSE EventSource error:', err);
-                    eventSource.close();
-                    setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    toast.error('Upload stream disconnected');
-                };
             } catch (err: any) {
-                isUploadApiCompleted = true;
-                clearTimeout(uploadTimeoutId);
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
                 if (err?.name === 'AbortError') {
-                    toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team.', {
+                    toast.error('Not able to reach the server, Please refresh the page and try again.', {
                         duration: 1200000,
                         title: 'Connection Error'
                     });
                 } else {
                     console.error('Upload API error:', err);
-                    toast.error('Upload failed');
+                    toast.error(`Upload failed: ${err.message}`);
                 }
                 setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                return;
             }
+
+            const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
+            const eventSource = new EventSource(streamUrl);
+            activeUploadRef.current[orderNumber] = { eventSource };
+
+            eventSource.onmessage = async event => {
+                try {
+                    const jsonString = event.data;
+                    if (!jsonString || jsonString.trim() === '' || jsonString === '{}') return;
+
+                    const parsed = JSON.parse(jsonString);
+                    if (parsed.status) {
+                        if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
+                            eventSource.close();
+                            delete activeUploadRef.current[orderNumber];
+                            setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+
+                            if (parsed.status === 'completed') {
+                                const finalData = parsed.finalData[0] || {};
+                                console.log('parsed', parsed);
+                                const newDocs: DocumentDetail[] = [];
+
+                                finalData.manualDocuments.forEach((doc: string[]) => {
+                                    if (doc && doc.length > 0) {
+                                        newDocs.push({
+                                            documentName: doc[0].split('/').pop() || new Date().toISOString(),
+                                            documentPages: doc
+                                        });
+                                    }
+                                });
+
+                                if (newDocs.length > 0) {
+                                    // Use ref to get the freshest order state (#1, #16)
+                                    const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
+                                    const updatedManualDocuments = [...(currentOrder?.manualDocuments || []), ...newDocs];
+
+                                    setOrders(prev => prev.map(o => (o.orderDetails.orderNumber === orderNumber ? { ...o, manualDocuments: updatedManualDocuments } : o)));
+
+                                    await fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ manualDocuments: updatedManualDocuments })
+                                    });
+
+                                    toast.success(`${newDocs.length} document(s) uploaded`);
+                                }
+                            } else {
+                                toast.error(`Upload ${parsed.status}`);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // #5 — log SSE parse errors instead of silently swallowing
+                    console.error('Error processing upload SSE message:', e);
+                }
+            };
+
+            eventSource.onerror = err => {
+                console.error('SSE EventSource error:', err);
+                eventSource.close();
+                delete activeUploadRef.current[orderNumber];
+                setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                toast.error('Upload stream disconnected');
+            };
         },
         [toast]
     );
@@ -537,7 +506,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             const prev = activeExtractionRef.current[orderNumber];
             if (prev) {
                 prev.eventSource.close();
-                clearTimeout(prev.timeout);
                 delete activeExtractionRef.current[orderNumber];
             }
 
@@ -596,39 +564,13 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                 const webhookEndpoint = 'orient-document-extractor';
 
-                let isApiCompleted = false;
                 const controller = new AbortController();
 
-                const timeoutId = setTimeout(async () => {
-                    if (!isApiCompleted) {
-                        let healthResponseData = null;
-                        try {
-                            const healthRes = await Promise.race([
-                                fetch(`${config.workflowService}/workflow/health`),
-                                new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
-                            ]);
-                            healthResponseData = await healthRes.json();
-                        } catch (err) {
-                            healthResponseData = { error: 'Failed to fetch health API' };
-                        }
-
-                        try {
-                            clientLoggerNew({
-                                ...metaData,
-                                message: `Initiating the extraction request API is taking more than 15 seconds (still pending)`,
-                                healthResponse: healthResponseData
-                            });
-                        } catch (error) {}
-
-                        controller.abort();
-                    }
-                }, 10000);
-
-                let response;
                 setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
+                let executionId: string;
                 try {
-                    response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/${webhookEndpoint}`, {
-                        method: 'POST',
+                    executionId = await triggerWebhook({
+                        webhookPath: webhookEndpoint,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             orderNumber: orderNumber,
@@ -637,49 +579,37 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                             documents: payloadDocuments,
                             metaData
                         }),
-                        signal: controller.signal
+                        signal: controller.signal,
+                        retryIntervals: [
+                            { intervalInSeconds: 10, maxRetryCount: 1 },
+                            { intervalInSeconds: 20, maxRetryCount: 1 },
+                            { intervalInSeconds: 30, maxRetryCount: 2 }
+                        ]
                     });
+                    setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 } catch (error: any) {
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     if (error.name === 'AbortError') {
-                        toast.error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team.', {
+                        toast.error('Not able to reach the server, Please refresh the page and try again.', {
                             duration: 1200000,
                             title: 'Connection Error'
                         });
-                        setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                        setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                        return;
+                    } else {
+                        console.error('Extraction API error:', error);
+                        toast.error(`Extraction failed: ${error.message}`);
                     }
-                    throw error;
-                }
-
-                isApiCompleted = true;
-                setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    console.error('Extraction API response error:', response.status);
-                    toast.error(`Extraction failed. Status: ${response.status}`);
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                    extractionRetryCountRef.current[orderNumber] = 0;
                     return;
                 }
 
-                const responseData = await response.json();
-                const executionId = responseData?.data?.executionId;
-
-                if (!executionId) {
-                    console.error('No executionId found in response');
-                    toast.error('Extraction failed — no execution ID returned');
-                    setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    return;
-                }
                 const extractionStartTime = Date.now();
 
                 // #8 — apiKey from constant
                 const streamUrl = `${config.workflowService}/workflow/executions/${executionId}/status-stream?apiKey=${API_KEY}`;
                 const eventSource = new EventSource(streamUrl);
+                activeExtractionRef.current[orderNumber] = { eventSource };
 
                 eventSource.onmessage = event => {
                     try {
@@ -690,6 +620,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         if (parsed.status) {
                             if (['completed', 'failed', 'error', 'cancelled', 'timeout'].includes(parsed.status)) {
                                 eventSource.close();
+                                delete activeExtractionRef.current[orderNumber];
                                 setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                                 setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                                 // Reset retry count on completion
@@ -742,6 +673,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 eventSource.onerror = err => {
                     console.error('SSE EventSource error:', err);
                     eventSource.close();
+                    delete activeExtractionRef.current[orderNumber];
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     extractionRetryCountRef.current[orderNumber] = 0;

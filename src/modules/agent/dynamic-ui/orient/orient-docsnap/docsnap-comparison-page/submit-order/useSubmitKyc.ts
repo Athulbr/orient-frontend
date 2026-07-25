@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { config } from '../../../../../../../config/default';
+import { triggerWebhook } from '../../webhookApi';
 import { Order } from '../../types';
 import { getMaraekatPayload } from './getMaraekatPayload';
 import { ResultMessage } from './DraggableResultCard';
@@ -66,6 +67,7 @@ const checkIsExtractedDataUpdated = (extractedData: any): boolean => {
 export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubmit }: UseSubmitKycOptions) => {
     const [resultMessage, setResultMessage] = useState<ResultMessage | null>(null);
     const [isInitiatingKyc, setIsInitiatingKyc] = useState(false);
+    const toast = useToastStore();
 
     const submitKyc = async (): Promise<KycSubmitResult> => {
         setResultMessage(null);
@@ -106,89 +108,32 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
 
         // Step 4: Call submit API
-        let isKycApiCompleted = false;
         const kycController = new AbortController();
 
-        const kycTimeoutId = setTimeout(async () => {
-            if (!isKycApiCompleted) {
-                let healthResponseData = null;
-                try {
-                    const healthRes = await Promise.race([
-                        fetch(`${config.workflowService}/workflow/health`),
-                        new Promise<Response>(resolve => setTimeout(() => resolve(new Response(JSON.stringify({ error: 'timeout' }))), 1000))
-                    ]);
-                    healthResponseData = await healthRes.json();
-                } catch (err) {
-                    healthResponseData = { error: 'Failed to fetch health API' };
-                }
-
-                try {
-                    const currentDateTime = new Date().toLocaleString();
-                    const isoDateTime = new Date().toISOString();
-                    clientLoggerNew({
-                        message: `KYC submit request API is taking more than 10 seconds (still pending)`,
-                        orderNumber: order.orderDetails?.orderNumber,
-                        currentDateTime,
-                        isoDateTime,
-                        healthResponse: healthResponseData
-                    });
-                } catch (error) {}
-
-                // Fire toast and result directly from the timeout — don't rely on catch chain
-                useToastStore.getState().error('Check that your VPN is connected and your internet is working, then try again. If the problem continues, contact your IT team.', {
-                    duration: 1200000,
-                    title: 'Connection Error'
-                });
-                setResultMessage({
-                    type: 'error',
-                    messages: ['Connection Error']
-                });
-                setIsInitiatingKyc(false);
-
-                kycController.abort();
-            }
-        }, 10000);
-
         setIsInitiatingKyc(true);
-        let response;
+        let executionId: string;
         try {
-            response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/maraekat-submit`, {
-                method: 'POST',
+            executionId = await triggerWebhook({
+                webhookPath: 'maraekat-submit',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated }),
                 signal: kycController.signal
             });
         } catch (error: any) {
-            isKycApiCompleted = true;
-            clearTimeout(kycTimeoutId);
             setIsInitiatingKyc(false);
             if (error.name === 'AbortError') {
-                // Toast already fired from the timeout callback
+                toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                    duration: 1200000,
+                    title: 'Connection Error'
+                });
                 return { success: false };
             }
             console.error('Submit KYC error:', error);
-            setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: An unexpected error occurred'] });
+            setResultMessage({ type: 'error', messages: [`Failed to submit KYC details: ${error.message}`] });
             return { success: false };
         }
 
-        isKycApiCompleted = true;
-        clearTimeout(kycTimeoutId);
         setIsInitiatingKyc(false);
-
-        if (!response.ok) {
-            console.error('Submission API response error:', response.status);
-            setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: ' + response.status] });
-            return { success: false };
-        }
-
-        const responseData = await response.json();
-        const executionId = responseData?.data?.executionId;
-
-        if (!executionId) {
-            console.error('No executionId found in response');
-            setResultMessage({ type: 'error', messages: ['Failed to submit KYC details: No executionId in response'] });
-            return { success: false };
-        }
 
         // Step 5: Listen to SSE Stream for completion
         try {
