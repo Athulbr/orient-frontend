@@ -107,28 +107,20 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
         }
         const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
 
-        // Step 4: Call submit API
-        const kycController = new AbortController();
-
         setIsInitiatingKyc(true);
         let executionId: string;
         try {
             executionId = await triggerWebhook({
                 webhookPath: 'maraekat-submit',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated }),
-                signal: kycController.signal
+                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated })
             });
         } catch (error: any) {
             setIsInitiatingKyc(false);
-            if (error.name === 'AbortError') {
-                toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                    duration: 1200000,
-                    title: 'Connection Error'
-                });
-                return { success: false };
-            }
-            console.error('Submit KYC error:', error);
+            toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                duration: 1200000,
+                title: 'Connection Error'
+            });
             setResultMessage({ type: 'error', messages: [`Failed to submit KYC details: ${error.message}`] });
             return { success: false };
         }

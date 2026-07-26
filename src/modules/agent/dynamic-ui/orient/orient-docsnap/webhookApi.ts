@@ -1,4 +1,5 @@
 import { config } from '../../../../../config/default';
+import clientLoggerNew from '../../../../../global-utils/clientLoggerNew';
 
 export interface RetryInterval {
     intervalInSeconds: number;
@@ -9,32 +10,25 @@ interface TriggerWebhookArgs {
     webhookPath: string;
     body: FormData | string;
     headers?: HeadersInit;
-    signal?: AbortSignal;
     retryIntervals?: RetryInterval[];
 }
 
 const defaultRetryIntervals: RetryInterval[] = [
-    { intervalInSeconds: 1, maxRetryCount: 2 },
-    { intervalInSeconds: 2, maxRetryCount: 3 },
-    { intervalInSeconds: 5, maxRetryCount: 2 },
+    { intervalInSeconds: 2, maxRetryCount: 5 },
+    { intervalInSeconds: 5, maxRetryCount: 3 },
     { intervalInSeconds: 10, maxRetryCount: 2 },
     { intervalInSeconds: 20, maxRetryCount: 2 },
     { intervalInSeconds: 30, maxRetryCount: 1 }
 ];
 
-export const triggerWebhook = async ({ webhookPath, body, headers, signal, retryIntervals = defaultRetryIntervals }: TriggerWebhookArgs): Promise<string> => {
+export const triggerWebhook = async ({ webhookPath, body, headers, retryIntervals = defaultRetryIntervals }: TriggerWebhookArgs): Promise<string> => {
+    let totalAttempts = 0;
+    const startTime = Date.now();
+
     for (const retryConfig of retryIntervals) {
         for (let i = 0; i < retryConfig.maxRetryCount; i++) {
+            totalAttempts++;
             const controller = new AbortController();
-            let parentSignalListener: (() => void) | null = null;
-            
-            if (signal) {
-                if (signal.aborted) {
-                    throw new Error('Request aborted by user');
-                }
-                parentSignalListener = () => controller.abort();
-                signal.addEventListener('abort', parentSignalListener);
-            }
 
             const timeoutId = setTimeout(() => {
                 controller.abort();
@@ -59,20 +53,48 @@ export const triggerWebhook = async ({ webhookPath, body, headers, signal, retry
                     throw new Error('No executionId found in response');
                 }
 
+                if (totalAttempts > 1) {
+                    const totalTimeElapsedMs = Date.now() - startTime;
+                    const summary = {
+                        webhookPath,
+                        totalAttempts,
+                        totalTimeElapsedMs,
+                        totalTimeElapsedSeconds: (totalTimeElapsedMs / 1000).toFixed(2),
+                        retryIntervalsConfig: retryIntervals.map(r => `${r.maxRetryCount} attempts @ ${r.intervalInSeconds}s`).join(', ')
+                    };
+                    clientLoggerNew({
+                        error: 'Webhook trigger succeeded after retries',
+                        data: {
+                            summary,
+                            body
+                        }
+                    });
+                }
+
                 return executionId;
             } catch (error: any) {
-                if (signal?.aborted) {
-                    throw error;
-                }
-                console.warn(`Attempt failed (interval: ${retryConfig.intervalInSeconds}s, attempt: ${i + 1}): ${error.message}`);
+                // Ignore error and continue to the next retry attempt
             } finally {
                 clearTimeout(timeoutId);
-                if (signal && parentSignalListener) {
-                    signal.removeEventListener('abort', parentSignalListener);
-                }
             }
         }
     }
 
-    throw new Error('All retry attempts failed to get a response');
+    const totalTimeElapsedMs = Date.now() - startTime;
+    const summary = {
+        webhookPath,
+        totalAttempts,
+        totalTimeElapsedMs,
+        totalTimeElapsedSeconds: (totalTimeElapsedMs / 1000).toFixed(2),
+        retryIntervalsConfig: retryIntervals.map(r => `${r.maxRetryCount} attempts @ ${r.intervalInSeconds}s`).join(', ')
+    };
+
+    clientLoggerNew({
+        error: 'Webhook trigger failed, still pending after retrying multiple times',
+        data: {
+            summary,
+            body
+        }
+    });
+    throw new Error('All retry attempts failed to trigger webhook');
 };

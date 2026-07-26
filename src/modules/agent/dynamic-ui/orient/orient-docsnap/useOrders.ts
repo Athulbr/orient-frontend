@@ -320,27 +320,23 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             formData.append('isoDateTime', isoDateTime);
             files.forEach(file => formData.append('file', file));
 
-            const uploadController = new AbortController();
-
             let executionId: string;
             try {
                 executionId = await triggerWebhook({
                     webhookPath: 'orient-file-upload',
                     body: formData,
-                    signal: uploadController.signal
+                    retryIntervals: [
+                        { intervalInSeconds: 60, maxRetryCount: 1 },
+                        { intervalInSeconds: 40, maxRetryCount: 3 }
+                    ]
                 });
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
             } catch (err: any) {
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
-                if (err?.name === 'AbortError') {
-                    toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                        duration: 1200000,
-                        title: 'Connection Error'
-                    });
-                } else {
-                    console.error('Upload API error:', err);
-                    toast.error(`Upload failed: ${err.message}`);
-                }
+                toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                    duration: 1200000,
+                    title: 'Connection Error'
+                });
                 setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 return;
             }
@@ -564,8 +560,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                 const webhookEndpoint = 'orient-document-extractor';
 
-                const controller = new AbortController();
-
                 setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
                 let executionId: string;
                 try {
@@ -578,26 +572,15 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                             templateName,
                             documents: payloadDocuments,
                             metaData
-                        }),
-                        signal: controller.signal,
-                        retryIntervals: [
-                            { intervalInSeconds: 10, maxRetryCount: 1 },
-                            { intervalInSeconds: 20, maxRetryCount: 1 },
-                            { intervalInSeconds: 30, maxRetryCount: 2 }
-                        ]
+                        })
                     });
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 } catch (error: any) {
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    if (error.name === 'AbortError') {
-                        toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                            duration: 1200000,
-                            title: 'Connection Error'
-                        });
-                    } else {
-                        console.error('Extraction API error:', error);
-                        toast.error(`Extraction failed: ${error.message}`);
-                    }
+                    toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                        duration: 1200000,
+                        title: 'Connection Error'
+                    });
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     extractionRetryCountRef.current[orderNumber] = 0;
