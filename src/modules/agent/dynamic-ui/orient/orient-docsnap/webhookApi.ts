@@ -14,9 +14,8 @@ interface TriggerWebhookArgs {
 }
 
 const defaultRetryIntervals: RetryInterval[] = [
-    { intervalInSeconds: 2, maxRetryCount: 5 },
-    { intervalInSeconds: 5, maxRetryCount: 3 },
-    { intervalInSeconds: 10, maxRetryCount: 2 },
+    { intervalInSeconds: 2, maxRetryCount: 10 },
+    { intervalInSeconds: 5, maxRetryCount: 10 },
     { intervalInSeconds: 20, maxRetryCount: 2 },
     { intervalInSeconds: 30, maxRetryCount: 1 }
 ];
@@ -63,7 +62,7 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
                         retryIntervalsConfig: retryIntervals.map(r => `${r.maxRetryCount} attempts @ ${r.intervalInSeconds}s`).join(', ')
                     };
                     clientLoggerNew({
-                        error: 'Webhook trigger succeeded after retries',
+                        error: `[ ${webhookPath} ] Webhook trigger succeeded after retries`,
                         data: {
                             summary,
                             body
@@ -77,6 +76,8 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
             } finally {
                 clearTimeout(timeoutId);
             }
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
     }
 
@@ -90,7 +91,7 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
     };
 
     clientLoggerNew({
-        error: 'Webhook trigger failed, still pending after retrying multiple times',
+        error: `[ ${webhookPath} ] Webhook trigger failed, still pending after retrying multiple times`,
         data: {
             summary,
             body

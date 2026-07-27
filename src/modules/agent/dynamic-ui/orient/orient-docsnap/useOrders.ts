@@ -311,13 +311,13 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             setUploadingOrders(prev => ({ ...prev, [orderNumber]: true }));
             setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: true }));
-            const currentDateTime = new Date().toLocaleString();
-            const isoDateTime = new Date().toISOString();
+            // const currentDateTime = new Date().toLocaleString();
+            // const isoDateTime = new Date().toISOString();
 
             const formData = new FormData();
-            formData.append('orderNumber', orderNumber.toString());
-            formData.append('currentDateTime', currentDateTime);
-            formData.append('isoDateTime', isoDateTime);
+            // formData.append('orderNumber', orderNumber.toString());
+            // formData.append('currentDateTime', currentDateTime);
+            // formData.append('isoDateTime', isoDateTime);
             files.forEach(file => formData.append('file', file));
 
             let executionId: string;
@@ -402,7 +402,10 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 eventSource.close();
                 delete activeUploadRef.current[orderNumber];
                 setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                toast.error('Upload stream disconnected');
+                toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                    duration: 1200000,
+                    title: 'Connection Error'
+                });
             };
         },
         [toast]
@@ -521,8 +524,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             const arrangedDocuments = rearrangeDocuments(allDocDetails);
 
-            console.log('allDocDetails', arrangedDocuments);
-
             const payloadDocuments = arrangedDocuments.flatMap(doc => {
                 const pages = (doc.documentPages || []).filter((pageUrl: string) => pageUrl.endsWith('.webp'));
                 if (pages.length === 0) return [];
@@ -541,38 +542,40 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             try {
                 const templateName = order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY';
-                const currentDateTime = new Date().toLocaleString();
-                const isoDateTime = new Date().toISOString();
+                // const currentDateTime = new Date().toLocaleString();
+                // const isoDateTime = new Date().toISOString();
 
-                const metaData = {
-                    currentDateTime,
-                    isoDateTime,
-                    orderNumber: `${orderNumber}`,
-                    branchCode: order.orderDetails?.branchCode || '',
-                    orderType: order.orderDetails?.orderType || '',
-                    orderCategory: order.orderDetails?.documentSubmitStatus || '',
-                    userName: order.userDetails?.name || ''
-                };
+                // const metaData = {
+                //     currentDateTime,
+                //     isoDateTime,
+                //     orderNumber: `${orderNumber}`,
+                //     branchCode: order.orderDetails?.branchCode || '',
+                //     orderType: order.orderDetails?.orderType || '',
+                //     orderCategory: order.orderDetails?.documentSubmitStatus || '',
+                //     userName: order.userDetails?.name || ''
+                // };
 
-                try {
-                    clientLoggerNew(metaData);
-                } catch (error) {}
-
-                const webhookEndpoint = 'orient-document-extractor';
+                // try {
+                //     clientLoggerNew(metaData);
+                // } catch (error) {}
 
                 setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
                 let executionId: string;
                 try {
+                    // const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/orient-document-extractor?orderNumber=${orderNumber}&&templateName=${templateName}`, {
+                    //     method: 'GET',
+                    //     headers: { 'Content-Type': 'application/json' }
+                    // });
+                    // const data = await response.json();
+                    // executionId = data.data?.executionId;
+                    const requestBody = {
+                        templateName,
+                        orderNumber
+                    };
+
                     executionId = await triggerWebhook({
-                        webhookPath: webhookEndpoint,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            orderNumber: orderNumber,
-                            order: { orderDetails: order.orderDetails, userDetails: order.userDetails, extractionDetails: order.extractionDetails },
-                            templateName,
-                            documents: payloadDocuments,
-                            metaData
-                        })
+                        webhookPath: 'orient-document-extractor',
+                        body: JSON.stringify(requestBody)
                     });
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 } catch (error: any) {
