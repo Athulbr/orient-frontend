@@ -907,7 +907,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className={`w-full min-w-[120px] rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 hover:border-gray-300 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
+                                                    className={`w-full min-w-[120px] rounded-md border  bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''} ${fieldValue?.confidence != null && fieldValue.confidence < 0.9 ? 'border-2 border-red-500' : fieldValue?.confidence != null && fieldValue.confidence < 0.95 ? 'border-2 border-orange-300' : 'border-transparent'}`}
                                                 />
                                             )}
                                             {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || <span>" "</span>}</div>}
@@ -1290,7 +1290,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={`w-full rounded-md border px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
+                                                            className={`w-full rounded-md border px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'} ${fieldValue?.confidence != null && fieldValue.confidence < 0.9 ? 'border-2 border-red-500' : fieldValue?.confidence != null && fieldValue.confidence < 0.95 ? 'border-2 border-orange-300' : ''} `}
                                                         />
                                                     )}
 
