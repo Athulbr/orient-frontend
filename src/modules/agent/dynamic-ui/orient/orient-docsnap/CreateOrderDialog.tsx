@@ -123,6 +123,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     ...(orderType === 'sell' && purpose === 'Education' ? { isLoanOrder } : {}),
                     branch: getBranchName(),
                     branchId: Number(sessionStorage.getItem('branch_id')),
+                    branchCode: sessionStorage.getItem('branch_code') || '',
                     totalAmount: 0,
                     actualAmount: 0,
                     orderStatus: 'pending',
