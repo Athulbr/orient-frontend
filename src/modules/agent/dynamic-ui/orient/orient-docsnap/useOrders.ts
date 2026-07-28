@@ -326,8 +326,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     webhookPath: 'orient-file-upload',
                     body: formData,
                     retryIntervals: [
-                        { intervalInSeconds: 60, maxRetryCount: 1 },
-                        { intervalInSeconds: 40, maxRetryCount: 3 }
+                        { intervalInSeconds: 30, maxRetryCount: 3 },
+                        { intervalInSeconds: 60, maxRetryCount: 2 }
                     ]
                 });
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
@@ -575,7 +575,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                     executionId = await triggerWebhook({
                         webhookPath: 'orient-document-extractor',
-                        body: JSON.stringify(requestBody)
+                        body: JSON.stringify(requestBody),
+                        headers: { 'Content-Type': 'application/json' }
                     });
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 } catch (error: any) {
@@ -618,27 +619,30 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                                         // Use ref (#1, #16)
                                         const currentOrder = ordersRef.current.find(o => o.orderDetails.orderNumber === orderNumber);
                                         const extractionDuration = Math.floor((Date.now() - extractionStartTime) / 1000);
-                                        const updateDetails = {
-                                            orderDetails: { ...(currentOrder?.orderDetails || {}), orderStatus: 'extracted' },
-                                            extractionDetails: {
-                                                recordId: finalData.recordId,
-                                                templateId: agentSettings?.defaultTemplateId || '',
-                                                templateName: agentSettings?.templates?.[0]?.name,
-                                                extractionDuration,
-                                                executions: [...(currentOrder?.extractionDetails?.executions || []), { executionId, recordId: finalData.recordId }]
-                                            }
+
+                                        const apiPayload = {
+                                            orderStatus: 'extracted',
+                                            recordId: finalData.recordId,
+                                            extractionDuration,
+                                            executionId
                                         };
 
-                                        fetch(`${config.workflowService}/workflow/orders/${orderNumber}`, {
-                                            method: 'PUT',
+                                        fetch(`${config.workflowService}/workflow/orders/${orderNumber}/extraction`, {
+                                            method: 'PATCH',
                                             headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify(updateDetails)
+                                            body: JSON.stringify(apiPayload)
                                         }).catch(err => console.error('Failed to save extraction details', err));
+
+                                        const updatedExtractionDetails = {
+                                            recordId: finalData.recordId,
+                                            extractionDuration,
+                                            executions: [...(currentOrder?.extractionDetails?.executions || []), { executionId, recordId: finalData.recordId }]
+                                        };
 
                                         setOrders(prev =>
                                             prev.map(o =>
                                                 o.orderDetails.orderNumber === orderNumber
-                                                    ? { ...o, orderDetails: { ...o.orderDetails, orderStatus: 'extracted' as const }, extractionDetails: updateDetails.extractionDetails }
+                                                    ? { ...o, orderDetails: { ...o.orderDetails, orderStatus: 'extracted' as const }, extractionDetails: updatedExtractionDetails }
                                                     : o
                                             )
                                         );

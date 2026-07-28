@@ -113,7 +113,7 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
             executionId = await triggerWebhook({
                 webhookPath: 'maraekat-submit',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: payload, order, isExtractedDataUpdated })
+                body: JSON.stringify({ payload: payload, isExtractedDataUpdated, recordId: order.extractionDetails?.recordId || '' })
             });
         } catch (error: any) {
             setIsInitiatingKyc(false);
