@@ -211,7 +211,6 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                 eventSource.close();
                 setIsExtracting(false);
                 setExtractionProgress('');
-                toast.error('Receipt extraction stream disconnected');
             };
         } catch (err) {
             console.error('Receipt extraction API error:', err);

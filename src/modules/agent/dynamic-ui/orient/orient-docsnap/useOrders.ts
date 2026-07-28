@@ -570,7 +570,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     // executionId = data.data?.executionId;
                     const requestBody = {
                         templateName,
-                        orderNumber
+                        orderNumber,
+                        recordId: order.extractionDetails?.recordId || ''
                     };
 
                     executionId = await triggerWebhook({
@@ -667,7 +668,6 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     extractionRetryCountRef.current[orderNumber] = 0;
-                    toast.error('Extraction stream disconnected');
                 };
             } catch (err) {
                 console.error('Extraction API error:', err);
