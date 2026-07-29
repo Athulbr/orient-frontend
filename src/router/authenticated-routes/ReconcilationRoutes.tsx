@@ -10,6 +10,13 @@ const ReconcilationRoutes = () => {
         <Routes>
             <Route path="list" element={<ListReconcilationPage />} />
             <Route path="recent" element={<ListReconcillationNewPage />} />
+            <Route path="dashboard" element={
+                <iframe
+                    src="/exchange_dashboard.html"
+                    style={{ width: '100%', height: '100vh', border: 'none' }}
+                    title="Exchange Dashboard"
+                />
+            } />
         </Routes>
     );
 };

@@ -558,11 +558,16 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
 
     return (
         <div className={styles['stepper-container']}>
-            <h1 className="text-xl pl-1 font-bold pb-2 text-gray-800 flex justify-between items-center">
+            <h1 className="text-xl pl-1 pb-2 text-gray-800 flex justify-between items-center">
                 <span>Orient Reconcillations</span>
-                <button onClick={() => navigate('/reconcilation/recent')} className="text-sm bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md shadow-sm transition-colors">
-                    Recent Reconcillations
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={() => navigate('/reconcilation/recent')} className="text-sm border border-gray-200 cursor-pointer py-2 px-4 rounded-md shadow-sm transition-colors">
+                        Recent Reconcillations
+                    </button>
+                    <button onClick={() => navigate('/reconcilation/dashboard')} className="text-sm border border-gray-200 cursor-pointer py-2 px-4 rounded-md shadow-sm transition-colors">
+                        Exchange Dashboard
+                    </button>
+                </div>
             </h1>
 
             {/* ── Step 1: Select Type ───────────────────────────────────────────── */}

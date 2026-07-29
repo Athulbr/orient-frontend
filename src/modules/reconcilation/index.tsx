@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FileUpload from './components/FileUpload';
 import type { ReconType } from './components/FileUpload';
 import Results from './components/Results';
@@ -87,6 +88,7 @@ const buildResult = (data: any, reconType: string, blob: Blob): ReconciliationRe
 });
 
 function ListReconcilationPage() {
+    const navigate = useNavigate();
     const [stage, setStage] = useState<'upload' | 'results'>('upload');
     const [isLoading, setIsLoading] = useState(false);
     const [isDownloading, setIsDL] = useState(false);
