@@ -280,25 +280,44 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                 pathD = `M ${startX} ${startY} H ${startX - armLen} L ${endX + armLen} ${endY} H ${endX}`;
             }
 
+            const confidenceStr = bboxEl.getAttribute('data-confidence');
+            let color = '#3b82f6'; // default blue
+            let bgRgba = 'rgba(59, 130, 246, 0.05)';
+            if (confidenceStr && confidenceStr !== 'null' && confidenceStr !== 'undefined') {
+                const conf = parseFloat(confidenceStr);
+                if (conf < 0.9) {
+                    color = '#ef4444'; // red-500
+                    bgRgba = 'rgba(239, 68, 68, 0.05)';
+                } else if (conf < 0.95) {
+                    color = '#f97316'; // orange-500
+                    bgRgba = 'rgba(249, 115, 22, 0.05)';
+                }
+            }
+
             const svg = lineRef.current;
             const path = svg.querySelector('path') as SVGPathElement | null;
             const dotStart = svg.querySelector('.dot-start') as SVGCircleElement | null;
             const dotEnd = svg.querySelector('.dot-end') as SVGCircleElement | null;
 
-            if (path) path.setAttribute('d', pathD);
+            if (path) {
+                path.setAttribute('d', pathD);
+                path.setAttribute('stroke', color);
+            }
             if (dotStart) {
                 dotStart.setAttribute('cx', String(startX));
                 dotStart.setAttribute('cy', String(startY));
+                dotStart.setAttribute('fill', color);
             }
             if (dotEnd) {
                 dotEnd.setAttribute('cx', String(endX));
                 dotEnd.setAttribute('cy', String(endY));
+                dotEnd.setAttribute('fill', color);
             }
 
             svg.style.opacity = '1';
 
-            bboxEl.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
-            bboxEl.style.borderColor = 'rgba(59, 130, 246, 1)';
+            bboxEl.style.backgroundColor = bgRgba;
+            bboxEl.style.borderColor = color;
             bboxEl.style.zIndex = '10';
         } else {
             lineRef.current.style.opacity = '0';
@@ -750,7 +769,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     }, [imageRotations, updateConnectionLine]);
 
     const allBboxes = useMemo(() => {
-        const bboxes: { id: string; bbox: Pick<BBox, 'x_min' | 'y_min' | 'x_max' | 'y_max'>; page: number }[] = [];
+        const bboxes: { id: string; bbox: Pick<BBox, 'x_min' | 'y_min' | 'x_max' | 'y_max'>; page: number; confidence?: number }[] = [];
         Object.entries(extractedData).forEach(([groupKey, groupValue]) => {
             if (Array.isArray(groupValue)) {
                 groupValue.forEach((row, rowIndex) => {
@@ -759,7 +778,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                             bboxes.push({
                                 id: `${groupKey}-${rowIndex}-${fieldKey}`,
                                 bbox: fieldValue.bbox,
-                                page: fieldValue.page
+                                page: fieldValue.page,
+                                confidence: fieldValue?.confidence
                             });
                         }
                     });
@@ -770,7 +790,8 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         bboxes.push({
                             id: `${groupKey}-${fieldKey}`,
                             bbox: fieldValue.bbox,
-                            page: fieldValue.page
+                            page: fieldValue.page,
+                            confidence: fieldValue?.confidence
                         });
                     }
                 });
@@ -887,7 +908,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className={`${isValueDiff ? 'bg-yellow-100 min-w-[120px]' : 'min-w-[120px]'} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
+                                                    className={`w-full min-w-[120px] rounded-md px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+                                                        fieldValue?.confidence != null
+                                                            ? fieldValue.confidence < 0.9
+                                                                ? 'border-2 border-red-500'
+                                                                : fieldValue.confidence < 0.95
+                                                                  ? 'border-2 border-orange-300'
+                                                                  : 'border border-zinc-300 focus:border-blue-400'
+                                                            : 'border border-zinc-300 focus:border-blue-400'
+                                                    } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
                                                 />
                                             ) : (
                                                 <input
@@ -907,7 +936,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         setExtractedData(newData);
                                                     }}
                                                     placeholder="Not available"
-                                                    className={`w-full min-w-[120px] rounded-md border  bg-transparent px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : ''} ${fieldValue?.confidence != null && fieldValue.confidence < 0.9 ? 'border-2 border-red-500' : fieldValue?.confidence != null && fieldValue.confidence < 0.95 ? 'border-2 border-orange-300' : 'border-transparent'}`}
+                                                    className={`w-full min-w-[120px] rounded-md px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+                                                        fieldValue?.confidence != null
+                                                            ? fieldValue.confidence < 0.9
+                                                                ? 'border-2 border-red-500'
+                                                                : fieldValue.confidence < 0.95
+                                                                  ? 'border-2 border-orange-300'
+                                                                  : 'border border-zinc-300 focus:border-blue-400'
+                                                            : 'border border-zinc-300 focus:border-blue-400'
+                                                    } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
                                                 />
                                             )}
                                             {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || <span>" "</span>}</div>}
@@ -1087,8 +1124,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                     <div
                                                         key={b.id}
                                                         id={`bbox-${b.id}`}
-                                                        className={`absolute cursor-pointer border transition-all duration-300 hover:border-blue-500 hover:bg-blue-400/10 ${
-                                                            activeFieldId === b.id ? 'z-10 border-blue-500 bg-blue-500/5' : 'border-yellow-600 bg-yellow-500/8'
+                                                        data-confidence={b.confidence}
+                                                        className={`absolute cursor-pointer border transition-all duration-300 ${
+                                                            activeFieldId === b.id
+                                                                ? 'z-10'
+                                                                : b.confidence != null && b.confidence < 0.9
+                                                                  ? 'border-red-500 bg-red-500/10 hover:border-red-600 hover:bg-red-500/20'
+                                                                  : b.confidence != null && b.confidence < 0.95
+                                                                    ? 'border-orange-400 bg-orange-400/10 hover:border-orange-500 hover:bg-orange-500/20'
+                                                                    : 'border-yellow-600 bg-yellow-500/8 hover:border-blue-500 hover:bg-blue-400/10'
                                                         }`}
                                                         style={{
                                                             left: `${(tb.x_min - 0.004) * 100}%`,
@@ -1272,7 +1316,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={`${isValueDiff ? 'bg-yellow-100' : ''} ${fieldValue?.confidence != null && fieldValue.confidence < 0.75 ? 'border-b-2 border-b-orange-300' : ''}`}
+                                                            className={`w-full rounded-md px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+                                                                fieldValue?.confidence != null
+                                                                    ? fieldValue.confidence < 0.9
+                                                                        ? 'border-2 border-red-500'
+                                                                        : fieldValue.confidence < 0.95
+                                                                          ? 'border-2 border-orange-300'
+                                                                          : 'border border-zinc-300 focus:border-blue-400'
+                                                                    : 'border border-zinc-300 focus:border-blue-400'
+                                                            } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
                                                         />
                                                     ) : (
                                                         <input
@@ -1290,7 +1342,15 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 setExtractedData(newData);
                                                             }}
                                                             placeholder="Not available"
-                                                            className={`w-full rounded-md border px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'focus:bg-white'} ${fieldValue?.confidence != null && fieldValue.confidence < 0.9 ? 'border-2 border-red-500' : fieldValue?.confidence != null && fieldValue.confidence < 0.95 ? 'border-2 border-orange-300' : ''} `}
+                                                            className={`w-full rounded-md px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+                                                                fieldValue?.confidence != null
+                                                                    ? fieldValue.confidence < 0.9
+                                                                        ? 'border-2 border-red-500'
+                                                                        : fieldValue.confidence < 0.95
+                                                                          ? 'border-2 border-orange-300'
+                                                                          : 'border border-zinc-300 focus:border-blue-400'
+                                                                    : 'border border-zinc-300 focus:border-blue-400'
+                                                            } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
                                                         />
                                                     )}
 

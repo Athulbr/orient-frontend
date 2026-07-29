@@ -172,7 +172,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
 
     const isInvalidValue = normalizedValue !== '' && !options.map(opt => `${opt}`.toUpperCase()).includes(normalizedValue);
     return (
-        <div ref={containerRef} className={`relative ${className || ''}`} onBlur={handleContainerBlur} onKeyDown={handleKeyDown}>
+        <div ref={containerRef} className="relative w-full" onBlur={handleContainerBlur} onKeyDown={handleKeyDown}>
             {/* Trigger button */}
             <button
                 type="button"
