@@ -8,6 +8,7 @@ const ViewAgentPage = lazy(() => import('../../modules/agent/view-agent'));
 const ListAgentTemplatePage = lazy(() => import('../../modules/agent/agent-template/list-agent-template'));
 const ViewAgentTemplatePage = lazy(() => import('../../modules/agent/agent-template/view-agent-template'));
 const ScannedDocuments = lazy(() => import('../../modules/agent/dynamic-ui/orient/orient-docsnap/scanned-documents'));
+const CorrectedOrdersPage = lazy(() => import('../../modules/agent/dynamic-ui/orient/orient-docsnap/corrected-orders'));
 const ServerStatusPage = lazy(() => import('../../modules/agent/dynamic-ui/orient/orient-docsnap/server-status'));
 
 const AgentRoutes = () => {
@@ -20,6 +21,7 @@ const AgentRoutes = () => {
             <Route path="template/create" element={<ViewAgentTemplatePage isCreate={true} />} />
             <Route path="template/:id" element={<ViewAgentTemplatePage />} />
             <Route path="scanned-documents" element={<ScannedDocuments />} />
+            <Route path="corrected-orders" element={<CorrectedOrdersPage />} />
             <Route path="health" element={<ServerStatusPage />} />
         </Routes>
     );
