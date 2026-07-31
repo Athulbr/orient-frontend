@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import FileUpload from './components/FileUpload';
 import type { ReconType } from './components/FileUpload';
 import Results from './components/Results';
 import PageContainer from '../../components/PageContainer';
 import { cx } from './utils/cx';
 import styles from './app.module.css';
-import { config } from '../../config/default';
 
 interface SheetMetadata {
     [sheetName: string]: { rows: number; columns: number; column_names: string[] };
@@ -88,14 +86,13 @@ const buildResult = (data: any, reconType: string, blob: Blob): ReconciliationRe
 });
 
 function ListReconcilationPage() {
-    const navigate = useNavigate();
     const [stage, setStage] = useState<'upload' | 'results'>('upload');
     const [isLoading, setIsLoading] = useState(false);
     const [isDownloading, setIsDL] = useState(false);
     const [results, setResults] = useState<ReconciliationResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const API_BASE_URL = config.reconcillationService;
+    const API_BASE_URL = 'http://172.16.0.47:8000';
     // const API_BASE_URL = 'http://localhost:8000';
 
     const handleUpload = async (bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType, hotBookFile?: File | null) => {
@@ -150,17 +147,14 @@ function ListReconcilationPage() {
             formData.append('all_branches_file', allBranchesFile);
             formData.append('hot_book_file', hotBookFile);
             formData.append('statement_file', statementFile);
-            for (const f of payuFiles) formData.append('payu_files', f);
+            for (const f of payuFiles) formData.append('payu_file', f);
             for (const f of payuOdFiles) formData.append('payu_od_files', f);
-            for (const f of cashfreeFiles) formData.append('cashfree_files', f);
-            for (const f of easebuzzFiles) formData.append('easebuzz_files', f);
+            for (const f of cashfreeFiles) formData.append('cashfree_file', f);
+            for (const f of easebuzzFiles) formData.append('easebuzz_file', f);
             if (prevBrsFile) formData.append('previous_brs_file', prevBrsFile);
-<<<<<<< Updated upstream
-=======
             if (nameMatchDirectFile) formData.append('name_match_direct_file', nameMatchDirectFile);
             if (nameMatchFile) formData.append('name_match_file', nameMatchFile);
             if (totalOrdersFile) formData.append('total_orders_file', totalOrdersFile);
->>>>>>> Stashed changes
             const response = await fetch(`${API_BASE_URL}/workflow/reconcile-gateway`, { method: 'POST', body: formData });
             if (!response.ok) {
                 const err = await response.json().catch(() => null);
@@ -243,7 +237,7 @@ function ListReconcilationPage() {
     return (
         // Match the exact PageContainer usage of other pages: gap-4 p-6
         // NO overflow-y here — the parent layout (AuthenticatedLayout) is the single scroller
-        <PageContainer className="gap-4 p-4">
+        <PageContainer className="gap-4 p-6">
             {/* Results action bar — only shown when viewing results */}
             {stage === 'results' && (
                 <div className={styles.pageHeader}>
