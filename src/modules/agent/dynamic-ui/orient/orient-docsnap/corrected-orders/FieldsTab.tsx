@@ -35,7 +35,11 @@ const formatLabel = (path: string) => {
         .join(' > ');
 };
 
-const FieldsTab: React.FC = () => {
+interface FieldsTabProps {
+    dateRange: { startDate: string; endDate: string };
+}
+
+const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
     const navigate = useNavigate();
     const [fields, setFields] = useState<CorrectedField[]>([]);
     const [loading, setLoading] = useState(true);
@@ -49,9 +53,10 @@ const FieldsTab: React.FC = () => {
     const loadFields = async (p: number) => {
         try {
             setLoading(true);
-            const res = await fetchCorrectedFields(p, 20);
+            const res = await fetchCorrectedFields(p, 20, dateRange.startDate, dateRange.endDate);
             if (res.success) {
-                setFields(res.data);
+                const sortedFields = [...res.data].sort((a: CorrectedField, b: CorrectedField) => b.correctionCount - a.correctionCount);
+                setFields(sortedFields);
                 setTotalPages(res.pagination.totalPages);
                 setTotalCount(res.pagination.total || 0);
                 setPage(res.pagination.page);
@@ -64,8 +69,10 @@ const FieldsTab: React.FC = () => {
     };
 
     useEffect(() => {
+        setExpandedFieldId(null);
+        setFieldDetails({});
         loadFields(1);
-    }, []);
+    }, [dateRange]);
 
     const toggleField = async (fieldId: string) => {
         if (expandedFieldId === fieldId) {
@@ -79,7 +86,7 @@ const FieldsTab: React.FC = () => {
         if (!fieldDetails[fieldId]) {
             try {
                 setDetailsLoading(prev => ({ ...prev, [fieldId]: true }));
-                const res = await fetchFieldOrders(fieldId);
+                const res = await fetchFieldOrders(fieldId, dateRange.startDate, dateRange.endDate);
                 if (res.success) {
                     setFieldDetails(prev => ({ ...prev, [fieldId]: res.data }));
                 }

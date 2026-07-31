@@ -27,7 +27,11 @@ const formatLabel = (path: string) => {
         .join(' > ');
 };
 
-const OrdersTab: React.FC = () => {
+interface OrdersTabProps {
+    dateRange: { startDate: string; endDate: string };
+}
+
+const OrdersTab: React.FC<OrdersTabProps> = ({ dateRange }) => {
     const navigate = useNavigate();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,7 +43,7 @@ const OrdersTab: React.FC = () => {
     const loadOrders = async (p: number) => {
         try {
             setLoading(true);
-            const res = await fetchCorrectedOrders(p, 20);
+            const res = await fetchCorrectedOrders(p, 20, dateRange.startDate, dateRange.endDate);
             if (res.success) {
                 setOrders(res.data);
                 setTotalPages(res.pagination.totalPages);
@@ -55,7 +59,7 @@ const OrdersTab: React.FC = () => {
 
     useEffect(() => {
         loadOrders(1);
-    }, []);
+    }, [dateRange]);
 
     const toggleOrder = (orderId: string) => {
         setExpandedOrder(expandedOrder === orderId ? null : orderId);
@@ -157,8 +161,12 @@ const OrdersTab: React.FC = () => {
             {/* Pagination */}
             <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50 mt-auto">
                 <span className="text-sm text-gray-600 flex items-center gap-4">
-                    <span>Total Orders: <b className="text-gray-900">{totalCount}</b></span>
-                    <span>Page <b>{page}</b> of <b>{totalPages}</b></span>
+                    <span>
+                        Corrected Orders: <b className="text-gray-900">{totalCount}</b>
+                    </span>
+                    <span>
+                        Page <b>{page}</b> of <b>{totalPages}</b>
+                    </span>
                 </span>
                 <div className="flex gap-2">
                     <Button disabled={page === 1} onClick={() => loadOrders(page - 1)} outlined>

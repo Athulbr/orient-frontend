@@ -1132,7 +1132,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                   ? 'border-red-500 bg-red-500/10 hover:border-red-600 hover:bg-red-500/20'
                                                                   : b.confidence != null && b.confidence < 0.95
                                                                     ? 'border-orange-400 bg-orange-400/10 hover:border-orange-500 hover:bg-orange-500/20'
-                                                                    : 'border-yellow-600 bg-yellow-500/8 hover:border-blue-500 hover:bg-blue-400/10'
+                                                                    : 'border-blue-300 bg-blue-300/8 hover:border-blue-500 hover:bg-blue-400/10'
                                                         }`}
                                                         style={{
                                                             left: `${(tb.x_min - 0.004) * 100}%`,
