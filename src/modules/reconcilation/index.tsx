@@ -138,7 +138,10 @@ function ListReconcilationPage() {
         prevBrsFile: File | null,
         payuOdFiles: File[],
         cashfreeFiles: File[],
-        easebuzzFiles: File[]
+        easebuzzFiles: File[],
+        nameMatchDirectFile: File | null,
+        nameMatchFile: File | null,
+        totalOrdersFile: File | null
     ) => {
         setIsLoading(true);
         setError(null);
@@ -147,11 +150,17 @@ function ListReconcilationPage() {
             formData.append('all_branches_file', allBranchesFile);
             formData.append('hot_book_file', hotBookFile);
             formData.append('statement_file', statementFile);
-            for (const f of payuFiles) formData.append('payu_file', f);
+            for (const f of payuFiles) formData.append('payu_files', f);
             for (const f of payuOdFiles) formData.append('payu_od_files', f);
-            for (const f of cashfreeFiles) formData.append('cashfree_file', f);
-            for (const f of easebuzzFiles) formData.append('easebuzz_file', f);
+            for (const f of cashfreeFiles) formData.append('cashfree_files', f);
+            for (const f of easebuzzFiles) formData.append('easebuzz_files', f);
             if (prevBrsFile) formData.append('previous_brs_file', prevBrsFile);
+<<<<<<< Updated upstream
+=======
+            if (nameMatchDirectFile) formData.append('name_match_direct_file', nameMatchDirectFile);
+            if (nameMatchFile) formData.append('name_match_file', nameMatchFile);
+            if (totalOrdersFile) formData.append('total_orders_file', totalOrdersFile);
+>>>>>>> Stashed changes
             const response = await fetch(`${API_BASE_URL}/workflow/reconcile-gateway`, { method: 'POST', body: formData });
             if (!response.ok) {
                 const err = await response.json().catch(() => null);
@@ -176,14 +185,29 @@ function ListReconcilationPage() {
         payuOdFiles?: File[],
         cashfreeFiles?: File[],
         easebuzzFiles?: File[],
-        payuFiles?: File[]
+        payuFiles?: File[],
+        nameMatchDirectFile?: File | null,
+        nameMatchFile?: File | null,
+        totalOrdersFile?: File | null
     ) => {
         if (reconType === 'gateway') {
             if (!payuFiles || payuFiles.length === 0) {
                 setError('PayU Regular file is required for Gateway reconciliation.');
                 return;
             }
-            handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFiles, prevBrsFile, payuOdFiles || [], cashfreeFiles || [], easebuzzFiles || []);
+            if (!nameMatchDirectFile) {
+                setError('Name Matching Report - Direct payment file is required for Gateway reconciliation.');
+                return;
+            }
+            if (!nameMatchFile) {
+                setError('Name Matching Report file is required for Gateway reconciliation.');
+                return;
+            }
+            if (!totalOrdersFile) {
+                setError('Total Orders List file is required for Gateway reconciliation.');
+                return;
+            }
+            handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFiles, prevBrsFile, payuOdFiles || [], cashfreeFiles || [], easebuzzFiles || [], nameMatchDirectFile, nameMatchFile, totalOrdersFile);
         } else {
             handleUpload(bookFile, statementFile, prevBrsFile, reconType, hotBookFile);
         }
