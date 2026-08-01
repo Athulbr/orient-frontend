@@ -325,6 +325,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 executionId = await triggerWebhook({
                     webhookPath: 'orient-file-upload',
                     body: formData,
+                    orderNumber,
                     retryIntervals: [
                         { intervalInSeconds: 30, maxRetryCount: 3 },
                         { intervalInSeconds: 60, maxRetryCount: 2 }
@@ -577,7 +578,8 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     executionId = await triggerWebhook({
                         webhookPath: 'orient-document-extractor',
                         body: JSON.stringify(requestBody),
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
+                        orderNumber
                     });
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 } catch (error: any) {

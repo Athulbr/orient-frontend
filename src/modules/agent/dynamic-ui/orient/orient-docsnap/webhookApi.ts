@@ -11,6 +11,7 @@ interface TriggerWebhookArgs {
     body: FormData | string;
     headers?: HeadersInit;
     retryIntervals?: RetryInterval[];
+    orderNumber?: number;
 }
 
 const defaultRetryIntervals: RetryInterval[] = [
@@ -20,9 +21,11 @@ const defaultRetryIntervals: RetryInterval[] = [
     { intervalInSeconds: 30, maxRetryCount: 1 }
 ];
 
-export const triggerWebhook = async ({ webhookPath, body, headers, retryIntervals = defaultRetryIntervals }: TriggerWebhookArgs): Promise<string> => {
+export const triggerWebhook = async ({ webhookPath, body, headers, retryIntervals = defaultRetryIntervals, orderNumber }: TriggerWebhookArgs): Promise<string> => {
     let totalAttempts = 0;
     const startTime = Date.now();
+
+    const branchCode = sessionStorage.getItem('branch_code') || '';
 
     for (const retryConfig of retryIntervals) {
         for (let i = 0; i < retryConfig.maxRetryCount; i++) {
@@ -62,7 +65,7 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
                         retryIntervalsConfig: retryIntervals.map(r => `${r.maxRetryCount} attempts @ ${r.intervalInSeconds}s`).join(', ')
                     };
                     clientLoggerNew({
-                        error: `[ ${webhookPath} ] Webhook trigger succeeded after retries`,
+                        error: `[ ${webhookPath} ] [ ${branchCode} ] [ ${orderNumber} ] Webhook trigger succeeded after retries`,
                         data: {
                             summary,
                             body
@@ -91,7 +94,7 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
     };
 
     clientLoggerNew({
-        error: `[ ${webhookPath} ] Webhook trigger failed, still pending after retrying multiple times`,
+        error: `[ ${webhookPath} ] [ ${branchCode} ] [ ${orderNumber} ] Webhook trigger failed, still pending after retrying multiple times`,
         data: {
             summary,
             body
