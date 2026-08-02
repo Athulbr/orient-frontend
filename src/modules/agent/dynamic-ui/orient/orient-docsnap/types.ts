@@ -69,6 +69,7 @@ export interface DocumentDetail {
 }
 
 export interface Order {
+    _id?: string | undefined;
     orderDetails: OrderDetails;
     userDetails: UserDetails;
     currencyDetails: CurrencyDetail[];

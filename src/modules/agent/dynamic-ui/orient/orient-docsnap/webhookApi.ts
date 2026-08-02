@@ -1,5 +1,6 @@
 import { config } from '../../../../../config/default';
 import clientLoggerNew from '../../../../../global-utils/clientLoggerNew';
+import axios from 'axios';
 
 export interface RetryInterval {
     intervalInSeconds: number;
@@ -37,18 +38,12 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
             }, retryConfig.intervalInSeconds * 1000);
 
             try {
-                const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/${webhookPath}`, {
-                    method: 'POST',
-                    headers,
-                    body,
+                const response = await axios.post(`${config.workflowService}/workflow/webhooks/trigger/${webhookPath}`, body, {
+                    headers: headers as any,
                     signal: controller.signal
                 });
 
-                if (!response.ok) {
-                    throw new Error(`API response error: ${response.status}`);
-                }
-
-                const responseData = await response.json();
+                const responseData = response.data;
                 const executionId = responseData?.data?.executionId;
 
                 if (!executionId) {
@@ -75,7 +70,9 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
 
                 return executionId;
             } catch (error: any) {
-                // Ignore error and continue to the next retry attempt
+                // If it's a 4xx error, there's no point in retrying. Throw immediately.
+                throw error;
+                // Otherwise, it's a network error or 5xx error, continue to the next retry attempt
             } finally {
                 clearTimeout(timeoutId);
             }

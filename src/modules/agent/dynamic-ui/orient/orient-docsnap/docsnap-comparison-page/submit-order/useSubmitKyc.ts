@@ -105,7 +105,21 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
             setResultMessage({ type: 'error', messages: dateErrors });
             return { success: false };
         }
-        const isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData);
+
+        payload.isExtractedDataUpdated = checkIsExtractedDataUpdated(extractedData) ? 'YES' : 'NO';
+        payload.recordId = order.extractionDetails?.recordId || '';
+        payload.orderId = order._id || '';
+
+        const objectToString = (obj: Record<string, any>): string => {
+            return Object.entries(obj)
+                .map(([key, value]) => {
+                    const sanitizedValue = String(value).replace(/,/g, ' ').replace(/\|/g, ' ').replace(/\s+/g, ' ').trim();
+                    return `${key}:${sanitizedValue}`;
+                })
+                .join('|');
+        };
+
+        const stringPayload = objectToString(payload);
 
         setIsInitiatingKyc(true);
         let executionId: string;
@@ -114,14 +128,16 @@ export const useSubmitKyc = ({ order, extractedData, onOrderUpdate, onBeforeSubm
                 webhookPath: 'maraekat-submit',
                 headers: { 'Content-Type': 'application/json' },
                 orderNumber: Number(payload.BOOKINGNO) || 0,
-                body: JSON.stringify({ payload: payload, isExtractedDataUpdated, recordId: order.extractionDetails?.recordId || '' })
+                body: JSON.stringify({ payload: stringPayload })
             });
         } catch (error: any) {
             setIsInitiatingKyc(false);
-            toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                duration: 1200000,
-                title: 'Connection Error'
-            });
+            if (error.message === 'All retry attempts failed to trigger webhook') {
+                toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                    duration: 1200000,
+                    title: 'Connection Error'
+                });
+            }
             setResultMessage({ type: 'error', messages: [`Failed to submit KYC details: ${error.message}`] });
             return { success: false };
         }

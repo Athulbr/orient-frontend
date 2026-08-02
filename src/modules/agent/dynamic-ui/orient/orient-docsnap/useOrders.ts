@@ -334,10 +334,18 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
             } catch (err: any) {
                 setInitiatingUploadOrders(prev => ({ ...prev, [orderNumber]: false }));
-                toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                    duration: 1200000,
-                    title: 'Connection Error'
-                });
+                if (err.message === 'All retry attempts failed to trigger webhook') {
+                    toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                        duration: 1200000,
+                        title: 'Connection Error'
+                    });
+                } else {
+                    const errMsg = err.response?.data?.message || err.message || 'An error occurred';
+                    toast.error(errMsg, {
+                        duration: 1200000,
+                        title: 'Error'
+                    });
+                }
                 setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 return;
             }
@@ -403,10 +411,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                 eventSource.close();
                 delete activeUploadRef.current[orderNumber];
                 setUploadingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                    duration: 1200000,
-                    title: 'Connection Error'
-                });
+                toast.error('Stream disconnected, Please try uploading again.');
             };
         },
         [toast]
@@ -584,10 +589,18 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 } catch (error: any) {
                     setInitiatingOrders(prev => ({ ...prev, [orderNumber]: false }));
-                    toast.error('Not able to reach the server, Please refresh the page and try again.', {
-                        duration: 1200000,
-                        title: 'Connection Error'
-                    });
+                    if (error.message === 'All retry attempts failed to trigger webhook') {
+                        toast.error('Not able to reach the server, Please refresh the page and try again.', {
+                            duration: 1200000,
+                            title: 'Connection Error'
+                        });
+                    } else {
+                        const errMsg = error.response?.data?.message || error.message || 'An error occurred';
+                        toast.error(errMsg, {
+                            duration: 1200000,
+                            title: 'Error'
+                        });
+                    }
                     setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     setRetryingOrders(prev => ({ ...prev, [orderNumber]: false }));
                     extractionRetryCountRef.current[orderNumber] = 0;
