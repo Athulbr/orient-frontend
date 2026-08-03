@@ -580,8 +580,22 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         recordId: order.extractionDetails?.recordId || ''
                     };
 
+                    const modelType = localStorage.getItem('model');
+                    let webhookPath = 'orient-document-extractor';
+                    switch (modelType) {
+                        case 'lite':
+                            webhookPath = 'orient-document-extractor-lite';
+                            break;
+                        case 'flash':
+                            webhookPath = 'orient-document-extractor-flash';
+                            break;
+                        default:
+                            webhookPath = 'orient-document-extractor';
+                            break;
+                    }
+
                     executionId = await triggerWebhook({
-                        webhookPath: 'orient-document-extractor',
+                        webhookPath,
                         body: JSON.stringify(requestBody),
                         headers: { 'Content-Type': 'application/json' },
                         orderNumber
