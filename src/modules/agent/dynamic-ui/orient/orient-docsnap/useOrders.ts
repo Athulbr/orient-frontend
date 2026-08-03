@@ -581,7 +581,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                     };
 
                     executionId = await triggerWebhook({
-                        webhookPath: 'orient-document-extractor-research',
+                        webhookPath: 'orient-document-extractor',
                         body: JSON.stringify(requestBody),
                         headers: { 'Content-Type': 'application/json' },
                         orderNumber
