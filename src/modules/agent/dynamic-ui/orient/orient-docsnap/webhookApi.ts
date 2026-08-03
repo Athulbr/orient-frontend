@@ -71,7 +71,9 @@ export const triggerWebhook = async ({ webhookPath, body, headers, retryInterval
                 return executionId;
             } catch (error: any) {
                 // If it's a 4xx error, there's no point in retrying. Throw immediately.
-                throw error;
+                if (!axios.isCancel(error)) {
+                    throw error;
+                }
                 // Otherwise, it's a network error or 5xx error, continue to the next retry attempt
             } finally {
                 clearTimeout(timeoutId);
