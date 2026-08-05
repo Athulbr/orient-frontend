@@ -580,17 +580,14 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         recordId: order.extractionDetails?.recordId || ''
                     };
 
-                    const workflowType = localStorage.getItem('workflow');
+                    const branchCode = localStorage.getItem('branch_code');
                     let webhookPath = 'orient-document-extractor';
-                    switch (workflowType) {
-                        case 'lite':
-                            webhookPath = 'orient-document-extractor-lite';
-                            break;
-                        case 'flash':
+                    switch (branchCode?.toUpperCase()) {
+                        case 'BANH':
                             webhookPath = 'orient-document-extractor-flash';
                             break;
-                        case 'structured':
-                            webhookPath = 'orient-document-extractor-structured-output';
+                        case 'BANW':
+                            webhookPath = 'orient-document-extractor-flash';
                             break;
                         default:
                             webhookPath = 'orient-document-extractor';
