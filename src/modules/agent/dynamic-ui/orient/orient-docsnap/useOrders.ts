@@ -580,7 +580,7 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
                         recordId: order.extractionDetails?.recordId || ''
                     };
 
-                    const branchCode = localStorage.getItem('branch_code');
+                    const branchCode = sessionStorage.getItem('branch_code');
                     let webhookPath = 'orient-document-extractor';
                     switch (branchCode?.toUpperCase()) {
                         case 'BANH':
