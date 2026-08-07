@@ -582,17 +582,20 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
                     const branchCode = sessionStorage.getItem('branch_code');
                     let webhookPath = 'orient-document-extractor';
-                    switch (branchCode?.toUpperCase()) {
-                        case 'BANH':
-                            webhookPath = 'orient-document-extractor-flash';
-                            break;
-                        case 'BANW':
-                            webhookPath = 'orient-document-extractor-flash';
-                            break;
-                        default:
-                            webhookPath = 'orient-document-extractor';
-                            break;
-                    }
+                    // switch (branchCode?.toUpperCase()) {
+                    //     case 'BANH':
+                    //         webhookPath = 'orient-document-extractor-flash-lite';
+                    //         break;
+                    //     case 'BANW':
+                    //         webhookPath = 'orient-document-extractor-flash-lite';
+                    //         break;
+                    //     case 'STRUCTURED':
+                    //         webhookPath = 'orient-document-extractor-structured-output';
+                    //         break;
+                    //     default:
+                    //         webhookPath = 'orient-document-extractor';
+                    //         break;
+                    // }
 
                     executionId = await triggerWebhook({
                         webhookPath,

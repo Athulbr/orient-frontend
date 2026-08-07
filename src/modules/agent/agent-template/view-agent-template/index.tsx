@@ -37,7 +37,7 @@ const LLM_MODELS: Record<LLMProvider, string[]> = {
     openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-5'],
     anthropic: ['claude-sonnet-4-20250514', 'claude-sonnet-4-5-20250929', 'claude-3-7-sonnet-20250219'],
     azure: ['gpt-4o-docsnap', 'gpt-4o-mini-docsnap'],
-    gemini: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3-pro-preview', 'gemini-3-flash-preview']
+    gemini: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite']
 };
 
 interface TemplateSettings {
