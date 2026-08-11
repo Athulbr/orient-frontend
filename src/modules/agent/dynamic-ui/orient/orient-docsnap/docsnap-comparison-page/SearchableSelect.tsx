@@ -187,6 +187,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
                 className={`flex w-full items-center justify-between rounded-md border px-4 py-2.5 text-left text-sm transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:outline-none ${
                     isInvalidValue ? 'border-red-400' : value ? 'border-gray-400 text-zinc-800' : 'border-gray-400 text-zinc-400'
                 } ${isOpen ? 'border-blue-400 ring-2 ring-blue-100' : ''} ${className || ''}`}
+                style={{ fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace", fontVariantNumeric: 'slashed-zero' }}
             >
                 <span className={`truncate ${!value ? 'font-normal' : ''} ${isInvalidValue ? 'text-red-500 font-medium' : ''}`}>{value || placeholder}</span>
                 <div className="flex items-center gap-1 ml-2">
@@ -203,7 +204,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({ id, value, o
             {isOpen &&
                 typeof document !== 'undefined' &&
                 createPortal(
-                    <div ref={dropdownRef} className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg animate-in fade-in slide-in-from-top-1 duration-150" style={dropdownStyle}>
+                    <div ref={dropdownRef} className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg animate-in fade-in slide-in-from-top-1 duration-150" style={{ ...dropdownStyle, fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace", fontVariantNumeric: 'slashed-zero' }}>
                         {/* Search */}
                         <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2">
                             <Search size={14} className="shrink-0 text-zinc-400" />

@@ -16,3 +16,11 @@
 .track::-webkit-scrollbar-thumb:hover {
   background: #484646;
 }
+
+.comparisonContainer input,
+.comparisonContainer textarea,
+.comparisonContainer select {
+  font-family: Consolas, Menlo, Monaco, 'Courier New', monospace;
+  font-variant-numeric: slashed-zero;
+  font-feature-settings: 'zero' 1;
+}

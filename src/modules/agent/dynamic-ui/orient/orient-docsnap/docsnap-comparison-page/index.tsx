@@ -980,7 +980,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     }
 
     return (
-        <div ref={containerRef} className="relative flex h-full w-full overflow-hidden bg-white text-zinc-800">
+        <div ref={containerRef} className={`relative flex h-full w-full overflow-hidden bg-white text-zinc-800 ${styles.comparisonContainer}`}>
             {/* Left Pane */}
             <div ref={leftPaneRef} className="flex h-full flex-shrink-0 flex-col border-r border-zinc-200 bg-zinc-100" style={{ width: `${leftWidth}%` }}>
                 {/* Toolbar */}
@@ -1165,7 +1165,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 </div>
                                                                 <div
                                                                     className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-semibold text-lg text-zinc-800 break-words whitespace-pre-wrap"
-                                                                    style={{ minHeight: '10px', maxWidth: '300px' }}
+                                                                    style={{ minHeight: '10px', maxWidth: '300px', fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace", fontVariantNumeric: 'slashed-zero' }}
                                                                 >
                                                                     {activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
                                                                 </div>

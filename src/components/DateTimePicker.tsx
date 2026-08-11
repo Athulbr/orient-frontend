@@ -97,6 +97,34 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
         setEndValue(formatDateForInput(initialEndDate));
     }, [initialEndDate, formatDateForInput]);
 
+    const handleStartDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        if (!val) {
+            setStartValue('');
+            return;
+        }
+        const datePart = val.split('T')[0];
+        if (datePart) {
+            setStartValue(`${datePart}T00:00`);
+        } else {
+            setStartValue(val);
+        }
+    }, []);
+
+    const handleEndDateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        if (!val) {
+            setEndValue('');
+            return;
+        }
+        const datePart = val.split('T')[0];
+        if (datePart) {
+            setEndValue(`${datePart}T23:59`);
+        } else {
+            setEndValue(val);
+        }
+    }, []);
+
     const handleClear = useCallback(() => {
         setStartValue('');
         setEndValue('');
@@ -200,9 +228,15 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                                 id="start-date"
                                 type="datetime-local"
                                 value={startValue}
-                                onChange={e => setStartValue(e.target.value)}
+                                onChange={handleStartDateChange}
                                 onClick={() => {
-                                    if (!startValue) setStartValue(formatDateForInput(new Date().toISOString()));
+                                    if (!startValue) {
+                                        const today = new Date();
+                                        const year = today.getFullYear();
+                                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                                        const day = String(today.getDate()).padStart(2, '0');
+                                        setStartValue(`${year}-${month}-${day}T00:00`);
+                                    }
                                 }}
                                 min={minDate ? formatDateForInput(minDate) : undefined}
                                 max={maxDate ? formatDateForInput(maxDate) : undefined}
@@ -222,16 +256,22 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                                 id="end-date"
                                 type="datetime-local"
                                 value={endValue}
-                                onChange={e => setEndValue(e.target.value)}
+                                onChange={handleEndDateChange}
                                 onClick={() => {
-                                    if (!endValue) setEndValue(formatDateForInput(new Date().toISOString()));
+                                    if (!endValue) {
+                                        const today = new Date();
+                                        const year = today.getFullYear();
+                                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                                        const day = String(today.getDate()).padStart(2, '0');
+                                        setEndValue(`${year}-${month}-${day}T23:59`);
+                                    }
                                 }}
                                 min={minDate ? formatDateForInput(minDate) : undefined}
                                 max={maxDate ? formatDateForInput(maxDate) : undefined}
                                 disabled={disabled}
                                 aria-describedby={error ? 'date-error' : undefined}
                                 aria-invalid={error ? 'true' : 'false'}
-                                className="w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500  transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </div>
 

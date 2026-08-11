@@ -8,6 +8,7 @@
 
 @theme {
     --font-dmsans: 'DM Sans', sans-serif;
+    --font-vscode-mono: Consolas, Menlo, Monaco, 'Courier New', monospace;
 }
 
 /* For default border color (--color-gray-200) */
