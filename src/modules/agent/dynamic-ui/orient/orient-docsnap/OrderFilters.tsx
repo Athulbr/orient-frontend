@@ -37,8 +37,8 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
 
     const menuOptions = [
         { label: 'Scanned Documents', value: 'scannedDocuments' },
-        { label: 'Corrected Orders', value: 'correctedOrders' },
         { label: 'Daily Report', value: 'dailyReport' },
+        { label: 'Corrected Orders', value: 'correctedOrders' },
         { label: 'Server Status', value: 'ServerStatus' }
     ];
 

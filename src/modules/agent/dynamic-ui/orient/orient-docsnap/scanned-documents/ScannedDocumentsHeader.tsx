@@ -3,10 +3,12 @@ import { RotateCw, X, ScanLine, Search, Download } from 'lucide-react';
 import DateTimePicker from '../../../../../../components/DateTimePicker';
 import { SingleSelect } from '../../../../../../components/SingleSelect';
 import { Button } from '../../../../../../components/Button';
+import BackButton from '../../../../../../components/BackButton';
 import { STATIC_BRANCHES } from './constants';
 import type { StatusFilter, DateRange } from './types';
 
 interface ScannedDocumentsHeaderProps {
+    onBack?: () => void;
     documentCount: number;
     isLoading: boolean;
     statusFilter: StatusFilter;
@@ -31,6 +33,7 @@ interface ScannedDocumentsHeaderProps {
  * - Refresh and reset-filters buttons
  */
 const ScannedDocumentsHeader: React.FC<ScannedDocumentsHeaderProps> = ({
+    onBack,
     documentCount,
     isLoading,
     statusFilter,
@@ -109,12 +112,12 @@ const ScannedDocumentsHeader: React.FC<ScannedDocumentsHeaderProps> = ({
             <div className="flex items-center gap-4">
                 {/* Title */}
                 <div className="flex items-center gap-3 flex-shrink-0">
+                    <BackButton onClick={onBack} />
                     <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-200">
                         <ScanLine size={18} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="text-[17px] font-bold text-gray-900 leading-tight">Scanned Documents</h1>
-                        <p className="text-[11px] text-gray-400">{documentCount} total documents</p>
+                        <h1 className="text-xl font-bold text-gray-900 leading-tight">Scanned Documents</h1>
                     </div>
                 </div>
 

@@ -13,7 +13,11 @@ import PaginationButton from './PaginationButton';
  * - Renders the header, loading/error/empty states, document list, and pagination
  * - Contains no business logic itself — delegates everything to hooks and sub-components
  */
-const ScannedDocuments: React.FC = () => {
+interface ScannedDocumentsProps {
+    onBack?: () => void;
+}
+
+const ScannedDocuments: React.FC<ScannedDocumentsProps> = ({ onBack }) => {
     const {
         documents,
         isLoading,
@@ -41,6 +45,7 @@ const ScannedDocuments: React.FC = () => {
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] h-full flex-1 w-full bg-gray-50 flex flex-col">
             {/* ── Header / Filter bar ─────────────────────────────── */}
             <ScannedDocumentsHeader
+                onBack={onBack}
                 documentCount={documents.length}
                 isLoading={isLoading}
                 statusFilter={statusFilter}

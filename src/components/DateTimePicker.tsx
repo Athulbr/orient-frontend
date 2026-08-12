@@ -15,9 +15,10 @@ interface DateTimePickerProps {
     minDate?: string;
     maxDate?: string;
     disabled?: boolean;
+    showTime?: boolean;
 }
 
-const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartDate, initialEndDate, minDate, maxDate, disabled = false }) => {
+const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartDate, initialEndDate, minDate, maxDate, disabled = false, showTime = true }) => {
     const [showDialog, setShowDialog] = useState(false);
     const formatDateForInput = useCallback((isoString?: string): string => {
         if (!isoString) return '';
@@ -200,13 +201,17 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
 
     const getButtonText = () => {
         if (startValue && endValue) {
-            return `${startValue.replace('T', ' ')} to ${endValue.replace('T', ' ')}`;
+            const startStr = showTime ? startValue.replace('T', ' ') : startValue.split('T')[0];
+            const endStr = showTime ? endValue.replace('T', ' ') : endValue.split('T')[0];
+            return `${startStr} to ${endStr}`;
         }
         if (startValue) {
-            return `From ${startValue.replace('T', ' ')}`;
+            const startStr = showTime ? startValue.replace('T', ' ') : startValue.split('T')[0];
+            return `From ${startStr}`;
         }
         if (endValue) {
-            return `Until ${endValue.replace('T', ' ')}`;
+            const endStr = showTime ? endValue.replace('T', ' ') : endValue.split('T')[0];
+            return `Until ${endStr}`;
         }
         return 'Select Date Range';
     };
@@ -222,12 +227,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                         {/* Start Date Input */}
                         <div className="group">
                             <label htmlFor="start-date" className="block text-sm text-gray-700 mb-1 pl-2">
-                                Start Date & Time
+                                {showTime ? 'Start Date & Time' : 'Start Date'}
                             </label>
                             <input
                                 id="start-date"
-                                type="datetime-local"
-                                value={startValue}
+                                type={showTime ? 'datetime-local' : 'date'}
+                                value={showTime ? startValue : (startValue ? startValue.split('T')[0] : '')}
                                 onChange={handleStartDateChange}
                                 onClick={() => {
                                     if (!startValue) {
@@ -238,8 +243,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                                         setStartValue(`${year}-${month}-${day}T00:00`);
                                     }
                                 }}
-                                min={minDate ? formatDateForInput(minDate) : undefined}
-                                max={maxDate ? formatDateForInput(maxDate) : undefined}
+                                min={minDate ? (showTime ? formatDateForInput(minDate) : formatDateForInput(minDate).split('T')[0]) : undefined}
+                                max={maxDate ? (showTime ? formatDateForInput(maxDate) : formatDateForInput(maxDate).split('T')[0]) : undefined}
                                 disabled={disabled}
                                 aria-describedby={error ? 'date-error' : undefined}
                                 aria-invalid={error ? 'true' : 'false'}
@@ -250,12 +255,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                         {/* End Date Input */}
                         <div className="group">
                             <label htmlFor="end-date" className="block text-sm text-gray-700 mb-1 pl-2">
-                                End Date & Time
+                                {showTime ? 'End Date & Time' : 'End Date'}
                             </label>
                             <input
                                 id="end-date"
-                                type="datetime-local"
-                                value={endValue}
+                                type={showTime ? 'datetime-local' : 'date'}
+                                value={showTime ? endValue : (endValue ? endValue.split('T')[0] : '')}
                                 onChange={handleEndDateChange}
                                 onClick={() => {
                                     if (!endValue) {
@@ -266,8 +271,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ onChange, initialStartD
                                         setEndValue(`${year}-${month}-${day}T23:59`);
                                     }
                                 }}
-                                min={minDate ? formatDateForInput(minDate) : undefined}
-                                max={maxDate ? formatDateForInput(maxDate) : undefined}
+                                min={minDate ? (showTime ? formatDateForInput(minDate) : formatDateForInput(minDate).split('T')[0]) : undefined}
+                                max={maxDate ? (showTime ? formatDateForInput(maxDate) : formatDateForInput(maxDate).split('T')[0]) : undefined}
                                 disabled={disabled}
                                 aria-describedby={error ? 'date-error' : undefined}
                                 aria-invalid={error ? 'true' : 'false'}

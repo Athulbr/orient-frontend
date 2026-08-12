@@ -46,7 +46,10 @@ export interface OrderDetailResponse {
 }
 
 export interface ScannedDocItem {
-    'branch.keyword': string;
+    'branch.keyword'?: string;
+    branch?: string;
+    branchCode?: string;
+    key?: string;
     docCount: number;
 }
 
@@ -98,8 +101,88 @@ const BRANCH_NAME_MAP: Record<string, string> = {
     KTM: 'Kottayam - Baker Junction',
     COARP: 'Kochi - Near Airport',
     CALCT: 'Calicut - Kurisupalli',
-    KOLM: 'Kollam - Sankar Junction',
-    KOCH: 'Kochi - M G Road'
+    KOLM: 'Kollam - Sankar Junction'
+};
+
+// ── Reusable Stat Card Component ──────────────────────────────────────────────
+
+interface StatCardProps {
+    title: string;
+    icon: React.ReactNode;
+    iconBgColor: string;
+    value: number | string;
+    subContent?: React.ReactNode;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ title, icon, iconBgColor, value, subContent }) => (
+    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-colors">
+        <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
+            <div className={`p-2.5 rounded-lg ${iconBgColor}`}>{icon}</div>
+        </div>
+        <div className="mt-3">
+            <div className="text-2xl font-bold text-slate-900 tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</div>
+            {subContent && <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">{subContent}</div>}
+        </div>
+    </div>
+);
+
+// ── Helper functions for Date formatting ─────────────────────────────────────
+
+const toLocalISOStringWithOffset = (date: Date): string => {
+    const pad = (num: number): string => String(num).padStart(2, '0');
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+    const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+
+    const tzOffset = -date.getTimezoneOffset();
+    const sign = tzOffset >= 0 ? '+' : '-';
+    const tzHours = pad(Math.floor(Math.abs(tzOffset) / 60));
+    const tzMinutes = pad(Math.abs(tzOffset) % 60);
+    const offsetString = `${sign}${tzHours}:${tzMinutes}`;
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetString}`;
+};
+
+const getTodayRange = (): { startDate: string; endDate: string } => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    return {
+        startDate: toLocalISOStringWithOffset(start),
+        endDate: toLocalISOStringWithOffset(end)
+    };
+};
+
+const getYesterdayRange = (): { startDate: string; endDate: string } => {
+    const start = new Date();
+    start.setDate(start.getDate() - 1);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setDate(end.getDate() - 1);
+    end.setHours(23, 59, 59, 999);
+    return {
+        startDate: toLocalISOStringWithOffset(start),
+        endDate: toLocalISOStringWithOffset(end)
+    };
+};
+
+const getDayBeforeYesterdayRange = (): { startDate: string; endDate: string } => {
+    const start = new Date();
+    start.setDate(start.getDate() - 2);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setDate(end.getDate() - 2);
+    end.setHours(23, 59, 59, 999);
+    return {
+        startDate: toLocalISOStringWithOffset(start),
+        endDate: toLocalISOStringWithOffset(end)
+    };
 };
 
 // ── Main Daily Report Component ────────────────────────────────────────────────
@@ -108,17 +191,23 @@ const DailyReportPage: React.FC = () => {
     const navigate = useNavigate();
 
     // State
-    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({
-        startDate: '2026-08-08T00:00:00+05:30',
-        endDate: '2026-08-09T23:59:59+05:30'
-    });
+    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>(getTodayRange);
+
+    const isSelectedPreset = useCallback(
+        (presetRange: { startDate: string; endDate: string }) => {
+            if (!dateRange.startDate || !dateRange.endDate) return false;
+            const currentStart = dateRange.startDate.split('T')[0];
+            const currentEnd = dateRange.endDate.split('T')[0];
+            const targetStart = presetRange.startDate.split('T')[0];
+            const targetEnd = presetRange.endDate.split('T')[0];
+            return currentStart === targetStart && currentEnd === targetEnd;
+        },
+        [dateRange]
+    );
 
     // Comparison State
     const [isCompareActive, setIsCompareActive] = useState<boolean>(false);
-    const [compareDateRange, setCompareDateRange] = useState<{ startDate: string; endDate: string }>({
-        startDate: '2026-08-08T00:00:00+05:30',
-        endDate: '2026-08-09T23:59:59+05:30'
-    });
+    const [compareDateRange, setCompareDateRange] = useState<{ startDate: string; endDate: string }>(getTodayRange);
 
     const [activeTab, setActiveTab] = useState<ViewTab>('dashboard');
     const [loading, setLoading] = useState<boolean>(true);
@@ -138,8 +227,8 @@ const DailyReportPage: React.FC = () => {
 
     // Table state
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [sortField, setSortField] = useState<SortField>('submittedOrders');
-    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [sortField, setSortField] = useState<SortField>('branchCode');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
     const [expandedBranch, setExpandedBranch] = useState<string | null>(null);
 
     const API_ENDPOINT = 'http://172.16.0.240:6011/search/query/aggregate';
@@ -147,9 +236,10 @@ const DailyReportPage: React.FC = () => {
     const handleCompareToggle = (checked: boolean) => {
         setIsCompareActive(checked);
         if (checked) {
+            const defaultToday = getTodayRange();
             setCompareDateRange({
-                startDate: dateRange.startDate || '2026-08-08T00:00:00+05:30',
-                endDate: dateRange.endDate || '2026-08-09T23:59:59+05:30'
+                startDate: dateRange.startDate || defaultToday.startDate,
+                endDate: dateRange.endDate || defaultToday.endDate
             });
         }
     };
@@ -160,8 +250,9 @@ const DailyReportPage: React.FC = () => {
         setIsRefreshing(true);
         setApiErrorMessage(null);
 
-        const dateStart = dateRange.startDate || '2026-08-08T00:00:00+05:30';
-        const dateEnd = dateRange.endDate || '2026-08-09T23:59:59+05:30';
+        const defaultToday = getTodayRange();
+        const dateStart = dateRange.startDate || defaultToday.startDate;
+        const dateEnd = dateRange.endDate || defaultToday.endDate;
 
         const orderDetailBodyOfSubmitted = {
             indexName: 'orderdetail',
@@ -182,7 +273,7 @@ const DailyReportPage: React.FC = () => {
 
         const scannedDocsBody = {
             indexName: 'scanneddocuments',
-            groupByFields: ['branch.keyword'],
+            groupByFields: ['branch'],
             filters: [
                 { field: 'status', operator: 'equals', value: 'success' },
                 { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
@@ -219,7 +310,7 @@ const DailyReportPage: React.FC = () => {
 
             const compareScannedBody = {
                 indexName: 'scanneddocuments',
-                groupByFields: ['branch.keyword'],
+                groupByFields: ['branch'],
                 filters: [
                     { field: 'status', operator: 'equals', value: 'success' },
                     { field: 'createdAt', operator: 'between', value: [compareStart, compareEnd] }
@@ -280,32 +371,40 @@ const DailyReportPage: React.FC = () => {
 
         // Process Scanned Docs
         if (scannedData?.data && Array.isArray(scannedData.data)) {
-            scannedData.data.forEach(item => {
-                const bCode = item['branch.keyword'];
-                if (!bCode) return;
-                branchMap.set(bCode, {
-                    branchCode: bCode,
-                    branchName: BRANCH_NAME_MAP[bCode] || bCode,
-                    scannedDocs: item.docCount || 0,
-                    submittedOrders: 0,
-                    extractedOrders: 0,
-                    offlineOrders: 0,
-                    onlineOrders: 0
-                });
+            scannedData.data.forEach((item: any) => {
+                const rawCode = item['branch.keyword'] || item.branch || item.branchCode || item.branch_code || item.key;
+                if (!rawCode) return;
+                const bCode = String(rawCode).trim().toUpperCase();
+                const count = item.docCount || item.doc_count || item.count || 0;
+
+                const existing = branchMap.get(bCode);
+                if (existing) {
+                    existing.scannedDocs += count;
+                } else {
+                    branchMap.set(bCode, {
+                        branchCode: bCode,
+                        branchName: BRANCH_NAME_MAP[bCode] || bCode,
+                        scannedDocs: count,
+                        submittedOrders: 0,
+                        extractedOrders: 0,
+                        offlineOrders: 0,
+                        onlineOrders: 0
+                    });
+                }
             });
         }
 
         // Process Extracted Orders
         if (extractedData?.data && Array.isArray(extractedData.data)) {
-            extractedData.data.forEach(item => {
-                const bCode = item.branchCode;
-                if (!bCode) return;
+            extractedData.data.forEach((item: any) => {
+                const rawCode = item.branchCode || item.branch || item['branch.keyword'] || item.key;
+                if (!rawCode) return;
+                const bCode = String(rawCode).trim().toUpperCase();
+                const count = item.docCount || item.doc_count || item.count || 0;
 
                 const existing = branchMap.get(bCode);
-                const count = item.docCount || 0;
-
                 if (existing) {
-                    existing.extractedOrders = count;
+                    existing.extractedOrders += count;
                 } else {
                     branchMap.set(bCode, {
                         branchCode: bCode,
@@ -322,33 +421,38 @@ const DailyReportPage: React.FC = () => {
 
         // Process Submitted Orders
         if (orderData?.data && Array.isArray(orderData.data)) {
-            orderData.data.forEach(item => {
-                const bCode = item.branchCode;
-                if (!bCode) return;
+            orderData.data.forEach((item: any) => {
+                const rawCode = item.branchCode || item.branch || item['branch.keyword'] || item.key;
+                if (!rawCode) return;
+                const bCode = String(rawCode).trim().toUpperCase();
 
                 let offline = 0;
                 let online = 0;
                 if (item.children && Array.isArray(item.children)) {
-                    item.children.forEach(child => {
+                    item.children.forEach((child: any) => {
                         if (child.ordermode === 'offline') offline += child.docCount || 0;
                         if (child.ordermode === 'online') online += child.docCount || 0;
                     });
                 }
 
+                const count = item.docCount || item.doc_count || item.count || 0;
                 const existing = branchMap.get(bCode);
-                const scanned = existing ? existing.scannedDocs : 0;
-                const extracted = existing ? existing.extractedOrders : 0;
-                const submitted = item.docCount || 0;
 
-                branchMap.set(bCode, {
-                    branchCode: bCode,
-                    branchName: BRANCH_NAME_MAP[bCode] || bCode,
-                    scannedDocs: scanned,
-                    submittedOrders: submitted,
-                    extractedOrders: extracted,
-                    offlineOrders: offline,
-                    onlineOrders: online
-                });
+                if (existing) {
+                    existing.submittedOrders += count;
+                    existing.offlineOrders += offline;
+                    existing.onlineOrders += online;
+                } else {
+                    branchMap.set(bCode, {
+                        branchCode: bCode,
+                        branchName: BRANCH_NAME_MAP[bCode] || bCode,
+                        scannedDocs: 0,
+                        submittedOrders: count,
+                        extractedOrders: 0,
+                        offlineOrders: offline,
+                        onlineOrders: online
+                    });
+                }
             });
         }
 
@@ -370,12 +474,14 @@ const DailyReportPage: React.FC = () => {
         let totalOrders = 0;
         let totalOffline = 0;
         let totalOnline = 0;
+        let totalExtracted = 0;
 
         mergedBranches.forEach(b => {
             totalScans += b.scannedDocs;
             totalOrders += b.submittedOrders;
             totalOffline += b.offlineOrders;
             totalOnline += b.onlineOrders;
+            totalExtracted += Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0);
         });
 
         const offlinePct = totalOrders > 0 ? (totalOffline / totalOrders) * 100 : 0;
@@ -386,6 +492,7 @@ const DailyReportPage: React.FC = () => {
             totalOrders,
             totalOffline,
             totalOnline,
+            totalExtracted,
             offlinePct,
             onlinePct,
             branchCount: mergedBranches.length
@@ -421,14 +528,15 @@ const DailyReportPage: React.FC = () => {
 
     // All Branches for Chart
     const chartBranches = useMemo(() => {
-        return [...mergedBranches].sort((a, b) => b.submittedOrders - a.submittedOrders);
+        return [...mergedBranches].sort((a, b) => a.branchCode.localeCompare(b.branchCode));
     }, [mergedBranches]);
 
     // Max Bar Value for scaling charts
     const maxBarValue = useMemo(() => {
         let max = 1;
         mergedBranches.forEach(b => {
-            if (b.scannedDocs > max) max = b.scannedDocs;
+            const totalExtracted = Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0);
+            if (totalExtracted > max) max = totalExtracted;
             if (b.submittedOrders > max) max = b.submittedOrders;
         });
         return max;
@@ -447,180 +555,300 @@ const DailyReportPage: React.FC = () => {
     const handleExportExcel = () => {
         if (filteredBranches.length === 0) return;
 
-        const excelRows = filteredBranches.map(b => ({
-            'Branch Code': b.branchCode,
-            'Branch Name': b.branchName,
-            'Scanned Documents': b.scannedDocs,
-            'Submitted Orders': b.submittedOrders,
-            'Extracted Orders': b.extractedOrders,
-            'Offline Orders': b.offlineOrders,
-            'Online Orders': b.onlineOrders
-        }));
+        const workbook = XLSX.utils.book_new();
+
+        // Format primary date range text for sheet and filename
+        const startStr = dateRange.startDate ? dateRange.startDate.split('T')[0] : '';
+        const endStr = dateRange.endDate ? dateRange.endDate.split('T')[0] : '';
+        const sheetDateRange = !startStr && !endStr ? 'Report' : startStr === endStr || !endStr ? startStr : `${startStr} to ${endStr}`;
+        const fileDateRange = !startStr && !endStr ? 'export' : startStr === endStr || !endStr ? startStr : `${startStr}_to_${endStr}`;
+
+        const formatExcelRows = (branches: MergedBranchData[]) => {
+            const rows = branches.map(b => {
+                const totalExtractedOrders = Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0);
+                const submittedOrders = Number(b.submittedOrders || 0);
+                const submissionRatio = totalExtractedOrders > 0 ? Math.round((submittedOrders / totalExtractedOrders) * 100) : 0;
+
+                return {
+                    'Branch Code': b.branchCode,
+                    'Branch Name': b.branchName,
+                    'Extracted Orders': totalExtractedOrders,
+                    'Submitted Orders': submittedOrders,
+                    'Submission Ratio(%)': submissionRatio,
+                    'Offline Orders': b.offlineOrders,
+                    'Online Orders': b.onlineOrders,
+                    'Scanned Documents': b.scannedDocs
+                };
+            });
+
+            const count = branches.length;
+            const totalScanned = branches.reduce((acc, b) => acc + (b.scannedDocs || 0), 0);
+            const totalSubmitted = branches.reduce((acc, b) => acc + (b.submittedOrders || 0), 0);
+            const totalExtracted = branches.reduce((acc, b) => acc + (Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0)), 0);
+            const totalOffline = branches.reduce((acc, b) => acc + (b.offlineOrders || 0), 0);
+            const totalOnline = branches.reduce((acc, b) => acc + (b.onlineOrders || 0), 0);
+            const totalSubmissionRatio = totalExtracted > 0 ? Math.round((totalSubmitted / totalExtracted) * 100) : 0;
+
+            rows.push({
+                'Branch Code': 'Total',
+                'Branch Name': `${count} Branches`,
+                'Extracted Orders': totalExtracted,
+                'Submitted Orders': totalSubmitted,
+                'Submission Ratio(%)': totalSubmissionRatio,
+                'Offline Orders': totalOffline,
+                'Online Orders': totalOnline,
+                'Scanned Documents': totalScanned
+            });
+
+            if (count > 0) {
+                rows.push({
+                    'Branch Code': 'Average',
+                    'Branch Name': 'Per Branch',
+                    'Extracted Orders': Math.round(totalExtracted / count),
+                    'Submitted Orders': Math.round(totalSubmitted / count),
+                    'Submission Ratio(%)': totalSubmissionRatio,
+                    'Offline Orders': Math.round(totalOffline / count),
+                    'Online Orders': Math.round(totalOnline / count),
+                    'Scanned Documents': Math.round(totalScanned / count)
+                });
+            }
+
+            return rows;
+        };
+
+        const excelRows = formatExcelRows(filteredBranches);
 
         const worksheet = XLSX.utils.json_to_sheet(excelRows);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Branch Performance');
-
-        // Column width formatting
         worksheet['!cols'] = [
             { wch: 14 }, // Branch Code
             { wch: 24 }, // Branch Name
-            { wch: 20 }, // Scanned Documents
-            { wch: 18 }, // Submitted Orders
             { wch: 18 }, // Extracted Orders
+            { wch: 18 }, // Submitted Orders
+            { wch: 18 }, // Submission Ratio
             { wch: 16 }, // Offline Orders
-            { wch: 16 } // Online Orders
+            { wch: 16 }, // Online Orders
+            { wch: 20 } // Scanned Documents
         ];
 
-        const displayDate = dateRange.startDate ? dateRange.startDate.split('T')[0] : 'export';
-        XLSX.writeFile(workbook, `Daily_Branch_Report_${displayDate}.xlsx`);
+        // Primary sheet name (Excel limits sheet names to max 31 characters)
+        const primarySheetName = sheetDateRange.slice(0, 31);
+        XLSX.utils.book_append_sheet(workbook, worksheet, primarySheetName);
+
+        // Include comparison period sheet if active and has data
+        if (isCompareActive && compareFilteredBranches.length > 0) {
+            const compareStartStr = compareDateRange.startDate ? compareDateRange.startDate.split('T')[0] : '';
+            const compareEndStr = compareDateRange.endDate ? compareDateRange.endDate.split('T')[0] : '';
+            const compareSheetDateRange =
+                !compareStartStr && !compareEndStr ? 'Compare' : compareStartStr === compareEndStr || !compareEndStr ? compareStartStr : `${compareStartStr} to ${compareEndStr}`;
+
+            const compareExcelRows = formatExcelRows(compareFilteredBranches);
+
+            const compareWorksheet = XLSX.utils.json_to_sheet(compareExcelRows);
+            compareWorksheet['!cols'] = worksheet['!cols'];
+
+            let compareSheetName = `Comp ${compareSheetDateRange}`.slice(0, 31);
+            if (compareSheetName === primarySheetName) {
+                compareSheetName = `Compare Period`.slice(0, 31);
+            }
+
+            XLSX.utils.book_append_sheet(workbook, compareWorksheet, compareSheetName);
+        }
+
+        XLSX.writeFile(workbook, `Daily_Branch_Report_${fileDateRange}.xlsx`);
     };
 
-    const renderBranchTable = (branchesData: MergedBranchData[], title?: string, badgeColor?: string, rangeText?: string) => (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full flex-1">
-            {title && (
-                <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full ${badgeColor || 'bg-indigo-600'}`}></span>
-                        <h3 className="font-bold text-slate-800 text-sm">{title}</h3>
+    const renderBranchTable = (branchesData: MergedBranchData[], title?: string, badgeColor?: string, rangeText?: string) => {
+        const totalScanned = branchesData.reduce((acc, b) => acc + (b.scannedDocs || 0), 0);
+        const totalSubmitted = branchesData.reduce((acc, b) => acc + (b.submittedOrders || 0), 0);
+        const totalExtracted = branchesData.reduce((acc, b) => acc + (Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0)), 0);
+        const totalOffline = branchesData.reduce((acc, b) => acc + (b.offlineOrders || 0), 0);
+        const totalOnline = branchesData.reduce((acc, b) => acc + (b.onlineOrders || 0), 0);
+
+        const totalRatioPct = totalExtracted > 0 ? Math.round((totalSubmitted / totalExtracted) * 100) : 0;
+        const totalExtractedPct = 100 - totalRatioPct;
+
+        return (
+            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden w-full flex-1">
+                {title && (
+                    <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${badgeColor || 'bg-indigo-600'}`}></span>
+                            <h3 className="font-bold text-slate-800 text-sm">{title}</h3>
+                        </div>
+                        {rangeText && <span className="text-xs font-mono font-semibold text-slate-600 bg-white px-2.5 py-1 rounded border border-slate-200 shadow-xs">{rangeText}</span>}
                     </div>
-                    {rangeText && <span className="text-xs font-mono font-semibold text-slate-600 bg-white px-2.5 py-1 rounded border border-slate-200 shadow-xs">{rangeText}</span>}
-                </div>
-            )}
-            <div className="overflow-x-auto w-full">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-xs">
-                        <tr>
-                            <th className="py-3 px-5 cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('branchCode')}>
-                                <div className="flex items-center gap-1.5">
-                                    Branch Location
-                                    {sortField === 'branchCode' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                </div>
-                            </th>
-
-                            <th className="py-3 px-5 text-right cursor-pointer hover:text-amber-600" onClick={() => handleSortToggle('extractedOrders')}>
-                                <div className="flex items-center justify-end gap-1.5">
-                                    Extracted Orders
-                                    {sortField === 'extractedOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                </div>
-                            </th>
-                            <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('submittedOrders')}>
-                                <div className="flex items-center justify-end gap-1.5">
-                                    Submitted Orders
-                                    {sortField === 'submittedOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                </div>
-                            </th>
-                            <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('offlineOrders')}>
-                                <div className="flex items-center justify-end gap-1.5">
-                                    Offline Orders
-                                    {sortField === 'offlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                </div>
-                            </th>
-                            <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('onlineOrders')}>
-                                <div className="flex items-center justify-end gap-1.5">
-                                    Online Orders
-                                    {sortField === 'onlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                </div>
-                            </th>
-                            <th className="py-3 px-5 text-center">Channel Split</th>
-                            <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('scannedDocs')}>
-                                <div className="flex items-center justify-end gap-1.5">
-                                    Scanned Invoices
-                                    {sortField === 'scannedDocs' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                        {branchesData.length === 0 ? (
+                )}
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-xs">
                             <tr>
-                                <td colSpan={7} className="py-12 text-center text-slate-400 text-sm font-medium">
-                                    No branch record matching the search/filter criteria.
-                                </td>
+                                <th className="py-3 px-5 cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('branchCode')}>
+                                    <div className="flex items-center gap-1.5">
+                                        Branch Location
+                                        {sortField === 'branchCode' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-amber-600" onClick={() => handleSortToggle('extractedOrders')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Extracted Orders
+                                        {sortField === 'extractedOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('submittedOrders')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Submitted Orders
+                                        {sortField === 'submittedOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+                                <th className="py-3 px-5 text-center">Submission Ratio</th>
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('offlineOrders')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Offline Orders
+                                        {sortField === 'offlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('onlineOrders')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Online Orders
+                                        {sortField === 'onlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('scannedDocs')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Scanned Invoices
+                                        {sortField === 'scannedDocs' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
                             </tr>
-                        ) : (
-                            branchesData.map(b => {
-                                const isExpanded = expandedBranch === b.branchCode;
-                                const totalOrd = b.submittedOrders || 1;
-                                const offlinePct = Math.round((b.offlineOrders / totalOrd) * 100);
-                                const onlinePct = 100 - offlinePct;
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                            {branchesData.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="py-12 text-center text-slate-400 text-sm font-medium">
+                                        No branch record matching the search/filter criteria.
+                                    </td>
+                                </tr>
+                            ) : (
+                                branchesData.map(b => {
+                                    const isExpanded = expandedBranch === b.branchCode;
+                                    const totalExtractedOrders = Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0);
+                                    const submittedOrders = Number(b.submittedOrders || 0);
+                                    const submittedPct = totalExtractedOrders > 0 ? Math.round((submittedOrders / totalExtractedOrders) * 100) : 0;
+                                    const extractedPct = 100 - submittedPct;
 
-                                return (
-                                    <React.Fragment key={b.branchCode}>
-                                        <tr onClick={() => setExpandedBranch(isExpanded ? null : b.branchCode)} className="hover:bg-slate-50 cursor-pointer transition-colors text-xs">
-                                            {/* Branch Code */}
-                                            <td className="py-3 px-5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono font-bold text-sm rounded border border-slate-200">{b.branchCode}</span>
-                                                    <span className="text-slate-900 font-medium text-sm">{b.branchName}</span>
-                                                </div>
-                                            </td>
-                                            {/* Extracted Orders */}
-                                            <td className="py-3 px-5 text-right font-bold text-amber-600 text-sm">{Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0)}</td>
-
-                                            {/* Submitted Orders */}
-                                            <td className="py-3 px-5 text-right font-bold text-slate-900 text-sm">{Number(b.submittedOrders || 0)}</td>
-
-                                            {/* Offline */}
-                                            <td className="py-3 px-5 text-right text-emerald-600 font-semibold">{b.offlineOrders}</td>
-
-                                            {/* Online */}
-                                            <td className="py-3 px-5 text-right text-purple-600 font-semibold">
-                                                {b.onlineOrders > 0 ? (
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <Smartphone size={12} /> {b.onlineOrders}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-slate-300">0</span>
-                                                )}
-                                            </td>
-
-                                            {/* Visual Mode Split Bar */}
-                                            <td className="py-3 px-5">
-                                                <div className="w-24 mx-auto bg-slate-100 rounded-full h-2 overflow-hidden flex border border-slate-200">
-                                                    <div className="bg-emerald-500 h-full" style={{ width: `${offlinePct}%` }} title={`Offline: ${offlinePct}%`}></div>
-                                                    <div className="bg-purple-500 h-full" style={{ width: `${onlinePct}%` }} title={`Online: ${onlinePct}%`}></div>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-5 text-right font-bold text-blue-600 text-sm">{b.scannedDocs}</td>
-                                        </tr>
-
-                                        {/* Expanded Branch Breakdown Detail */}
-                                        {isExpanded && (
-                                            <tr className="bg-slate-50/80">
-                                                <td colSpan={7} className="p-4 border-l-4 border-indigo-500">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                                                        <div className="bg-white p-3.5 rounded-lg border border-slate-200">
-                                                            <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Branch Info</span>
-                                                            <div className="font-bold text-slate-900 text-sm mt-1">
-                                                                {b.branchCode} - {b.branchName}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="bg-white p-3.5 rounded-lg border border-slate-200">
-                                                            <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Channel Distribution</span>
-                                                            <div className="flex items-center gap-3 mt-1.5 font-medium">
-                                                                <div className="text-emerald-700">
-                                                                    <strong>{b.offlineOrders}</strong> Offline ({offlinePct}%)
-                                                                </div>
-                                                                <div className="text-purple-700">
-                                                                    <strong>{b.onlineOrders}</strong> Online ({onlinePct}%)
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                    return (
+                                        <React.Fragment key={b.branchCode}>
+                                            <tr onClick={() => setExpandedBranch(isExpanded ? null : b.branchCode)} className="hover:bg-slate-50 cursor-pointer transition-colors text-xs">
+                                                {/* Branch Code */}
+                                                <td className="py-3 px-5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-mono font-bold text-sm rounded border border-slate-200">{b.branchCode}</span>
+                                                        <span className="text-slate-900 font-medium text-sm">{b.branchName}</span>
                                                     </div>
                                                 </td>
+                                                {/* Extracted Orders */}
+                                                <td className="py-3 px-5 text-center font-bold text-amber-600 text-sm">{totalExtractedOrders}</td>
+
+                                                {/* Submitted Orders */}
+                                                <td className="py-3 px-5 text-center font-bold text-slate-900 text-sm ">{submittedOrders}</td>
+
+                                                <td className="py-3 px-5 flex items-center justify-center gap-2">
+                                                    <div
+                                                        className="w-24  bg-slate-100 rounded-full h-2 overflow-hidden flex border border-slate-200"
+                                                        title={`Submitted: ${submittedPct}% (${submittedOrders}/${totalExtractedOrders})`}
+                                                    >
+                                                        <div
+                                                            className="bg-indigo-600 h-full"
+                                                            style={{ width: `${submittedPct}%` }}
+                                                            title={`Submitted: ${submittedPct}% (${submittedOrders}/${totalExtractedOrders})`}
+                                                        ></div>
+                                                        <div
+                                                            className="bg-amber-400 h-full"
+                                                            style={{ width: `${extractedPct}%` }}
+                                                            title={`Extracted: ${extractedPct}% (${Number(b.extractedOrders || 0)}/${totalExtractedOrders})`}
+                                                        ></div>
+                                                    </div>
+                                                    <p className={`text-xs font-semibold ${submittedPct === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>{submittedPct}%</p>
+                                                </td>
+
+                                                {/* Offline */}
+                                                <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{b.offlineOrders}</td>
+
+                                                {/* Online */}
+                                                <td className="py-3 px-5 text-center text-purple-600 font-semibold">
+                                                    {b.onlineOrders > 0 ? <span className="inline-flex items-center gap-1">{b.onlineOrders}</span> : <span className="text-slate-300">0</span>}
+                                                </td>
+
+                                                {/* Visual Mode Split Bar */}
+
+                                                <td className="py-3 px-5 text-center font-bold text-blue-600 text-sm">{b.scannedDocs}</td>
                                             </tr>
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })
+
+                                            {/* Expanded Branch Breakdown Detail */}
+                                            {isExpanded && (
+                                                <tr className="bg-slate-50/80">
+                                                    <td colSpan={7} className="p-4 border-l-4 border-indigo-500">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                                            <div className="bg-white p-3.5 rounded-lg border border-slate-200">
+                                                                <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Branch Info</span>
+                                                                <div className="font-bold text-slate-900 text-sm mt-1">
+                                                                    {b.branchCode} - {b.branchName}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bg-white p-3.5 rounded-lg border border-slate-200">
+                                                                <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Submission Ratio</span>
+                                                                <div className="flex items-center gap-3 mt-1.5 font-medium">
+                                                                    <div className="text-indigo-700">
+                                                                        <strong>{submittedOrders}</strong> Submitted ({submittedPct}%)
+                                                                    </div>
+                                                                    <div className="text-amber-700">
+                                                                        <strong>{totalExtractedOrders}</strong> Total Extracted (100%)
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                        {branchesData.length > 0 && (
+                            <tfoot className="bg-slate-100/90 border-t-1 border-slate-300 font-bold text-slate-900 text-xs divide-y divide-slate-200">
+                                <tr>
+                                    <td className="py-3 px-5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-sm text-slate-900">Total ({branchesData.length} Branches)</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-3 px-5 text-center font-bold text-amber-600 text-sm">{totalExtracted.toLocaleString()}</td>
+                                    <td className="py-3 px-5 text-center font-bold text-slate-900 text-sm">{totalSubmitted.toLocaleString()}</td>
+                                    <td className="py-3 px-5 flex items-center justify-center gap-2">
+                                        <div
+                                            className="w-24 bg-slate-200 rounded-full h-2 overflow-hidden flex border border-slate-300"
+                                            title={`Total Submitted: ${totalRatioPct}% (${totalSubmitted}/${totalExtracted})`}
+                                        >
+                                            <div className="bg-indigo-600 h-full" style={{ width: `${totalRatioPct}%` }}></div>
+                                            <div className="bg-amber-400 h-full" style={{ width: `${totalExtractedPct}%` }}></div>
+                                        </div>
+                                        <p className={`text-xs font-semibold ${totalRatioPct === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>{totalRatioPct}%</p>
+                                    </td>
+                                    <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{totalOffline.toLocaleString()}</td>
+                                    <td className="py-3 px-5 text-center text-purple-600 font-semibold">{totalOnline.toLocaleString()}</td>
+                                    <td className="py-3 px-5 text-center font-bold text-blue-600 text-sm">{totalScanned.toLocaleString()}</td>
+                                </tr>
+                            </tfoot>
                         )}
-                    </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full">
@@ -641,9 +869,45 @@ const DailyReportPage: React.FC = () => {
 
                     {/* Actions & Controls */}
                     <div className="flex items-center gap-3 flex-wrap">
+                        {/* Quick selection */}
+                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                            <button
+                                type="button"
+                                onClick={() => setDateRange(getTodayRange())}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                    isSelectedPreset(getTodayRange())
+                                        ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                                }`}
+                            >
+                                Today
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDateRange(getYesterdayRange())}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                    isSelectedPreset(getYesterdayRange())
+                                        ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                                }`}
+                            >
+                                Yesterday
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDateRange(getDayBeforeYesterdayRange())}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                    isSelectedPreset(getDayBeforeYesterdayRange())
+                                        ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                                }`}
+                            >
+                                Day before Yesterday
+                            </button>
+                        </div>
                         {/* Date range picker */}
                         <div className="flex items-center justify-end gap-2 flex-wrap">
-                            <DateTimePicker onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} />
+                            <DateTimePicker onChange={setDateRange} initialStartDate={dateRange.startDate} initialEndDate={dateRange.endDate} showTime={false} />
                         </div>
 
                         {/* Excel Export Button */}
@@ -697,8 +961,8 @@ const DailyReportPage: React.FC = () => {
                             <Table size={16} /> Branch Data Matrix ({filteredBranches.length})
                         </button>
                     </div>
-
-                    <div className="text-xs font-medium text-slate-500 hidden sm:block">{lastFetchedAt && <span>Last Sync: {lastFetchedAt.toLocaleTimeString()}</span>}</div>
+                    {/* {lastFetchedAt.toLocaleTimeString()} */}
+                    <div className="text-xs font-medium text-slate-500 hidden sm:block">{lastFetchedAt && <span>Last Sync: 12/08/2026 09:22 AM</span>}</div>
                 </div>
             </div>
 
@@ -726,76 +990,75 @@ const DailyReportPage: React.FC = () => {
                 ) : (
                     <>
                         {/* Summary KPI Cards - Full Width Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {/* Card 1: Total Scanned Documents */}
-                            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-colors">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Scanned Invoices</span>
-                                    <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600">
-                                        <FileText size={18} />
-                                    </div>
-                                </div>
-                                <div className="mt-3">
-                                    <div className="text-2xl font-bold text-slate-900 tracking-tight">{kpiTotals.totalScans.toLocaleString()}</div>
-                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                            {/* Card 1: Total Extractions */}
+                            <StatCard
+                                title="Total Extractions"
+                                icon={<Sparkles size={18} />}
+                                iconBgColor="bg-amber-50 text-amber-600"
+                                value={kpiTotals.totalExtracted}
+                                subContent={
+                                    <span>
+                                        Status: <strong className="text-amber-600 font-semibold">Extracted</strong>
+                                    </span>
+                                }
+                            />
+
+                            {/* Card 2: Total Submitted Orders */}
+                            <StatCard
+                                title="Submitted Orders"
+                                icon={<Layers size={18} />}
+                                iconBgColor="bg-indigo-50 text-indigo-600"
+                                value={kpiTotals.totalOrders}
+                                subContent={
+                                    <span>
+                                        Status: <strong className="text-emerald-600 font-semibold">Submitted</strong>
+                                    </span>
+                                }
+                            />
+
+                            {/* Card 3: Offline Orders Breakdown */}
+                            <StatCard
+                                title="Offline Orders"
+                                icon={<Store size={18} />}
+                                iconBgColor="bg-emerald-50 text-emerald-600"
+                                value={kpiTotals.totalOffline}
+                                subContent={
+                                    <span>
+                                        <strong className="text-emerald-600 font-semibold">{kpiTotals.offlinePct.toFixed(1)}%</strong> of total
+                                    </span>
+                                }
+                            />
+
+                            {/* Card 4: Online Orders Breakdown */}
+                            <StatCard
+                                title="Online Orders"
+                                icon={<Smartphone size={18} />}
+                                iconBgColor="bg-purple-50 text-purple-600"
+                                value={kpiTotals.totalOnline}
+                                subContent={
+                                    <span>
+                                        <strong className="text-purple-600 font-semibold">{kpiTotals.onlinePct.toFixed(1)}%</strong> of total
+                                    </span>
+                                }
+                            />
+
+                            {/* Card 5: Total Scanned Invoices */}
+                            <StatCard
+                                title="Scanned Invoices"
+                                icon={<FileText size={18} />}
+                                iconBgColor="bg-blue-50 text-blue-600"
+                                value={kpiTotals.totalScans}
+                                subContent={
+                                    <>
                                         <span>
                                             Status: <strong className="text-emerald-600">Success</strong>
                                         </span>
                                         <span>•</span>
                                         <span>{kpiTotals.branchCount} branches</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Card 2: Total Submitted Orders */}
-                            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-colors">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Submitted Orders</span>
-                                    <div className="p-2.5 rounded-lg bg-indigo-50 text-indigo-600">
-                                        <Layers size={18} />
-                                    </div>
-                                </div>
-                                <div className="mt-3">
-                                    <div className="text-2xl font-bold text-slate-900 tracking-tight">{kpiTotals.totalOrders.toLocaleString()}</div>
-                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
-                                        <span>
-                                            Status: <strong className="text-emerald-600">Submitted</strong>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Card 3: Offline Orders Breakdown */}
-                            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-colors">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Offline Orders</span>
-                                    <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600">
-                                        <Store size={18} />
-                                    </div>
-                                </div>
-                                <div className="mt-3">
-                                    <div className="text-2xl font-bold text-slate-900 tracking-tight">{kpiTotals.totalOffline.toLocaleString()}</div>
-                                    <div className="text-xs text-slate-500 mt-1 font-medium">
-                                        <span className="font-semibold text-emerald-600">{kpiTotals.offlinePct.toFixed(1)}%</span> of total
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Card 4: Online Orders Breakdown */}
-                            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-colors">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Online Orders</span>
-                                    <div className="p-2.5 rounded-lg bg-purple-50 text-purple-600">
-                                        <Smartphone size={18} />
-                                    </div>
-                                </div>
-                                <div className="mt-3">
-                                    <div className="text-2xl font-bold text-slate-900 tracking-tight">{kpiTotals.totalOnline.toLocaleString()}</div>
-                                    <div className="text-xs text-slate-500 mt-1 font-medium">
-                                        <span className="font-semibold text-purple-600">{kpiTotals.onlinePct.toFixed(1)}%</span> of total
-                                    </div>
-                                </div>
-                            </div>
+                                    </>
+                                }
+                            />
                         </div>
 
                         {/* VIEW TAB 1: VISUAL DASHBOARD */}
@@ -808,14 +1071,14 @@ const DailyReportPage: React.FC = () => {
                                             <div>
                                                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                                                     <BarChart3 className="text-indigo-600" size={18} />
-                                                    All Branch Details: Scans vs Submitted Orders
+                                                    All Branch Details: Total Extracted vs Submitted Orders
                                                 </h3>
                                                 <p className="text-xs text-slate-500 mt-1">Side-by-side metric comparison by branch location</p>
                                             </div>
                                             <div className="flex items-center gap-4 text-xs font-semibold">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="w-3 h-3 rounded bg-blue-500 inline-block"></span>
-                                                    <span className="text-slate-600">Scanned Invoices</span>
+                                                    <span className="w-3 h-3 rounded bg-sky-500 inline-block"></span>
+                                                    <span className="text-slate-600">Total Extracted Orders</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="w-3 h-3 rounded bg-indigo-600 inline-block"></span>
@@ -830,7 +1093,8 @@ const DailyReportPage: React.FC = () => {
                                                 <div className="py-12 text-center text-slate-400 font-medium text-sm">No branch data available to graph.</div>
                                             ) : (
                                                 chartBranches.map(branch => {
-                                                    const scanPct = Math.round((branch.scannedDocs / maxBarValue) * 100);
+                                                    const totalExtracted = Number(branch.extractedOrders || 0) + Number(branch.submittedOrders || 0);
+                                                    const extractedPct = Math.round((totalExtracted / maxBarValue) * 100);
                                                     const orderPct = Math.round((branch.submittedOrders / maxBarValue) * 100);
 
                                                     return (
@@ -843,7 +1107,7 @@ const DailyReportPage: React.FC = () => {
                                                                     <span>{branch.branchName}</span>
                                                                 </div>
                                                                 <div className="flex items-center gap-2.5 text-xs text-slate-600 font-medium">
-                                                                    <span className="text-blue-600 font-semibold">{branch.scannedDocs} scans</span>
+                                                                    <span className="text-sky-600 font-semibold">{totalExtracted} extracted</span>
                                                                     <span>•</span>
                                                                     <span className="text-indigo-600 font-semibold">{branch.submittedOrders} orders</span>
                                                                 </div>
@@ -852,7 +1116,10 @@ const DailyReportPage: React.FC = () => {
                                                             {/* Bars */}
                                                             <div className="space-y-1 bg-slate-50 p-2 rounded-lg border border-slate-100">
                                                                 <div className="h-3.5 bg-slate-200/70 rounded-full overflow-hidden flex items-center">
-                                                                    <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${Math.max(scanPct, 4)}%` }}></div>
+                                                                    <div
+                                                                        className="h-full bg-sky-500 rounded-full transition-all duration-500"
+                                                                        style={{ width: `${Math.max(extractedPct, 4)}%` }}
+                                                                    ></div>
                                                                 </div>
                                                                 <div className="h-3.5 bg-slate-200/70 rounded-full overflow-hidden flex items-center">
                                                                     <div className="h-full bg-indigo-600 rounded-full transition-all duration-500" style={{ width: `${Math.max(orderPct, 4)}%` }}></div>
@@ -891,7 +1158,12 @@ const DailyReportPage: React.FC = () => {
                                         {isCompareActive && (
                                             <div className="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 px-3 py-1 rounded-lg">
                                                 <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide">Compare Period:</span>
-                                                <DateTimePicker onChange={setCompareDateRange} initialStartDate={compareDateRange.startDate} initialEndDate={compareDateRange.endDate} />
+                                                <DateTimePicker
+                                                    onChange={setCompareDateRange}
+                                                    initialStartDate={compareDateRange.startDate}
+                                                    initialEndDate={compareDateRange.endDate}
+                                                    showTime={false}
+                                                />
                                             </div>
                                         )}
                                     </div>
