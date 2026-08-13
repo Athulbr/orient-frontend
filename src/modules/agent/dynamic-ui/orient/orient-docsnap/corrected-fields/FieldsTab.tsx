@@ -37,9 +37,10 @@ const formatLabel = (path: string) => {
 
 interface FieldsTabProps {
     dateRange: { startDate: string; endDate: string };
+    searchTerm?: string;
 }
 
-const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
+const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange, searchTerm }) => {
     const navigate = useNavigate();
     const [fields, setFields] = useState<CorrectedField[]>([]);
     const [loading, setLoading] = useState(true);
@@ -53,7 +54,7 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
     const loadFields = async (p: number) => {
         try {
             setLoading(true);
-            const res = await fetchCorrectedFields(p, 20, dateRange.startDate, dateRange.endDate);
+            const res = await fetchCorrectedFields(p, 20, dateRange.startDate, dateRange.endDate, searchTerm);
             if (res.success) {
                 const sortedFields = [...res.data].sort((a: CorrectedField, b: CorrectedField) => b.correctionCount - a.correctionCount);
                 setFields(sortedFields);
@@ -69,10 +70,14 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
     };
 
     useEffect(() => {
-        setExpandedFieldId(null);
-        setFieldDetails({});
-        loadFields(1);
-    }, [dateRange]);
+        const timer = setTimeout(() => {
+            setExpandedFieldId(null);
+            setFieldDetails({});
+            loadFields(1);
+        }, 250);
+
+        return () => clearTimeout(timer);
+    }, [dateRange, searchTerm]);
 
     const toggleField = async (fieldId: string) => {
         if (expandedFieldId === fieldId) {
@@ -103,16 +108,23 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
     }
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="overflow-x-auto">
+        <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex-1 overflow-auto">
                 <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
-                            <th className="p-4 font-semibold w-2/3">Field Path</th>
-                            <th className="p-4 font-semibold">Total Corrections</th>
+                    <thead className="sticky top-0 z-10 bg-gray-50 shadow-sm">
+                        <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                            <th className="p-4 font-semibold w-2/3 bg-gray-50">Field Path</th>
+                            <th className="p-4 font-semibold bg-gray-50">Total Corrections</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
+                        {fields.length === 0 && !loading && (
+                            <tr>
+                                <td colSpan={2} className="p-8 text-center text-gray-500">
+                                    No corrected fields found{searchTerm ? ` matching "${searchTerm}"` : ''}.
+                                </td>
+                            </tr>
+                        )}
                         {fields.map(field => (
                             <React.Fragment key={field._id}>
                                 <tr className={`hover:bg-blue-50 cursor-pointer transition-colors ${expandedFieldId === field._id ? 'bg-blue-50' : ''}`} onClick={() => toggleField(field._id)}>
@@ -159,11 +171,29 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
                                                                     <div className="flex flex-col gap-2 mt-2">
                                                                         <div className="bg-red-50 p-2 rounded border border-red-100">
                                                                             <span className="text-[10px] text-red-400 uppercase font-bold block mb-1">Extracted Value</span>
-                                                                            <span className="text-base text-red-700 font-medium">{correction.initialValue || 'empty'}</span>
+                                                                            <span
+                                                                                className="text-base text-red-700 font-medium block"
+                                                                                style={{
+                                                                                    fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace",
+                                                                                    fontVariantNumeric: 'slashed-zero',
+                                                                                    fontFeatureSettings: "'zero' 1"
+                                                                                }}
+                                                                            >
+                                                                                {correction.initialValue || 'empty'}
+                                                                            </span>
                                                                         </div>
                                                                         <div className="bg-green-50 p-2 rounded border border-green-100">
                                                                             <span className="text-[10px] text-green-500 uppercase font-bold block mb-1">Corrected Value</span>
-                                                                            <span className="text-base text-green-700 font-semibold">{correction.value || 'empty'}</span>
+                                                                            <span
+                                                                                className="text-base text-green-700 font-semibold block"
+                                                                                style={{
+                                                                                    fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace",
+                                                                                    fontVariantNumeric: 'slashed-zero',
+                                                                                    fontFeatureSettings: "'zero' 1"
+                                                                                }}
+                                                                            >
+                                                                                {correction.value || 'empty'}
+                                                                            </span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -184,7 +214,7 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50 mt-auto">
+            <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 bg-gray-50 mt-auto">
                 <span className="text-sm text-gray-600 flex items-center gap-4">
                     <span>
                         Total Fields: <b className="text-gray-900">{totalCount}</b>
@@ -194,10 +224,10 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange }) => {
                     </span>
                 </span>
                 <div className="flex gap-2">
-                    <Button disabled={page === 1} onClick={() => loadFields(page - 1)} outlined>
+                    <Button small disabled={page === 1} onClick={() => loadFields(page - 1)} outlined>
                         Previous
                     </Button>
-                    <Button disabled={page === totalPages} onClick={() => loadFields(page + 1)} outlined>
+                    <Button small disabled={page === totalPages} onClick={() => loadFields(page + 1)} outlined>
                         Next
                     </Button>
                 </div>

@@ -1165,7 +1165,12 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 </div>
                                                                 <div
                                                                     className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 font-semibold text-lg text-zinc-800 break-words whitespace-pre-wrap"
-                                                                    style={{ minHeight: '10px', maxWidth: '300px', fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace", fontVariantNumeric: 'slashed-zero' }}
+                                                                    style={{
+                                                                        minHeight: '10px',
+                                                                        maxWidth: '300px',
+                                                                        fontFamily: "Consolas, Menlo, Monaco, 'Courier New', monospace",
+                                                                        fontVariantNumeric: 'slashed-zero'
+                                                                    }}
                                                                 >
                                                                     {activeFieldInfo.field?.value !== undefined ? String(activeFieldInfo.field.value) : ''}
                                                                 </div>
@@ -1197,7 +1202,7 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                         <div className="flex items-start gap-3 rounded-xl border-l-4 border-amber-500 bg-amber-50/80 p-4 shadow-sm ring-1 ring-amber-500/20">
                             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                             <div className="flex flex-col">
-                                <h4 className="text-sm font-semibold tracking-wide text-amber-800">Action Required</h4>
+                                <h4 className="text-sm font-semibold tracking-wide text-amber-800">Warning</h4>
                                 <p className="mt-1 text-xs leading-relaxed text-amber-700">
                                     Please review all fields without fail. You must verify and confirm all extracted information before submitting the order.
                                 </p>
@@ -1286,19 +1291,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                         <label htmlFor={`input-${groupKey}-${fieldKey}`} className="text-xs font-semibold tracking-wider text-zinc-600 uppercase">
                                                             {fieldKey.replace(/_/g, ' ')}
                                                         </label>
-                                                        {/* <div
-                                                            className={`text-xs pr-2 ${
-                                                                fieldValue?.confidence != null
-                                                                    ? fieldValue.confidence > 0.75
-                                                                        ? 'text-green-500'
-                                                                        : fieldValue.confidence >= 0.6
-                                                                          ? 'text-orange-500'
-                                                                          : 'text-red-500'
-                                                                    : ''
-                                                            }`}
-                                                        >
-                                                            {fieldValue?.confidence != null ? (fieldValue.confidence * 100).toFixed(0) + '%' : ''}
-                                                        </div> */}
                                                     </div>
                                                     {fieldEnums ? (
                                                         <SearchableSelect

@@ -38,7 +38,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
     const menuOptions = [
         { label: 'Scanned Documents', value: 'scannedDocuments' },
         { label: 'Daily Report', value: 'dailyReport' },
-        { label: 'Corrected Orders', value: 'correctedOrders' },
+        { label: 'Corrected Fields', value: 'correctedFields' },
         { label: 'Server Status', value: 'ServerStatus' }
     ];
 
@@ -46,8 +46,8 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
         const option = menuOptions.find(o => o.label === label);
         if (option?.value === 'scannedDocuments') {
             navigate('/agent/scanned-documents');
-        } else if (option?.value === 'correctedOrders') {
-            navigate('/agent/corrected-orders');
+        } else if (option?.value === 'correctedFields') {
+            navigate('/agent/corrected-fields');
         } else if (option?.value === 'dailyReport') {
             navigate('/agent/daily-report');
         } else if (option?.value === 'ServerStatus') {
