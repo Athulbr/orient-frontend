@@ -44,6 +44,8 @@ type FieldValue = {
     confidence: number | null;
     index: number | null;
     wordIndexes: number[];
+    initialValue?: string;
+    options?: (string | number)[];
 };
 
 type FieldGroup = Record<string, FieldValue>;
@@ -882,7 +884,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                 {allKeys.map(key => {
                                     const fieldValue = row[key];
                                     const fieldId = `${groupKey}-${rowIndex}-${key}`;
-                                    const fieldEnums = enumsLookup[key];
                                     const isValueDiff =
                                         typeof fieldValue?.initialValue === 'string' &&
                                         String(fieldValue?.value ?? '')
@@ -890,63 +891,33 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                             .toUpperCase() !== fieldValue?.initialValue.trim().toUpperCase();
                                     return (
                                         <td key={key} className="p-4 align-top">
-                                            {fieldEnums ? (
-                                                <SearchableSelect
-                                                    id={`input-${fieldId}`}
-                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
-                                                    options={fieldEnums}
-                                                    onFocus={() => handleFocus(fieldId)}
-                                                    onBlur={handleBlur}
-                                                    onChange={val => {
-                                                        const newData = { ...extractedData };
-                                                        const newGroup = [...(newData[groupKey] as any[])];
-                                                        newGroup[rowIndex] = {
-                                                            ...newGroup[rowIndex],
-                                                            [key]: { ...(fieldValue || {}), value: val }
-                                                        };
-                                                        newData[groupKey] = newGroup;
-                                                        setExtractedData(newData);
-                                                    }}
-                                                    placeholder="Not available"
-                                                    className={`w-full min-w-[120px] rounded-md px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
-                                                        fieldValue?.confidence != null
-                                                            ? fieldValue.confidence < 0.9
-                                                                ? 'border-2 border-red-500'
-                                                                : fieldValue.confidence < 0.95
-                                                                  ? 'border-2 border-orange-300'
-                                                                  : 'border border-zinc-300 focus:border-blue-400'
-                                                            : 'border border-zinc-300 focus:border-blue-400'
-                                                    } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
-                                                />
-                                            ) : (
-                                                <input
-                                                    type="text"
-                                                    id={`input-${fieldId}`}
-                                                    onFocus={() => handleFocus(fieldId)}
-                                                    onBlur={handleBlur}
-                                                    value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
-                                                    onChange={e => {
-                                                        const newData = { ...extractedData };
-                                                        const newGroup = [...(newData[groupKey] as any[])];
-                                                        newGroup[rowIndex] = {
-                                                            ...newGroup[rowIndex],
-                                                            [key]: { ...(fieldValue || {}), value: e.target.value }
-                                                        };
-                                                        newData[groupKey] = newGroup;
-                                                        setExtractedData(newData);
-                                                    }}
-                                                    placeholder="Not available"
-                                                    className={`w-full min-w-[120px] rounded-md px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
-                                                        fieldValue?.confidence != null
-                                                            ? fieldValue.confidence < 0.9
-                                                                ? 'border-2 border-red-500'
-                                                                : fieldValue.confidence < 0.95
-                                                                  ? 'border-2 border-orange-300'
-                                                                  : 'border border-zinc-300 focus:border-blue-400'
-                                                            : 'border border-zinc-300 focus:border-blue-400'
-                                                    } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
-                                                />
-                                            )}
+                                            <input
+                                                type="text"
+                                                id={`input-${fieldId}`}
+                                                onFocus={() => handleFocus(fieldId)}
+                                                onBlur={handleBlur}
+                                                value={fieldValue?.value !== undefined ? String(fieldValue.value) : ''}
+                                                onChange={e => {
+                                                    const newData = { ...extractedData };
+                                                    const newGroup = [...(newData[groupKey] as any[])];
+                                                    newGroup[rowIndex] = {
+                                                        ...newGroup[rowIndex],
+                                                        [key]: { ...(fieldValue || {}), value: e.target.value }
+                                                    };
+                                                    newData[groupKey] = newGroup;
+                                                    setExtractedData(newData);
+                                                }}
+                                                placeholder="Not available"
+                                                className={`w-full min-w-[120px] rounded-md px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+                                                    fieldValue?.confidence != null
+                                                        ? fieldValue.confidence < 0.9
+                                                            ? 'border-2 border-red-500'
+                                                            : fieldValue.confidence < 0.95
+                                                              ? 'border-2 border-orange-300'
+                                                              : 'border border-zinc-300 focus:border-blue-400'
+                                                        : 'border border-zinc-300 focus:border-blue-400'
+                                                } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
+                                            />
                                             {isValueDiff && <div className="ml-2 text-xs text-orange-500">{fieldValue?.initialValue || <span>" "</span>}</div>}
                                         </td>
                                     );
@@ -1345,7 +1316,32 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                             } ${isValueDiff ? 'bg-yellow-100 focus:bg-yellow-50' : 'bg-white focus:bg-white'}`}
                                                         />
                                                     )}
-
+                                                    {Array.isArray(fieldValue?.options) && fieldValue.options.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1.5 pt-1 pl-1">
+                                                            {fieldValue.options.map((opt: any, optIdx: number) => {
+                                                                const isSelected = String(fieldValue?.value ?? '').trim() === String(opt).trim();
+                                                                return (
+                                                                    <button
+                                                                        key={optIdx}
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newData = { ...extractedData };
+                                                                            newData[groupKey] = {
+                                                                                ...(newData[groupKey] as FieldGroup),
+                                                                                [fieldKey]: { ...(fieldValue || {}), value: opt }
+                                                                            };
+                                                                            setExtractedData(newData);
+                                                                        }}
+                                                                        className={`rounded-md px-2.5 py-1.5 text-sm font-medium transition-all cursor-pointer ${
+                                                                            isSelected ? 'bg-blue-600 text-white shadow-xs' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200'
+                                                                        }`}
+                                                                    >
+                                                                        {String(opt)}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
                                                     {isValueDiff && <div className="ml-2 text-xs text-orange-500">Extracted Value: {fieldValue?.initialValue || <span>" "</span>}</div>}
                                                 </div>
                                             );

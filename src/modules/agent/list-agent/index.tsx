@@ -29,26 +29,30 @@ const ListAgentsPage = () => {
         try {
             const response: any = await httpRequest('GET', `${config.workflowService}/workflow/workflows?limit=100&category=main`);
 
-            // Assume the response structure is PaginatedResponse or just an array
+            let agentList: Agent[] = [];
             if (response && response.data) {
-                setAgents(response.data);
+                agentList = response.data;
             } else if (Array.isArray(response)) {
-                setAgents(response);
-            } else {
-                // Fallback dummy data if endpoint fails or returns unexpected format
-                setAgents([]);
+                agentList = response;
             }
+
+            if (agentList.length === 1) {
+                navigate(`/agent/run/${agentList[0].name}`, { replace: true });
+                return;
+            }
+
+            setAgents(agentList);
         } catch (err) {
             setError('Failed to load agents');
             console.error('Failed to load agents', err);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         fetchAgents();
-    }, []);
+    }, [fetchAgents]);
 
     const tempFunction = () => {
         clientLoggerNew({ message: 'Total agents card clicked 1' });

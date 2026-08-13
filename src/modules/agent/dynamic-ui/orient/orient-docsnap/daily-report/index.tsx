@@ -853,11 +853,15 @@ const DailyReportPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col w-full">
             {/* Header - Full Width */}
-            <header className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-40 shadow-xs w-full">
+            <header className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-40 shadow-xs w-full">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     {/* Title & Navigation */}
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200" title="Go Back">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="p-2 cursor-pointer rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200"
+                            title="Go Back"
+                        >
                             <ArrowLeft size={18} />
                         </button>
                         <div>

@@ -21,7 +21,7 @@ export const fetchCorrectedFields = async (page: number = 1, limit: number = 10,
     const response = await fetch(url, {
         headers: getHeaders()
     });
-    if (!response.ok) throw new Error('Failed to fetch corrected fields');
+    if (!response.ok) throw new Error('Failed to fetch field corrections');
     return response.json();
 };
 
