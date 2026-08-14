@@ -137,7 +137,6 @@ const ListAgentsPage = () => {
                         {agents.map(agent => (
                             <div
                                 key={agent._id}
-                                onClick={() => navigate(`/agent/${agent._id}`)}
                                 className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-md"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />

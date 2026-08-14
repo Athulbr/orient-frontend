@@ -548,54 +548,17 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
 
             try {
                 const templateName = order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY';
-                // const currentDateTime = new Date().toLocaleString();
-                // const isoDateTime = new Date().toISOString();
-
-                // const metaData = {
-                //     currentDateTime,
-                //     isoDateTime,
-                //     orderNumber: `${orderNumber}`,
-                //     branchCode: order.orderDetails?.branchCode || '',
-                //     orderType: order.orderDetails?.orderType || '',
-                //     orderCategory: order.orderDetails?.documentSubmitStatus || '',
-                //     userName: order.userDetails?.name || ''
-                // };
-
-                // try {
-                //     clientLoggerNew(metaData);
-                // } catch (error) {}
 
                 setInitiatingOrders(prev => ({ ...prev, [orderNumber]: true }));
                 let executionId: string;
                 try {
-                    // const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/orient-document-extractor?orderNumber=${orderNumber}&&templateName=${templateName}`, {
-                    //     method: 'GET',
-                    //     headers: { 'Content-Type': 'application/json' }
-                    // });
-                    // const data = await response.json();
-                    // executionId = data.data?.executionId;
                     const requestBody = {
                         templateName,
                         orderNumber,
                         recordId: order.extractionDetails?.recordId || ''
                     };
 
-                    const branchCode = sessionStorage.getItem('branch_code');
-                    let webhookPath = 'orient-document-extractor';
-                    // switch (branchCode?.toUpperCase()) {
-                    //     case 'BANH':
-                    //         webhookPath = 'orient-document-extractor-flash-lite';
-                    //         break;
-                    //     case 'BANW':
-                    //         webhookPath = 'orient-document-extractor-flash-lite';
-                    //         break;
-                    //     case 'STRUCTURED':
-                    //         webhookPath = 'orient-document-extractor-structured-output';
-                    //         break;
-                    //     default:
-                    //         webhookPath = 'orient-document-extractor';
-                    //         break;
-                    // }
+                    const webhookPath = 'orient-document-extractor';
 
                     executionId = await triggerWebhook({
                         webhookPath,
