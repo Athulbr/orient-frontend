@@ -600,18 +600,18 @@ const DailyReportPage: React.FC = () => {
                 'Scanned Documents': totalScanned
             });
 
-            if (count > 0) {
-                rows.push({
-                    'Branch Code': 'Average',
-                    'Branch Name': 'Per Branch',
-                    'Extracted Orders': Math.round(totalExtracted / count),
-                    'Submitted Orders': Math.round(totalSubmitted / count),
-                    'Submission Ratio(%)': totalSubmissionRatio,
-                    'Offline Orders': Math.round(totalOffline / count),
-                    'Online Orders': Math.round(totalOnline / count),
-                    'Scanned Documents': Math.round(totalScanned / count)
-                });
-            }
+            // if (count > 0) {
+            //     rows.push({
+            //         'Branch Code': 'Average',
+            //         'Branch Name': 'Per Branch',
+            //         'Extracted Orders': Math.round(totalExtracted / count),
+            //         'Submitted Orders': Math.round(totalSubmitted / count),
+            //         'Submission Ratio(%)': totalSubmissionRatio,
+            //         'Offline Orders': Math.round(totalOffline / count),
+            //         'Online Orders': Math.round(totalOnline / count),
+            //         'Scanned Documents': Math.round(totalScanned / count)
+            //     });
+            // }
 
             return rows;
         };
@@ -702,16 +702,16 @@ const DailyReportPage: React.FC = () => {
                                     </div>
                                 </th>
                                 <th className="py-3 px-5 text-center">Submission Ratio</th>
-                                <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('offlineOrders')}>
-                                    <div className="flex items-center justify-end gap-1.5">
-                                        Offline Orders
-                                        {sortField === 'offlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                    </div>
-                                </th>
                                 <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('onlineOrders')}>
                                     <div className="flex items-center justify-end gap-1.5">
                                         Online Orders
                                         {sortField === 'onlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('offlineOrders')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Offline Orders
+                                        {sortField === 'offlineOrders' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
                                     </div>
                                 </th>
 
@@ -773,13 +773,13 @@ const DailyReportPage: React.FC = () => {
                                                     <p className={`text-xs font-semibold ${submittedPct === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>{submittedPct}%</p>
                                                 </td>
 
-                                                {/* Offline */}
-                                                <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{b.offlineOrders}</td>
-
                                                 {/* Online */}
                                                 <td className="py-3 px-5 text-center text-purple-600 font-semibold">
                                                     {b.onlineOrders > 0 ? <span className="inline-flex items-center gap-1">{b.onlineOrders}</span> : <span className="text-slate-300">0</span>}
                                                 </td>
+
+                                                {/* Offline */}
+                                                <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{b.offlineOrders}</td>
 
                                                 {/* Visual Mode Split Bar */}
 
@@ -1021,19 +1021,6 @@ const DailyReportPage: React.FC = () => {
                                 }
                             />
 
-                            {/* Card 3: Offline Orders Breakdown */}
-                            <StatCard
-                                title="Offline Orders"
-                                icon={<Store size={18} />}
-                                iconBgColor="bg-emerald-50 text-emerald-600"
-                                value={kpiTotals.totalOffline}
-                                subContent={
-                                    <span>
-                                        <strong className="text-emerald-600 font-semibold">{kpiTotals.offlinePct.toFixed(1)}%</strong> of total
-                                    </span>
-                                }
-                            />
-
                             {/* Card 4: Online Orders Breakdown */}
                             <StatCard
                                 title="Online Orders"
@@ -1043,6 +1030,19 @@ const DailyReportPage: React.FC = () => {
                                 subContent={
                                     <span>
                                         <strong className="text-purple-600 font-semibold">{kpiTotals.onlinePct.toFixed(1)}%</strong> of total
+                                    </span>
+                                }
+                            />
+
+                            {/* Card 3: Offline Orders Breakdown */}
+                            <StatCard
+                                title="Offline Orders"
+                                icon={<Store size={18} />}
+                                iconBgColor="bg-emerald-50 text-emerald-600"
+                                value={kpiTotals.totalOffline}
+                                subContent={
+                                    <span>
+                                        <strong className="text-emerald-600 font-semibold">{kpiTotals.offlinePct.toFixed(1)}%</strong> of total
                                     </span>
                                 }
                             />
