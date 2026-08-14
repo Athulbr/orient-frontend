@@ -7,7 +7,7 @@ import type { ScannedDocument } from './types';
 const TERMINAL_STATUSES = ['completed', 'failed', 'error', 'cancelled', 'timeout'];
 
 /**
- * Provides a `handleRetry` function that:
+ * Provides a `handleResubmit` function that:
  * 1. Validates branch, orderType and invoiceNumber.
  * 2. POSTs to the retry webhook.
  * 3. Opens an SSE status-stream and shows a toast on completion/failure.
@@ -15,10 +15,10 @@ const TERMINAL_STATUSES = ['completed', 'failed', 'error', 'cancelled', 'timeout
  * Returns `isRetrying` so the UI can show a loading state.
  */
 export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
-    const [isRetrying, setIsRetrying] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const toast = useToastStore();
 
-    const handleRetry = async (e?: React.MouseEvent) => {
+    const handleResubmit = async (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
 
         // ── Validation ─────────────────────────────────────────
@@ -39,7 +39,7 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
         }
 
         // ── Trigger webhook ────────────────────────────────────
-        setIsRetrying(true);
+        setIsSubmitting(true);
         try {
             const response = await fetch(`${config.workflowService}/workflow/webhooks/trigger/webhook-upload-scanned-documents-to-maraekat`, {
                 method: 'POST',
@@ -49,7 +49,7 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
 
             if (!response.ok) {
                 toast.error(`Retry failed. Status: ${response.status}`);
-                setIsRetrying(false);
+                setIsSubmitting(false);
                 return;
             }
 
@@ -58,7 +58,7 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
 
             if (!executionId) {
                 toast.error('Retry failed — no execution ID returned');
-                setIsRetrying(false);
+                setIsSubmitting(false);
                 return;
             }
 
@@ -76,7 +76,7 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
 
                     if (TERMINAL_STATUSES.includes(parsed.status)) {
                         eventSource.close();
-                        setIsRetrying(false);
+                        setIsSubmitting(false);
 
                         if (parsed.status === 'completed') {
                             const finalData = parsed.finalData?.[0];
@@ -98,15 +98,15 @@ export const useRetry = (doc: ScannedDocument, onSuccess?: () => void) => {
             eventSource.onerror = err => {
                 console.error('SSE EventSource error:', err);
                 eventSource.close();
-                setIsRetrying(false);
+                setIsSubmitting(false);
                 toast.error('Retry stream disconnected');
             };
         } catch (err) {
             console.error('Retry API error:', err);
-            setIsRetrying(false);
+            setIsSubmitting(false);
             toast.error('Retry failed');
         }
     };
 
-    return { isRetrying, handleRetry };
+    return { isSubmitting, handleResubmit };
 };

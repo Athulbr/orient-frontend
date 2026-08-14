@@ -26,7 +26,7 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
     const [isPreviewing, setIsPreviewing] = useState(false);
 
     const edit = useDocumentEdit(doc);
-    const { isRetrying, handleRetry } = useRetry(doc, onRefresh);
+    const { isSubmitting, handleResubmit } = useRetry(doc, onRefresh);
 
     // ── Document preview (opens in new tab) ───────────────────
     const handlePreviewClick = (e?: React.MouseEvent) => {
@@ -200,13 +200,13 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
 
                         {(doc.status === 'extracted' || doc.status === 'failed') && (
                             <button
-                                onClick={handleRetry}
-                                disabled={isRetrying}
+                                onClick={handleResubmit}
+                                disabled={isSubmitting}
                                 className="h-8 px-3 flex items-center gap-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 transition-colors text-xs font-semibold"
-                                title="Retry Document"
+                                title="Submit Document"
                             >
-                                {isRetrying ? <Loader2 size={14} className="animate-spin text-gray-500" /> : <RotateCw size={14} />}
-                                Retry
+                                {isSubmitting ? <Loader2 size={14} className="animate-spin text-gray-500" /> : <RotateCw size={14} />}
+                                Submit
                             </button>
                         )}
                     </div>
