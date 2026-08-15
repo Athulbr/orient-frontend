@@ -104,7 +104,16 @@ const OrderCard: React.FC<OrderCardProps> = ({
     // ── Derive file lists ─────────────────────────────────────
     const orderFiles: (FileItem & { index: number })[] = (order.webDocuments || []).map((doc, i) => {
         const url = doc.documentPages?.[0] || '';
-        return { name: doc.documentName, url, type: getFileType(url), source: 'order' as const, pages: doc.documentPages || [], index: i };
+        return {
+            name: doc.documentName,
+            url,
+            type: getFileType(url),
+            source: 'order' as const,
+            pages: doc.documentPages || [],
+            ignored: doc.ignored,
+            ignoredPages: doc.ignoredPages || [],
+            index: i
+        };
     });
 
     const emailFiles: (FileItem & { index: number })[] = (order.emailDocuments || []).map((doc, i) => {
@@ -115,21 +124,39 @@ const OrderCard: React.FC<OrderCardProps> = ({
             type: getFileType(url),
             source: 'email' as const,
             pages: doc.documentPages || [],
+            ignored: doc.ignored,
+            ignoredPages: doc.ignoredPages || [],
             index: i
         };
     });
 
     const uploadedFileItems: (FileItem & { index: number })[] = (order.manualDocuments || []).map((f, i) => {
         const url = f.documentPages?.[0] || '';
-        return { name: f.documentName, url, type: getFileType(url), source: 'upload' as const, pages: f.documentPages || [], index: i };
+        return {
+            name: f.documentName,
+            url,
+            type: getFileType(url),
+            source: 'upload' as const,
+            pages: f.documentPages || [],
+            ignored: f.ignored,
+            ignoredPages: f.ignoredPages || [],
+            index: i
+        };
     });
+
+    const countActivePages = (f: FileItem) => {
+        if (f.ignored) return 0;
+        const total = f.pages?.length ?? (f.url ? 1 : 0);
+        const ignored = f.ignoredPages?.length ?? 0;
+        return Math.max(0, total - ignored);
+    };
 
     const totalDocs = orderFiles.length + emailFiles.length + uploadedFileItems.length;
     const totalPages =
-        orderFiles.reduce((acc, f) => acc + (f.pages?.length || 0), 0) +
-        emailFiles.reduce((acc, f) => acc + (f.pages?.length || 0), 0) +
-        uploadedFileItems.reduce((acc, f) => acc + (f.pages?.length || 0), 0);
-    const hasDocuments = totalDocs > 0;
+        orderFiles.reduce((acc, f) => acc + countActivePages(f), 0) +
+        emailFiles.reduce((acc, f) => acc + countActivePages(f), 0) +
+        uploadedFileItems.reduce((acc, f) => acc + countActivePages(f), 0);
+    const hasDocuments = totalPages > 0;
     const status = STATUS_CONFIG[order.orderDetails.orderStatus.toUpperCase()] ?? STATUS_CONFIG.DEFAULT;
     const isOnline = (order.orderDetails?.documentSubmitStatus || '').toLowerCase() === 'online';
 
@@ -140,6 +167,81 @@ const OrderCard: React.FC<OrderCardProps> = ({
             return;
         }
         onProceed(order.orderDetails?.orderNumber);
+    };
+
+    const handleToggleIgnorePage = (docType: 'web' | 'email' | 'manual', fileIndex: number, pageIndex: number) => {
+        const updatedOrder = { ...order };
+        let docsArray: any[];
+        let backendField: string;
+
+        if (docType === 'web') {
+            docsArray = updatedOrder.webDocuments = [...(order.webDocuments || [])];
+            backendField = 'webDocuments';
+        } else if (docType === 'email') {
+            docsArray = updatedOrder.emailDocuments = [...(order.emailDocuments || [])];
+            backendField = 'emailDocuments';
+        } else {
+            docsArray = updatedOrder.manualDocuments = [...(order.manualDocuments || [])];
+            backendField = 'manualDocuments';
+        }
+
+        const doc = { ...docsArray[fileIndex] };
+        const currentIgnored: number[] = Array.isArray(doc.ignoredPages) ? [...doc.ignoredPages] : [];
+
+        let updatedIgnored: number[];
+        if (currentIgnored.includes(pageIndex)) {
+            updatedIgnored = currentIgnored.filter(p => p !== pageIndex);
+        } else {
+            updatedIgnored = [...currentIgnored, pageIndex].sort((a, b) => a - b);
+        }
+
+        doc.ignoredPages = updatedIgnored;
+        doc.ignored = updatedIgnored.length === (doc.documentPages?.length || 0) && (doc.documentPages?.length || 0) > 0;
+        docsArray[fileIndex] = doc;
+
+        onOrderUpdate?.(updatedOrder);
+        fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [backendField]: docsArray })
+        }).catch(err => console.error(`Failed to update ${docType} document ignored pages`, err));
+    };
+
+    const handleToggleIgnoreAll = (docType: 'web' | 'email' | 'manual', fileIndex: number, ignoreAll: boolean) => {
+        const updatedOrder = { ...order };
+        let docsArray: any[];
+        let backendField: string;
+
+        if (docType === 'web') {
+            docsArray = updatedOrder.webDocuments = [...(order.webDocuments || [])];
+            backendField = 'webDocuments';
+        } else if (docType === 'email') {
+            docsArray = updatedOrder.emailDocuments = [...(order.emailDocuments || [])];
+            backendField = 'emailDocuments';
+        } else {
+            docsArray = updatedOrder.manualDocuments = [...(order.manualDocuments || [])];
+            backendField = 'manualDocuments';
+        }
+
+        const doc = { ...docsArray[fileIndex] };
+        const numPages = doc.documentPages?.length || 1;
+
+        if (ignoreAll) {
+            doc.ignoredPages = Array.from({ length: numPages }, (_, i) => i);
+            doc.ignored = true;
+        } else {
+            doc.ignoredPages = [];
+            doc.ignored = false;
+        }
+
+        docsArray[fileIndex] = doc;
+
+        onOrderUpdate?.(updatedOrder);
+        fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [backendField]: docsArray })
+        }).catch(err => console.error(`Failed to update ${docType} document ignore all status`, err));
     };
 
     const handleRemovePage = (docType: 'web' | 'email' | 'manual', fileIndex: number, pageIndex: number) => {
@@ -167,6 +269,11 @@ const OrderCard: React.FC<OrderCardProps> = ({
         doc.documentPages = [...(doc.documentPages || [])];
 
         doc.documentPages.splice(pageIndex, 1);
+
+        if (Array.isArray(doc.ignoredPages)) {
+            doc.ignoredPages = doc.ignoredPages.filter((p: any) => p !== pageIndex).map((p: any) => (p > pageIndex ? p - 1 : p));
+            doc.ignored = doc.ignoredPages.length === doc.documentPages.length && doc.documentPages.length > 0;
+        }
 
         if (doc.documentPages.length === 0) {
             removeWholeHandler?.(order.orderDetails.orderNumber, fileIndex);
@@ -243,6 +350,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     file={f}
                                     onRemove={onRemoveWebDocument ? () => onRemoveWebDocument(order.orderDetails.orderNumber, f.index) : undefined}
                                     onRemovePage={onRemoveWebDocument ? pageIndex => handleRemovePage('web', f.index, pageIndex) : undefined}
+                                    onToggleIgnorePage={pageIndex => handleToggleIgnorePage('web', f.index, pageIndex)}
+                                    onToggleIgnoreAll={ignoreAll => handleToggleIgnoreAll('web', f.index, ignoreAll)}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}
@@ -300,6 +409,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     file={f}
                                     onRemove={onRemoveEmailDocument ? () => onRemoveEmailDocument(order.orderDetails.orderNumber, f.index) : undefined}
                                     onRemovePage={onRemoveEmailDocument ? pageIndex => handleRemovePage('email', f.index, pageIndex) : undefined}
+                                    onToggleIgnorePage={pageIndex => handleToggleIgnorePage('email', f.index, pageIndex)}
+                                    onToggleIgnoreAll={ignoreAll => handleToggleIgnoreAll('email', f.index, ignoreAll)}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}
@@ -368,6 +479,8 @@ const OrderCard: React.FC<OrderCardProps> = ({
                                     file={f}
                                     onRemove={() => onRemoveUploadedFile(order.orderDetails.orderNumber, f.index)}
                                     onRemovePage={pageIndex => handleRemovePage('manual', f.index, pageIndex)}
+                                    onToggleIgnorePage={pageIndex => handleToggleIgnorePage('manual', f.index, pageIndex)}
+                                    onToggleIgnoreAll={ignoreAll => handleToggleIgnoreAll('manual', f.index, ignoreAll)}
                                     orderStatus={order.orderDetails.orderStatus}
                                 />
                             ))}

@@ -517,34 +517,45 @@ export function useOrders(filters: OrderFilters, agentSettings: AgentSettings | 
             setProceedingOrders(prev => ({ ...prev, [orderNumber]: true }));
 
             const emailDocuments = order.emailDocuments || [];
+            const allDocDetails = [...emailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
 
-            const hasDocuments = (order.manualDocuments?.length || 0) + (order.webDocuments?.length || 0) + emailDocuments.length > 0;
-            if (!hasDocuments) {
+            const totalActivePages = allDocDetails.reduce((sum, doc) => {
+                if (doc.ignored) return sum;
+                const totalDocPages = doc.documentPages?.length ?? (doc.documentName ? 1 : 0);
+                const ignoredCount = doc.ignoredPages?.length ?? 0;
+                return sum + Math.max(0, totalDocPages - ignoredCount);
+            }, 0);
+
+            if (totalActivePages === 0) {
                 // #22 — use toast instead of alert()
                 toast.error('Please upload files before extracting');
                 setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
                 return;
             }
 
-            const allDocDetails = [...emailDocuments, ...(order.webDocuments || []), ...(order.manualDocuments || [])];
+            if (totalActivePages > 25) {
+                toast.error('Maximum 25 pages are allowed, Please ignore or delete the document pages by clicking on document preview');
+                setProceedingOrders(prev => ({ ...prev, [orderNumber]: false }));
+                return;
+            }
 
-            const arrangedDocuments = rearrangeDocuments(allDocDetails);
+            // const arrangedDocuments = rearrangeDocuments(allDocDetails);
 
-            const payloadDocuments = arrangedDocuments.flatMap(doc => {
-                const pages = (doc.documentPages || []).filter((pageUrl: string) => pageUrl.endsWith('.webp'));
-                if (pages.length === 0) return [];
+            // const payloadDocuments = arrangedDocuments.flatMap(doc => {
+            //     const pages = (doc.documentPages || []).filter((pageUrl: string) => pageUrl.endsWith('.webp'));
+            //     if (pages.length === 0) return [];
 
-                const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'document';
+            //     const baseName = doc.documentName ? doc.documentName.replace(/\.[^/.]+$/, '') : 'document';
 
-                if (pages.length === 1) {
-                    return [{ documentName: baseName, documentUrl: pages[0] }];
-                } else {
-                    return pages.map((pageUrl: string, index: number) => ({
-                        documentName: `${baseName}_page_${index + 1}`,
-                        documentUrl: pageUrl
-                    }));
-                }
-            });
+            //     if (pages.length === 1) {
+            //         return [{ documentName: baseName, documentUrl: pages[0] }];
+            //     } else {
+            //         return pages.map((pageUrl: string, index: number) => ({
+            //             documentName: `${baseName}_page_${index + 1}`,
+            //             documentUrl: pageUrl
+            //         }));
+            //     }
+            // });
 
             try {
                 const templateName = order.orderDetails?.orderType === 'sell' ? 'Orient Document Extractor for SELL' : 'Orient Document Extractor for BUY';

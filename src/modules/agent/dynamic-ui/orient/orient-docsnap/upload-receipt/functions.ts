@@ -1,6 +1,8 @@
 export interface DocumentDetail {
     documentName: string;
     documentPages: string[];
+    ignored?: boolean;
+    ignoredPages?: number[];
 }
 
 function getDocumentPriority(documentName: string): number {

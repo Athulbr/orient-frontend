@@ -3,7 +3,6 @@ import { Mail, Paperclip, Search, ChevronLeft, ChevronRight, X, Trash } from 'lu
 import { Email } from './types';
 import { config } from '../../../../../config/default';
 import { SingleSelect } from '../../../../../components/SingleSelect';
-import DocTile from './DocTile';
 
 interface EmailLinkDialogProps {
     onLink: (emailId: string) => void;

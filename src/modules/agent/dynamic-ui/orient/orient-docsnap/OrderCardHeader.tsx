@@ -339,7 +339,9 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                                 url: url,
                                                 type: getFileType(url || receipt.documentName),
                                                 source: 'upload',
-                                                pages: receipt.documentPages
+                                                pages: receipt.documentPages,
+                                                ignored: receipt.ignored,
+                                                ignoredPages: receipt.ignoredPages || []
                                             }}
                                             onRemove={() => onRemoveReceipt?.(idx)}
                                             onRemovePage={pageIndex => {
@@ -347,6 +349,15 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                                 const receiptToUpdate = { ...updatedReceipts[idx] };
                                                 receiptToUpdate.documentPages = [...(receiptToUpdate.documentPages || [])];
                                                 receiptToUpdate.documentPages.splice(pageIndex, 1);
+
+                                                if (Array.isArray(receiptToUpdate.ignoredPages)) {
+                                                    receiptToUpdate.ignoredPages = receiptToUpdate.ignoredPages
+                                                        .filter(p => p !== pageIndex)
+                                                        .map(p => (p > pageIndex ? p - 1 : p));
+                                                    receiptToUpdate.ignored =
+                                                        receiptToUpdate.ignoredPages.length === receiptToUpdate.documentPages.length &&
+                                                        receiptToUpdate.documentPages.length > 0;
+                                                }
 
                                                 if (receiptToUpdate.documentPages.length === 0) {
                                                     onRemoveReceipt?.(idx);
@@ -360,6 +371,56 @@ const OrderCardHeader: React.FC<OrderCardHeaderProps> = ({ order, status, docCou
                                                         body: JSON.stringify({ receipts: updatedReceipts })
                                                     }).catch(err => console.error('Failed to update receipt page', err));
                                                 }
+                                            }}
+                                            onToggleIgnorePage={pageIndex => {
+                                                const updatedReceipts = [...(order.receipts || [])];
+                                                const receiptToUpdate = { ...updatedReceipts[idx] };
+                                                const currentIgnored: number[] = Array.isArray(receiptToUpdate.ignoredPages)
+                                                    ? [...receiptToUpdate.ignoredPages]
+                                                    : [];
+
+                                                let updatedIgnored: number[];
+                                                if (currentIgnored.includes(pageIndex)) {
+                                                    updatedIgnored = currentIgnored.filter(p => p !== pageIndex);
+                                                } else {
+                                                    updatedIgnored = [...currentIgnored, pageIndex].sort((a, b) => a - b);
+                                                }
+
+                                                receiptToUpdate.ignoredPages = updatedIgnored;
+                                                receiptToUpdate.ignored =
+                                                    updatedIgnored.length === (receiptToUpdate.documentPages?.length || 0) &&
+                                                    (receiptToUpdate.documentPages?.length || 0) > 0;
+                                                updatedReceipts[idx] = receiptToUpdate;
+
+                                                const updatedOrder = { ...order, receipts: updatedReceipts };
+                                                onOrderUpdate?.(updatedOrder);
+                                                fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
+                                                    method: 'PUT',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ receipts: updatedReceipts })
+                                                }).catch(err => console.error('Failed to update receipt ignored pages', err));
+                                            }}
+                                            onToggleIgnoreAll={ignoreAll => {
+                                                const updatedReceipts = [...(order.receipts || [])];
+                                                const receiptToUpdate = { ...updatedReceipts[idx] };
+                                                const numPages = receiptToUpdate.documentPages?.length || 1;
+
+                                                if (ignoreAll) {
+                                                    receiptToUpdate.ignoredPages = Array.from({ length: numPages }, (_, i) => i);
+                                                    receiptToUpdate.ignored = true;
+                                                } else {
+                                                    receiptToUpdate.ignoredPages = [];
+                                                    receiptToUpdate.ignored = false;
+                                                }
+
+                                                updatedReceipts[idx] = receiptToUpdate;
+                                                const updatedOrder = { ...order, receipts: updatedReceipts };
+                                                onOrderUpdate?.(updatedOrder);
+                                                fetch(`${config.workflowService}/workflow/orders/${order.orderDetails.orderNumber}`, {
+                                                    method: 'PUT',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ receipts: updatedReceipts })
+                                                }).catch(err => console.error('Failed to update receipt ignore all status', err));
                                             }}
                                             orderStatus={order.orderDetails.orderStatus}
                                         />

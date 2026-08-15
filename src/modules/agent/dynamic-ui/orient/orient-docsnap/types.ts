@@ -4,6 +4,8 @@ export interface FileItem {
     type: 'pdf' | 'image' | 'doc' | 'other';
     source: 'order' | 'email' | 'upload';
     pages?: string[];
+    ignored?: boolean;
+    ignoredPages?: number[];
 }
 
 export interface Email {
@@ -66,6 +68,8 @@ export interface CurrencyDetail {
 export interface DocumentDetail {
     documentName: string;
     documentPages: string[]; // -- new
+    ignored?: boolean;
+    ignoredPages?: number[];
 }
 
 export interface Order {
