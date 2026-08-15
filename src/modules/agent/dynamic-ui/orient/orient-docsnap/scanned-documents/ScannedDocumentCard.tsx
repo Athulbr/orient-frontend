@@ -8,6 +8,7 @@ import { useRetry } from './useRetry';
 import MetaPill from './MetaPill';
 import InvoicePreviewIcon from './InvoicePreviewIcon';
 import type { ScannedDocument } from './types';
+import { useToastStore } from '../../../../../../components/toast/ToastStore';
 
 interface ScannedDocumentCardProps {
     doc: ScannedDocument;
@@ -24,9 +25,43 @@ interface ScannedDocumentCardProps {
 const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefresh }) => {
     const statusCfg = STATUS_CONFIG[doc.status] ?? STATUS_CONFIG['pending'];
     const [isPreviewing, setIsPreviewing] = useState(false);
+    const [isReExtracting, setIsReExtracting] = useState(false);
+    const toast = useToastStore();
 
     const edit = useDocumentEdit(doc);
     const { isSubmitting, handleResubmit } = useRetry(doc, onRefresh);
+
+    // ── Re-Extract document ──────────────────────────────────
+    const handleReExtract = async (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        const docId = doc._id || (doc as any).id;
+        if (!docId) return;
+
+        setIsReExtracting(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${config.workflowService}/workflow/scanned-documents/${docId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: 'pending', errorMessage: null })
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to update status');
+            }
+
+            toast.success('Successfully added to extraction queue', { duration: 8000 });
+            onRefresh?.();
+        } catch (err) {
+            console.error('Re-Extract error:', err);
+            toast.error('Failed to update status');
+        } finally {
+            setIsReExtracting(false);
+        }
+    };
 
     // ── Document preview (opens in new tab) ───────────────────
     const handlePreviewClick = (e?: React.MouseEvent) => {
@@ -197,6 +232,18 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
                             {isPreviewing ? <Loader2 size={14} className="animate-spin text-blue-500" /> : <Eye size={14} />}
                             Preview
                         </button>
+
+                        {doc.status === 'failed' && (
+                            <button
+                                onClick={handleReExtract}
+                                disabled={isReExtracting}
+                                className="h-8 px-3 flex items-center gap-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 transition-colors text-xs font-semibold"
+                                title="Re-Extract Document"
+                            >
+                                {isReExtracting ? <Loader2 size={14} className="animate-spin text-gray-500" /> : <RotateCw size={14} />}
+                                Re-Extract
+                            </button>
+                        )}
 
                         {(doc.status === 'extracted' || doc.status === 'failed') && (
                             <button
