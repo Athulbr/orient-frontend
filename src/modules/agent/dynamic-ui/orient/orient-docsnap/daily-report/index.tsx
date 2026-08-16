@@ -256,7 +256,7 @@ const DailyReportPage: React.FC = () => {
 
         const orderDetailBodyOfSubmitted = {
             indexName: 'orderdetail',
-            groupByFields: ['branchCode', 'ordermode'],
+            groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
             filters: [
                 { field: 'orderStatus', operator: 'equals', value: 'submitted' },
                 { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
@@ -264,7 +264,7 @@ const DailyReportPage: React.FC = () => {
         };
         const orderDetailBodyOfExtracted = {
             indexName: 'orderdetail',
-            groupByFields: ['branchCode'],
+            groupByFields: ['branchCode.keyword'],
             filters: [
                 { field: 'orderStatus', operator: 'equals', value: 'extracted' },
                 { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
@@ -273,10 +273,13 @@ const DailyReportPage: React.FC = () => {
 
         const scannedDocsBody = {
             indexName: 'scanneddocuments',
-            groupByFields: ['branch'],
+            groupByFields: ['branch.keyword', 'status.keyword'],
             filters: [
-                { field: 'status', operator: 'equals', value: 'success' },
-                { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
+                {
+                    field: 'createdAt',
+                    operator: 'between',
+                    value: [dateStart, dateEnd]
+                }
             ]
         };
 
