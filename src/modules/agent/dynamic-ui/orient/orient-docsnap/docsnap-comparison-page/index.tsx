@@ -907,7 +907,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                     newData[groupKey] = newGroup;
                                                     setExtractedData(newData);
                                                 }}
-                                                placeholder="Not available"
                                                 className={`w-full min-w-[120px] rounded-md px-2 py-1.5 text-sm text-zinc-800 transition-all placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
                                                     fieldValue?.confidence != null
                                                         ? fieldValue.confidence < 0.9

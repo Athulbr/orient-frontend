@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
-import { ArrowLeft, FileSpreadsheet, Search, X } from 'lucide-react';
+import { FileSpreadsheet, Search, X } from 'lucide-react';
 import DateTimePicker from '../../../../../../components/DateTimePicker';
+import BackButton from '../../../../../../components/BackButton';
 import FieldsTab from './FieldsTab';
 import { fetchExportData } from './api';
 
@@ -72,11 +72,14 @@ const formatLabel = (path: string) => {
         .join(' > ');
 };
 
-const FieldCorrectionsPage: React.FC = () => {
-    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
+interface FieldCorrectionsPageProps {
+    onBack?: () => void;
+}
+
+const FieldCorrectionsPage: React.FC<FieldCorrectionsPageProps> = ({ onBack }) => {
+    const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>(getTodayRange);
     const [searchTerm, setSearchTerm] = useState('');
     const [exporting, setExporting] = useState(false);
-    const navigate = useNavigate();
 
     const isSelectedPreset = useCallback(
         (presetRange: { startDate: string; endDate: string }) => {
@@ -147,9 +150,7 @@ const FieldCorrectionsPage: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     {/* Title & Navigation */}
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200" title="Go Back">
-                            <ArrowLeft size={18} />
-                        </button>
+                        <BackButton onClick={onBack} />
                         <div>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-xl font-bold text-slate-900 tracking-tight">Field Corrections</h1>
@@ -178,7 +179,7 @@ const FieldCorrectionsPage: React.FC = () => {
 
                         {/* Quick selection */}
                         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={() => setDateRange({ startDate: '', endDate: '' })}
                                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
@@ -188,11 +189,11 @@ const FieldCorrectionsPage: React.FC = () => {
                                 }`}
                             >
                                 All
-                            </button>
+                            </button> */}
                             <button
                                 type="button"
                                 onClick={() => setDateRange(getTodayRange())}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                                     isSelectedPreset(getTodayRange())
                                         ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -203,7 +204,7 @@ const FieldCorrectionsPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setDateRange(getYesterdayRange())}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                                     isSelectedPreset(getYesterdayRange())
                                         ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -214,7 +215,7 @@ const FieldCorrectionsPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setDateRange(getDayBeforeYesterdayRange())}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                                     isSelectedPreset(getDayBeforeYesterdayRange())
                                         ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'

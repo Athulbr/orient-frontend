@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     Activity,
-    ArrowLeft,
     CheckCircle2,
     XCircle,
     AlertCircle,
@@ -21,6 +19,7 @@ import {
     HardDrive,
     Layers
 } from 'lucide-react';
+import BackButton from '../../../../../../components/BackButton';
 import { config } from '../../../../../../config/default';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -158,10 +157,11 @@ const PulseDot: React.FC<{ status: string }> = ({ status }) => {
     );
 };
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+interface ServerStatusProps {
+    onBack?: () => void;
+}
 
-const ServerStatusPage: React.FC = () => {
-    const navigate = useNavigate();
+const ServerStatusPage: React.FC<ServerStatusProps> = ({ onBack }) => {
     const [health, setHealth] = useState<HealthData | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -258,12 +258,7 @@ const ServerStatusPage: React.FC = () => {
             {/* ── Header ── */}
             <header className="bg-white border-b border-slate-200 px-5 py-2 h-16 flex items-center justify-between sticky top-0 z-[100] shadow-sm w-full box-border">
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 cursor-pointer px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150 hover:bg-slate-100 hover:border-slate-300"
-                    >
-                        <ArrowLeft size={14} />
-                    </button>
+                    <BackButton onClick={onBack} />
 
                     <div className="w-px h-6 bg-slate-200" />
 

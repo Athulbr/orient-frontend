@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import httpRequest from '../../../../../../global-utils/httpRequest';
 import * as XLSX from 'xlsx';
 import DateTimePicker from '../../../../../../components/DateTimePicker';
+import BackButton from '../../../../../../components/BackButton';
 import {
-    ArrowLeft,
     RefreshCw,
     Search,
     FileText,
@@ -29,12 +28,17 @@ import { Button } from '../../../../../../components/Button';
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export interface OrderDetailChild {
-    ordermode: string;
+    'ordermode.keyword'?: string;
+    ordermode?: string;
+    key?: string;
     docCount: number;
 }
 
 export interface OrderDetailItem {
-    branchCode: string;
+    'branchCode.keyword'?: string;
+    branchCode?: string;
+    branch?: string;
+    key?: string;
     docCount: number;
     children?: OrderDetailChild[];
 }
@@ -45,12 +49,21 @@ export interface OrderDetailResponse {
     data: OrderDetailItem[];
 }
 
+export interface ScannedDocChild {
+    'status.keyword'?: string;
+    status?: string;
+    key?: string;
+    docCount: number;
+}
+
 export interface ScannedDocItem {
     'branch.keyword'?: string;
+    'branchCode.keyword'?: string;
     branch?: string;
     branchCode?: string;
     key?: string;
     docCount: number;
+    children?: ScannedDocChild[];
 }
 
 export interface ScannedDocResponse {
@@ -117,12 +130,12 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ title, icon, iconBgColor, value, subContent }) => (
     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-colors">
         <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
+            <span className="text-[13px] font-bold text-slate-700 uppercase tracking-wider">{title}</span>
             <div className={`p-2.5 rounded-lg ${iconBgColor}`}>{icon}</div>
         </div>
-        <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-900 tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</div>
-            {subContent && <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">{subContent}</div>}
+        <div className="mt-2">
+            <div className="text-[27px] font-bold text-slate-900 tracking-tight">{typeof value === 'number' ? value.toLocaleString() : value}</div>
+            {subContent && <div className="text-sm text-slate-500 mt-1 flex items-center gap-1.5 font-medium">{subContent}</div>}
         </div>
     </div>
 );
@@ -187,8 +200,11 @@ const getDayBeforeYesterdayRange = (): { startDate: string; endDate: string } =>
 
 // ── Main Daily Report Component ────────────────────────────────────────────────
 
-const DailyReportPage: React.FC = () => {
-    const navigate = useNavigate();
+interface DailyReportPageProps {
+    onBack?: () => void;
+}
+
+const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
     // State
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>(getTodayRange);
@@ -264,7 +280,7 @@ const DailyReportPage: React.FC = () => {
         };
         const orderDetailBodyOfExtracted = {
             indexName: 'orderdetail',
-            groupByFields: ['branchCode.keyword'],
+            groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
             filters: [
                 { field: 'orderStatus', operator: 'equals', value: 'extracted' },
                 { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
@@ -295,7 +311,7 @@ const DailyReportPage: React.FC = () => {
 
             const compareOrderBody = {
                 indexName: 'orderdetail',
-                groupByFields: ['branchCode', 'ordermode'],
+                groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
                 filters: [
                     { field: 'orderStatus', operator: 'equals', value: 'submitted' },
                     { field: 'createdAt', operator: 'between', value: [compareStart, compareEnd] }
@@ -304,7 +320,7 @@ const DailyReportPage: React.FC = () => {
 
             const compareExtractedBody = {
                 indexName: 'orderdetail',
-                groupByFields: ['branchCode'],
+                groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
                 filters: [
                     { field: 'orderStatus', operator: 'equals', value: 'extracted' },
                     { field: 'createdAt', operator: 'between', value: [compareStart, compareEnd] }
@@ -313,10 +329,13 @@ const DailyReportPage: React.FC = () => {
 
             const compareScannedBody = {
                 indexName: 'scanneddocuments',
-                groupByFields: ['branch'],
+                groupByFields: ['branch.keyword', 'status.keyword'],
                 filters: [
-                    { field: 'status', operator: 'equals', value: 'success' },
-                    { field: 'createdAt', operator: 'between', value: [compareStart, compareEnd] }
+                    {
+                        field: 'createdAt',
+                        operator: 'between',
+                        value: [compareStart, compareEnd]
+                    }
                 ]
             };
 
@@ -372,90 +391,84 @@ const DailyReportPage: React.FC = () => {
 
         const branchMap = new Map<string, MergedBranchData>();
 
-        // Process Scanned Docs
+        const getOrCreateBranch = (bCode: string): MergedBranchData => {
+            let existing = branchMap.get(bCode);
+            if (!existing) {
+                existing = {
+                    branchCode: bCode,
+                    branchName: BRANCH_NAME_MAP[bCode] || bCode,
+                    scannedDocs: 0,
+                    submittedOrders: 0,
+                    extractedOrders: 0,
+                    offlineOrders: 0,
+                    onlineOrders: 0
+                };
+                branchMap.set(bCode, existing);
+            }
+            return existing;
+        };
+
+        // Process Scanned Docs (grouping by branch and status)
         if (scannedData?.data && Array.isArray(scannedData.data)) {
             scannedData.data.forEach((item: any) => {
-                const rawCode = item['branch.keyword'] || item.branch || item.branchCode || item.branch_code || item.key;
-                if (!rawCode) return;
+                const rawCode = item['branch.keyword'] || item.branch || item['branchCode.keyword'] || item.branchCode || item.branch_code || item.key;
+                if (!rawCode || !String(rawCode).trim()) return;
                 const bCode = String(rawCode).trim().toUpperCase();
-                const count = item.docCount || item.doc_count || item.count || 0;
 
-                const existing = branchMap.get(bCode);
-                if (existing) {
-                    existing.scannedDocs += count;
-                } else {
-                    branchMap.set(bCode, {
-                        branchCode: bCode,
-                        branchName: BRANCH_NAME_MAP[bCode] || bCode,
-                        scannedDocs: count,
-                        submittedOrders: 0,
-                        extractedOrders: 0,
-                        offlineOrders: 0,
-                        onlineOrders: 0
+                // Aggregate successful scans from children
+                let successCount = 0;
+                if (item.children && Array.isArray(item.children)) {
+                    item.children.forEach((child: any) => {
+                        const statusVal = String(child['status.keyword'] || child.status || child.key || '').toLowerCase();
+                        if (statusVal === 'success') {
+                            successCount += child.docCount || child.doc_count || child.count || 0;
+                        }
                     });
+                } else {
+                    successCount = item.docCount || item.doc_count || item.count || 0;
                 }
+
+                const entry = getOrCreateBranch(bCode);
+                entry.scannedDocs += successCount;
             });
         }
 
         // Process Extracted Orders
         if (extractedData?.data && Array.isArray(extractedData.data)) {
             extractedData.data.forEach((item: any) => {
-                const rawCode = item.branchCode || item.branch || item['branch.keyword'] || item.key;
-                if (!rawCode) return;
+                const rawCode = item['branchCode.keyword'] || item.branchCode || item['branch.keyword'] || item.branch || item.key;
+                if (!rawCode || !String(rawCode).trim()) return;
                 const bCode = String(rawCode).trim().toUpperCase();
                 const count = item.docCount || item.doc_count || item.count || 0;
 
-                const existing = branchMap.get(bCode);
-                if (existing) {
-                    existing.extractedOrders += count;
-                } else {
-                    branchMap.set(bCode, {
-                        branchCode: bCode,
-                        branchName: BRANCH_NAME_MAP[bCode] || bCode,
-                        scannedDocs: 0,
-                        submittedOrders: 0,
-                        extractedOrders: count,
-                        offlineOrders: 0,
-                        onlineOrders: 0
-                    });
-                }
+                const entry = getOrCreateBranch(bCode);
+                entry.extractedOrders += count;
             });
         }
 
         // Process Submitted Orders
         if (orderData?.data && Array.isArray(orderData.data)) {
             orderData.data.forEach((item: any) => {
-                const rawCode = item.branchCode || item.branch || item['branch.keyword'] || item.key;
-                if (!rawCode) return;
+                const rawCode = item['branchCode.keyword'] || item.branchCode || item['branch.keyword'] || item.branch || item.key;
+                if (!rawCode || !String(rawCode).trim()) return;
                 const bCode = String(rawCode).trim().toUpperCase();
 
                 let offline = 0;
                 let online = 0;
                 if (item.children && Array.isArray(item.children)) {
                     item.children.forEach((child: any) => {
-                        if (child.ordermode === 'offline') offline += child.docCount || 0;
-                        if (child.ordermode === 'online') online += child.docCount || 0;
+                        const mode = String(child['ordermode.keyword'] || child.ordermode || child.key || '').toLowerCase();
+                        if (mode === 'offline') offline += child.docCount || child.doc_count || child.count || 0;
+                        if (mode === 'online') online += child.docCount || child.doc_count || child.count || 0;
                     });
                 }
 
                 const count = item.docCount || item.doc_count || item.count || 0;
-                const existing = branchMap.get(bCode);
+                const entry = getOrCreateBranch(bCode);
 
-                if (existing) {
-                    existing.submittedOrders += count;
-                    existing.offlineOrders += offline;
-                    existing.onlineOrders += online;
-                } else {
-                    branchMap.set(bCode, {
-                        branchCode: bCode,
-                        branchName: BRANCH_NAME_MAP[bCode] || bCode,
-                        scannedDocs: 0,
-                        submittedOrders: count,
-                        extractedOrders: 0,
-                        offlineOrders: offline,
-                        onlineOrders: online
-                    });
-                }
+                entry.submittedOrders += count;
+                entry.offlineOrders += offline;
+                entry.onlineOrders += online;
             });
         }
 
@@ -860,13 +873,7 @@ const DailyReportPage: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     {/* Title & Navigation */}
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="p-2 cursor-pointer rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200"
-                            title="Go Back"
-                        >
-                            <ArrowLeft size={18} />
-                        </button>
+                        <BackButton onClick={onBack} />
                         <div>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-xl font-bold text-slate-900 tracking-tight">Daily Branch Performance & Analytics Report</h1>
@@ -881,7 +888,7 @@ const DailyReportPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setDateRange(getTodayRange())}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                                     isSelectedPreset(getTodayRange())
                                         ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -892,7 +899,7 @@ const DailyReportPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setDateRange(getYesterdayRange())}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                                     isSelectedPreset(getYesterdayRange())
                                         ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -903,7 +910,7 @@ const DailyReportPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setDateRange(getDayBeforeYesterdayRange())}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                                     isSelectedPreset(getDayBeforeYesterdayRange())
                                         ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -968,8 +975,9 @@ const DailyReportPage: React.FC = () => {
                             <Table size={16} /> Branch Data Matrix ({filteredBranches.length})
                         </button>
                     </div>
-                    {/* {lastFetchedAt.toLocaleTimeString()} */}
-                    <div className="text-xs font-medium text-slate-500 hidden sm:block">{lastFetchedAt && <span>Last Sync: 12/08/2026 09:22 AM</span>}</div>
+                    <div className="text-xs font-medium text-slate-500 hidden sm:block">
+                        {lastFetchedAt && <span>Last Sync: {lastFetchedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>}
+                    </div>
                 </div>
             </div>
 
@@ -1002,11 +1010,11 @@ const DailyReportPage: React.FC = () => {
                             <StatCard
                                 title="Total Extractions"
                                 icon={<Sparkles size={18} />}
-                                iconBgColor="bg-amber-50 text-amber-600"
+                                iconBgColor="bg-sky-50 text-sky-600"
                                 value={kpiTotals.totalExtracted}
                                 subContent={
                                     <span>
-                                        Status: <strong className="text-amber-600 font-semibold">Extracted</strong>
+                                        Status: <strong className="text-sky-600 font-semibold">Extracted</strong>
                                     </span>
                                 }
                             />
@@ -1163,7 +1171,7 @@ const DailyReportPage: React.FC = () => {
 
                                         {/* Date range filter for comparison shown after checkbox when active */}
                                         {isCompareActive && (
-                                            <div className="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200 px-3 py-1 rounded-lg">
+                                            <div className="flex items-center gap-2 bg-indigo-50/30 border border-indigo-100 px-3 py-1 rounded-lg">
                                                 <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide">Compare Period:</span>
                                                 <DateTimePicker
                                                     onChange={setCompareDateRange}
@@ -1176,14 +1184,14 @@ const DailyReportPage: React.FC = () => {
                                     </div>
 
                                     {/* Search Input */}
-                                    <div className="relative flex-1 max-w-xs">
+                                    <div className="relative flex-1 max-w-lg">
                                         <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <input
                                             type="text"
                                             placeholder="Search by Branch Code or City..."
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
-                                            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                                            className="w-full pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
                                         />
                                         {searchQuery && (
                                             <button
