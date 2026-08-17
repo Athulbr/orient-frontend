@@ -205,7 +205,6 @@ interface DailyReportPageProps {
 }
 
 const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
-
     // State
     const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string }>(getTodayRange);
 
@@ -975,9 +974,9 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                             <Table size={16} /> Branch Data Matrix ({filteredBranches.length})
                         </button>
                     </div>
-                    <div className="text-xs font-medium text-slate-500 hidden sm:block">
+                    {/* <div className="text-xs font-medium text-slate-500 hidden sm:block">
                         {lastFetchedAt && <span>Last Sync: {lastFetchedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>}
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
