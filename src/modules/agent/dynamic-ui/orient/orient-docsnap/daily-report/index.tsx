@@ -7,6 +7,7 @@ import {
     RefreshCw,
     Search,
     FileText,
+    FileX,
     Layers,
     AlertCircle,
     Download,
@@ -76,6 +77,7 @@ export interface MergedBranchData {
     branchCode: string;
     branchName: string;
     scannedDocs: number;
+    failedDocs: number;
     submittedOrders: number;
     extractedOrders: number;
     offlineOrders: number;
@@ -83,7 +85,7 @@ export interface MergedBranchData {
 }
 
 type ViewTab = 'dashboard' | 'table';
-type SortField = 'branchCode' | 'scannedDocs' | 'submittedOrders' | 'extractedOrders' | 'offlineOrders' | 'onlineOrders';
+type SortField = 'branchCode' | 'scannedDocs' | 'failedDocs' | 'submittedOrders' | 'extractedOrders' | 'offlineOrders' | 'onlineOrders';
 type SortOrder = 'asc' | 'desc';
 
 // ── City Map for Branch Codes ──────────────────────────────────────────────────
@@ -114,7 +116,8 @@ const BRANCH_NAME_MAP: Record<string, string> = {
     KTM: 'Kottayam - Baker Junction',
     COARP: 'Kochi - Near Airport',
     CALCT: 'Calicut - Kurisupalli',
-    KOLM: 'Kollam - Sankar Junction'
+    KOLM: 'Kollam - Sankar Junction',
+    UNKNOWN: 'Unassigned / Unknown'
 };
 
 // ── Reusable Stat Card Component ──────────────────────────────────────────────
@@ -274,7 +277,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
             groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
             filters: [
                 { field: 'orderStatus', operator: 'equals', value: 'submitted' },
-                { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
+                { field: 'updatedAt', operator: 'between', value: [dateStart, dateEnd] }
             ]
         };
         const orderDetailBodyOfExtracted = {
@@ -282,7 +285,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
             groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
             filters: [
                 { field: 'orderStatus', operator: 'equals', value: 'extracted' },
-                { field: 'createdAt', operator: 'between', value: [dateStart, dateEnd] }
+                { field: 'updatedAt', operator: 'between', value: [dateStart, dateEnd] }
             ]
         };
 
@@ -395,8 +398,9 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
             if (!existing) {
                 existing = {
                     branchCode: bCode,
-                    branchName: BRANCH_NAME_MAP[bCode] || bCode,
+                    branchName: BRANCH_NAME_MAP[bCode] || (bCode === 'UNKNOWN' ? 'Unassigned / Unknown' : bCode),
                     scannedDocs: 0,
+                    failedDocs: 0,
                     submittedOrders: 0,
                     extractedOrders: 0,
                     offlineOrders: 0,
@@ -411,24 +415,34 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
         if (scannedData?.data && Array.isArray(scannedData.data)) {
             scannedData.data.forEach((item: any) => {
                 const rawCode = item['branch.keyword'] || item.branch || item['branchCode.keyword'] || item.branchCode || item.branch_code || item.key;
-                if (!rawCode || !String(rawCode).trim()) return;
-                const bCode = String(rawCode).trim().toUpperCase();
+                const bCode = rawCode && String(rawCode).trim() ? String(rawCode).trim().toUpperCase() : 'UNKNOWN';
 
-                // Aggregate successful scans from children
+                // Aggregate successful and failed scans from children
                 let successCount = 0;
+                let failedCount = 0;
                 if (item.children && Array.isArray(item.children)) {
                     item.children.forEach((child: any) => {
                         const statusVal = String(child['status.keyword'] || child.status || child.key || '').toLowerCase();
+                        const count = Number(child.docCount || child.doc_count || child.count || 0);
                         if (statusVal === 'success') {
-                            successCount += child.docCount || child.doc_count || child.count || 0;
+                            successCount += count;
+                        } else if (statusVal === 'failed' || statusVal === 'failure' || statusVal === 'error') {
+                            failedCount += count;
                         }
                     });
                 } else {
-                    successCount = item.docCount || item.doc_count || item.count || 0;
+                    const statusVal = String(item['status.keyword'] || item.status || item.key || '').toLowerCase();
+                    const count = Number(item.docCount || item.doc_count || item.count || 0);
+                    if (statusVal === 'failed' || statusVal === 'failure' || statusVal === 'error') {
+                        failedCount += count;
+                    } else if (statusVal === 'success') {
+                        successCount += count;
+                    }
                 }
 
                 const entry = getOrCreateBranch(bCode);
                 entry.scannedDocs += successCount;
+                entry.failedDocs += failedCount;
             });
         }
 
@@ -436,9 +450,8 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
         if (extractedData?.data && Array.isArray(extractedData.data)) {
             extractedData.data.forEach((item: any) => {
                 const rawCode = item['branchCode.keyword'] || item.branchCode || item['branch.keyword'] || item.branch || item.key;
-                if (!rawCode || !String(rawCode).trim()) return;
-                const bCode = String(rawCode).trim().toUpperCase();
-                const count = item.docCount || item.doc_count || item.count || 0;
+                const bCode = rawCode && String(rawCode).trim() ? String(rawCode).trim().toUpperCase() : 'UNKNOWN';
+                const count = Number(item.docCount || item.doc_count || item.count || 0);
 
                 const entry = getOrCreateBranch(bCode);
                 entry.extractedOrders += count;
@@ -449,20 +462,19 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
         if (orderData?.data && Array.isArray(orderData.data)) {
             orderData.data.forEach((item: any) => {
                 const rawCode = item['branchCode.keyword'] || item.branchCode || item['branch.keyword'] || item.branch || item.key;
-                if (!rawCode || !String(rawCode).trim()) return;
-                const bCode = String(rawCode).trim().toUpperCase();
+                const bCode = rawCode && String(rawCode).trim() ? String(rawCode).trim().toUpperCase() : 'UNKNOWN';
 
                 let offline = 0;
                 let online = 0;
                 if (item.children && Array.isArray(item.children)) {
                     item.children.forEach((child: any) => {
                         const mode = String(child['ordermode.keyword'] || child.ordermode || child.key || '').toLowerCase();
-                        if (mode === 'offline') offline += child.docCount || child.doc_count || child.count || 0;
-                        if (mode === 'online') online += child.docCount || child.doc_count || child.count || 0;
+                        if (mode === 'offline') offline += Number(child.docCount || child.doc_count || child.count || 0);
+                        if (mode === 'online') online += Number(child.docCount || child.doc_count || child.count || 0);
                     });
                 }
 
-                const count = item.docCount || item.doc_count || item.count || 0;
+                const count = Number(item.docCount || item.doc_count || item.count || 0);
                 const entry = getOrCreateBranch(bCode);
 
                 entry.submittedOrders += count;
@@ -486,6 +498,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
     // Aggregate KPI Totals
     const kpiTotals = useMemo(() => {
         let totalScans = 0;
+        let totalFailed = 0;
         let totalOrders = 0;
         let totalOffline = 0;
         let totalOnline = 0;
@@ -493,6 +506,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
         mergedBranches.forEach(b => {
             totalScans += b.scannedDocs;
+            totalFailed += b.failedDocs || 0;
             totalOrders += b.submittedOrders;
             totalOffline += b.offlineOrders;
             totalOnline += b.onlineOrders;
@@ -501,16 +515,18 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
         const offlinePct = totalOrders > 0 ? (totalOffline / totalOrders) * 100 : 0;
         const onlinePct = totalOrders > 0 ? (totalOnline / totalOrders) * 100 : 0;
+        const branchCount = mergedBranches.filter(b => b.branchCode !== 'UNKNOWN').length || mergedBranches.length;
 
         return {
             totalScans,
+            totalFailed,
             totalOrders,
             totalOffline,
             totalOnline,
             totalExtracted,
             offlinePct,
             onlinePct,
-            branchCount: mergedBranches.length
+            branchCount
         };
     }, [mergedBranches]);
 
@@ -592,12 +608,14 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                     'Submission Ratio(%)': submissionRatio,
                     'Offline Orders': b.offlineOrders,
                     'Online Orders': b.onlineOrders,
-                    'Scanned Documents': b.scannedDocs
+                    'Uploaded Invoices': b.scannedDocs,
+                    'Failed Invoices': b.failedDocs || 0
                 };
             });
 
             const count = branches.length;
             const totalScanned = branches.reduce((acc, b) => acc + (b.scannedDocs || 0), 0);
+            const totalFailed = branches.reduce((acc, b) => acc + (b.failedDocs || 0), 0);
             const totalSubmitted = branches.reduce((acc, b) => acc + (b.submittedOrders || 0), 0);
             const totalExtracted = branches.reduce((acc, b) => acc + (Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0)), 0);
             const totalOffline = branches.reduce((acc, b) => acc + (b.offlineOrders || 0), 0);
@@ -612,7 +630,8 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                 'Submission Ratio(%)': totalSubmissionRatio,
                 'Offline Orders': totalOffline,
                 'Online Orders': totalOnline,
-                'Scanned Documents': totalScanned
+                'Uploaded Invoices': totalScanned,
+                'Failed Invoices': totalFailed
             });
 
             // if (count > 0) {
@@ -642,7 +661,8 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
             { wch: 18 }, // Submission Ratio
             { wch: 16 }, // Offline Orders
             { wch: 16 }, // Online Orders
-            { wch: 20 } // Scanned Documents
+            { wch: 20 }, // Scanned Documents
+            { wch: 18 } // Failed Invoices
         ];
 
         // Primary sheet name (Excel limits sheet names to max 31 characters)
@@ -674,6 +694,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
     const renderBranchTable = (branchesData: MergedBranchData[], title?: string, badgeColor?: string, rangeText?: string) => {
         const totalScanned = branchesData.reduce((acc, b) => acc + (b.scannedDocs || 0), 0);
+        const totalFailed = branchesData.reduce((acc, b) => acc + (b.failedDocs || 0), 0);
         const totalSubmitted = branchesData.reduce((acc, b) => acc + (b.submittedOrders || 0), 0);
         const totalExtracted = branchesData.reduce((acc, b) => acc + (Number(b.extractedOrders || 0) + Number(b.submittedOrders || 0)), 0);
         const totalOffline = branchesData.reduce((acc, b) => acc + (b.offlineOrders || 0), 0);
@@ -732,8 +753,15 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
                                 <th className="py-3 px-5 text-right cursor-pointer hover:text-indigo-600" onClick={() => handleSortToggle('scannedDocs')}>
                                     <div className="flex items-center justify-end gap-1.5">
-                                        Scanned Invoices
+                                        Uploaded Invoices
                                         {sortField === 'scannedDocs' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                    </div>
+                                </th>
+
+                                <th className="py-3 px-5 text-right cursor-pointer hover:text-rose-600" onClick={() => handleSortToggle('failedDocs')}>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        Failed Invoices
+                                        {sortField === 'failedDocs' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
                                     </div>
                                 </th>
                             </tr>
@@ -741,7 +769,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                         <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                             {branchesData.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="py-12 text-center text-slate-400 text-sm font-medium">
+                                    <td colSpan={8} className="py-12 text-center text-slate-400 text-sm font-medium">
                                         No branch record matching the search/filter criteria.
                                     </td>
                                 </tr>
@@ -796,16 +824,18 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                                 {/* Offline */}
                                                 <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{b.offlineOrders}</td>
 
-                                                {/* Visual Mode Split Bar */}
-
+                                                {/* Scanned Docs */}
                                                 <td className="py-3 px-5 text-center font-bold text-blue-600 text-sm">{b.scannedDocs}</td>
+
+                                                {/* Failed Docs */}
+                                                <td className="py-3 px-5 text-center font-bold text-rose-600 text-sm">{b.failedDocs || 0}</td>
                                             </tr>
 
                                             {/* Expanded Branch Breakdown Detail */}
                                             {isExpanded && (
                                                 <tr className="bg-slate-50/80">
-                                                    <td colSpan={7} className="p-4 border-l-4 border-indigo-500">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                                    <td colSpan={8} className="p-4 border-l-4 border-indigo-500">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                                                             <div className="bg-white p-3.5 rounded-lg border border-slate-200">
                                                                 <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Branch Info</span>
                                                                 <div className="font-bold text-slate-900 text-sm mt-1">
@@ -821,6 +851,18 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                                                     </div>
                                                                     <div className="text-amber-700">
                                                                         <strong>{totalExtractedOrders}</strong> Total Extracted (100%)
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="bg-white p-3.5 rounded-lg border border-slate-200">
+                                                                <span className="text-slate-400 font-bold text-xs uppercase tracking-wider">Invoice Scans</span>
+                                                                <div className="flex items-center gap-3 mt-1.5 font-medium">
+                                                                    <div className="text-blue-700">
+                                                                        <strong>{b.scannedDocs}</strong> Success
+                                                                    </div>
+                                                                    <div className="text-rose-700">
+                                                                        <strong>{b.failedDocs || 0}</strong> Failed
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -853,9 +895,10 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                         </div>
                                         <p className={`text-xs font-semibold ${totalRatioPct === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>{totalRatioPct}%</p>
                                     </td>
-                                    <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{totalOffline.toLocaleString()}</td>
                                     <td className="py-3 px-5 text-center text-purple-600 font-semibold">{totalOnline.toLocaleString()}</td>
+                                    <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{totalOffline.toLocaleString()}</td>
                                     <td className="py-3 px-5 text-center font-bold text-blue-600 text-sm">{totalScanned.toLocaleString()}</td>
+                                    <td className="py-3 px-5 text-center font-bold text-rose-600 text-sm">{totalFailed.toLocaleString()}</td>
                                 </tr>
                             </tfoot>
                         )}
@@ -1004,7 +1047,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                 ) : (
                     <>
                         {/* Summary KPI Cards - Full Width Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                             {/* Card 1: Total Extractions */}
                             <StatCard
                                 title="Total Extractions"
@@ -1031,7 +1074,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                 }
                             />
 
-                            {/* Card 4: Online Orders Breakdown */}
+                            {/* Card 3: Online Orders Breakdown */}
                             <StatCard
                                 title="Online Orders"
                                 icon={<Smartphone size={18} />}
@@ -1044,7 +1087,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                 }
                             />
 
-                            {/* Card 3: Offline Orders Breakdown */}
+                            {/* Card 4: Offline Orders Breakdown */}
                             <StatCard
                                 title="Offline Orders"
                                 icon={<Store size={18} />}
@@ -1059,7 +1102,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
                             {/* Card 5: Total Scanned Invoices */}
                             <StatCard
-                                title="Scanned Invoices"
+                                title="Uploaded Invoices"
                                 icon={<FileText size={18} />}
                                 iconBgColor="bg-blue-50 text-blue-600"
                                 value={kpiTotals.totalScans}
@@ -1067,6 +1110,23 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                     <>
                                         <span>
                                             Status: <strong className="text-emerald-600">Success</strong>
+                                        </span>
+                                        <span>•</span>
+                                        <span>{kpiTotals.branchCount} branches</span>
+                                    </>
+                                }
+                            />
+
+                            {/* Card 6: Failed Invoices */}
+                            <StatCard
+                                title="Failed Invoices"
+                                icon={<FileX size={18} />}
+                                iconBgColor="bg-rose-50 text-rose-600"
+                                value={kpiTotals.totalFailed}
+                                subContent={
+                                    <>
+                                        <span>
+                                            Status: <strong className="text-rose-600">Failed</strong>
                                         </span>
                                         <span>•</span>
                                         <span>{kpiTotals.branchCount} branches</span>

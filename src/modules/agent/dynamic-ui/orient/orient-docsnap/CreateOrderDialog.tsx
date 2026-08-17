@@ -22,7 +22,8 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
             : ['currency']
     );
     const [purpose, setPurpose] = useState(initialOrder?.orderDetails.purpose || '');
-    const [isLoanOrder, setIsLoanOrder] = useState<boolean | undefined>(initialOrder?.orderDetails.isLoanOrder);
+    const [isLoanOrder, setIsLoanOrder] = useState<boolean | undefined>(initialOrder?.orderDetails.isLoanOrder || false);
+    const [sourceOfFund, setSourceOfFund] = useState<'parent' | 'self'>(initialOrder?.orderDetails.sourceOfFund || 'parent');
     const [residentialStatus, setResidentialStatus] = useState(initialOrder?.orderDetails.residentialStatus || 'resident');
     const [userName, setUserName] = useState(initialOrder?.userDetails.name || '');
     const [userEmail, setUserEmail] = useState(initialOrder?.userDetails.email || '');
@@ -51,7 +52,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
         if (orderType === 'sell' && !purpose.trim()) {
             newErrors.purpose = 'Purpose is required';
         }
-        if (orderType === 'sell' && purpose === 'Education' && isLoanOrder === undefined) {
+        if (orderType === 'sell' && (purpose === 'Education' || purpose?.toLowerCase() === 'education') && isLoanOrder === undefined) {
             newErrors.isLoanOrder = 'Please specify if it is a loan';
         }
         if (orderType === 'buy' && !residentialStatus.trim()) {
@@ -69,6 +70,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
         setIsLoading(true);
 
         try {
+            const isEducation = orderType === 'sell' && (purpose === 'Education' || purpose?.toLowerCase() === 'education');
             if (isEdit && initialOrder && onUpdate) {
                 const updatedOrder: Order = {
                     ...initialOrder,
@@ -78,7 +80,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         productType: productType as ('currency' | 'card' | 'tt')[],
                         purpose,
                         residentialStatus,
-                        ...(orderType === 'sell' && purpose === 'Education' ? { isLoanOrder } : { isLoanOrder: undefined })
+                        ...(isEducation ? { isLoanOrder, sourceOfFund } : { isLoanOrder: undefined, sourceOfFund: undefined })
                     },
                     userDetails: {
                         ...initialOrder.userDetails,
@@ -120,7 +122,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                     productType: productType as ('currency' | 'card' | 'tt')[],
                     purpose,
                     residentialStatus,
-                    ...(orderType === 'sell' && purpose === 'Education' ? { isLoanOrder } : {}),
+                    ...(isEducation ? { isLoanOrder, sourceOfFund } : {}),
                     branch: getBranchName(),
                     branchId: Number(sessionStorage.getItem('branch_id')),
                     branchCode: sessionStorage.getItem('branch_code') || '',
@@ -335,43 +337,75 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                         </div>
                     )}
 
-                    {orderType === 'sell' && purpose === 'Education' && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
-                                With Loan? <span className="text-red-500">*</span>
-                            </label>
-                            <div className="pt-2 flex gap-4 mt-2 ml-1">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="isLoanOrder"
-                                        value="yes"
-                                        checked={isLoanOrder === true}
-                                        onChange={() => {
-                                            setIsLoanOrder(true);
-                                            if (errors.isLoanOrder) setErrors(prev => ({ ...prev, isLoanOrder: '' }));
-                                        }}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
-                                    />
-                                    <span className="text-sm text-gray-700">Yes</span>
+                    {orderType === 'sell' && (purpose === 'Education' || purpose?.toLowerCase() === 'education') && (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                                    With Loan? <span className="text-red-500">*</span>
                                 </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="isLoanOrder"
-                                        value="no"
-                                        checked={isLoanOrder === false}
-                                        onChange={() => {
-                                            setIsLoanOrder(false);
-                                            if (errors.isLoanOrder) setErrors(prev => ({ ...prev, isLoanOrder: '' }));
-                                        }}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
-                                    />
-                                    <span className="text-sm text-gray-700">No</span>
-                                </label>
+                                <div className="pt-2 flex gap-4 mt-2 ml-1">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="isLoanOrder"
+                                            value="yes"
+                                            checked={isLoanOrder === true}
+                                            onChange={() => {
+                                                setIsLoanOrder(true);
+                                                if (errors.isLoanOrder) setErrors(prev => ({ ...prev, isLoanOrder: '' }));
+                                            }}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                        />
+                                        <span className="text-sm text-gray-700">Yes</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="isLoanOrder"
+                                            value="no"
+                                            checked={isLoanOrder === false}
+                                            onChange={() => {
+                                                setIsLoanOrder(false);
+                                                if (errors.isLoanOrder) setErrors(prev => ({ ...prev, isLoanOrder: '' }));
+                                            }}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                        />
+                                        <span className="text-sm text-gray-700">No</span>
+                                    </label>
+                                </div>
+                                {errors.isLoanOrder && <p className="text-red-500 text-xs mt-1">{errors.isLoanOrder}</p>}
                             </div>
-                            {errors.isLoanOrder && <p className="text-red-500 text-xs mt-1">{errors.isLoanOrder}</p>}
-                        </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                                    Source of fund <span className="text-red-500">*</span>
+                                </label>
+                                <div className="pt-2 flex gap-4 mt-2 ml-1">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="sourceOfFund"
+                                            value="parent"
+                                            checked={sourceOfFund === 'parent'}
+                                            onChange={() => setSourceOfFund('parent')}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                        />
+                                        <span className="text-sm text-gray-700">Parent</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="sourceOfFund"
+                                            value="self"
+                                            checked={sourceOfFund === 'self'}
+                                            onChange={() => setSourceOfFund('self')}
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                        />
+                                        <span className="text-sm text-gray-700">Self</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>

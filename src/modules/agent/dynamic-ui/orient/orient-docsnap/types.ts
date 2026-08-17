@@ -46,6 +46,7 @@ export interface OrderDetails {
     tcs?: string;
     branchAccountNumber?: string;
     isLoanOrder?: boolean;
+    sourceOfFund?: 'parent' | 'self';
 }
 
 export interface UserDetails {
