@@ -276,16 +276,32 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
             indexName: 'orderdetail',
             groupByFields: ['branchCode', 'ordermode'],
             filters: [
-                { field: 'orderStatus', operator: 'equals', value: 'submitted' },
-                { field: 'updatedAt', operator: 'between', value: [dateStart, dateEnd] }
+                {
+                    field: 'orderStatus',
+                    operator: 'equals',
+                    value: 'submitted'
+                },
+                {
+                    field: 'updatedAt',
+                    operator: 'between',
+                    value: [dateStart, dateEnd]
+                }
             ]
         };
         const orderDetailBodyOfExtracted = {
             indexName: 'orderdetail',
             groupByFields: ['branchCode', 'ordermode'],
             filters: [
-                { field: 'orderStatus', operator: 'equals', value: 'extracted' },
-                { field: 'updatedAt', operator: 'between', value: [dateStart, dateEnd] }
+                {
+                    field: 'orderStatus',
+                    operator: 'equals',
+                    value: 'extracted'
+                },
+                {
+                    field: 'updatedAt',
+                    operator: 'between',
+                    value: [dateStart, dateEnd]
+                }
             ]
         };
 
