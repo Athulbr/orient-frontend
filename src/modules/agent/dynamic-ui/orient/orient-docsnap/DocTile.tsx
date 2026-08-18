@@ -10,7 +10,7 @@ import { config } from '../../../../../config/default';
 
 const API_KEY = import.meta.env.VITE_WORKFLOW_API_KEY || 'secret1';
 
-export const FILE_COLORS = {
+const FILE_COLORS = {
     pdf: { label: 'PDF', text: 'text-blue-700', bg: 'bg-blue-100' },
     image: { label: 'IMG', text: 'text-emerald-800', bg: 'bg-emerald-100' },
     doc: { label: 'DOC', text: 'text-blue-700', bg: 'bg-blue-100' },
@@ -75,6 +75,7 @@ const DocTile: React.FC<{
     }, [file.ignoredPages]);
 
     const handleTogglePageIgnore = (pageIdx: number) => {
+        if (orderStatus === 'submitted') return;
         const isCurrentlyIgnored = ignoredPages.includes(pageIdx);
         const nextIgnored = isCurrentlyIgnored ? ignoredPages.filter(p => p !== pageIdx) : [...ignoredPages, pageIdx].sort((a, b) => a - b);
         setIgnoredPages(nextIgnored);
@@ -95,6 +96,7 @@ const DocTile: React.FC<{
     const isAllIgnored = totalPages > 0 && ignoredPages.length === totalPages;
 
     const handleToggleIgnoreAll = () => {
+        if (orderStatus === 'submitted') return;
         const nextIgnoreAll = !isAllIgnored;
         if (nextIgnoreAll) {
             const allIndices = Array.from({ length: totalPages }, (_, i) => i);
@@ -537,7 +539,21 @@ const DocTile: React.FC<{
 
                                                 {/* Page Image Display */}
                                                 <div
-                                                    className={`w-full flex items-center justify-center bg-white min-h-[220px] p-3 transition-opacity ${isPageIgnored ? 'opacity-70' : 'opacity-100'}`}
+                                                    onClick={() => {
+                                                        if (onToggleIgnorePage && orderStatus !== 'submitted') {
+                                                            handleTogglePageIgnore(idx);
+                                                        }
+                                                    }}
+                                                    className={`relative w-full flex items-center justify-center bg-white min-h-[220px] p-3 transition-all ${
+                                                        onToggleIgnorePage && orderStatus !== 'submitted' ? 'cursor-pointer' : ''
+                                                    } ${isPageIgnored ? 'opacity-85' : 'opacity-100'}`}
+                                                    title={
+                                                        onToggleIgnorePage && orderStatus !== 'submitted'
+                                                            ? isPageIgnored
+                                                                ? 'Click to unignore this page'
+                                                                : 'Click to ignore this page'
+                                                            : undefined
+                                                    }
                                                 >
                                                     {state === 'loading' || (!blobUrl && state !== 'error') ? (
                                                         <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
@@ -549,19 +565,36 @@ const DocTile: React.FC<{
                                                             <AlertCircle size={28} className="text-red-500" />
                                                             <span className="text-xs font-medium">Failed to load page {idx + 1}</span>
                                                             <button
-                                                                onClick={() => fetchPageBlob(apiUrl)}
+                                                                onClick={e => {
+                                                                    e.stopPropagation();
+                                                                    fetchPageBlob(apiUrl);
+                                                                }}
                                                                 className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-1 font-medium underline"
                                                             >
                                                                 <RefreshCw size={12} /> Retry
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <img
-                                                            src={blobUrl}
-                                                            alt={`${file.name} - Page ${idx + 1}`}
-                                                            className="w-full h-auto object-contain rounded-md select-none border border-gray-100"
-                                                            loading="lazy"
-                                                        />
+                                                        <div className="relative w-full flex items-center justify-center">
+                                                            <img
+                                                                src={blobUrl}
+                                                                alt={`${file.name} - Page ${idx + 1}`}
+                                                                className={`w-full h-auto object-contain rounded-md select-none border border-gray-100 transition-all ${
+                                                                    isPageIgnored ? 'opacity-40 grayscale contrast-75' : ''
+                                                                }`}
+                                                                loading="lazy"
+                                                            />
+                                                            {isPageIgnored && (
+                                                                <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none select-none">
+                                                                    <div className="transform -rotate-12 border-2 sm:border-4 border-dashed border-amber-600/70 bg-amber-500/20 backdrop-blur-[1px] px-6 sm:px-10 py-3 sm:py-4 rounded-2xl shadow-lg flex items-center gap-3 sm:gap-4 select-none">
+                                                                        <EyeOff className="w-8 h-8 sm:w-12 sm:h-12 text-amber-800 stroke-[2.5]" />
+                                                                        <span className="text-2xl sm:text-4xl md:text-5xl font-black tracking-widest text-amber-900 uppercase font-mono drop-shadow-sm">
+                                                                            IGNORED
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>

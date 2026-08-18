@@ -1277,7 +1277,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 };
                                                                 setExtractedData(newData);
                                                             }}
-                                                            placeholder="Not available"
                                                             className={`w-full rounded-md px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
                                                                 fieldValue?.confidence != null
                                                                     ? fieldValue.confidence < 0.9
@@ -1303,7 +1302,6 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                                                                 };
                                                                 setExtractedData(newData);
                                                             }}
-                                                            placeholder="Not available"
                                                             className={`w-full rounded-md px-4 py-2.5 text-sm text-zinc-800 transition-all selection:bg-blue-200 placeholder:font-normal placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
                                                                 fieldValue?.confidence != null
                                                                     ? fieldValue.confidence < 0.9
