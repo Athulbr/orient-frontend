@@ -376,7 +376,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                 {errors.isLoanOrder && <p className="text-red-500 text-xs mt-1">{errors.isLoanOrder}</p>}
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
                                     Source of fund <span className="text-red-500">*</span>
                                 </label>
@@ -404,7 +404,7 @@ const CreateOrderDialog: React.FC<CreateOrderDialogProps> = ({ initialOrder, onC
                                         <span className="text-sm text-gray-700">Self</span>
                                     </label>
                                 </div>
-                            </div>
+                            </div>  */}
                         </>
                     )}
                 </div>
