@@ -808,7 +808,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                                     </div>
                                                 </td>
                                                 {/* Extracted Orders */}
-                                                <td className="py-3 px-5 text-center font-bold text-amber-600 text-sm">{totalExtractedOrders}</td>
+                                                <td className="py-3 px-5 text-center font-bold text-sky-600 text-sm">{totalExtractedOrders}</td>
 
                                                 {/* Submitted Orders */}
                                                 <td className="py-3 px-5 text-center font-bold text-slate-900 text-sm ">{submittedOrders}</td>
@@ -824,12 +824,12 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                                             title={`Submitted: ${submittedPct}% (${submittedOrders}/${totalExtractedOrders})`}
                                                         ></div>
                                                         <div
-                                                            className="bg-amber-400 h-full"
+                                                            className="bg-sky-400 h-full"
                                                             style={{ width: `${extractedPct}%` }}
                                                             title={`Extracted: ${extractedPct}% (${Number(b.extractedOrders || 0)}/${totalExtractedOrders})`}
                                                         ></div>
                                                     </div>
-                                                    <p className={`text-xs font-semibold ${submittedPct === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>{submittedPct}%</p>
+                                                    <p className={`text-xs font-semibold ${submittedPct === 100 ? 'text-emerald-600' : 'text-sky-600'}`}>{submittedPct}%</p>
                                                 </td>
 
                                                 {/* Online */}

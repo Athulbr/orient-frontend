@@ -16,6 +16,7 @@ const MedicalCodeRoutes = lazy(() => import('./medicalCodeRoutes'));
 
 const AuthenticatedRoutes = () => {
     const permissions = sessionStorage.getItem('permissions');
+    const orient = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'view:report');
     const docsnapModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'docsnap:module');
     const dataEntryModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'dataentry:module');
     const transcriptModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'transcript:module');
@@ -26,30 +27,33 @@ const AuthenticatedRoutes = () => {
     const contentCreation = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'contentCreation:module');
     const tallyModule = JSON.parse(permissions || '[]')?.some((permission: any) => permission.key === 'tally:module');
 
-    const module = docsnapModule
-        ? 'docsnap'
-        : dataEntryModule
-          ? 'data-entry'
-          : transcriptModule
-            ? 'transcription'
-            : sldModule
-              ? 'sld'
-              : documentCreationModule
-                ? 'document-generation'
-                : ppeDetectionModule
-                  ? 'ppe-detection'
-                  : invoiceTracking
-                    ? 'invoice-tracking'
-                    : contentCreation
-                      ? 'content-creation'
-                      : tallyModule
-                        ? 'tally'
-                        : 'none';
+    const module = orient
+        ? 'orient'
+        : docsnapModule
+          ? 'docsnap'
+          : dataEntryModule
+            ? 'data-entry'
+            : transcriptModule
+              ? 'transcription'
+              : sldModule
+                ? 'sld'
+                : documentCreationModule
+                  ? 'document-generation'
+                  : ppeDetectionModule
+                    ? 'ppe-detection'
+                    : invoiceTracking
+                      ? 'invoice-tracking'
+                      : contentCreation
+                        ? 'content-creation'
+                        : tallyModule
+                          ? 'tally'
+                          : 'none';
     module !== 'none' && sessionStorage.setItem('module', module);
     const role = JSON.parse(sessionStorage.getItem('role') || '{}');
     const selectedModule = sessionStorage.getItem('module') || 'docsnap';
     if (role.name === 'superadmin') sessionStorage.setItem('module', selectedModule);
     const paths = {
+        orient: '/agent/run/Document Extractor',
         docsnap: '/docsnap',
         'data-entry': '/data-entry',
         transcription: '/transcription',

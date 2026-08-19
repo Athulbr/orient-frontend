@@ -5,6 +5,8 @@ import { Dropdown } from '../../../../../components/Dropdown';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
 import { useNavigate } from 'react-router-dom';
+import { checkPrime } from 'crypto';
+import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 
 interface OrderFiltersBarProps {
     searchQuery: string;
@@ -37,10 +39,14 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
 
     const menuOptions = [
         { label: 'Scanned Documents', value: 'scannedDocuments' },
-        { label: 'Daily Report', value: 'dailyReport' },
-        { label: 'Field Corrections', value: 'fieldsCorrections' },
         { label: 'Server Status', value: 'ServerStatus' }
     ];
+    const { checkPermission } = usePermissionStore();
+    const viewReportAccess = checkPermission('view:report');
+    if (viewReportAccess) {
+        menuOptions.push({ label: 'Daily Report', value: 'dailyReport' });
+        menuOptions.push({ label: 'Field Corrections', value: 'fieldCorrections' });
+    }
 
     const handleMenuSelect = (label: string) => {
         const option = menuOptions.find(o => o.label === label);
