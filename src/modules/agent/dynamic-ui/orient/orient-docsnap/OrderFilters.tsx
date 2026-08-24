@@ -5,7 +5,6 @@ import { Dropdown } from '../../../../../components/Dropdown';
 import { SingleSelect } from '../../../../../components/SingleSelect';
 import DateTimePicker from '../../../../../components/DateTimePicker';
 import { useNavigate } from 'react-router-dom';
-import { checkPrime } from 'crypto';
 import { usePermissionStore } from '../../../../../zustand-store/PermissionStore';
 
 interface OrderFiltersBarProps {
@@ -38,26 +37,20 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
     const navigate = useNavigate();
 
     const menuOptions = [
-        { label: 'Scanned Documents', value: 'scannedDocuments' },
-        { label: 'Server Status', value: 'ServerStatus' }
+        { label: 'Scanned Documents', value: 'scannedDocuments', path: '/agent/scanned-documents' },
+        { label: 'Server Status', value: 'ServerStatus', path: '/agent/health' }
     ];
     const { checkPermission } = usePermissionStore();
     const viewReportAccess = checkPermission('view:report');
     if (viewReportAccess) {
-        menuOptions.push({ label: 'Daily Report', value: 'dailyReport' });
-        menuOptions.push({ label: 'Field Corrections', value: 'fieldCorrections' });
+        menuOptions.push({ label: 'Daily Report', value: 'dailyReport', path: '/agent/daily-report' });
+        menuOptions.push({ label: 'Field Corrections', value: 'fieldCorrections', path: '/agent/field-corrections' });
     }
 
     const handleMenuSelect = (label: string) => {
         const option = menuOptions.find(o => o.label === label);
-        if (option?.value === 'scannedDocuments') {
-            navigate('/agent/scanned-documents');
-        } else if (option?.value === 'fieldsCorrections') {
-            navigate('/agent/field-corrections');
-        } else if (option?.value === 'dailyReport') {
-            navigate('/agent/daily-report');
-        } else if (option?.value === 'ServerStatus') {
-            navigate('/agent/health');
+        if (option?.path) {
+            navigate(option.path);
         }
     };
 
