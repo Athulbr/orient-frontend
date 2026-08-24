@@ -329,7 +329,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
             const compareOrderBody = {
                 indexName: 'orderdetail',
-                groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
+                groupByFields: ['branchCode', 'ordermode'],
                 filters: [
                     { field: 'orderStatus', operator: 'equals', value: 'submitted' },
                     { field: 'createdAt', operator: 'between', value: [compareStart, compareEnd] }
@@ -338,7 +338,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
             const compareExtractedBody = {
                 indexName: 'orderdetail',
-                groupByFields: ['branchCode.keyword', 'ordermode.keyword'],
+                groupByFields: ['branchCode', 'ordermode'],
                 filters: [
                     { field: 'orderStatus', operator: 'equals', value: 'extracted' },
                     { field: 'createdAt', operator: 'between', value: [compareStart, compareEnd] }
@@ -347,7 +347,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
             const compareScannedBody = {
                 indexName: 'scanneddocuments',
-                groupByFields: ['branch.keyword', 'status.keyword'],
+                groupByFields: ['branch', 'status'],
                 filters: [
                     {
                         field: 'createdAt',
@@ -624,8 +624,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                     'Submission Ratio(%)': submissionRatio,
                     'Offline Orders': b.offlineOrders,
                     'Online Orders': b.onlineOrders,
-                    'Uploaded Invoices': b.scannedDocs,
-                    'Failed Invoices': b.failedDocs || 0
+                    'Uploaded Invoices': b.scannedDocs
                 };
             });
 
@@ -646,8 +645,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                 'Submission Ratio(%)': totalSubmissionRatio,
                 'Offline Orders': totalOffline,
                 'Online Orders': totalOnline,
-                'Uploaded Invoices': totalScanned,
-                'Failed Invoices': totalFailed
+                'Uploaded Invoices': totalScanned
             });
 
             // if (count > 0) {
@@ -677,8 +675,7 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
             { wch: 18 }, // Submission Ratio
             { wch: 16 }, // Offline Orders
             { wch: 16 }, // Online Orders
-            { wch: 20 }, // Scanned Documents
-            { wch: 18 } // Failed Invoices
+            { wch: 20 } // Scanned Documents
         ];
 
         // Primary sheet name (Excel limits sheet names to max 31 characters)
@@ -773,13 +770,6 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                         {sortField === 'scannedDocs' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
                                     </div>
                                 </th>
-
-                                <th className="py-3 px-5 text-right cursor-pointer hover:text-rose-600" onClick={() => handleSortToggle('failedDocs')}>
-                                    <div className="flex items-center justify-end gap-1.5">
-                                        Failed Invoices
-                                        {sortField === 'failedDocs' && (sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                                    </div>
-                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -842,9 +832,6 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
 
                                                 {/* Scanned Docs */}
                                                 <td className="py-3 px-5 text-center font-bold text-blue-600 text-sm">{b.scannedDocs}</td>
-
-                                                {/* Failed Docs */}
-                                                <td className="py-3 px-5 text-center font-bold text-rose-600 text-sm">{b.failedDocs || 0}</td>
                                             </tr>
 
                                             {/* Expanded Branch Breakdown Detail */}
@@ -914,7 +901,6 @@ const DailyReportPage: React.FC<DailyReportPageProps> = ({ onBack }) => {
                                     <td className="py-3 px-5 text-center text-purple-600 font-semibold">{totalOnline.toLocaleString()}</td>
                                     <td className="py-3 px-5 text-center text-emerald-600 font-semibold">{totalOffline.toLocaleString()}</td>
                                     <td className="py-3 px-5 text-center font-bold text-blue-600 text-sm">{totalScanned.toLocaleString()}</td>
-                                    <td className="py-3 px-5 text-center font-bold text-rose-600 text-sm">{totalFailed.toLocaleString()}</td>
                                 </tr>
                             </tfoot>
                         )}
