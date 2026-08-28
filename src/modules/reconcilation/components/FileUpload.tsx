@@ -20,7 +20,8 @@ interface FileUploadProps {
         payuFiles?: File[],
         nameMatchDirectFile?: File | null,
         nameMatchFile?: File | null,
-        totalOrdersFile?: File | null
+        totalOrdersFile?: File | null,
+        smartPayFiles?: File[]
     ) => void;
     isLoading: boolean;
 }
@@ -62,6 +63,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     const [payuOdFiles, setPayuOdFiles] = useState<File[]>([]);
     const [cashfreeFiles, setCashfreeFiles] = useState<File[]>([]);
     const [easebuzzFiles, setEasebuzzFiles] = useState<File[]>([]);
+    const [smartPayFiles, setSmartPayFiles] = useState<File[]>([]);
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
     const [nameMatchDirectFile, setNameMatchDirectFile] = useState<File | null>(null);
     const [nameMatchFile, setNameMatchFile] = useState<File | null>(null);
@@ -78,6 +80,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
     const payuOdRef = useRef<HTMLInputElement>(null);
     const cashfreeRef = useRef<HTMLInputElement>(null);
     const easebuzzRef = useRef<HTMLInputElement>(null);
+    const smartPayRef = useRef<HTMLInputElement>(null);
     const nameMatchDirectRef = useRef<HTMLInputElement>(null);
     const nameMatchRef = useRef<HTMLInputElement>(null);
     const totalOrdersRef = useRef<HTMLInputElement>(null);
@@ -103,6 +106,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
         setPayuOdFiles([]);
         setCashfreeFiles([]);
         setEasebuzzFiles([]);
+        setSmartPayFiles([]);
         setNameMatchDirectFile(null);
         setNameMatchFile(null);
         setTotalOrdersFile(null);
@@ -166,6 +170,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
         if (slot === 'easebuzz') {
             handleMulti(easebuzzFiles, setEasebuzzFiles, true, 'EaseBuzz');
         }
+        if (slot === 'smartpay') {
+            handleMulti(smartPayFiles, setSmartPayFiles, false, 'Smart Pay');
+        }
     };
 
     const handleSubmit = () => {
@@ -203,7 +210,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
             payuFiles.length > 0 ? payuFiles : [],
             nameMatchDirectFile,
             nameMatchFile,
-            totalOrdersFile
+            totalOrdersFile,
+            smartPayFiles.length > 0 ? smartPayFiles : []
         );
     };
 
@@ -537,6 +545,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
                         accept: '.csv,.xlsx,.xls',
                         allowPdf: true
                     })}
+                    {renderMultiSlot({
+                        id: 'smartpay',
+                        label: 'Smart Pay',
+                        sublabel: 'Smart Pay settlement report (.xlsx)',
+                        ref: smartPayRef,
+                        files: smartPayFiles,
+                        setFiles: setSmartPayFiles
+                    })}
                     {renderSlot({
                         id: 'namematchdirect',
                         label: 'Name Match - Direct Payment',
@@ -612,6 +628,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
                 { label: 'PayU On-Demand', done: payuOdFiles.length > 0, required: true },
                 { label: 'CashFree', done: cashfreeFiles.length > 0, required: true },
                 { label: 'EaseBuzz', done: easebuzzFiles.length > 0, required: true },
+                { label: 'Smart Pay', done: smartPayFiles.length > 0, required: false },
                 { label: 'Name Match Direct', done: !!nameMatchDirectFile, required: true },
                 { label: 'Name Matching', done: !!nameMatchFile, required: true },
                 { label: 'Total Orders', done: !!totalOrdersFile, required: true },

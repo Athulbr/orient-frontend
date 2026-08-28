@@ -1,122 +1,200 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import {
+  useReactTable, getCoreRowModel, getPaginationRowModel,
+  type ColumnDef, type RowSelectionState,
+} from '@tanstack/react-table';
 import styles from '../styles/DataTable.module.css';
 import { cx } from '../utils/cx';
-
-interface MatchedRecord {
-  'Match Method': string;
-  'Name Match': string;
-  'Fuzzy Score %': number;
-  'Amount Match': string;
-  'Book Txn': string;
-  'Book Bill No': string;
-  'Book Chq': string;
-  'Book Party': string;
-  'Book Direction': string;
-  'Book Sender': string;
-  'Book Recipient': string;
-  'Book Amt (Rs)': number;
-  'Bank Date': string;
-  'Bank Chq': string;
-  'Bank RRN'?: string;
-  'Bank Description': string;
-  'Bank Payer'?: string;
-  'Bank Party': string;
-  'Bank Direction': string;
-  'Bank Sender': string;
-  'Bank Recipient': string;
-  'Debit (Rs)': string | number;
-  'Credit (Rs)': string | number;
-  'Bank Amt (Rs)': number;
-  'Difference (Rs)': number;
-  'Flags': string;
-}
+import type { MatchedRecord } from '../types';
 
 interface MatchedTableProps {
   data: MatchedRecord[];
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
+  onUnmatch: (ids: string[]) => void;
+  /** Human Verification reuse: show only rows worth a human look. */
+  flaggedOnly?: boolean;
+  /** Human Verification reuse: mark a flagged row reviewed without changing the match. */
+  onApprove?: (id: string) => void;
 }
 
 const nameMatchVariant = (v: string): string => {
   if (v === 'Match')   return 'badge-success';
+  if (v === 'Manual')  return 'badge-info';
   if (v === 'Partial') return 'badge-warning';
   return 'badge-danger';
 };
 
 const amtMatchVariant = (v: string | undefined): string => {
-  if (!v)                                               return 'badge-warning';
-  if (v === 'Exact')                                    return 'badge-success';
-  if (v.includes('Minor') || v.startsWith('Split'))    return 'badge-warning';
+  if (!v)                                                                 return 'badge-warning';
+  if (v === 'Exact')                                                      return 'badge-success';
+  if (v.includes('Minor') || v.startsWith('Split') || v.startsWith('CF-Clear')) return 'badge-warning';
   return 'badge-danger';
 };
 
-const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
-  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+// A matched row worth a human look: a name match that isn't a clean "Match"
+// or a user-confirmed "Manual" (bank uses 'Mismatch'/'Partial' for a bad
+// name score, QR uses 'Low'/'Partial' — checking for "not a good value"
+// instead of allowlisting every backend's specific bad-value string is what
+// makes this work correctly across recon types), an amount difference, a
+// partial/split payment, or any row the backend flagged with a
+// "— verify"/"Low name"/"manual check" note. Reused by the Human
+// Verification tab and by BRSStatement's own discrepancy panel.
+const GOOD_NAME_MATCH = new Set(['Match', 'Manual']);
+export const isDiscrepancy = (row: MatchedRecord): boolean => {
+  if (row['Is Reviewed']) return false;
+  const nameMatch  = row['Name Match']   || '';
+  const amtMatch   = row['Amount Match'] || '';
+  const flags      = row['Flags']        || '';
+  const isPartial  = row['Partial Payment'] === true;
+  const hasNameFlag = flags.includes('— verify') || flags.includes('Low name') || flags.includes('manual check');
+  const badNameMatch = nameMatch !== '' && !GOOD_NAME_MATCH.has(nameMatch);
+  return badNameMatch || amtMatch.startsWith('Diff') || isPartial || hasNameFlag;
+};
+
+const PER_PAGE = 25;
+
+const MatchedTable: React.FC<MatchedTableProps> = ({
+  data, selectedIds, onSelectionChange, onUnmatch, flaggedOnly = false, onApprove,
+}) => {
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
-  const [page, setPage] = useState(0);
-  const PER_PAGE = 25;
+
+  const baseData = useMemo(() => (flaggedOnly ? data.filter(isDiscrepancy) : data), [data, flaggedOnly]);
+
+  const filtered = useMemo(() => baseData.filter((r) => {
+    if (filter === 'all')      return true;
+    if (filter === 'perfect')  return r['Name Match'] === 'Match';
+    if (filter === 'manual')   return r['Name Match'] === 'Manual';
+    if (filter === 'partial')  return r['Name Match'] === 'Partial';
+    if (filter === 'mismatch') return r['Name Match'] !== '' && !GOOD_NAME_MATCH.has(r['Name Match']) && r['Name Match'] !== 'Partial';
+    if (filter === 'flagged')  return !!r['Flags'] && r['Flags'].trim().length > 0;
+    return true;
+  }), [baseData, filter]);
+
+  // Controlled row selection — the Set lives in useReconciliationSession so
+  // it survives switching tabs (needed so Confirm Match can see a Book Only
+  // pick and a Bank Only pick made on different tabs).
+  const rowSelection: RowSelectionState = useMemo(() => {
+    const rs: RowSelectionState = {};
+    selectedIds.forEach((id) => { rs[id] = true; });
+    return rs;
+  }, [selectedIds]);
+
+  // Only the select column is defined as a real ColumnDef — the rest of the
+  // row is still rendered by hand below so all of the existing badge /
+  // expand-row presentation carries over untouched. TanStack here owns row
+  // model, selection state, and pagination; not per-cell rendering.
+  const columns = useMemo<ColumnDef<MatchedRecord>[]>(() => [
+    { id: 'select', accessorKey: '_id' },
+  ], []);
+
+  const table = useReactTable({
+    data: filtered,
+    columns,
+    state: { rowSelection },
+    getRowId: (r) => r._id,
+    enableRowSelection: true,
+    onRowSelectionChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
+      onSelectionChange(new Set(Object.keys(next).filter((k) => next[k])));
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageSize: PER_PAGE } },
+  });
 
   if (!data || data.length === 0) {
     return (
       <div className={styles['table-empty']}>
-        <p>No matched records found</p>
-        <p className={styles['subtitle']}>Matched entries will appear here after reconciliation</p>
+        <p>{flaggedOnly ? 'Nothing needs a manual look right now' : 'No matched records found'}</p>
+        <p className={styles['subtitle']}>
+          {flaggedOnly ? 'Flagged matches (name mismatches, partial names, amount differences) will show up here.'
+                       : 'Matched entries will appear here after reconciliation'}
+        </p>
       </div>
     );
   }
 
-  const filtered = data.filter((r) => {
-    if (filter === 'all')      return true;
-    if (filter === 'perfect')  return r['Name Match'] === 'Match';
-    if (filter === 'partial')  return r['Name Match'] === 'Partial';
-    if (filter === 'mismatch') return r['Name Match'] === 'Mismatch';
-    if (filter === 'flagged')  return r['Flags'] && r['Flags'].trim().length > 0;
-    return true;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const slice = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
+  const rows = table.getRowModel().rows;
+  const selectedCount = Object.keys(rowSelection).length;
 
   const counts = {
-    all:      data.length,
-    perfect:  data.filter(r => r['Name Match'] === 'Match').length,
-    partial:  data.filter(r => r['Name Match'] === 'Partial').length,
-    mismatch: data.filter(r => r['Name Match'] === 'Mismatch').length,
-    flagged:  data.filter(r => r['Flags'] && r['Flags'].trim().length > 0).length,
+    all:      baseData.length,
+    perfect:  baseData.filter(r => r['Name Match'] === 'Match').length,
+    manual:   baseData.filter(r => r['Name Match'] === 'Manual').length,
+    partial:  baseData.filter(r => r['Name Match'] === 'Partial').length,
+    mismatch: baseData.filter(r => r['Name Match'] !== '' && !GOOD_NAME_MATCH.has(r['Name Match']) && r['Name Match'] !== 'Partial').length,
+    flagged:  baseData.filter(r => r['Flags'] && r['Flags'].trim().length > 0).length,
   };
 
   const handleFilterChange = (f: string) => {
     setFilter(f);
-    setPage(0);
+    table.setPageIndex(0);
     setExpandedRow(null);
   };
 
   const fmtAmt = (v: number) =>
     Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  if (filtered.length === 0) {
+    return (
+      <div className={styles['table-container']}>
+        <div className={styles['filter-bar']}>
+          {[
+            { key: 'all', label: `All (${counts.all})` },
+            { key: 'perfect', label: `Perfect Match (${counts.perfect})` },
+            { key: 'manual', label: `Manual (${counts.manual})` },
+            { key: 'partial', label: `Partial Match (${counts.partial})` },
+            { key: 'mismatch', label: `Mismatch (${counts.mismatch})` },
+            { key: 'flagged', label: `Flagged (${counts.flagged})` },
+          ].map((f) => (
+            <button key={f.key} className={cx(styles['filter-btn'], filter === f.key && styles['active'])} onClick={() => handleFilterChange(f.key)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className={styles['table-empty']}>
+          <p>No records match this filter</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles['table-container']}>
-      {/* Filter bar */}
       <div className={styles['filter-bar']}>
         {[
           { key: 'all',      label: `All (${counts.all})` },
           { key: 'perfect',  label: `Perfect Match (${counts.perfect})` },
+          { key: 'manual',   label: `Manual (${counts.manual})` },
           { key: 'partial',  label: `Partial Match (${counts.partial})` },
           { key: 'mismatch', label: `Mismatch (${counts.mismatch})` },
           { key: 'flagged',  label: `Flagged (${counts.flagged})` },
         ].map((f) => (
-          <button
-            key={f.key}
-            className={cx(styles['filter-btn'], filter === f.key && styles['active'])}
-            onClick={() => handleFilterChange(f.key)}
-          >
+          <button key={f.key} className={cx(styles['filter-btn'], filter === f.key && styles['active'])} onClick={() => handleFilterChange(f.key)}>
             {f.label}
           </button>
         ))}
+
+        {selectedCount > 0 && (
+          <div className={styles['selection-actions']}>
+            <span className={styles['selection-count']}>{selectedCount} selected</span>
+            <button className={cx(styles['btn-action'], styles['btn-action--warn'])} onClick={() => onUnmatch(Array.from(selectedIds))}>
+              Un-match
+            </button>
+            <button className={styles['btn-action-ghost']} onClick={() => onSelectionChange(new Set())}>
+              Clear
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles['table-scroll']}>
         <table className={styles['data-table']}>
           <thead>
             <tr>
+              <th className={styles['col-select']} />
               <th className={styles['col-expand']} />
               <th>Method</th>
               <th>Name Match</th>
@@ -128,29 +206,34 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
               <th>Bank Amount</th>
               <th>Difference</th>
               <th>Flags</th>
+              {flaggedOnly && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
-            {slice.map((record, idx) => {
-              const globalIdx = page * PER_PAGE + idx;
-              const isExpanded = expandedRow === globalIdx;
-              const diff = record['Difference (Rs)'];
-              const hasFlags = record['Flags'] && record['Flags'].trim().length > 0;
+            {rows.map((row) => {
+              const record   = row.original;
+              const isExpanded = expandedRow === record._id;
+              const diff      = record['Difference (Rs)'];
+              const hasFlags  = record['Flags'] && record['Flags'].trim().length > 0;
+              const colSpan   = flaggedOnly ? 13 : 12;
 
               return (
-                <React.Fragment key={globalIdx}>
+                <React.Fragment key={record._id}>
                   <tr
-                    className={cx(
-                      styles['data-row'],
-                      isExpanded && styles['row-expanded'],
-                      hasFlags && styles['row-flagged'],
-                    )}
-                    onClick={() => setExpandedRow(isExpanded ? null : globalIdx)}
+                    className={cx(styles['data-row'], isExpanded && styles['row-expanded'], hasFlags && styles['row-flagged'])}
+                    onClick={() => setExpandedRow(isExpanded ? null : record._id)}
                   >
+                    <td className={styles['col-select']} onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className={styles['row-select-input']}
+                        checked={row.getIsSelected()}
+                        onChange={row.getToggleSelectedHandler()}
+                        aria-label="Select row"
+                      />
+                    </td>
                     <td className={styles['col-expand']}>
-                      <button className={styles['expand-btn']} tabIndex={-1}>
-                        {isExpanded ? '▾' : '▸'}
-                      </button>
+                      <button className={styles['expand-btn']} tabIndex={-1}>{isExpanded ? '▾' : '▸'}</button>
                     </td>
                     <td className={styles['cell-method']}>{record['Match Method']}</td>
                     <td>
@@ -158,7 +241,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
                         {record['Name Match']}
                       </span>
                     </td>
-                    <td className={styles['cell-score']}>{record['Fuzzy Score %']}%</td>
+                    <td className={styles['cell-score']}>{record['Name Match'] === 'Manual' ? '—' : `${record['Fuzzy Score %']}%`}</td>
                     <td>
                       <span className={cx(styles['badge'], styles[amtMatchVariant(record['Amount Match'])])}>
                         {record['Amount Match'] === 'Exact' ? 'Exact' : (record['Amount Match'] ?? '').substring(0, 18)}
@@ -178,11 +261,22 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
                     <td className={styles['cell-flags']}>
                       {hasFlags ? <span className={styles['flag-tag']}>Review</span> : null}
                     </td>
+                    {flaggedOnly && (
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className={styles['btn-action-ghost']}
+                          onClick={() => onApprove?.(record._id)}
+                          title="Looks correct — clear this from the review list without changing the match"
+                        >
+                          Approve
+                        </button>
+                      </td>
+                    )}
                   </tr>
 
                   {isExpanded && (
                     <tr className={styles['expanded-row']}>
-                      <td colSpan={11}>
+                      <td colSpan={colSpan}>
                         <div className={styles['expanded-details']}>
                           <div className={styles['detail-panel']}>
                             <div className={styles['detail-panel-title']}>Book Entry</div>
@@ -212,7 +306,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
                               ['Party',                   record['Bank Party']],
                               ['Direction',               record['Bank Direction']],
                               ['Sender',                  record['Bank Sender']],
-                              ['Recipient',               record['Bank Recipient']],
+                              ['Recipient',                record['Bank Recipient']],
                               ['Debit',  record['Debit (Rs)']  ? fmtAmt(Number(record['Debit (Rs)']))  : '—'],
                               ['Credit', record['Credit (Rs)'] ? fmtAmt(Number(record['Credit (Rs)'])) : '—'],
                             ] as [string, string][]).map(([label, value]) => (
@@ -231,6 +325,15 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
                               ))}
                             </div>
                           )}
+
+                          <div className={styles['detail-panel']}>
+                            <button
+                              className={cx(styles['btn-action'], styles['btn-action--warn'])}
+                              onClick={(e) => { e.stopPropagation(); onUnmatch([record._id]); }}
+                            >
+                              Un-match this row
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -244,23 +347,16 @@ const MatchedTable: React.FC<MatchedTableProps> = ({ data }) => {
 
       <div className={styles['table-footer']}>
         <span className={styles['table-count']}>
-          Showing {page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, filtered.length)} of {filtered.length} records
+          Showing {table.getState().pagination.pageIndex * PER_PAGE + 1}
+          –{Math.min((table.getState().pagination.pageIndex + 1) * PER_PAGE, filtered.length)} of {filtered.length} records
         </span>
-        {totalPages > 1 && (
+        {table.getPageCount() > 1 && (
           <div className={styles['pagination']}>
-            <button
-              className={styles['page-btn']}
-              disabled={page === 0}
-              onClick={() => { setPage(p => p - 1); setExpandedRow(null); }}
-            >
+            <button className={styles['page-btn']} disabled={!table.getCanPreviousPage()} onClick={() => { table.previousPage(); setExpandedRow(null); }}>
               Previous
             </button>
-            <span className={styles['page-info']}>Page {page + 1} of {totalPages}</span>
-            <button
-              className={styles['page-btn']}
-              disabled={page === totalPages - 1}
-              onClick={() => { setPage(p => p + 1); setExpandedRow(null); }}
-            >
+            <span className={styles['page-info']}>Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}</span>
+            <button className={styles['page-btn']} disabled={!table.getCanNextPage()} onClick={() => { table.nextPage(); setExpandedRow(null); }}>
               Next
             </button>
           </div>

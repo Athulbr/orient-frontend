@@ -6,9 +6,6 @@ import PageContainer from '../../components/PageContainer';
 import { cx } from './utils/cx';
 import styles from './app.module.css';
 
-interface SheetMetadata {
-    [sheetName: string]: { rows: number; columns: number; column_names: string[] };
-}
 interface BRSData {
     book_closing_bal: number;
     bank_closing_bal: number;
@@ -42,6 +39,11 @@ interface ReconciliationResult {
     gateway_summary?: GatewaySummaryItem[];
     books_match?: boolean;
     reconciled?: boolean;
+    // Identifies the archived run on the backend — required to regenerate
+    // the workbook from in-app edits (bank type only for now). Absent if
+    // archiving failed server-side, in which case the download button just
+    // falls back to the original file even after edits.
+    transaction_ref?: string | null;
     summary: {
         book_entries: number;
         bank_entries: number;
@@ -53,16 +55,19 @@ interface ReconciliationResult {
         difference: number;
     };
     download_url: string;
-    book_file_name: string;
-    statement_file_name: string;
-    book_sheets: SheetMetadata;
-    statement_sheets: SheetMetadata;
+    file_name: string;
 }
 
 const hexToBlob = (hex: string): Blob => {
     const bytes = new Uint8Array(hex.length / 2);
     for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
     return new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+};
+
+const DOWNLOAD_FILENAMES: Record<string, string> = {
+    qr: 'QR_Reconciliation.xlsx',
+    gateway: 'Gateway_Reconcilation.xlsx',
+    bank: 'Bank_Reconciliation.xlsx',
 };
 
 const buildResult = (data: any, reconType: string, blob: Blob): ReconciliationResult => ({
@@ -77,23 +82,20 @@ const buildResult = (data: any, reconType: string, blob: Blob): ReconciliationRe
     gateway_summary: data.gateway_summary || [],
     books_match: data.books_match,
     reconciled: data.reconciled,
+    transaction_ref: data.transaction_ref ?? null,
     summary: data.summary || { book_entries: 0, bank_entries: 0, matched: 0, matched_perfect: 0, matched_with_diff: 0, book_only: 0, bank_only: 0, difference: 0 },
     download_url: URL.createObjectURL(blob),
-    book_file_name: data.book_file_name || data.all_branches_file || '',
-    statement_file_name: data.statement_file_name || '',
-    book_sheets: data.book_sheets || data.all_branches_sheets || {},
-    statement_sheets: data.statement_sheets || {}
+    file_name: data.file_name || DOWNLOAD_FILENAMES[data.recon_type || reconType] || 'Reconciliation.xlsx',
 });
 
 function ListReconcilationPage() {
     const [stage, setStage] = useState<'upload' | 'results'>('upload');
     const [isLoading, setIsLoading] = useState(false);
-    const [isDownloading, setIsDL] = useState(false);
     const [results, setResults] = useState<ReconciliationResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const API_BASE_URL = 'http://172.16.0.47';
-    // const API_BASE_URL = 'http://localhost:8000';
+    // const API_BASE_URL = 'http://172.16.0.47';
+    const API_BASE_URL = 'http://localhost:9000';
 
     const handleUpload = async (bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType, hotBookFile?: File | null) => {
         setIsLoading(true);
@@ -138,7 +140,8 @@ function ListReconcilationPage() {
         easebuzzFiles: File[],
         nameMatchDirectFile: File | null,
         nameMatchFile: File | null,
-        totalOrdersFile: File | null
+        totalOrdersFile: File | null,
+        smartPayFiles: File[]
     ) => {
         setIsLoading(true);
         setError(null);
@@ -151,6 +154,7 @@ function ListReconcilationPage() {
             for (const f of payuOdFiles) formData.append('payu_od_files', f);
             for (const f of cashfreeFiles) formData.append('cashfree_files', f);
             for (const f of easebuzzFiles) formData.append('easebuzz_files', f);
+            for (const f of smartPayFiles) formData.append('smart_pay_files', f);
             if (prevBrsFile) formData.append('previous_brs_file', prevBrsFile);
             if (nameMatchDirectFile) formData.append('name_match_direct_file', nameMatchDirectFile);
             if (nameMatchFile) formData.append('name_match_file', nameMatchFile);
@@ -182,7 +186,8 @@ function ListReconcilationPage() {
         payuFiles?: File[],
         nameMatchDirectFile?: File | null,
         nameMatchFile?: File | null,
-        totalOrdersFile?: File | null
+        totalOrdersFile?: File | null,
+        smartPayFiles?: File[]
     ) => {
         if (reconType === 'gateway') {
             if (!payuFiles || payuFiles.length === 0) {
@@ -201,25 +206,9 @@ function ListReconcilationPage() {
                 setError('Total Orders List file is required for Gateway reconciliation.');
                 return;
             }
-            handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFiles, prevBrsFile, payuOdFiles || [], cashfreeFiles || [], easebuzzFiles || [], nameMatchDirectFile, nameMatchFile, totalOrdersFile);
+            handleGatewayUpload(bookFile, hotBookFile!, statementFile, payuFiles, prevBrsFile, payuOdFiles || [], cashfreeFiles || [], easebuzzFiles || [], nameMatchDirectFile, nameMatchFile, totalOrdersFile, smartPayFiles || []);
         } else {
             handleUpload(bookFile, statementFile, prevBrsFile, reconType, hotBookFile);
-        }
-    };
-
-    const handleDownload = async () => {
-        if (!results?.download_url) return;
-        setIsDL(true);
-        try {
-            const filename = results.recon_type === 'qr' ? 'QR_Reconciliation.xlsx' : results.recon_type === 'gateway' ? 'Gateway_Reconcilation.xlsx' : 'Bank_Reconciliation.xlsx';
-            const a = document.createElement('a');
-            a.href = results.download_url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } finally {
-            setIsDL(false);
         }
     };
 
@@ -269,7 +258,11 @@ function ListReconcilationPage() {
             )}
 
             {/* Content — flows naturally, no inner scroll container */}
-            {stage === 'upload' ? <FileUpload onUpload={handleUploadDispatch} isLoading={isLoading} /> : <Results data={results!} onDownload={handleDownload} isDownloading={isDownloading} />}
+            {stage === 'upload' ? (
+                <FileUpload onUpload={handleUploadDispatch} isLoading={isLoading} />
+            ) : (
+                <Results data={results!} apiBaseUrl={API_BASE_URL} />
+            )}
         </PageContainer>
     );
 }
