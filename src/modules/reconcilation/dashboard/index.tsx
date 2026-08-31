@@ -8,6 +8,7 @@ import OverviewPanel from './components/OverviewPanel';
 import TrendPanel from './components/TrendPanel';
 import VerificationPanel from './components/VerificationPanel';
 import BranchesPanel from './components/BranchesPanel';
+import BranchDailyPanel from './components/BranchDailyPanel';
 import KpiStrip from './components/KpiStrip';
 
 const CHANNELS: ChannelKey[] = ['bank', 'qr', 'gateway'];
@@ -32,7 +33,8 @@ const ReconciliationDashboardPage: React.FC = () => {
         { id: 'overview', label: 'Overview' },
         { id: 'trend', label: 'Daily Trend' },
         { id: 'verification', label: 'Human Verification', count: grand.hv, alert: grand.hv > 0 },
-        { id: 'branches', label: 'Branches', count: grand.branches }
+        { id: 'branches', label: 'Branches', count: grand.branches },
+        { id: 'branch-daily', label: 'Branch Daily' }
     ];
 
     if (isLoading) {
@@ -100,6 +102,7 @@ const ReconciliationDashboardPage: React.FC = () => {
                 {activeTab === 'trend' && <TrendPanel days={days} activeChannels={activeChannels} />}
                 {activeTab === 'verification' && <VerificationPanel totals={totals} activeChannels={activeChannels} />}
                 {activeTab === 'branches' && <BranchesPanel days={days} activeChannels={activeChannels} />}
+                {activeTab === 'branch-daily' && <BranchDailyPanel days={days} activeChannels={activeChannels} />}
             </ResultsTabs>
         </div>
     );

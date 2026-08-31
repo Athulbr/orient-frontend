@@ -4,8 +4,8 @@ import type { DashboardData } from './types';
 // Same backend the rest of this module talks to directly (see ../index.tsx) —
 // GET /reconcile/dashboard-data is served straight off the transactions
 // archive, coupled into the same FastAPI app as reconcile-bank/qr/gateway.
-const API_BASE_URL = 'http://172.16.0.47';
 // const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'http://172.16.0.47';
 
 
 interface UseDashboardDataReturn {
