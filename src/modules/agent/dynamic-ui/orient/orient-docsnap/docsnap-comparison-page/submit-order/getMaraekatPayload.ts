@@ -141,7 +141,13 @@ export const getMaraekatPayload = (order: Order, extractedData: Record<string, a
         return window.sessionStorage.getItem('branch_code') || '';
     };
     const getBookingDate = () => {
-        return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-').toUpperCase();
+        const date = new Date();
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        const year = date.getFullYear();
+
+        return `${day}-${month}-${year}`;
     };
     const getSourceFrom = () => {
         return order.orderDetails?.documentSubmitStatus === 'online' ? 'OEONLINE' : 'OEOFFLINE';
