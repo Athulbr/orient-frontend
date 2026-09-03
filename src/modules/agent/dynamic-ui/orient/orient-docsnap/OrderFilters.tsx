@@ -58,7 +58,7 @@ const OrderFiltersBar: React.FC<OrderFiltersBarProps> = ({
         <div className="px-4 py-3 bg-white border-b border-gray-200 sticky top-0 z-10 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900">Orient ExchangeOrders</h1>
+                    <h1 className="text-xl font-bold text-gray-900">KYC Orders</h1>
                     {/* <h1 className="text-xl font-bold text-gray-900">Orient Exchange Orders</h1> */}
                     <p className="text-xs text-gray-500 mt-1">Review documents from all sources and proceed with extraction.</p>
                 </div>
