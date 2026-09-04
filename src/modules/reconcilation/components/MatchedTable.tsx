@@ -200,8 +200,10 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
               <th>Name Match</th>
               <th>Score</th>
               <th>Amount Match</th>
-              <th>Direction</th>
+              <th>Book Cheque No</th>
+              <th>Bank Cheque No</th>
               <th>Book Party</th>
+              <th>Bank Party</th>
               <th>Book Amount</th>
               <th>Bank Amount</th>
               <th>Difference</th>
@@ -215,7 +217,10 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
               const isExpanded = expandedRow === record._id;
               const diff      = record['Difference (Rs)'];
               const hasFlags  = record['Flags'] && record['Flags'].trim().length > 0;
-              const colSpan   = flaggedOnly ? 13 : 12;
+              const chequeNo  = record['Book Chq'] || '-';
+              const isLowScore = Number(record['Fuzzy Score %']) < 50;
+              const canUnmatch = record['Name Match'] === 'Match' || record['Name Match'] === 'Partial';
+              const colSpan   = flaggedOnly ? 15 : 14;
 
               return (
                 <React.Fragment key={record._id}>
@@ -247,12 +252,10 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
                         {record['Amount Match'] === 'Exact' ? 'Exact' : (record['Amount Match'] ?? '').substring(0, 18)}
                       </span>
                     </td>
-                    <td>
-                      <span className={cx(styles['dir-badge'], styles[`dir-${record['Book Direction']?.toLowerCase()}`])}>
-                        {record['Book Direction']}
-                      </span>
-                    </td>
+                    <td className={styles['cell-mono']}>{chequeNo}</td>
+                    <td className={styles['cell-mono']}>{record['Bank Chq'] || record['Bank RRN'] || '-'}</td>
                     <td className={styles['cell-party']}>{record['Book Party']}</td>
+                    <td className={styles['cell-party']}>{record['Bank Party'] || '—'}</td>
                     <td className={styles['cell-amount']}>{fmtAmt(record['Book Amt (Rs)'])}</td>
                     <td className={styles['cell-amount']}>{fmtAmt(record['Bank Amt (Rs)'])}</td>
                     <td className={cx(styles['cell-amount'], Math.abs(diff) < 0.01 ? styles['diff-zero'] : styles['diff-nonzero'])}>
@@ -268,7 +271,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
                           onClick={() => onApprove?.(record._id)}
                           title="Looks correct — clear this from the review list without changing the match"
                         >
-                          Approve
+                          {isLowScore ? 'Match' : 'Approve'}
                         </button>
                       </td>
                     )}
@@ -327,12 +330,22 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
                           )}
 
                           <div className={styles['detail-panel']}>
-                            <button
-                              className={cx(styles['btn-action'], styles['btn-action--warn'])}
-                              onClick={(e) => { e.stopPropagation(); onUnmatch([record._id]); }}
-                            >
-                              Un-match this row
-                            </button>
+                            {(flaggedOnly || isLowScore) && (
+                              <button
+                                className={cx(styles['btn-action'], styles['btn-action--confirm'])}
+                                onClick={(e) => { e.stopPropagation(); onApprove?.(record._id); }}
+                              >
+                                {isLowScore ? 'Match this row' : 'Approve this row'}
+                              </button>
+                            )}
+                            {canUnmatch && (
+                              <button
+                                className={cx(styles['btn-action'], styles['btn-action--warn'])}
+                                onClick={(e) => { e.stopPropagation(); onUnmatch([record._id]); }}
+                              >
+                                Un-match this row
+                              </button>
+                            )}
                           </div>
                         </div>
                       </td>

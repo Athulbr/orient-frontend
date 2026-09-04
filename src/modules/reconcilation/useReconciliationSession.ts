@@ -286,8 +286,16 @@ export function useReconciliationSession(init: ReconciliationSessionInit) {
     clearSelections();
   }, [bookOnly, bankOnly, clearSelections]);
 
-  const approveFlagged = useCallback((matchedId: string) => {
-    setMatched(prev => prev.map(r => (r._id === matchedId ? { ...r, 'Is Reviewed': true } : r)));
+  const approveFlagged = useCallback((matchedId: string, reason: string) => {
+    const note = reason ? `Matched by user: ${reason}` : 'Matched by user';
+    setMatched(prev => prev.map(r => {
+      if (r._id !== matchedId) return r;
+      return {
+        ...r,
+        'Flags': [r['Flags'], note].filter(Boolean).join(' | '),
+        'Is Reviewed': true,
+      };
+    }));
     setIsDirty(true);
   }, []);
 

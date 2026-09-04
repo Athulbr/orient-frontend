@@ -436,6 +436,10 @@
 
 .btn-action:not(:disabled):hover { opacity: 0.88; }
 
+.detail-panel .btn-action + .btn-action {
+  margin-left: 8px;
+}
+
 .btn-action--warn {
   background: #fef2f2;
   color: #991b1b;

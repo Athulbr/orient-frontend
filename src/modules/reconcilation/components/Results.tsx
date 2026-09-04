@@ -106,6 +106,7 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
   // ── Pending actions — both un-match and confirm-match need a reason before applying ──
   const [pendingUnmatchIds, setPendingUnmatchIds] = useState<string[] | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState<{ bookIds: string[]; bankIds: string[] } | null>(null);
+  const [pendingApproveId, setPendingApproveId] = useState<string | null>(null);
 
   const canConfirmMatch = session.selectedBookOnlyIds.size > 0 && session.selectedBankOnlyIds.size > 0;
   const requestConfirmMatch = () => {
@@ -149,6 +150,7 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
             selectedIds={session.selectedMatchedIds}
             onSelectionChange={session.setSelectedMatchedIds}
             onUnmatch={setPendingUnmatchIds}
+            onApprove={setPendingApproveId}
           />
         );
 
@@ -161,7 +163,7 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
             selectedMatchedIds={session.selectedMatchedIds}
             onSelectionChange={session.setSelectedMatchedIds}
             onUnmatch={setPendingUnmatchIds}
-            onApprove={session.approveFlagged}
+            onApprove={setPendingApproveId}
             onGoToBookOnly={() => setActiveTab('book-only')}
             onGoToBankOnly={() => setActiveTab('bank-only')}
             selectedBookOnlyIds={session.selectedBookOnlyIds}
@@ -329,6 +331,18 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
         onConfirm={(reason) => {
           if (pendingUnmatchIds) session.unmatchRows(pendingUnmatchIds, reason);
           setPendingUnmatchIds(null);
+        }}
+      />
+
+      <ActionReasonDialog
+        isOpen={!!pendingApproveId}
+        title="Confirm matched row"
+        description="This match will be accepted, removed from Human Verification/BRS review prompts, and the reason will be saved in the matched row notes."
+        confirmLabel="Match"
+        onCancel={() => setPendingApproveId(null)}
+        onConfirm={(reason) => {
+          if (pendingApproveId) session.approveFlagged(pendingApproveId, reason);
+          setPendingApproveId(null);
         }}
       />
 
