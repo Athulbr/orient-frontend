@@ -590,7 +590,16 @@ const OrderCard: React.FC<OrderCardProps> = ({
 
             {/* Fullscreen docsnap comparison dialog */}
             <DialogComponent disableBlurCloseDialog isOpen={showRecordDialog} closeDialog={closeRecordDialog} fullScreen>
-                <DocsnapComparisonUI order={order} recordId={`${order.extractionDetails?.recordId}`} onClose={closeRecordDialog} onOrderUpdate={onOrderUpdate} />
+                <DocsnapComparisonUI
+                    order={order}
+                    recordId={`${order.extractionDetails?.recordId}`}
+                    onClose={closeRecordDialog}
+                    onOrderUpdate={onOrderUpdate}
+                    onProceed={handleProceed}
+                    isProceeding={isProceeding}
+                    isInitiating={isInitiating}
+                    hasDocuments={hasDocuments}
+                />
             </DialogComponent>
 
             {/* Extraction retry info dialog */}

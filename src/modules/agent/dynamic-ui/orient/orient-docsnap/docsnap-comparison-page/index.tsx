@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, RotateCw, X, GripHorizontal, ArrowLeft, AlertTriangle, ArrowLeftRight, Trash2, Plus, Expand, Printer, Download } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, RotateCw, X, GripHorizontal, ArrowLeft, AlertTriangle, ArrowLeftRight, Trash2, Plus, Expand, Printer, Download, RefreshCw } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { config } from '../../../../../../config/default';
 
@@ -12,6 +12,7 @@ import { useToastStore } from '../../../../../../components/toast/ToastStore';
 import Spinner from '../../../../../../components/Spinner';
 import FullScreenLoader from '../../../../../../components/FullScreenLoader';
 import { sampleFinalData } from './sampleFinalData';
+import { Button } from '../../../../../../components/Button';
 
 const getPreviewUrl = (url: string) => {
     if (!url) return '';
@@ -57,11 +58,25 @@ interface DocsnapComparisonUIProps {
     order: Order;
     onOrderUpdate?: (updatedOrder: Order) => void;
     viewReceipt?: boolean;
+    onProceed?: () => void;
+    isProceeding?: boolean;
+    isInitiating?: boolean;
+    hasDocuments?: boolean;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ recordId, onClose, order, onOrderUpdate }) => {
+export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({
+    recordId,
+    onClose,
+    order,
+    onOrderUpdate,
+    viewReceipt,
+    onProceed,
+    isProceeding = false,
+    isInitiating = false,
+    hasDocuments = true
+}) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const leftPaneRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -79,6 +94,10 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
     const [imageRotations, setImageRotations] = useState<number[]>([]);
     const [imageDimensions, setImageDimensions] = useState<Array<{ w: number; h: number }>>([]);
     const [ignorePassportError, setIgnorePassportError] = useState(false);
+
+    useEffect(() => {
+        setCurrentOrder(order);
+    }, [order]);
 
     // console.log('record====>>', record);
 
@@ -174,52 +193,54 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
         });
     };
 
-    useEffect(() => {
-        let isMounted = true;
-        const fetchRecord = async () => {
-            try {
-                if (!recordId) return;
-                setIsLoadingRecord(true);
-                const res = await fetch(`${config.workflowService}/workflow/agent-records/${recordId}?apiKey=secret1`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (isMounted && data.success && data.record) {
-                        setRecord(data.record);
-                        // setExtractedData(sampleFinalData as unknown as ExtractedData);
-                        setExtractedData(data.record.finalOutput as unknown as ExtractedData);
+    const fetchRecord = useCallback(async () => {
+        try {
+            if (!recordId) return;
+            setIsLoadingRecord(true);
+            const res = await fetch(`${config.workflowService}/workflow/agent-records/${recordId}?apiKey=secret1`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.record) {
+                    setRecord(data.record);
+                    // setExtractedData(sampleFinalData as unknown as ExtractedData);
+                    setExtractedData(data.record.finalOutput as unknown as ExtractedData);
 
-                        if (data.record.templateId) {
-                            try {
-                                const templateRes = await fetch(`${config.workflowService}/workflow/agent-templates/${data.record.templateId}?apiKey=secret1`);
-                                if (templateRes.ok) {
-                                    const templateData = await templateRes.json();
-                                    if (templateData?.success && templateData?.template) {
-                                        setAgentTemplate(templateData.template);
-                                    }
+                    if (data.record.templateId) {
+                        try {
+                            const templateRes = await fetch(`${config.workflowService}/workflow/agent-templates/${data.record.templateId}?apiKey=secret1`);
+                            if (templateRes.ok) {
+                                const templateData = await templateRes.json();
+                                if (templateData?.success && templateData?.template) {
+                                    setAgentTemplate(templateData.template);
                                 }
-                            } catch (err) {
-                                console.error('Error fetching agent template:', err);
                             }
+                        } catch (err) {
+                            console.error('Error fetching agent template:', err);
                         }
-
-                        return;
                     }
-                }
-                throw new Error('Failed to fetch from API');
-            } catch (err) {
-                console.error('Error fetching record:', err);
-            } finally {
-                if (isMounted) {
-                    setIsLoadingRecord(false);
+
+                    return;
                 }
             }
-        };
-
-        fetchRecord();
-        return () => {
-            isMounted = false;
-        };
+            throw new Error('Failed to fetch from API');
+        } catch (err) {
+            console.error('Error fetching record:', err);
+        } finally {
+            setIsLoadingRecord(false);
+        }
     }, [recordId]);
+
+    useEffect(() => {
+        fetchRecord();
+    }, [fetchRecord]);
+
+    const prevProceedingRef = useRef(isProceeding);
+    useEffect(() => {
+        if (prevProceedingRef.current && !isProceeding && recordId) {
+            fetchRecord();
+        }
+        prevProceedingRef.current = isProceeding;
+    }, [isProceeding, recordId, fetchRecord]);
 
     const lineRef = useRef<SVGSVGElement>(null);
     const zoomLabelRef = useRef<HTMLDivElement>(null);
@@ -1433,6 +1454,18 @@ export const DocsnapComparisonUI: React.FC<DocsnapComparisonUIProps> = ({ record
                     >
                         Close
                     </button>
+
+                    {/* Re-Extract Button */}
+                    {onProceed && !viewReceipt && currentOrder?.orderDetails?.orderStatus !== 'submitted' && (
+                        <Button
+                            startIcon={isProceeding ? <Spinner size={12} /> : <RefreshCw size={12} />}
+                            outlined
+                            onClick={onProceed}
+                            disabled={!hasDocuments || isProceeding}
+                        >
+                            {isInitiating ? 'Initiating…' : isProceeding ? 'Processing…' : 'Re-Extract'}
+                        </Button>
+                    )}
 
                     {!currentOrder?.maraekatDetails?.eonBookingNumber && (
                         <button
