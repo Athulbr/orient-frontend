@@ -11,9 +11,7 @@ interface MetaPillProps {
  * Pass `colorClass` to control background, text and border colours.
  */
 const MetaPill: React.FC<MetaPillProps> = ({ icon, colorClass, children }) => (
-    <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-semibold border truncate max-w-[280px] ${colorClass}`}
-    >
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-semibold border truncate max-w-[500px] ${colorClass}`}>
         {icon}
         <span className="truncate">{children}</span>
     </span>

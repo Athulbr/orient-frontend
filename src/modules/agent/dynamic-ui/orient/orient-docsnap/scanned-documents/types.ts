@@ -16,6 +16,7 @@ export interface ScannedDocument {
     createdAt?: string;
     updatedAt?: string;
     invoicePagePath: string;
+    retryCount: number;
 }
 
 // ── Status visual config ───────────────────────────────────────

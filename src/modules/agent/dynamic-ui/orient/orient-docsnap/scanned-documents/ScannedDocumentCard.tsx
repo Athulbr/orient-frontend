@@ -215,6 +215,9 @@ const ScannedDocumentCard: React.FC<ScannedDocumentCardProps> = ({ doc, onRefres
                                 {doc.errorMessage}
                             </MetaPill>
                         )}
+                        <MetaPill icon={<Calendar size={12} className="text-slate-500" />} colorClass="bg-slate-50 text-slate-700 border-slate-100">
+                            Submission Attempts: {doc.retryCount}
+                        </MetaPill>
                     </div>
 
                     {/* Status badge + actions */}
