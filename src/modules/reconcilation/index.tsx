@@ -5,6 +5,7 @@ import Results from './components/Results';
 import PageContainer from '../../components/PageContainer';
 import { cx } from './utils/cx';
 import styles from './app.module.css';
+import { config } from '../../config/default';
 
 interface BRSData {
     book_closing_bal: number;
@@ -95,7 +96,7 @@ function ListReconcilationPage() {
     const [error, setError] = useState<string | null>(null);
 
     // const API_BASE_URL = 'http://127.0.0.1:8000';
-    const API_BASE_URL = 'http://172.16.0.47';
+    const API_BASE_URL = config.baseUrlOrient;
 
     const handleUpload = async (bookFile: File, statementFile: File, prevBrsFile: File | null, reconType: ReconType, hotBookFile?: File | null) => {
         setIsLoading(true);
