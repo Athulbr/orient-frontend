@@ -6,7 +6,8 @@ const globalEnv: any = {
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_LOCAL,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL || 'http://localhost:4000',
         workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL,
-        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     },
     development: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
@@ -14,7 +15,8 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_DEV,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_DEV
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_DEV,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     },
     production: {
         baseUrl: import.meta.env.VITE_BASE_URL_PROD,
@@ -22,7 +24,8 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_PROD,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_PROD,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_PROD,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_PROD
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_PROD,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     },
     vinayak_local: {
         baseUrl: import.meta.env.VITE_BASE_URL_DEV,
@@ -31,7 +34,8 @@ const globalEnv: any = {
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL,
         workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL,
-        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_LOCAL,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     },
     vinayak_local_orient: {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_DEV,
@@ -39,34 +43,39 @@ const globalEnv: any = {
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_DEV,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_LOCAL,
-        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL
+        workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_LOCAL,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     },
     rehab: {
         baseUrl: import.meta.env.VITE_BASE_URL_REHAB,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_REHAB,
         extractionServicePython: import.meta.env.VITE_EXTRACTION_SERVICE_PYTHON_REHAB,
         chatbotServicePython: import.meta.env.VITE_CHATBOT_SERVICE_PYTHON_REHAB,
-        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_REHAB
+        mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_REHAB,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     },
     orientProduction: {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_PRODUCTION,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_PRODUCTION,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_PRODUCTION,
         workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_PRODUCTION,
-        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_ORIENT_PRODUCTION
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_ORIENT_PRODUCTION,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_PRODUCTION
     },
     orientDev: {
         baseUrl: import.meta.env.VITE_BASE_URL_ORIENT_DEV,
         nodeApiUrl: import.meta.env.VITE_NODE_URL_ORIENT_DEV,
         mlServiceNodejs: import.meta.env.VITE_AI_SERVICE_NODEJS_ORIENT_DEV,
         workflowService: import.meta.env.VITE_WORKFLOW_SERVICE_ORIENT_DEV,
-        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_ORIENT_DEV
+        reconcillationService: import.meta.env.VITE_RECONCILLATION_SERVICE_ORIENT_DEV,
+        baseUrlOrient: import.meta.env.VITE_BASE_URL_ORIENT_DEV
     }
 };
 const envConfig: any = globalEnv[import.meta.env.VITE_NODE_ENV || ''];
 
 export const config = {
     baseUrl: envConfig.baseUrl,
+    baseUrlOrient: envConfig.baseUrlOrient,
     nodeApiUrl: envConfig.nodeApiUrl,
     workflowService: envConfig.workflowService,
     extractionServicePython: envConfig.extractionServicePython,
