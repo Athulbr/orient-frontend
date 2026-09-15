@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Hash, Database, Search, X, Clock } from 'lucide-react';
 import { fetchCorrectedFields, fetchFieldOrders } from './api';
 import { Button } from '../../../../../../components/Button';
@@ -60,7 +59,6 @@ interface FieldsTabProps {
 }
 
 const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange, searchTerm }) => {
-    const navigate = useNavigate();
     const [fields, setFields] = useState<CorrectedField[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -235,7 +233,7 @@ const FieldsTab: React.FC<FieldsTabProps> = ({ dateRange, searchTerm }) => {
                                                                                         e.stopPropagation();
                                                                                         if (correction.correctedOrderId?.orderNumber) {
                                                                                             sessionStorage.setItem('order_no', correction.correctedOrderId.orderNumber.toString());
-                                                                                            navigate('/agent/run/Document%20Extractor');
+                                                                                            window.open('/agent/run/Document%20Extractor', '_blank');
                                                                                         }
                                                                                     }}
                                                                                 >
