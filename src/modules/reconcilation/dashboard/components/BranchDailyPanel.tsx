@@ -1,10 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CHANNEL_META, fmt } from '../derive';
+import { CHANNEL_META, fmt, toInputDate, fromInputDate, dateToTime } from '../derive';
 import type { ChannelKey, DerivedDay } from '../types';
 
 interface BranchDailyPanelProps {
     days: DerivedDay[];
     activeChannels: ChannelKey[];
+    // Lifted up to dashboard/index.tsx so the KPI strip and every other
+    // panel share the same range/branch scope instead of only this panel
+    // reacting to it.
+    startDate: string;
+    endDate: string;
+    onStartDateChange: (date: string) => void;
+    onEndDateChange: (date: string) => void;
+    selectedBranches: string[];
+    onSelectedBranchesChange: (branches: string[]) => void;
 }
 
 interface BranchDailyRow {
@@ -13,26 +22,17 @@ interface BranchDailyRow {
     total: number;
 }
 
-const toInputDate = (date: string) => {
-    const [day, month, year] = date.split('-');
-    return year && month && day ? `${year}-${month}-${day}` : '';
-};
-
-const fromInputDate = (date: string) => {
-    const [year, month, day] = date.split('-');
-    return year && month && day ? `${day}-${month}-${year}` : '';
-};
-
-const dateToTime = (date: string) => {
-    const [day, month, year] = date.split('-').map(Number);
-    return year && month && day ? new Date(year, month - 1, day).getTime() : 0;
-};
-
-const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannels }) => {
+const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({
+    days,
+    activeChannels,
+    startDate,
+    endDate,
+    onStartDateChange,
+    onEndDateChange,
+    selectedBranches,
+    onSelectedBranchesChange
+}) => {
     const [channel, setChannel] = useState<ChannelKey>(activeChannels[0] ?? 'bank');
-    const [startDate, setStartDate] = useState(days[0]?.date ?? '');
-    const [endDate, setEndDate] = useState(days[days.length - 1]?.date ?? '');
-    const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
     const [isBranchMenuOpen, setIsBranchMenuOpen] = useState(false);
     const branchMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -65,18 +65,10 @@ const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannel
         [days, startTime, endTime]
     );
 
-    useEffect(() => {
-        if (!dateOptions.length) return;
-        if (!startDate || dateToTime(startDate) < dateToTime(firstDate) || dateToTime(startDate) > dateToTime(lastDate)) {
-            setStartDate(firstDate);
-        }
-        if (!endDate || dateToTime(endDate) < dateToTime(firstDate) || dateToTime(endDate) > dateToTime(lastDate)) {
-            setEndDate(lastDate);
-        }
-        if (dateToTime(startDate) > dateToTime(endDate)) {
-            setEndDate(startDate);
-        }
-    }, [dateOptions.length, endDate, firstDate, lastDate, startDate]);
+    // The bounds-sync effect that used to live here (snapping startDate /
+    // endDate back into [firstDate, lastDate] whenever new data loaded) now
+    // lives once in dashboard/index.tsx, since it has to run for every
+    // consumer of the scope, not just this panel.
 
     const branchOptions = useMemo(() => {
         const branches = new Set<string>();
@@ -91,9 +83,9 @@ const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannel
     useEffect(() => {
         const validBranches = selectedBranches.filter(name => branchOptions.includes(name));
         if (validBranches.length !== selectedBranches.length) {
-            setSelectedBranches(validBranches);
+            onSelectedBranchesChange(validBranches);
         }
-    }, [branchOptions, selectedBranches]);
+    }, [branchOptions, selectedBranches, onSelectedBranchesChange]);
 
     const hasBranchFilter = selectedBranches.length > 0;
     const branchSummary = !hasBranchFilter
@@ -103,14 +95,16 @@ const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannel
           : `${selectedBranches.length} branches`;
 
     const toggleBranch = (name: string) => {
-        setSelectedBranches(current => (current.includes(name) ? current.filter(branchName => branchName !== name) : [...current, name]));
+        onSelectedBranchesChange(
+            selectedBranches.includes(name) ? selectedBranches.filter(branchName => branchName !== name) : [...selectedBranches, name]
+        );
     };
 
     const clearFilters = () => {
         setChannel(activeChannels[0] ?? 'bank');
-        setStartDate(firstDate);
-        setEndDate(lastDate);
-        setSelectedBranches([]);
+        onStartDateChange(firstDate);
+        onEndDateChange(lastDate);
+        onSelectedBranchesChange([]);
     };
 
     const rows = useMemo<BranchDailyRow[]>(() => {
@@ -170,8 +164,8 @@ const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannel
                         max={toInputDate(lastDate)}
                         onChange={event => {
                             const value = fromInputDate(event.target.value);
-                            setStartDate(value);
-                            if (dateToTime(value) > dateToTime(endDate)) setEndDate(value);
+                            onStartDateChange(value);
+                            if (dateToTime(value) > dateToTime(endDate)) onEndDateChange(value);
                         }}
                         className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 outline-none transition-colors hover:border-blue-300 focus:border-blue-400"
                     />
@@ -182,8 +176,8 @@ const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannel
                         max={toInputDate(lastDate)}
                         onChange={event => {
                             const value = fromInputDate(event.target.value);
-                            setEndDate(value);
-                            if (dateToTime(value) < dateToTime(startDate)) setStartDate(value);
+                            onEndDateChange(value);
+                            if (dateToTime(value) < dateToTime(startDate)) onStartDateChange(value);
                         }}
                         className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 outline-none transition-colors hover:border-blue-300 focus:border-blue-400"
                     />
@@ -200,7 +194,7 @@ const BranchDailyPanel: React.FC<BranchDailyPanelProps> = ({ days, activeChannel
                             <div className="absolute right-0 z-10 mt-1 max-h-72 w-72 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
                                 <button
                                     type="button"
-                                    onClick={() => setSelectedBranches([])}
+                                    onClick={() => onSelectedBranchesChange([])}
                                     className="mb-1 w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-xs font-medium text-blue-600 hover:bg-blue-50"
                                 >
                                     All branches

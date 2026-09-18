@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import ResultsTabs from '../components/ResultsTabs';
 import { useDashboardData } from './useDashboardData';
-import { channelTotals, deriveDays, grandTotals, CHANNEL_META } from './derive';
+import { channelTotals, deriveDays, grandTotals, filterDaysByRange, CHANNEL_META } from './derive';
 import type { ChannelKey } from './types';
 import OverviewPanel from './components/OverviewPanel';
 import TrendPanel from './components/TrendPanel';
@@ -18,16 +18,56 @@ const ReconciliationDashboardPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState('overview');
 
     const days = useMemo(() => (data ? deriveDays(data) : []), [data]);
+    const firstDate = days[0]?.date ?? '';
+    const lastDate = days[days.length - 1]?.date ?? '';
+
+    // ── Dashboard-wide scope filter ──────────────────────────────────────
+    // Date range + branch selection used to live only inside Branch Daily's
+    // own state, so narrowing it there had no effect anywhere else. They
+    // live here now, and Branch Daily receives them as controlled props.
+    // Default = the full loaded range ("live"); narrowing it recomputes
+    // the KPI strip and every panel, not just Branch Daily.
+    const [startDate, setStartDate] = useState(firstDate);
+    const [endDate, setEndDate] = useState(lastDate);
+    const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
+
+    // Re-sync to freshly loaded data, but only if the user hasn't already
+    // narrowed the range — so a background Refresh doesn't clobber a
+    // deliberate filter.
+    useEffect(() => {
+        if (!firstDate || !lastDate) return;
+        setStartDate(prev => (prev && prev >= firstDate && prev <= lastDate ? prev : firstDate));
+        setEndDate(prev => (prev && prev >= firstDate && prev <= lastDate ? prev : lastDate));
+    }, [firstDate, lastDate]);
+
+    const isRangeFiltered = !!startDate && !!endDate && (startDate !== firstDate || endDate !== lastDate);
+    const scopedDays = useMemo(
+        () => (isRangeFiltered ? filterDaysByRange(days, startDate, endDate) : days),
+        [days, startDate, endDate, isRangeFiltered]
+    );
+
     const totals = useMemo(
         () => ({
-            bank: channelTotals(days, 'bank'),
-            qr: channelTotals(days, 'qr'),
-            gateway: channelTotals(days, 'gateway')
+            bank: channelTotals(scopedDays, 'bank'),
+            qr: channelTotals(scopedDays, 'qr'),
+            gateway: channelTotals(scopedDays, 'gateway')
         }),
-        [days]
+        [scopedDays]
     );
     const grand = useMemo(() => grandTotals([totals.bank, totals.qr, totals.gateway]), [totals]);
+    // "Branches covered" is the one KPI that IS legitimately branch-keyed
+    // (branch_totals is a real per-branch breakdown), so it can honor the
+    // branch picker too even though rows/auto/hv can't — see the note on
+    // BranchesPanel below for why those stay date-only.
+    const grandForKpi = selectedBranches.length > 0 ? { ...grand, branches: selectedBranches.length } : grand;
     const activeChannels = CHANNELS.filter(ch => totals[ch].folders > 0);
+
+    const isFiltered = isRangeFiltered || selectedBranches.length > 0;
+    const clearScopeFilter = () => {
+        setStartDate(firstDate);
+        setEndDate(lastDate);
+        setSelectedBranches([]);
+    };
 
     const tabs = [
         { id: 'overview', label: 'Overview' },
@@ -71,7 +111,9 @@ const ReconciliationDashboardPage: React.FC = () => {
         );
     }
 
-    const period = `${days[0].date}  \u2192  ${days[days.length - 1].date}`;
+    const period = scopedDays.length
+        ? `${scopedDays[0].date}  \u2192  ${scopedDays[scopedDays.length - 1].date}`
+        : `${firstDate}  \u2192  ${lastDate}`;
 
     return (
         <div className="font-[DM_Sans,Segoe_UI,sans-serif] h-full w-full flex-1 bg-gray-50 p-5">
@@ -82,6 +124,17 @@ const ReconciliationDashboardPage: React.FC = () => {
                         <span>{period}</span>
                         <span className="text-gray-300">·</span>
                         <span>{activeChannels.map(ch => CHANNEL_META[ch].label).join(' + ')}</span>
+                        {isFiltered && (
+                            <>
+                                <span className="text-gray-300">·</span>
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600">
+                                    Filtered
+                                    <button onClick={clearScopeFilter} className="cursor-pointer text-blue-400 hover:text-blue-700">
+                                        ✕
+                                    </button>
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
                 <button
@@ -94,15 +147,28 @@ const ReconciliationDashboardPage: React.FC = () => {
             </div>
 
             <div className="mb-5">
-                <KpiStrip grand={grand} dayCount={days.length} channelLabels={activeChannels.map(ch => CHANNEL_META[ch].label).join(' + ')} />
+                <KpiStrip grand={grandForKpi} dayCount={scopedDays.length} channelLabels={activeChannels.map(ch => CHANNEL_META[ch].label).join(' + ')} />
             </div>
 
             <ResultsTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
                 {activeTab === 'overview' && <OverviewPanel activeChannels={activeChannels} totals={totals} />}
-                {activeTab === 'trend' && <TrendPanel days={days} activeChannels={activeChannels} />}
+                {activeTab === 'trend' && <TrendPanel days={scopedDays} activeChannels={activeChannels} />}
                 {activeTab === 'verification' && <VerificationPanel totals={totals} activeChannels={activeChannels} />}
-                {activeTab === 'branches' && <BranchesPanel days={days} activeChannels={activeChannels} />}
-                {activeTab === 'branch-daily' && <BranchDailyPanel days={days} activeChannels={activeChannels} />}
+                {activeTab === 'branches' && (
+                    <BranchesPanel days={scopedDays} activeChannels={activeChannels} selectedBranches={selectedBranches} />
+                )}
+                {activeTab === 'branch-daily' && (
+                    <BranchDailyPanel
+                        days={days}
+                        activeChannels={activeChannels}
+                        startDate={startDate}
+                        endDate={endDate}
+                        onStartDateChange={setStartDate}
+                        onEndDateChange={setEndDate}
+                        selectedBranches={selectedBranches}
+                        onSelectedBranchesChange={setSelectedBranches}
+                    />
+                )}
             </ResultsTabs>
         </div>
     );

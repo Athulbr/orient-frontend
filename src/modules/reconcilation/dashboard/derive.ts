@@ -1,5 +1,33 @@
 import type { ChannelAgg, ChannelKey, ChannelTotals, DashboardData, DerivedChannel, DerivedDay, GrandTotals, BranchStat } from './types';
 
+// ---- date helpers (dates are dd-mm-yyyy strings, as sent by the backend) ----
+export const dateToTime = (date: string) => {
+    const [day, month, year] = date.split('-').map(Number);
+    return year && month && day ? new Date(year, month - 1, day).getTime() : 0;
+};
+
+export const toInputDate = (date: string) => {
+    const [day, month, year] = date.split('-');
+    return year && month && day ? `${year}-${month}-${day}` : '';
+};
+
+export const fromInputDate = (date: string) => {
+    const [year, month, day] = date.split('-');
+    return year && month && day ? `${day}-${month}-${year}` : '';
+};
+
+/** Dashboard-wide date-range scope — used by dashboard/index.tsx so every
+ *  panel (not just Branch Daily) narrows to the same range. */
+export function filterDaysByRange(days: DerivedDay[], startDate: string, endDate: string): DerivedDay[] {
+    if (!startDate || !endDate) return days;
+    const start = dateToTime(startDate);
+    const end = dateToTime(endDate);
+    return days.filter(d => {
+        const t = dateToTime(d.date);
+        return t >= start && t <= end;
+    });
+}
+
 /** Auto-cleared = unique transactions that did NOT need human verification. */
 export function deriveChannel(a: ChannelAgg): DerivedChannel {
     const auto = Math.max(a.unique_txn - a.hv_counted, 0);
@@ -74,12 +102,14 @@ export function grandTotals(channels: ChannelTotals[]): GrandTotals {
 /** Per-branch totals for a channel, using the pipeline's row-level branch_totals
  *  (a single "all_branches" file can span many branch sections, so this must
  *  NOT be approximated from one branch per folder). */
-export function branchTotals(days: DerivedDay[], ch: ChannelKey): BranchStat[] {
+export function branchTotals(days: DerivedDay[], ch: ChannelKey, onlyBranches?: string[]): BranchStat[] {
+    const allow = onlyBranches && onlyBranches.length > 0 ? new Set(onlyBranches) : null;
     const map = new Map<string, BranchStat>();
     for (const d of days) {
         const a = d[ch];
         if (!a) continue;
         for (const [name, n] of Object.entries(a.branch_totals)) {
+            if (allow && !allow.has(name)) continue;
             const cur = map.get(name) || { branch: name, total_rows: 0 };
             cur.total_rows += n;
             map.set(name, cur);

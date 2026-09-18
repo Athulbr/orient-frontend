@@ -8,11 +8,15 @@ const SECTION_COLORS = ['#2563eb', '#7c3aed', '#0d9488', '#d97706', '#dc2626', '
 interface BranchesPanelProps {
     days: DerivedDay[];
     activeChannels: ChannelKey[];
+    // Passed down from the dashboard's lifted scope filter so this panel
+    // narrows the same way Branch Daily does — branch_totals is the one
+    // field the backend actually breaks down per branch, so this is safe.
+    selectedBranches?: string[];
 }
 
-const BranchesPanel: React.FC<BranchesPanelProps> = ({ days, activeChannels }) => {
+const BranchesPanel: React.FC<BranchesPanelProps> = ({ days, activeChannels, selectedBranches = [] }) => {
     const [branchCh, setBranchCh] = useState<ChannelKey>(activeChannels[0] ?? 'bank');
-    const branchStats = useMemo(() => branchTotals(days, branchCh), [days, branchCh]);
+    const branchStats = useMemo(() => branchTotals(days, branchCh, selectedBranches), [days, branchCh, selectedBranches]);
     const branchMax = Math.max(...branchStats.map(b => b.total_rows), 1);
 
     return (
