@@ -147,11 +147,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
             if (valid.length) {
                 setFilesFn(prev => {
                     const total = [...prev, ...valid];
-                    if (total.length > 4) {
-                        setAlertMessage(`Maximum 4 files allowed for ${label}. Taking the first 4 files.`);
-                        setErrors([]);
-                        return total.slice(0, 4);
-                    }
                     setErrors([]);
                     return total;
                 });
@@ -329,11 +324,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
                         if (valid.length) {
                             setFiles(prev => {
                                 const total = [...prev, ...valid];
-                                if (total.length > 4) {
-                                    setAlertMessage(`Maximum 4 files allowed for ${label}. Taking the first 4 files.`);
-                                    setErrors([]);
-                                    return total.slice(0, 4);
-                                }
                                 setErrors([]);
                                 return total;
                             });
@@ -382,7 +372,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUpload, isLoading }) => {
                                 </div>
                             ))}
                         </div>
-                        {files.length < 4 && (
+                        {(
                             <button
                                 className={styles['slot-add-more']}
                                 disabled={isLoading}
