@@ -13,9 +13,6 @@ interface BankOnlyTableProps {
   onSelectionChange: (ids: Set<string>) => void;
   canConfirmMatch: boolean;
   onConfirmMatchRequest: () => void;
-  /** True when Book Only already has more than one row selected — only one
-      side may be a split at a time, so further multi-select here is blocked. */
-  otherSideSplit: boolean;
 }
 
 // The bank-reconciliation endpoint never attaches an 'Issue' label the way
@@ -29,7 +26,7 @@ const isCarriedForward = (record: BankOnlyRecord): boolean =>
 const PER_PAGE = 25;
 
 const BankOnlyTable: React.FC<BankOnlyTableProps> = ({
-  data, selectedIds, onSelectionChange, canConfirmMatch, onConfirmMatchRequest, otherSideSplit,
+  data, selectedIds, onSelectionChange, canConfirmMatch, onConfirmMatchRequest,
 }) => {
   const [page, setPage] = useState(0);
 
@@ -81,14 +78,8 @@ const BankOnlyTable: React.FC<BankOnlyTableProps> = ({
       <div className={cx(styles['notice-bar'], styles['notice-danger'])}>
         <strong>{data.length} transactions</strong> found in the bank statement with no corresponding book entry.
         These must be investigated and recorded immediately.
-        {' '}Select one or more rows here, plus a row on Book Only, to Confirm Match.
+        {' '}Select one or more rows here, plus one or more rows on Book Only, to Confirm Match.
       </div>
-
-      {otherSideSplit && selectedIds.size === 0 && (
-        <div className={cx(styles['notice-bar'], styles['notice-info'])}>
-          Book Only already has a split selected — clear it first if you want to select more than one row here.
-        </div>
-      )}
 
       {selectedIds.size > 0 && (
         <div className={styles['selection-actions']}>
@@ -97,7 +88,7 @@ const BankOnlyTable: React.FC<BankOnlyTableProps> = ({
             className={cx(styles['btn-action'], styles['btn-action--confirm'])}
             disabled={!canConfirmMatch}
             onClick={onConfirmMatchRequest}
-            title={canConfirmMatch ? 'Merge with the selected Book Only row' : 'Also select a Book Only row'}
+            title={canConfirmMatch ? 'Merge with the selected Book Only row(s)' : 'Also select one or more Book Only rows'}
           >
             Confirm Match
           </button>

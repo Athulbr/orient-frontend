@@ -181,7 +181,6 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
             onSelectionChange={session.setSelectedBookOnlyIds}
             canConfirmMatch={canConfirmMatch}
             onConfirmMatchRequest={requestConfirmMatch}
-            otherSideSplit={session.selectedBankOnlyIds.size > 1}
           />
         );
 
@@ -193,7 +192,6 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
             onSelectionChange={session.setSelectedBankOnlyIds}
             canConfirmMatch={canConfirmMatch}
             onConfirmMatchRequest={requestConfirmMatch}
-            otherSideSplit={session.selectedBookOnlyIds.size > 1}
           />
         );
 
@@ -337,7 +335,7 @@ const Results: React.FC<ResultsProps> = ({ data, apiBaseUrl }) => {
       <ActionReasonDialog
         isOpen={!!pendingApproveId}
         title="Confirm matched row"
-        description="This match will be accepted, removed from Human Verification/BRS review prompts, and the reason will be saved in the matched row notes."
+        description="This match will be confirmed, removed from the BRS outstanding rows, and the reason will be saved in the matched row notes."
         confirmLabel="Match"
         onCancel={() => setPendingApproveId(null)}
         onConfirm={(reason) => {

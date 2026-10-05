@@ -14,7 +14,7 @@ interface MatchedTableProps {
   onUnmatch: (ids: string[]) => void;
   /** Human Verification reuse: show only rows worth a human look. */
   flaggedOnly?: boolean;
-  /** Human Verification reuse: mark a flagged row reviewed without changing the match. */
+  /** Human Verification reuse: confirm a flagged row and clear its BRS legs. */
   onApprove?: (id: string) => void;
 }
 
@@ -196,7 +196,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
             <tr>
               <th className={styles['col-select']} />
               <th className={styles['col-expand']} />
-              <th>Method</th>
+              <th>Type</th>
               <th>Name Match</th>
               <th>Score</th>
               <th>Amount Match</th>
@@ -240,7 +240,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
                     <td className={styles['col-expand']}>
                       <button className={styles['expand-btn']} tabIndex={-1}>{isExpanded ? '▾' : '▸'}</button>
                     </td>
-                    <td className={styles['cell-method']}>{record['Match Method']}</td>
+                    <td className={styles['cell-method']} title={record['Match Method']}>{record['Book Txn'] || '—'}</td>
                     <td>
                       <span className={cx(styles['badge'], styles[nameMatchVariant(record['Name Match'])])}>
                         {record['Name Match']}
@@ -269,7 +269,7 @@ const MatchedTable: React.FC<MatchedTableProps> = ({
                         <button
                           className={styles['btn-action-ghost']}
                           onClick={() => onApprove?.(record._id)}
-                          title="Looks correct — clear this from the review list without changing the match"
+                          title="Confirm this match and remove its legs from the BRS"
                         >
                           {isLowScore ? 'Match' : 'Approve'}
                         </button>

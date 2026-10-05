@@ -15,7 +15,7 @@ interface HumanVerificationViewProps {
   onGoToBookOnly: () => void;
   onGoToBankOnly: () => void;
   // Book Only / Bank Only rows here share the exact same selection state as
-  // the dedicated tabs (and the same one-side-only-splits guard) — picking
+  // the dedicated tabs (many-to-many allowed there too) — picking
   // a pair right here works the same as picking one on each tab, and the
   // floating Confirm Match bar in Results.tsx picks it up automatically.
   selectedBookOnlyIds: Set<string>;

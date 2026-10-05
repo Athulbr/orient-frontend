@@ -52,9 +52,12 @@ export interface MatchedRecord {
   '_display_bank_amt'?: number | '';
   '_display_debit'?: number | string;
   '_display_credit'?: number | string;
-  // Set once a flagged (Human Verification) row has been looked at and
-  // approved as-is, so it drops out of the review list without changing
-  // the match itself.
+  // Set on N:M Confirm Match legs where one side has already run out of
+  // rows — that side of the leg is an empty placeholder, not a real entry.
+  '_no_book_leg'?: boolean;
+  '_no_bank_leg'?: boolean;
+  // Set once a flagged (Human Verification) row has been confirmed by the
+  // user, so it drops out of review and its released BRS legs are consumed.
   'Is Reviewed'?: boolean;
   _id: string;
 }

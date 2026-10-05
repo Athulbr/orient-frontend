@@ -87,16 +87,59 @@ function splitMatchedRow(m: MatchedRecord, reason: string): { book: BookOnlyReco
   return { book, bank };
 }
 
+// Low-confidence matches are intentionally present in both `matched` and the
+// BRS outstanding lists until a user confirms them.  Once confirmed, remove
+// only the corresponding released leg from each list.  Matching on the full
+// row identity (rather than amount alone) avoids consuming an unrelated
+// transaction with the same value.
+const sameText = (a: unknown, b: unknown): boolean =>
+  String(a ?? '').trim().toUpperCase() === String(b ?? '').trim().toUpperCase();
+
+const sameAmount = (a: unknown, b: unknown): boolean =>
+  Math.abs(toNum(a) - toNum(b)) < 0.01;
+
+const isReleasedBookLeg = (m: MatchedRecord, r: BookOnlyRecord): boolean =>
+  sameText(r['Date'], m['Book Date']) &&
+  sameText(r['Bill No'], m['Book Bill No']) &&
+  sameText(r['Chq No'], m['Book Chq']) &&
+  sameText(r['Party'], m['Book Party']) &&
+  sameText(r['Direction'], m['Book Direction']) &&
+  sameAmount(r['Book Amt (Rs)'], m['Book Amt (Rs)']);
+
+const isReleasedBankLeg = (m: MatchedRecord, r: BankOnlyRecord): boolean =>
+  sameText(r['Date'], m['Bank Date']) &&
+  sameText(r['Chq No'], m['Bank Chq'] || m['Bank RRN']) &&
+  sameText(r['Description'] || r['Bank Statement'], m['Bank Description']) &&
+  sameText(r['Party'], m['Bank Party']) &&
+  sameText(r['Direction'], m['Bank Direction']) &&
+  sameAmount(r['Bank Amt (Rs)'], m['Bank Amt (Rs)']);
+
+function removeFirst<T>(rows: T[], predicate: (row: T) => boolean): T[] {
+  const index = rows.findIndex(predicate);
+  return index < 0 ? rows : rows.filter((_, i) => i !== index);
+}
+
 // ── Confirm Match: merge Book Only row(s) + Bank Only row(s) into Matched row(s) ──
-// Exactly one side may be a "split" (length > 1) at a time — the caller
-// guarantees this (see the guarded selection setters below), so this only
-// has to handle three shapes: 1:1, 1 book:N banks, or N books:1 bank. The
-// split side gets one Matched row per leg — the first leg carries the real
-// difference and the combined amount notation, later legs are flagged
-// "Split part i/N" with a zeroed difference — mirroring the same
+// Handles 1:1, 1 book:N banks, N books:1 bank and N books:M banks. Each
+// split side (length > 1) gets one Matched row per leg — the first leg
+// carries the real difference and the combined amount notation, later legs
+// are flagged "Split part i/N" with a zeroed difference — mirroring the same
 // _display_book_amt / _display_difference pattern reconcilation.py already
 // uses for its own automated split-clear detection, just usable from
-// either direction here.
+// either direction here. In N:M the shorter side runs out of rows before
+// the last leg; those legs get an empty placeholder for that side (zero
+// amount, blank display) marked with _no_book_leg / _no_bank_leg so
+// un-match doesn't turn it back into a phantom Book Only / Bank Only row.
+const blankBookLeg = (template: BookOnlyRecord): BookOnlyRecord => ({
+  _id: '', 'Date': '', 'Txn Type': '', 'Bill No': '', 'Chq No': '', 'Party': '', 'Party Raw': '',
+  'Direction': template['Direction'], 'Sender': '', 'Recipient': '', 'Book Amt (Rs)': 0,
+});
+
+const blankBankLeg = (template: BankOnlyRecord): BankOnlyRecord => ({
+  _id: '', 'Date': '', 'Chq No': '', 'Description': '', 'Party': '',
+  'Direction': template['Direction'], 'Sender': '', 'Recipient': '', 'Debit (Rs)': '', 'Credit (Rs)': '', 'Bank Amt (Rs)': 0,
+});
+
 function buildManualMatchRows(bookRows: BookOnlyRecord[], bankRows: BankOnlyRecord[], reason: string): MatchedRecord[] {
   const totalBookAmt = bookRows.reduce((s, r) => s + toNum(r['Book Amt (Rs)']), 0);
   const totalBankAmt = bankRows.reduce((s, r) => s + toNum(r['Bank Amt (Rs)']), 0);
@@ -106,12 +149,17 @@ function buildManualMatchRows(bookRows: BookOnlyRecord[], bankRows: BankOnlyReco
   const isSplit     = isBookSplit || isBankSplit;
   const legCount    = Math.max(bookRows.length, bankRows.length);
   const note = reason ? `Manually confirmed by user: ${reason}` : 'Manually confirmed by user';
+  const splitNote = isBookSplit && isBankSplit
+    ? `Split payment — ${bookRows.length} book / ${bankRows.length} bank rows`
+    : `Split payment — ${legCount} ${isBookSplit ? 'book' : 'bank'} rows`;
 
   const rows: MatchedRecord[] = [];
   for (let i = 0; i < legCount; i++) {
-    const isFirst = i === 0;
-    const book    = isBookSplit ? bookRows[i] : bookRows[0];
-    const bank    = isBankSplit ? bankRows[i] : bankRows[0];
+    const isFirst   = i === 0;
+    const noBookLeg = isBookSplit && i >= bookRows.length;
+    const noBankLeg = isBankSplit && i >= bankRows.length;
+    const book    = isBookSplit ? (bookRows[i] ?? blankBookLeg(bookRows[0])) : bookRows[0];
+    const bank    = isBankSplit ? (bankRows[i] ?? blankBankLeg(bankRows[0])) : bankRows[0];
     const bookAmt = isBookSplit ? toNum(book['Book Amt (Rs)']) : totalBookAmt;
     const bankAmt = isBankSplit ? toNum(bank['Bank Amt (Rs)']) : totalBankAmt;
 
@@ -148,7 +196,7 @@ function buildManualMatchRows(bookRows: BookOnlyRecord[], bankRows: BankOnlyReco
       'Credit (Rs)':      bank['Credit (Rs)'] ?? '',
       'Bank Amt (Rs)':    bankAmt,
       'Difference (Rs)':  isFirst ? diff : 0,
-      'Flags':            [note, isSplit ? `Split payment — ${legCount} ${isBookSplit ? 'book' : 'bank'} rows` : ''].filter(Boolean).join(' | '),
+      'Flags':            [note, isSplit ? splitNote : ''].filter(Boolean).join(' | '),
       'Partial Payment':  isSplit,
       'Bank Full Amt':    totalBankAmt,
       'Is Manual':        true,
@@ -164,6 +212,9 @@ function buildManualMatchRows(bookRows: BookOnlyRecord[], bankRows: BankOnlyReco
         '_display_credit':   isFirst ? (bank['Credit (Rs)'] ?? '') : '',
       }),
       ...(isBookSplit ? {} : (isBankSplit ? { '_display_book_amt': isFirst ? bookAmt : '' } : {})),
+      // N:M placeholder legs — show blank instead of 0.00 in the workbook.
+      ...(noBookLeg ? { '_no_book_leg': true, '_display_book_amt': '' } : {}),
+      ...(noBankLeg ? { '_no_bank_leg': true, '_display_bank_amt': '', '_display_debit': '', '_display_credit': '' } : {}),
     });
   }
   return rows;
@@ -196,24 +247,11 @@ export function useReconciliationSession(init: ReconciliationSessionInit) {
   // Selection state lives here (not inside each table) so it survives
   // switching tabs — picking a Book Only row, then a Bank Only row on a
   // different tab, still lets Confirm Match see both. Book Only and Bank
-  // Only are both multi-select (checkboxes), for split payments from
-  // either direction — but only one side may ever have more than one item
-  // selected at once (no true many-to-many); the guarded setters below
-  // silently reject a change that would violate that, from any entry
-  // point (a table's checkbox, or Human Verification's own checkboxes).
-  const [selectedMatchedIds, setSelectedMatchedIds]     = useState<Set<string>>(new Set());
-  const [selectedBookOnlyIds, setSelectedBookOnlyIdsRaw] = useState<Set<string>>(new Set());
-  const [selectedBankOnlyIds, setSelectedBankOnlyIdsRaw] = useState<Set<string>>(new Set());
-
-  const setSelectedBookOnlyIds = useCallback((next: Set<string>) => {
-    if (next.size > 1 && selectedBankOnlyIds.size > 1) return; // would be many-to-many — reject
-    setSelectedBookOnlyIdsRaw(next);
-  }, [selectedBankOnlyIds]);
-
-  const setSelectedBankOnlyIds = useCallback((next: Set<string>) => {
-    if (next.size > 1 && selectedBookOnlyIds.size > 1) return; // would be many-to-many — reject
-    setSelectedBankOnlyIdsRaw(next);
-  }, [selectedBookOnlyIds]);
+  // Only are both multi-select (checkboxes), so split payments work from
+  // either direction, including many-to-many.
+  const [selectedMatchedIds, setSelectedMatchedIds]   = useState<Set<string>>(new Set());
+  const [selectedBookOnlyIds, setSelectedBookOnlyIds] = useState<Set<string>>(new Set());
+  const [selectedBankOnlyIds, setSelectedBankOnlyIds] = useState<Set<string>>(new Set());
 
   const toggleMatchedSelection = useCallback((id: string) => {
     setSelectedMatchedIds(prev => {
@@ -227,18 +265,18 @@ export function useReconciliationSession(init: ReconciliationSessionInit) {
     const next = new Set(selectedBookOnlyIds);
     if (next.has(id)) next.delete(id); else next.add(id);
     setSelectedBookOnlyIds(next);
-  }, [selectedBookOnlyIds, setSelectedBookOnlyIds]);
+  }, [selectedBookOnlyIds]);
 
   const toggleBankOnlySelection = useCallback((id: string) => {
     const next = new Set(selectedBankOnlyIds);
     if (next.has(id)) next.delete(id); else next.add(id);
     setSelectedBankOnlyIds(next);
-  }, [selectedBankOnlyIds, setSelectedBankOnlyIds]);
+  }, [selectedBankOnlyIds]);
 
   const clearSelections = useCallback(() => {
     setSelectedMatchedIds(new Set());
-    setSelectedBookOnlyIdsRaw(new Set());
-    setSelectedBankOnlyIdsRaw(new Set());
+    setSelectedBookOnlyIds(new Set());
+    setSelectedBankOnlyIds(new Set());
   }, []);
 
   // ── Actions ────────────────────────────────────────────────────────────
@@ -257,8 +295,8 @@ export function useReconciliationSession(init: ReconciliationSessionInit) {
     const newBanks: BankOnlyRecord[] = [];
     for (const m of toSplit) {
       const { book, bank } = splitMatchedRow(m, reason);
-      newBooks.push(book);
-      newBanks.push(bank);
+      if (!m['_no_book_leg']) newBooks.push(book);
+      if (!m['_no_bank_leg']) newBanks.push(bank);
     }
 
     setMatched(prev => prev.filter(r => !idSet.has(r._id)));
@@ -270,7 +308,6 @@ export function useReconciliationSession(init: ReconciliationSessionInit) {
 
   const confirmMatch = useCallback((bookIds: string[], bankIds: string[], reason: string) => {
     if (bookIds.length === 0 || bankIds.length === 0) return;
-    if (bookIds.length > 1 && bankIds.length > 1) return; // no true many-to-many
     const bookIdSet = new Set(bookIds);
     const bankIdSet = new Set(bankIds);
     const bookRows = bookOnly.filter(r => bookIdSet.has(r._id));
@@ -288,16 +325,26 @@ export function useReconciliationSession(init: ReconciliationSessionInit) {
 
   const approveFlagged = useCallback((matchedId: string, reason: string) => {
     const note = reason ? `Matched by user: ${reason}` : 'Matched by user';
+    const approved = matched.find(r => r._id === matchedId);
+    if (!approved) return;
+
+    // A low-score match is duplicated into BRS as book-only + bank-only by
+    // the reconciliation engine.  Confirmation must consume those rows too,
+    // otherwise the UI still shows the transaction in the BRS statement.
+    setBookOnly(prev => removeFirst(prev, r => isReleasedBookLeg(approved, r)));
+    setBankOnly(prev => removeFirst(prev, r => isReleasedBankLeg(approved, r)));
     setMatched(prev => prev.map(r => {
       if (r._id !== matchedId) return r;
       return {
         ...r,
+        'Name Match': 'Match',
+        'Fuzzy Score %': 100,
         'Flags': [r['Flags'], note].filter(Boolean).join(' | '),
         'Is Reviewed': true,
       };
     }));
     setIsDirty(true);
-  }, []);
+  }, [matched]);
 
   // ── Derived BRS + Summary — recompute on every edit, no server call ─────
   const brs = useMemo<BRSData>(

@@ -13,9 +13,6 @@ interface BookOnlyTableProps {
   onSelectionChange: (ids: Set<string>) => void;
   canConfirmMatch: boolean;
   onConfirmMatchRequest: () => void;
-  /** True when Bank Only already has more than one row selected — only one
-      side may be a split at a time, so further multi-select here is blocked. */
-  otherSideSplit: boolean;
 }
 
 // The bank-reconciliation endpoint (/reconcile/reconcile-bank) does not attach an
@@ -33,7 +30,7 @@ const isCarriedForward = (record: BookOnlyRecord): boolean =>
 const PER_PAGE = 25;
 
 const BookOnlyTable: React.FC<BookOnlyTableProps> = ({
-  data, selectedIds, onSelectionChange, canConfirmMatch, onConfirmMatchRequest, otherSideSplit,
+  data, selectedIds, onSelectionChange, canConfirmMatch, onConfirmMatchRequest,
 }) => {
   const [page, setPage] = useState(0);
 
@@ -83,14 +80,8 @@ const BookOnlyTable: React.FC<BookOnlyTableProps> = ({
       <div className={cx(styles['notice-bar'], styles['notice-warning'])}>
         {data.length} entries recorded in the book but not found in the bank statement.
         These are typically cheques not yet cleared or timing differences.
-        {' '}Select one or more rows here, plus a row on Bank Only, to Confirm Match.
+        {' '}Select one or more rows here, plus one or more rows on Bank Only, to Confirm Match.
       </div>
-
-      {otherSideSplit && selectedIds.size === 0 && (
-        <div className={cx(styles['notice-bar'], styles['notice-info'])}>
-          Bank Only already has a split selected — clear it first if you want to select more than one row here.
-        </div>
-      )}
 
       {selectedIds.size > 0 && (
         <div className={styles['selection-actions']}>
